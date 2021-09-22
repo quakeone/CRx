@@ -1,0 +1,2317 @@
+/*  
+	client.qc
+	
+	client functions
+	
+	Copyright (C) 1996-1997  Id Software, Inc.
+	
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+	
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with this program; if not, write to the Free Software
+	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+	
+	See file, 'gnu_gpl.txt', for details.
+*/
+
+// prototypes
+
+void() player_pain;
+void() PlayerDead;
+void() GibPlayer;
+void(entity client, float fragval) client_frag;
+void(entity client) clear_afk_status;
+
+/*
+=============================================================================
+
+				LEVEL CHANGING / INTERMISSION
+
+=============================================================================
+*/
+
+//float	intermission_running;  // ELOHIM_MOD - moved to elodefs.qc
+//float	intermission_exittime; // ELOHIM_MOD - moved to elodefs.qc
+
+/*QUAKED info_intermission (1 0.5 0.5) (-16 -16 -16) (16 16 16)
+This is the camera point for the intermission.
+Use mangle instead of angle, so you can set pitch or roll as well as yaw.  'pitch roll yaw'
+*/
+void() info_intermission =
+{
+	self.angles = self.mangle; // so C can get at it
+};
+
+/*
+============
+SetChangeParms
+	
+The server calls this function directly from the C code, when a 'changelevel' is issued.
+============
+*/
+
+void() SetChangeParms =
+{
+	parm14 = (time - self.afk_time);	//AFK carries over
+		
+	SetNewParms2 ();
+};
+
+
+//
+// ELOHIM_MOD
+//
+// Created SetNewParms2 and changed all SetNewParms references to
+// SetNewParms2.  SetNewParms is called by Quake.exe when a client
+// first connects; SetNewParms2 is called thereafter by the QuakeC
+// code every time the client is reinserted into the server (respawn,
+// level change, etc.)
+//
+// Also created SetPracticeParms which is called for practice mode
+//
+void() SetPracticeParms =
+{
+	parm1 = IT_SHOTGUN | IT_AXE | IT_ROCKET_LAUNCHER | IT_ARMOR3 | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_GRENADE_LAUNCHER | IT_LIGHTNING | IT_SUPER_NAILGUN;
+
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)	//default hook on in CTF modes
+		parm1 = parm1 | IT_HOOK;
+
+	parm2 = 100;
+	parm3 = 200;
+	parm4 = 100;
+	parm5 = 200;
+	parm6 = 100;
+	parm7 = 100;
+	parm8 = IT_ROCKET_LAUNCHER;
+	parm9 = 80.001;
+};
+
+//
+//  Called by Quake server when a new client connects
+//
+
+void() SetNewParms =
+{
+	parm1 = parm2 = parm3 =	parm4 =	parm5 = parm6 =	parm7 = parm8 = parm9 =	0;//Clear out everything.
+	
+ 	if (clanring_playmode & CLANRING_PRACTICE_MODE)
+	{
+		SetPracticeParms ();
+	}
+	else
+	{
+		if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
+		{
+			parm1 = IT_SHOTGUN | IT_AXE;
+			parm2 = 100;
+			parm3 = 0;
+			parm4 = 25;
+			parm5 = 0;
+			parm6 = 0;
+			parm7 = 0;
+			parm8 = IT_SHOTGUN;
+			parm9 = 0;
+		}
+		else
+		{
+			parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
+			parm2 = 100;
+			parm3 = 50;
+			parm4 = 25;
+			parm5 = 0;
+			parm6 = 0;
+			parm7 = 0;
+			parm8 = IT_SHOTGUN;
+			parm9 = 30;
+		}
+	}
+ 
+	parm10 = CLANRING_NEW_CLIENT; // CRMOD observer flags moved | ELOHIM_OBSERVER_WALK; // elohim player flags
+	parm11 = 0;
+	parm12 = OBSERVER_WALK;// CRMOD observer flags
+	parm13 = 0;
+};
+
+//
+//  Called by QuakeC to reset a clients parameters
+//
+void() SetNewParms2 =
+{
+	parm1 = parm2 = parm3 =	parm4 =	parm5 = parm6 =	parm7 = parm8 = parm9 =	0;//Clear out everything.
+
+ 	if (clanring_playmode & CLANRING_PRACTICE_MODE)
+	{
+		SetPracticeParms ();
+	}
+	else
+	{
+		if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
+		{
+			parm1 = IT_SHOTGUN | IT_AXE;
+			parm2 = 100;
+			parm3 = 0;
+			parm4 = 25;
+			parm5 = 0;
+			parm6 = 0;
+			parm7 = 0;
+			parm8 = IT_SHOTGUN;
+			parm9 = 0;
+		}
+		else
+		{
+			parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
+			parm2 = 100;
+			parm3 = 50;
+			parm4 = 25;
+			parm5 = 0;
+			parm6 = 0;
+			parm7 = 0;
+			parm8 = IT_SHOTGUN;
+			parm9 = 30;
+		}
+	}
+		
+    parm10 = self.style; // elohim player flags
+    parm11 = self.state; // player ID
+    parm12 = self.oflags; // CRMOD observer flags
+	parm13 = self.clanring_hack_count;
+	parm14 = (time - self.afk_time);	//AFK carries over
+};
+
+void() DecodeLevelParms =
+{
+	//
+	// ELOHIM_MOD
+	//
+	// First restore player elohim flags *then* check to see if level = start.
+	// Also, reset player status at start level even if serverflags = 0.
+	// Finally, reset status if fresh spawns are on.
+	// Changed SetNewParms to SetNewParms2.
+	self.style = parm10;
+	self.state = parm11;
+	self.oflags = parm12;  // CRMOD observer flags
+	self.clanring_hack_count = parm13;
+	self.afk_time = (time - parm14);
+
+	self.player_flag = (self.player_flag - (self.player_flag & ITEM_RUNE_MASK));
+
+	SetNewParms2 ();
+	
+	self.items					= parm1;
+	self.items2      			= 0;
+	self.health 				= parm2;
+	self.armorvalue 			= parm3;
+	self.ammo_shells 			= parm4;
+	self.ammo_nails 			= parm5;
+	self.ammo_rockets 			= parm6;
+	self.ammo_cells 			= parm7;
+	self.weapon 				= parm8;
+	self.armortype 				= (parm9 * 0.01);
+	self.last_returned_flag  	= -10;
+	self.last_fragged_carrier 	= -10;
+	self.flag_since           	= -10;
+	self.last_hurt_carrier    	= -10;
+	self.flag_carrier       	= 0;	
+};
+
+/*
+============
+FindIntermission
+
+Returns the entity to view from
+============
+*/
+entity () FindIntermission =
+{
+	local entity spot;
+	local float cyc;
+
+	// look for info_intermission first
+	spot = find(world, classname, "info_intermission");
+	if (spot)
+	{   // pick a random one
+		cyc = random () * 4;
+		while (cyc > 1)
+		{
+			spot = find(spot, classname, "info_intermission");
+			if (!spot)
+				spot = find(spot, classname, "info_intermission");
+			cyc = cyc - 1;
+		}
+		return spot;
+	}
+	// then look for the start position	
+	spot = find(world, classname, "info_player_start");
+	if (spot)
+		return spot;
+
+	objerror ("FindIntermission: no spot");
+	return world; //R00k added
+};
+
+void() GotoNextMap =
+{
+	/*if ((cvar ("samelevel") & 1))
+	{
+
+	bprint("\nRestarting Map...Please Wait.\n");
+	changelevel (mapname);
+	}
+	else
+	*/
+	{
+		bprint("\nLoading Map...Please Wait.\n");
+		changelevel (nextmap);
+	}
+};
+
+/*
+============
+IntermissionThink
+
+When the player presses attack or jump, change to the next level
+============
+*/
+
+void() IntermissionThink =
+{
+	// ELOHIM_MOD - hack for autoss to work
+	if (!(self.style & CLANRING_OBSERVER) || (self.style & CLANRING_ADMINISTRATOR))
+	{
+		self.angles = self.v_angle = clanring_angle;
+		self.fixangle = TRUE;		
+	}
+	// END_MOD
+
+	if (time < intermission_exittime)
+	{
+		return;
+	}
+	if (self.button0 || self.button2)
+	{
+		GotoNextMap ();
+	}	
+};
+
+void() execute_changelevel =
+{
+	local entity tmp;
+//	local float bcount;
+
+	intermission_running = 1;
+
+	// enforce a wait time before allowing changelevel
+	intermission_exittime = time + 5;
+	lightstyle(0, "f");// R00k: -added- dim light on intermission
+/*
+	WriteByte(MSG_ALL, SVC_CDTRACK);
+	WriteByte(MSG_ALL, 3);
+	WriteByte(MSG_ALL, 3);
+*/
+	intermission_pos = FindIntermission ();
+	clanring_angle = intermission_pos.mangle;
+	other = find(world, classname, "player");
+	while (other != world)
+	{
+//		bcount = bcount + 1;
+		other.view_ofs = '0 0 0';
+		other.v_angle = intermission_pos.mangle;
+		other.angles = intermission_pos.mangle;
+		other.fixangle = TRUE;
+		other.nextthink = time + 0.5;
+		other.takedamage = DAMAGE_NO;
+		other.solid = SOLID_NOT;
+		other.movetype = MOVETYPE_NONE;
+		other.finaldest_y = 0;
+		other.modelindex = 0;
+		other.model = "";
+		setorigin(other, intermission_pos.origin);
+
+		tmp   = self;
+		self  = other;
+		teamplay_final_stats();//display score and stats
+		self  = tmp;
+
+		other = find(other, classname, "player");
+	}	
+	WriteByte(MSG_ALL, SVC_INTERMISSION);
+};
+
+void() pre_execute_changelevel =
+{
+	if (clanring_levelcount == -1)
+		execute_changelevel ();
+	else
+		self.nextthink = time + 0.1;
+};
+
+void() changelevel_touch =
+{
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+		return;
+
+	if (other.classname != "player")
+		return;
+
+	if (cvar("noexit"))
+	{
+		if (cvar ("noexit") == 2)
+			T_Damage (other, self, self, 50000);
+		return;
+	}
+	if (clanring_levelcount != -1)
+	{
+		if (self.enemy != other)
+		{
+			stuffcmd(other, "play misc/talk.wav\n");
+			sprint(other, "Exits not yet activated\n");
+		}
+		self.enemy = other;
+		return;
+	}
+	gameover = TRUE;
+	announce2(other.netname, " exited the level");
+	if (nextmap == "")
+	{
+		nextmap = self.map;
+	}
+	SUB_UseTargets ();
+	self.touch = SUB_Null;
+	self.think = pre_execute_changelevel;
+	self.nextthink = (time + 0.1);
+};
+
+
+/*QUAKED trigger_changelevel (0.5 0.5 0.5) ? NO_INTERMISSION
+When the player touches this, he gets sent to the map listed in the "map" variable.  Unless the NO_INTERMISSION flag is set, the view will go to the info_intermission spot and display stats.
+*/
+void() trigger_changelevel =
+{
+	if (!self.map)
+	{
+		objerror ("changelevel trigger doesn't have map");
+	}
+	InitTrigger ();
+	self.touch = changelevel_touch;
+};
+
+/*
+=============================================================================
+
+				PLAYER GAME EDGE FUNCTIONS
+
+=============================================================================
+*/
+
+void() set_suicide_frame;
+
+void(entity ent) CreateDeadBody;
+// called by ClientKill and DeadThink
+void() respawn =
+{
+//	CopyToBodyQue (self);//R00k remove bodies when player respawns.
+	CreateDeadBody (self);//R00k new corpse routine.
+	SetNewParms2 ();
+
+	updatename(self, self.netname);	
+	
+	PutClientInServer ();
+};
+/*
+============
+ClientKill
+
+Player entered the suicide command
+============
+*/
+void() ClientKill =
+{
+	if (gameover)
+		return;
+
+	if (self.style & CLANRING_OBSERVER)
+		return;
+
+
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+	{
+		sprint(self,"The match is paused; you cannot suicide.\n");
+		return;
+	}
+
+	if (clanring_client_suicide () == TRUE)
+		return;
+
+	announce2(self.netname, " suicides");
+	set_suicide_frame ();
+	DropRune();
+	DropBackpack();
+	TeamCaptureDropFlagOfPlayer (self, 1);
+	UnHookPlayer();
+	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));//added for server mod hook
+	self.modelindex = modelindex_player;
+
+	// ELOHIM_MOD
+	//
+	// - use client_frag so that penalty will be added to team score
+	// - changed penalty to -1
+	// - no penalty during pre-match
+	// - add suicide to stats
+	//
+	//self.frags = self.frags - 2;    // extra penalty
+
+	if (!(clanring_playmode & CLANRING_MATCH_MODE) || clanring_state & CLANRING_MATCH_STARTED)
+	{
+		client_frag(self, -1);
+		self.mangle_x = self.mangle_x + 1;
+	}
+	if (self.items & IT_ROCKET_LAUNCHER)
+	{
+		quaketv_lost_rl (self);
+	}
+
+	// ELOHIM_MOD
+	// check for not-ready non-observers in match mode
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if (!(self.style & (CLANRING_READY | CLANRING_OBSERVER)))
+		{
+			self.style = self.style | CLANRING_READY;
+			respawn();
+			self.style = self.style - CLANRING_READY;
+			return;
+		}
+	}
+	respawn();
+};
+
+entity () TeamCaptureSpawn =
+{
+	if ((self.team == RED) && (self.style & CLANRING_RED_TEAM))
+	{
+		team1_lastspawn = find(team1_lastspawn, classname, "info_player_team1");
+		if (team1_lastspawn == world)
+		{
+			team1_lastspawn = find(team1_lastspawn, classname, "info_player_team1");
+		}
+		return team1_lastspawn;
+	}
+	else
+	{
+		if ((self.team == BLUE) && (self.style & CLANRING_BLUE_TEAM))
+		{
+			team2_lastspawn = find(team2_lastspawn, classname, "info_player_team2");
+			if (team2_lastspawn == world)
+			{
+				team2_lastspawn = find(team2_lastspawn, classname, "info_player_team2");
+			}
+			return team2_lastspawn;
+		}
+	}
+	team2_lastspawn = find(team2_lastspawn, classname, "info_player_start");
+	return team2_lastspawn;
+};
+
+/*
+============
+SelectSpawnPoint
+
+Returns the entity to spawn at
+============
+*/
+entity () SelectSpawnPoint =
+{
+	local entity spot;
+	local entity thing;
+	local float	pcount;
+	local float	loop_count;	
+
+	if ((self.killed == FALSE) && (clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (!(self.style & CLANRING_OBSERVER)))
+	{
+		spot = TeamCaptureSpawn();
+		return spot;
+	}
+
+	loop_count = 64;
+	
+	pcount = random() * (dm_num_spawns - 0.001);
+	pcount = floor(pcount);
+	spot = find(world, classname, "info_player_deathmatch");
+
+	if (spot == world)
+		objerror ("Can not find an 'info_player_deathmatch' spawnpoint on this map!");
+	
+	while (pcount > 0)
+	{
+		spot = find(spot, classname, "info_player_deathmatch");
+
+		if (spot != world)
+			pcount = pcount - 1;
+	}
+	
+	lastspawn = spot;
+
+	while (loop_count)
+	{
+		if (spot != world)
+		{
+			if (spot == self.trigger_field)
+				pcount = 1;
+			else
+			{
+				thing = findradius (spot.origin, 128);
+				while (thing)
+				{
+					if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))
+					{
+						pcount = 1;
+						thing = world;
+					}
+					else
+					{
+						thing = thing.chain;
+					}
+				}
+			}
+			if (pcount == 0)
+			{
+				return spot;
+			}
+			pcount = 0;
+		}
+
+		spot = find(spot, classname, "info_player_deathmatch");
+
+		if (spot == lastspawn)
+		{
+			pcount = 0;
+
+			thing = findradius (self.trigger_field.origin, 128);
+
+			while (thing)
+			{
+				if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))
+				{
+					pcount = 1;
+					thing = world;
+				}
+				else
+				{
+					thing = thing.chain;
+				}
+			}
+			if (pcount == 0)
+			{
+				return self.trigger_field;
+			}
+			return lastspawn;//someone is gonna get hurt! :P
+		}
+		loop_count = loop_count - 1; //let's not get a runaway here...
+	}
+	if (serverflags)
+	{
+		spot = find(world, classname, "info_player_start2");
+		if (spot)
+			return spot;
+	}
+	spot = find(world, classname, "info_player_start");
+	if (!spot)
+	{
+		error ("PutClientInServer: no info_player_start on level");
+	}
+	return spot;
+};
+
+/*
+================
+by: Philip Martin aka: Kryten
+When on top of monsters or players you slide. This is a QuakeC problem.
+The function below fixes that problem.
+based on code given to Kryten by: Michael Turitzin (MaNiAc)
+================
+*/
+void() player_touch =
+{
+	//can cause problems for monsters on top of a player,  so only players
+	if (other.classname != "player")
+		return;
+	
+	if (other.health <= 0)
+		return;
+
+	if ((!(other.flags & FL_ONGROUND)) && (other.absmin_z >= self.absmax_z - 2))
+		other.flags = other.flags | FL_ONGROUND;
+	
+	//you can add other stuff like pushable players/monsters here
+};
+// 1998-09-16 Sliding/not-jumping on monsters/boxes/players fix
+
+void(entity e) move_to_intermission =
+{
+	e.view_ofs 	= VEC_ORIGIN;
+	e.angles 	= e.v_angle = intermission_pos.mangle;
+	e.fixangle 	= TRUE;		// turn this way immediately
+	e.nextthink = time + 0.5;
+	setorigin(e, intermission_pos.origin);
+	
+	e.takedamage 	= DAMAGE_NO;
+	e.solid 		= SOLID_NOT;
+	e.movetype 		= MOVETYPE_NONE;
+	e.finaldest_y 	= MOVETYPE_NONE;
+	e.modelindex 	= 0;	
+	e.weaponmodel 	= string_null;
+};
+
+void(float who) proto_intermission =
+{
+	WriteByte(who, SVC_INTERMISSION);	
+};
+
+void() utils_dprint_time;
+void() PlayerDie;
+void() teamplay_force_player_ready;
+
+/*
+===========
+PutClientInServer
+
+called each time a player is spawned
+============
+*/
+void() PutClientInServer =
+{
+	local entity spot;
+			
+	DecodeLevelParms ();	
+	
+	//in classic mode auto join on connect
+	if (teamplay)
+	{
+		if (clanring_playmode & CLANRING_NORMAL_MODE)/* && (clanring_playmode & CLANRING_CAPTURE_THE_FLAG))*///Pub team Deathmatch
+		{
+			if  ((!(self.style & CLANRING_BLUE_TEAM)) && (!(self.style & CLANRING_RED_TEAM)) && (!(self.style & CLANRING_OBSERVER)))
+			{
+				utils_make_scheduled_event(teamplay_force_player_ready, 0.05);
+				return;
+			}	
+		}
+	}
+	
+	spot = SelectSpawnPoint();
+
+	self.trigger_field			= spot;
+	self.classname 				= "player";
+	self.health 				= 100;
+	self.takedamage 			= DAMAGE_AIM;
+	self.solid 					= SOLID_SLIDEBOX;
+	self.movetype 				= MOVETYPE_WALK;
+	self.finaldest_y 			= 3;
+	self.show_hostile 			= 0;
+	self.max_health 			= 100;
+	self.flags					= FL_CLIENT;	
+	self.air_finished			= time + 12;
+	self.dmg 					= 2;
+	self.super_damage_finished 	= 0;
+	self.radsuit_finished 		= 0;
+	self.invisible_finished 	= 0;
+	self.invincible_finished 	= 0;
+	self.effects 				= 0;
+	self.regen_time   			= 0;
+	self.invincible_time 		= 0;
+	self.watertype 				= CONTENT_EMPTY;
+	self.waterlevel 			= 0;
+	self.velocity 				= '0 0 0';
+	
+	W_SetCurrentAmmo ();
+
+	self.attack_finished 	= time;
+	//Todo enable this with a votable so dm2's quad team-boost works
+	//self.touch 			= player_touch;
+	self.th_pain 			= player_pain;
+	self.th_die 			= PlayerDie;
+	self.deadflag 			= DEAD_NO;	
+	//self.angles 			= spot.angles;
+	//self.fixangle 		= TRUE;
+	angles_fixangle(spot.angles);
+
+	self.avelocity 		= '0 0 0';
+	self.punchangle		= '0 0 0';
+
+	setorigin(self, spot.origin + '0 0 1');	//R00k: change our origin and relink our edict.
+	self.oldorigin = self.origin;			//R00k: update oldorigin so we dont respawn where we died.
+
+	self.lefty 		= 0;
+	self.jump_flag 	= 0; // clear jump velocity to prevent falling damage
+
+	// oh, this is a hack!	
+	if (modelindex_eyes == 0) //R00k: hasn't been done yet
+	{
+		setmodel (self, "progs/eyes.mdl");
+		modelindex_eyes = self.modelindex;
+
+		setmodel (self, "progs/h_player.mdl");
+		modelindex_head = self.modelindex;
+	}
+
+	setmodel(self, "progs/player.mdl");
+	modelindex_player = self.modelindex;
+	
+	setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
+
+	self.view_ofs = '0 0 22';
+	
+	if (intermission_running)
+	{
+		move_to_intermission (self);
+		msg_entity = self;
+		proto_intermission (MSG_ONE);//SlotZero
+	}
+	else
+	{
+		clanring_put_client_in_server ();
+	}
+};
+
+/*
+=============================================================================
+
+QUAKED FUNCTIONS
+
+=============================================================================
+*/
+
+
+/*QUAKED info_player_start (1 0 0) (-16 -16 -24) (16 16 24)
+The normal starting point for a level.
+*/
+void() info_player_start =
+{
+};
+
+
+/*QUAKED info_player_start2 (1 0 0) (-16 -16 -24) (16 16 24)
+Only used on start map for the return point from an episode.
+*/
+void() info_player_start2 =
+{
+};
+
+
+/*
+saved out by quaked in region mode
+*/
+void() testplayerstart =
+{
+};
+
+/*QUAKED info_player_deathmatch (1 0 1) (-16 -16 -24) (16 16 24)
+potential spawning position for deathmatch games
+*/
+void() info_player_deathmatch =
+{
+	dm_num_spawns = dm_num_spawns + 1.00;
+};
+
+void() info_player_team1 =
+{
+};
+
+void() info_player_team2 =
+{
+};
+/*QUAKED info_player_coop (1 0 1) (-16 -16 -24) (16 16 24)
+potential spawning position for coop games
+*/
+void() info_player_coop =
+{
+	remove(self);   // ELOHIM_MOD - coop not supported
+};
+
+/*
+===============================================================================
+
+RULES
+
+===============================================================================
+*/
+
+//
+// CLANRING_MOD
+//
+// Fixed the bug that causes the start level to loop.  Changed the sequence
+// of levels to:
+//
+// start->episode1->start->episode2->start->episode3->start->episode4->
+// start->end->deathmatch->deathmatch->deathmatch->deathmatch->start
+//
+// (one big loop.. first start = last start).
+// (of course, deathmatch = dm1->dm2->dm3->dm4->dm5->dm6)
+//
+// Included the Underearth in episode 2, but NOT Ziggurat Vertigo in e1.
+//
+
+/*
+go to the next level for deathmatch
+only called if a time or frag limit has expired
+*/
+void() NextLevel =
+{
+	local entity o;
+
+	if (mapname == "start")
+	{
+		if (!cvar("registered"))
+		{
+			mapname = "e1m1";
+		}
+		else if (!(serverflags & 1))
+		{
+			mapname = "e1m1";
+			serverflags = serverflags | 1;
+		}
+		else if (!(serverflags & 2))
+		{
+			mapname = "e2m1";
+			serverflags = serverflags | 2;
+		}
+		else if (!(serverflags & 4))
+		{
+			mapname = "e3m1";
+			serverflags = serverflags | 4;
+		}
+		else if (!(serverflags & 8))
+		{
+			mapname = "e4m1";
+            serverflags = serverflags | 8;
+		}
+        else
+            mapname = "end";
+
+		o = spawn();
+		o.map = mapname;
+	}
+    else if (mapname == "end")
+    {
+        o = spawn();
+        o.map = "dm1";
+    }
+    else if (mapname == "dm6")
+    {
+        o = spawn();
+        serverflags = (serverflags & 14) / 2;
+        if (serverflags > 0)
+            o.map = "dm1";
+        else
+            o.map = "start";
+    }
+    else if (mapname == "e2m3")
+    {
+        o = spawn();
+        o.map = "e2m7";
+    }
+	else
+	{
+		// find a trigger changelevel
+		o = find(world, classname, "trigger_changelevel");
+
+		// go back to start if no trigger_changelevel
+		if (!o)
+		{
+			mapname = "start";
+			o = spawn();
+			o.map = mapname;
+		}
+	}
+
+	nextmap = o.map;
+	gameover = TRUE;
+
+    // check to see if there is a user-specified level sequence
+    console_get_user_nextlevel();
+
+    o.think = execute_changelevel;
+    o.nextthink = time + 0.1;
+};
+// END_MOD
+
+/*
+============
+CheckRules
+
+Exit deathmatch games upon conditions
+============
+*/
+// CLANRING_MOD - this function was removed for efficiency
+
+//============================================================================
+void() PlayerDeathThink =
+{
+	local float forward;
+
+	if (self.flags & FL_ONGROUND)
+	{
+		forward = vlen(self.velocity);
+		forward = forward - 20;
+		if (forward <= 0)
+			self.velocity = '0 0 0';
+		else
+			self.velocity = forward * normalize(self.velocity);
+	}
+
+	// wait for all buttons released
+	if (self.deadflag == DEAD_DEAD)
+	{
+		if (self.button2 || self.button1 || self.button0)
+			return;
+		
+		self.deadflag = DEAD_RESPAWNABLE;
+		return;
+	}
+
+	// wait for any button down
+	if (!self.button2 && !self.button1 && !self.button0)
+		return;
+
+	self.button0 = self.button1 = self.button2 = 0;
+	respawn();
+};
+
+void() PlayerJump =
+{
+	if (self.flags & FL_WATERJUMP)
+		return;
+	
+	if (self.waterlevel >= 2)
+	{
+		if (self.watertype == CONTENT_WATER)
+			self.velocity_z = 100;
+		else if (self.watertype == CONTENT_SLIME)
+			self.velocity_z = 80;
+		else
+			self.velocity_z = 50;
+
+// play swiming sound
+		if (self.swim_flag < time)
+		{
+			self.swim_flag = time + 1;
+            if (random() < 0.5)
+                sound (self, CHAN_BODY, "misc/water1.wav", 1, ATTN_NORM);
+            else
+                sound (self, CHAN_BODY, "misc/water2.wav", 1, ATTN_NORM);
+		}
+		return;
+	}
+
+	if (!(self.flags & FL_ONGROUND))
+		return;
+
+	if (!(self.flags & FL_JUMPRELEASED))
+		return;		// don't pogo stick
+
+    //self.flags = self.flags - (self.flags & FL_JUMPRELEASED);
+	//self.flags = self.flags - FL_ONGROUND;	// don't stairwalk
+	//CRMOD - this is more efficient
+	self.flags = self.flags - (self.flags & (FL_JUMPRELEASED | FL_ONGROUND));//
+	self.finaldest_x = time;  // CRMOD - player is alive
+	
+	self.button2 = 0;
+// player jumping sound
+    sound (self, CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM);
+	self.velocity_z = self.velocity_z + 270;
+};
+
+
+/*
+===========
+WaterMove
+
+============
+*/
+.float dmgtime;
+
+void() WaterMove =
+{
+	// ELOHIM_MOD - if !self.waterlevel then FL_INWATER must be set
+	// or this wouldn't be called.  Moved this test to the start of
+	// the function.
+
+	if (!self.waterlevel)
+	{
+		sound (self, CHAN_BODY, "misc/outwater.wav", 1, ATTN_NORM);
+		self.flags = self.flags - (self.flags & FL_INWATER);
+		return;
+	}
+	// END_MOD
+
+	if (!(self.flags & FL_INWATER))  // ELOHIM_MOD - moved this test
+	{
+		// player enter water sound
+		if (self.watertype == CONTENT_LAVA)
+			sound (self, CHAN_BODY, "player/inlava.wav", 1, ATTN_NORM);
+
+		if (self.watertype == CONTENT_WATER)
+			sound (self, CHAN_BODY, "player/inh2o.wav", 1, ATTN_NORM);
+
+		if (self.watertype == CONTENT_SLIME)
+			sound (self, CHAN_BODY, "player/slimbrn2.wav", 1, ATTN_NORM);
+
+		self.flags = self.flags | FL_INWATER;
+		self.dmgtime = 0;
+		// ELOHIM_MOD - added these
+		self.air_finished = time + 12;
+		self.dmg = 2;
+	}
+	if (self.waterlevel != 3)
+	{
+		if (self.air_finished < time)
+			sound (self, CHAN_VOICE, "player/gasp2.wav", 1, ATTN_NORM);
+		else
+		if (self.air_finished < time + 9)
+			sound (self, CHAN_VOICE, "player/gasp1.wav", 1, ATTN_NORM);
+
+		self.air_finished = time + 12;
+		self.dmg = 2;
+	}
+	else
+	if (self.air_finished < time)
+	{	// drown!
+		if (self.pain_finished < time)
+		{
+			self.dmg = self.dmg + 2;
+			if (self.dmg > 15)
+				self.dmg = 10;
+			self.deathtype = "drowning";	// 1998-08-12 optional: Drowning doesn't hurt armor by Maddes/Athos
+			T_Damage (self, world, world, self.dmg);
+			self.pain_finished = time + 1;
+		}
+	}
+
+	if (self.watertype == CONTENT_LAVA)
+	{	// do damage
+		if (self.dmgtime < time)
+		{
+			if (self.radsuit_finished > time)
+				self.dmgtime = time + 1;
+			else
+				self.dmgtime = time + 0.2;
+			T_Damage (self, world, world, 10 * self.waterlevel);
+		}
+	}
+	else
+	if (self.watertype == CONTENT_SLIME)
+	{	// do damage
+		if ((self.dmgtime < time) && (self.radsuit_finished < time))
+		{
+			self.dmgtime = time + 1;
+			T_Damage (self, world, world, 4 * self.waterlevel);
+		}
+	}
+	// ELOHIM_MOD - rearranged expression for efficiency
+	if (! (self.flags & FL_WATERJUMP) )
+	self.velocity = (1 - 0.8*self.waterlevel*frametime)*self.velocity;
+	// END_MOD
+	// ELOHIM_MOD - moved here from PlayerPreThink
+	if (self.waterlevel == 2)
+		CheckWaterJump ();
+	// END_MOD
+};
+
+void() CheckWaterJump =
+{
+	local vector start, end;
+
+// check for a jump-out-of-water
+	makevectors (self.angles);
+	start = self.origin;
+	start_z = start_z + 8;
+	v_forward_z = 0;
+	normalize(v_forward);
+	end = start + v_forward * 24;
+	traceline (start, end, TRUE, self);
+	if (trace_fraction < 1)// solid at waist
+	{
+		// ELOHIM_MOD - changed these two lines
+		start_z = start_z + 24;
+		end_z = end_z + 24;
+		traceline (start, end, TRUE, self);
+		if (trace_fraction == 1)
+		{	// open at eye level
+			self.flags = self.flags | FL_WATERJUMP;
+			self.velocity_z = 225;
+			self.flags = self.flags - (self.flags & FL_JUMPRELEASED);
+			self.teleport_time = time + 2;	// safety net - DON'T TOUCH!!! USED BY QUAKE.EXE
+			// return; ELOHIM_MOD - unnecessary
+		}
+	}
+};
+
+/*
+================
+PlayerPreThink
+
+Called every frame before physics are run
+================
+*/
+
+void() PlayerPreThink =
+{
+	// ELOHIM_MOD
+	//
+	// - moved intermission_running test inside of if (gameover)
+	// - go to observer_pre_think when observing
+	// - go to options_pre_think when setting options
+	// - changed gameover test from (self.view_ofs == '0 0 0') to (gameover)
+	// - don't call check rules
+	//      - fraglimit, timelimit are set in elohim_start_frame
+	//      - timelimit is checked in elohim_start_frame
+	//      - fraglimit is checked in client_frag
+	// - removed unnecessary makevectors
+	// - put dead checks inside a single if statement
+	// - removed unused pausetime check
+	// - optimized ammo-out check
+	// - do periodic checks
+	// - moved CheckWaterJump to WaterMove
+
+	if (gameover)
+	{		
+		self.style = (self.style | CLANRING_NO_POST_THINK);
+		if (intermission_running)
+		{
+			// otherwise a button could be missed between the think tics
+			IntermissionThink ();
+		}
+		return;		// intermission or finale
+	}
+	if (self.height != self.team - 1)
+		match_verify_team ();
+
+	if (self.movetype != self.finaldest_y)
+		self.movetype = self.finaldest_y;
+
+	if (time > self.wait)
+	{
+		clanring_periodic_checks ();		
+		self.wait = time + 1;
+	}
+
+	if (self.style & CLANRING_SETTING_OPTIONS)
+	{
+		self.style = self.style | CLANRING_NO_POST_THINK;
+		options_pre_think ();
+		if (clanring_state & CLANRING_MATCH_PAUSED)
+			self.velocity = '0 0 0';
+
+		if (self.deadflag == DEAD_NO)
+		{
+			if (self.waterlevel || (self.flags & FL_INWATER))
+				WaterMove ();
+		}
+		return;
+	}
+	
+	if (self.button2)//or button0?
+	{
+		clear_afk_status(self);
+	}
+
+	if (self.style & CLANRING_OBSERVER)
+	{
+		observer_pre_think ();
+		return;
+	}
+
+	if (self.deadflag)
+	{
+		self.style = self.style | CLANRING_NO_POST_THINK;
+		if (self.deadflag >= DEAD_DEAD)
+			PlayerDeathThink ();
+		return;
+	}
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+	{
+		self.style = self.style | CLANRING_NO_POST_THINK;
+		self.velocity = '0 0 0';
+		if (self.movement)	//R00k: ignore user input(test?)
+			self.movement = '0 0 0';
+		return;
+	}
+
+	self.deathtype = "";	//R00k - wrong obituary messages fix by Zoid
+
+	if (self.waterlevel || (self.flags & FL_INWATER))
+		WaterMove ();
+
+	if (self.deadflag == DEAD_DYING) return;	// dying, so do nothing
+
+	if (self.button2)
+		PlayerJump ();
+	else
+		self.flags = self.flags | FL_JUMPRELEASED;
+
+	if (!self.currentammo)
+	{
+		if ((self.weapon != IT_AXE) && (self.weapon != IT_HOOK))
+		{
+			if (time > self.attack_finished)
+			{
+				self.weapon = W_BestWeapon();
+				W_SetCurrentAmmo();
+			}
+		}
+	}
+};
+
+//R00k: Silly function for practice mode when an admin get pent
+void() admin_pushplayers =
+{
+	local entity guy;
+	local vector direc;
+	local float dist;
+
+	guy = findradius(self.origin, 100);
+
+	while(guy)
+	{
+		//if (guy.flags & FL_CLIENT)//removing this will also deflect projectiles
+		{
+			if (vlen(guy.origin - self.origin) < 100)
+			{
+				direc = normalize(guy.origin - self.origin);
+				dist = (100 - (	vlen(guy.origin - self.origin)) );
+				guy.velocity = guy.velocity + direc * dist * 16;
+				self.velocity = self.velocity - direc * dist;
+			}
+		}   
+		guy = guy.chain;
+	}
+}; 
+
+/*
+================
+CheckPowerups
+
+Check for turning off powerups
+================
+*/
+void() CheckPowerups =
+{
+// invisibility	
+	if (self.invisible_finished)
+	{
+		// R00k remove powerups in "real-time"
+		if (clanring_playmode & CLANRING_NO_RING)
+		{
+			self.items = self.items - (self.items & IT_INVISIBILITY);
+			self.invisible_finished = 0;
+			self.invisible_time = 0;
+			self.modelindex = modelindex_player;
+			setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
+			player_run();
+
+			if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+			{
+				if (self.team == RED)   self.skin = 1;
+				if (self.team == BLUE)  self.skin = 3;
+			}
+		}// end
+		else
+		{
+			if (self.invisible_sound < time)
+			{
+				sound (self, CHAN_AUTO, "items/inv3.wav", 0.5, ATTN_IDLE);
+				self.invisible_sound = time + ((random() * 3) + 1);
+			}
+			if (self.invisible_finished < time + 3)
+			{
+				if (self.invisible_time == 1)
+				{
+					sprint(self, "Ring of Shadows magic is fading\n");
+					//stuffcmd(self, "bf\n");
+					sound (self, CHAN_AUTO, "items/inv2.wav", 1, ATTN_NORM);
+					self.invisible_time = time + 1;
+				}
+				if (self.invisible_time < time)
+				{
+					self.invisible_time = time + 1;
+					//stuffcmd(self, "bf\n");
+				}
+			}
+			
+			// use the eyes
+			self.frame = 0;
+			if (self.skin == 0)//wait one frame to reset the skin
+			{
+				self.modelindex	= modelindex_eyes;
+				setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
+			}
+			
+			self.skin  = 0;//R00k: oversight 3wave forgot to reset the skin; engine complains about this during execution. :(
+	
+			if (self.invisible_finished < time)
+			{	// just stopped
+				self.items = self.items - (self.items & IT_INVISIBILITY);
+				self.invisible_finished = 0;
+				self.invisible_time = 0;
+				self.modelindex = modelindex_player;	// don't use eyes			
+				setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
+				player_run();
+
+				if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+				{
+					if (self.team == RED)   self.skin = 1;
+					if (self.team == BLUE)  self.skin = 3;
+				}
+			}
+		}
+	}
+	if (self.invincible_finished)
+	{
+		// R00k remove powerups in "real-time"
+		if (clanring_playmode & CLANRING_NO_PENT)
+		{
+			self.items = self.items - (self.items & IT_INVULNERABILITY);
+			self.invincible_time = 0;
+			self.invincible_finished = 0;
+			if (!self.super_damage_finished)
+				self.effects = self.effects - (self.effects & EF_DIMLIGHT);
+			self.effects = self.effects - (self.effects & EF_RED);
+		}// end
+		else
+		{
+			if (self.style & CLANRING_ADMINISTRATOR)
+				admin_pushplayers();
+				
+			if (self.invincible_finished < time + 3)
+			{
+				if (self.invincible_time == 1)
+				{
+					sprint(self, "Protection is almost burned out\n");
+					//stuffcmd(self, "bf\n");
+					sound (self, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NORM);
+					self.invincible_time = time + 1;
+				}
+				if (self.invincible_time < time)
+				{
+					self.invincible_time = time + 1;
+					//stuffcmd(self, "bf\n");
+				}
+			}
+			if (self.invincible_finished < time)
+			{
+				self.items = self.items - (self.items & IT_INVULNERABILITY);
+				self.invincible_time = 0;
+				self.invincible_finished = 0;
+				if (!self.super_damage_finished)
+					self.effects = self.effects - (self.effects & EF_DIMLIGHT);
+				self.effects = self.effects - (self.effects & EF_RED);
+			}
+		}
+	}
+	if (self.super_damage_finished)
+	{
+		// R00k remove powerups in "real-time"
+		if (clanring_playmode & CLANRING_NO_QUAD)
+		{
+			self.items = self.items - (self.items & IT_QUAD);
+			self.super_damage_finished = 0;
+			self.super_time = 0;
+			if (!self.invincible_finished)
+			{
+				self.effects = self.effects - (self.effects & EF_DIMLIGHT);
+			}
+			self.effects = self.effects - (self.effects & EF_BLUE);
+			return;
+		}// end
+		else
+		{
+			if (self.super_damage_finished < time + 3)
+			{
+				if (self.super_time == 1)
+				{
+					sprint(self, "Quad Damage is wearing off\n");
+					//stuffcmd(self, "bf\n");
+					sound (self, CHAN_AUTO, "items/damage2.wav", 1, ATTN_NORM);
+					self.super_time = time + 1;
+				}
+				if (self.super_time < time)
+				{
+					self.super_time = time + 1;
+					//stuffcmd(self, "bf\n");
+				}
+			}
+			if (self.super_damage_finished < time)
+			{
+				self.items = self.items - (self.items & IT_QUAD);
+				self.super_damage_finished = 0;
+				self.super_time = 0;
+				if (!self.invincible_finished)
+				{
+					self.effects = self.effects - (self.effects & EF_DIMLIGHT);
+				}
+				self.effects = self.effects - (self.effects & EF_BLUE);
+			}
+		}
+	}
+	if (self.radsuit_finished)
+	{
+		self.air_finished = time + 12;
+		if (self.radsuit_finished < (time + 3))
+		{
+			if (self.rad_time == 1)
+			{
+				sprint(self, "Air supply in Biosuit expiring\n");
+				//stuffcmd(self, "bf\n");
+				sound (self, CHAN_AUTO, "items/suit2.wav", 1, ATTN_NORM);
+				self.rad_time = time + 1;
+			}
+			if (self.rad_time < time)
+			{
+				self.rad_time = time + 1;
+				//stuffcmd(self, "bf\n");
+			}
+		}
+		if (self.radsuit_finished < time)
+		{
+			self.items = self.items - (self.items & IT_SUIT);
+			self.rad_time = 0;
+			self.radsuit_finished = 0;
+		}
+	}
+
+	//R00k: Multiple megahealth rot fix
+	if ((self.items & IT_SUPERHEALTH) && (time > self.rotthink))
+	{		
+		if (self.health > self.max_health) 
+		{
+			if ((self.invincible_finished < time) && !(self.player_flag & ITEM_RUNE4_FLAG))//dont rot with regen
+			{
+				self.health = (self.health - 1.00);
+				self.rotthink = (time + 1.00);
+			}
+		}
+		else
+		{
+			self.items = self.items - (self.items & IT_SUPERHEALTH);
+		}
+	}
+};
+
+/*
+================
+PlayerPostThink
+
+Called every frame after physics are run
+================
+*/
+void() PlayerPostThink =
+{
+	if (!(self.style & CLANRING_CONNECTED))
+		return;
+
+	if (self.button0)
+	{
+		clear_afk_status(self);
+	}
+	// ELOHIM_MOD
+	//
+	// - don't do post think stuff while observing
+	// - don't do post think stuff while setting options
+	// - redirect impulses in [20, 250]
+	// - changed gameover test from (self.view_ofs == '0 0 0') to (gameover)
+
+	if (self.style & CLANRING_OBSERVER)
+	{
+		observer_post_think ();
+		return;
+	}
+
+	if (self.impulse)
+	{
+		self.finaldest_x = time;  // player is alive
+
+		// Redirect impulses 1-10 when player is entering a number
+		if (self.use != SUB_Null)
+		{
+			if ((self.use != select_episode) && (self.use != select_map))//R00k WARP
+			{
+				if ((self.impulse >= 1) && (self.impulse <= 10))
+				{
+					if (self.impulse == 10)
+						self.impulse = 230;
+					else
+						self.impulse = self.impulse + 230;
+				}
+			}
+		}
+
+		if ((self.impulse >= 19) && (self.impulse != 22))
+		{
+			if (self.impulse <= 250)
+				clanring_impulse ();
+		}
+		else
+			self.delayed_impulse = self.impulse;
+	}
+
+	// ELOHIM_NO_POST_THINK is set for gameover, deadflag,
+	// setting options and match paused
+	if (self.style & CLANRING_NO_POST_THINK)
+	{
+		self.style = self.style - (self.style & CLANRING_NO_POST_THINK);
+		return;
+	}
+
+	//if (time >= self.attack_finished)//R00k removed so non weapon impulse commands can be handled faster
+	W_WeaponFrame ();
+	
+	if (self.style & CLANRING_AUTOID)
+	{
+		if (teamplay)
+		{
+			if (time > self.id_time)
+			{
+				ident_get_target();
+				self.id_time = (time + 0.2);
+			}
+		}
+	}
+
+	// check to see if player landed and play landing sound
+	// ELOHIM_MOD - rearranged if clauses for efficiency
+	if (!(self.flags & FL_ONGROUND))
+	{
+		self.jump_flag = self.velocity_z;
+	}
+	else
+	{
+		if (self.jump_flag < -300)
+		{
+			if (self.health > 0)
+			{
+				if (self.watertype == CONTENT_WATER)
+				{
+					sound (self, CHAN_BODY, "player/h2ojump.wav", 1, ATTN_NORM);
+				}
+				else
+				{
+					if (self.jump_flag < -650)
+					{
+						self.deathtype = "falling";	//R00k - wrong obituary messages fix
+						T_Damage (self, world, world, 5);
+						sound (self, CHAN_VOICE, "player/land2.wav", 1, ATTN_NORM);						
+					}
+					else
+					{
+						sound (self, CHAN_VOICE, "player/land.wav", 1, ATTN_NORM);
+					}
+				}
+				self.jump_flag = 0;
+			}
+		}
+	}
+
+	CheckPowerups ();
+
+	//Regen adds to health every 1/2 second and armor ever 1/2 second if values are below 150.
+	if (self.player_flag & ITEM_RUNE4_FLAG)
+	{	
+		local float rjs = 0; 
+		if (self.regen_time < time)
+		{
+			self.regen_time = time + 0.5;
+
+			if (self.health < 150)
+			{
+				rjs = 1;
+				self.health = self.health + 5;
+				if (self.health > 150)
+					self.health = 150;
+			}
+
+			if (self.armorvalue < 150 && self.armortype)
+			{
+				rjs = 1;
+				self.armorvalue = self.armorvalue + 5;
+				if (self.armorvalue > 150)
+					self.armorvalue = 150;
+			}
+			if (rjs == 1)
+				RegenerationSound();
+		}
+	}
+};
+
+/*
+===========
+ClientConnect
+
+called when a player connects to a server
+============
+*/
+void() ClientConnect =
+{
+	self.finaldest_x = time;//lagout timer
+	clanring_client_connect ();
+};
+
+/*
+===========
+ClientDisconnect
+
+called when a player disconnects from a server
+============
+*/
+void() ClientDisconnect =
+{
+	local string s;
+	local string pl;//R00k added
+
+	// ELOHIM_MOD - check to see if we've already done this
+	// (can happen since elohim_kick_player calls ClientDisconnect directly
+	if (!(self.style & CLANRING_CONNECTED))
+		return;
+
+	// ELOHIM_MOD - check for null name			
+	if (utils_illegal_name (self.netname))
+	{
+		self.netname = "someone";
+	}
+
+	if (self.modelindex == modelindex_eyes)
+	{
+		self.modelindex = modelindex_player;
+		setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
+	}
+
+	s = ftos(self.frags);
+	pl = strings_szplural(self.frags);//R00k added
+
+	if (!self.plag)
+	{
+		if (self.frags > 0)
+			announce5(self.netname, " left the game with ", s, " frag", pl);
+		else
+			announce2(self.netname, " disconnected.");
+	}
+	// ELOHIM_MOD - play gib sound if client was kicked for suiciding
+	if (!(clanring_playmode & CLANRING_MATCH_MODE) || !(clanring_state & CLANRING_MATCH_STARTED) || !(self.style & CLANRING_OBSERVER))//R00k: dont make a sound when match is going, unless a player disconnected.
+	{		
+		if (self.cnt < 0)
+			sound (self, CHAN_BODY, "player/gib.wav", 1, ATTN_NONE);
+		else
+			sound (self, CHAN_BODY, "player/tornoff2.wav", 1, ATTN_NONE);
+	}
+
+	TeamCaptureDropFlagOfPlayer (self, 0);
+	if (!(self.style & CLANRING_OBSERVER))
+	{
+		DropRune();
+		DropBackpack ();
+		UnHookPlayer ();
+		self.hook2 = self.hook2 - (self.hook2 & HOOK_OUT);//TODO remove the off-hand newbie hook...
+	}
+	clanring_client_disconnect ();
+	set_suicide_frame ();
+
+	// ghost eyes and hovering bodies fix
+	//CopyToBodyQue(self);// make a copy of the dead body for appearances sake
+	setmodel(self, string_null);
+	setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
+	// end
+
+	self.classname 	= string_null;	
+	self.health 	= 0;
+	self.team 		= 0;
+	self.height 	= 0;
+};
+
+//
+// ELOHIM_MOD
+//
+// Added a bunch of new obituaries; got rid of "can't exist on slime alone"
+// (I never much liked that one)
+//
+// Added a same-team check for telefragging.
+//
+// Added code to keep track of team scores
+//
+// Added code to keep track of kill stats
+//
+// Removed check for killed by monster
+//
+
+//
+//  F R A G
+//
+//  Adds/substracts a frag to a client and his team in match mode.
+//
+void(entity client, float fragval) client_frag =
+{
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if (teamplay)
+		{
+			client.frags = (client.frags + fragval);
+			score_frag (client.next_team, fragval);
+			pqc_team_frags(world, (client.height), client.next_team.frags);
+		}
+		else
+		{
+			score_frag (client, fragval);
+		}
+
+		if (fraglimit)//R00k added fraglimit for Brazilians, they use fraglimit even in match mode!
+		{
+			if ((client.frags >= fraglimit))
+			{
+				local entity ent;
+				ent = find(world,classname,"clanring_match_timer");
+				if (ent)
+				{
+					ent.think = match_end;
+				}
+			}
+		}
+	}
+	else
+	{
+		client.frags = (client.frags + fragval);
+		if (client.frags >= fraglimit)
+		{
+			if (fraglimit && (clanring_levelcount == -1))
+			{
+				if (!gameover)
+				{
+					local string stime;
+					stime = ftos(ceil(time/60));				
+					bprint("Fraglimit Hit -- Game Over!\n");
+					bprint("Game won in ",stime," minutes.\n");				
+					NextLevel ();
+				}
+			}
+		}
+	}
+};
+
+/*
+===========
+ClientObituary
+called when a player dies
+Modified for CTF -- ugh what a mess!
+============
+*/
+void(entity targ, entity attacker) ClientObituary =
+{
+	local entity head;
+	local float flag_radius;
+	local float flag_carrier_radius;
+	local string s;
+	local float rnum;
+	local string deathstring;
+	local string deathstring2;
+
+	rnum = random ();
+	if (targ.classname == "player")
+	{
+		if (targ.flag_carrier)
+		{
+			head = find(world, classname, "player");
+			while (head != world)
+			{
+				if (head.team != targ.team)
+				{
+					head.last_hurt_carrier = -10;
+				}
+				head = find(head, classname, "player");
+			}
+		}
+		if (attacker.classname == "teledeath")
+		{
+			if ((teamplay) && (targ.team > 0) && (targ.team == attacker.owner.team))
+			{
+				attacker.owner.mangle_y = attacker.owner.mangle_y + 1;// attacker.owner killed teammate
+				if (attacker.super_damage_finished > time)					
+					attacker.clanring_qdkill_y = attacker.clanring_qdkill_y + 1;//STATS
+				client_frag (attacker.owner, -1);
+				announce3(targ.netname, " telefragged his teammate ", attacker.owner.netname);
+			}
+			else
+			{
+				if ((!teamplay) || (targ.team != attacker.owner.team))// targ was killed by enemy
+				{
+					targ.mangle_z = targ.mangle_z + 1;
+					client_frag (attacker.owner, 1);
+					attacker.owner.true_kills = (attacker.owner.true_kills + 1);
+				}
+				announce3(targ.netname, " was telefragged by ", attacker.owner.netname);
+			}
+			return;
+		}
+		if (attacker.classname == "teledeath2")
+		{
+			announce3("Pentegram power deflects ", targ.netname, "'s telefrag");
+			targ.mangle_z = targ.mangle_z + 1;
+			client_frag (targ, -1);
+			return;
+		}
+		if (attacker.classname == "teledeath3")
+		{
+			announce4(targ.netname, " was telefragged by ", attacker.owner.netname, "'s protection.");
+			targ.mangle_z = targ.mangle_z + 1;
+			client_frag (attacker.owner, 1);
+			attacker.owner.true_kills = (attacker.owner.true_kills + 1);
+			return;
+		}
+		if (targ.deathtype == "squish")
+		{
+			if ((teamplay) && (targ.team == attacker.team) && (targ != attacker))
+			{
+				attacker.mangle_y = attacker.mangle_y + 1;
+				client_frag (attacker, -1);
+				announce2(attacker.netname, " squished a teammate");
+				return;
+			}
+			else
+			{
+				if (attacker.classname == "player" && targ != attacker)
+				{
+					targ.mangle_z = targ.mangle_z + 1;
+					announce3(attacker.netname, " squishes ", targ.netname);
+					client_frag (attacker, 1);
+					attacker.true_kills = (attacker.true_kills + 1);
+					return;
+				}
+				else
+				{
+					targ.mangle_x = targ.mangle_x + 1;
+					client_frag (targ, -1);
+					announce2(targ.netname, " is now just a greasy spot on the floor");
+					return;
+				}
+			}
+			return;
+		}
+		if (attacker.classname == "player")
+		{
+			if (targ == attacker)
+			{
+				attacker.mangle_x = attacker.mangle_x + 1;
+				if (attacker.super_damage_finished > time)
+					attacker.clanring_qdkill_z = (attacker.clanring_qdkill_z + 1);
+				client_frag (attacker, -1);
+				
+				if (targ.deathtype == "grenade")
+				{
+					if (targ.health < -20)
+						announce2(targ.netname, " tried to juggle too many grenades");
+					else
+						announce2(targ.netname, " tripped over his own grenade");
+					return;
+				}
+				else
+				{
+					if (targ.deathtype == "rocket")
+					{
+						if (targ.health < -40)
+							announce2(targ.netname, " blew himself up");
+						else
+							announce2(targ.netname, " discovers blast radius");
+						return;
+					}
+					else
+					{
+						if (targ.weapon == IT_LIGHTNING && targ.waterlevel > 1)
+						{
+							if (targ.watertype == CONTENT_SLIME)
+								announce2(targ.netname, " discharged in slime");
+							else
+							if (targ.watertype == CONTENT_LAVA)
+								announce2(targ.netname, " discharged in lava");
+							else
+								announce2(targ.netname, " tried to heat the pool");
+							return;
+						}
+
+					}
+				}
+				announce2(targ.netname, "  becomes bored with quake");
+				return;
+			}
+			else
+			{
+				if ((teamplay == 2) && (targ.team > 0) && (targ.team == attacker.team))
+				{
+					attacker.mangle_y = attacker.mangle_y + 1;
+							
+					if (attacker.super_damage_finished > time)
+						attacker.clanring_qdkill_y = attacker.clanring_qdkill_y + 1;
+					
+					if (rnum < 0.25)
+					{
+						deathstring = " teamkills ";
+					}
+					else
+					{
+						if (rnum < 0.5)
+						{
+							deathstring = " blindly shoots his teammate ";
+						}
+						else
+						{
+							if (rnum < 0.75)
+							{
+								deathstring = " actually wanted to kill his teammate ";
+							}
+							else
+							{
+								deathstring = " destroys his teammate ";
+							}
+						}
+					}
+					
+					deathstring2 = ", with just his bare hands.\n";
+					
+					if (attacker.weapon == IT_ROCKET_LAUNCHER)
+						deathstring2 = ", with a Rocket Launcher.";
+					if (attacker.weapon == IT_LIGHTNING)
+						deathstring2 = ", with a Lightning Gun.";
+					if ((attacker.weapon == IT_GRENADE_LAUNCHER))
+						deathstring2 = ", with a Grenade Launcher.";
+					if ((attacker.weapon == IT_SUPER_NAILGUN))
+						deathstring2 = ", with a Super Nailgun.";
+					if ((attacker.weapon == IT_SUPER_SHOTGUN))
+						deathstring2 = ", with a Super Shotgun.";
+					if ((attacker.weapon == IT_NAILGUN))
+						deathstring2 = ", with a Nailgun.";
+					if ((attacker.weapon == IT_SHOTGUN))
+						deathstring2 = ", with a Shotgun.";
+					if ((attacker.weapon == IT_AXE))
+						deathstring2 = ", with an Axe.";
+					if ((attacker.weapon == IT_HOOK))
+						deathstring2 = ", with a Hook.";
+
+					announce4(attacker.netname, deathstring, targ.netname, deathstring2);
+					client_frag (attacker, -1);
+					deathstring2 = "";
+					return;
+				}
+				else
+				{
+					if (((targ.flag_carrier) && (targ.team != attacker.team)))
+					{
+						attacker.last_fragged_carrier = time;
+						if (((targ.flag_since + TEAM_CAPTURE_CARRIER_FLAG_SINCE_TIMEOUT) > time))
+						{
+							attacker.fcfrags = (attacker.fcfrags + 1);
+						}
+						else
+						{
+							attacker.fcfrags = (attacker.fcfrags + 1);
+							// what you get for fragging enemy flag carrier
+							client_frag (attacker, TEAM_CAPTURE_FRAG_CARRIER_BONUS);
+						}
+					}
+					flag_radius = 0;
+					flag_carrier_radius = 0;
+
+					if (attacker.team == RED) s = ("\bRED\b");
+					else
+					if (attacker.team == BLUE) s = ("\bBLUE\b");
+
+					if ((((targ.last_hurt_carrier + TEAM_CAPTURE_CARRIER_DANGER_PROTECT_TIMEOUT) > time) && !(attacker.flag_carrier)))
+					{
+						client_frag (attacker, TEAM_CAPTURE_CARRIER_DANGER_PROTECT_BONUS);
+						// bonus for fraggin someone who has recently hurt your flag carrier
+						flag_carrier_radius = 1;
+						announce4(attacker.netname," defends ",s,"'s flag carrier against an agressive enemy");
+						attacker.fcdefenses = attacker.fcdefenses + 1;
+					}
+					
+					if (!(attacker.flag_carrier))// speed
+					{
+						head = findradius (attacker.origin, TEAM_CAPTURE_ATTACKER_PROTECT_RADIUS);					
+						while (head)
+						{
+							if (head.classname == "player")
+							{
+								if ( ( ( ((head.team == attacker.team) && (head.flag_carrier)) && (head != attacker) ) && !flag_carrier_radius) )
+								{
+									client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
+									flag_carrier_radius = 1;
+									announce4(attacker.netname," defends ",s,"'s flag carrier");
+									attacker.fcdefenses = (attacker.fcdefenses + 1);
+								}
+							}
+							if (((head.classname == "item_flag_team1") || (head.classname == "item_flag_team2")))
+							{
+								if ((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))))
+								{
+									client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
+									flag_radius = 1;
+									announce4(attacker.netname," defends the ",s," flag");
+									attacker.fdefenses = (attacker.fdefenses + 1);
+								}
+							}
+							head = head.chain;
+						}
+						head = findradius (targ.origin, TEAM_CAPTURE_TARGET_PROTECT_RADIUS);
+						while (head)
+						{
+							if ((head.classname == "player"))
+							{
+								if ( ( ( (head.team == attacker.team) && (head.flag_carrier) && (head != attacker)) && !flag_carrier_radius) )
+								{
+									client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
+									flag_carrier_radius = 1;
+									announce4(attacker.netname," defends ",s,"'s flag carrier");
+									attacker.fcdefenses = (attacker.fcdefenses + 1);
+								}
+							}
+							if (((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))) && !flag_radius))
+							{
+								client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
+								flag_radius = 1;
+								announce4(attacker.netname," defends the ",s," flag");
+								attacker.fdefenses = (attacker.fdefenses + 1);
+							}
+							head = head.chain;
+						}
+					}
+					
+					if (attacker.super_damage_finished > time)
+						attacker.clanring_qdkill_x = attacker.clanring_qdkill_x + 1;
+
+					targ.mangle_z = targ.mangle_z + 1;//STATS
+					client_frag (attacker, 1);
+					attacker.true_kills = (attacker.true_kills + 1);
+					deathstring2 = "";
+					rnum = attacker.weapon;
+					if (targ.deathtype == "nail")
+					{
+						deathstring = " was nailed by ";
+					}
+					else
+					{
+						if (targ.deathtype == "supernail")
+						{
+							deathstring = " was pierced by ";
+						}
+						else
+						{
+							if (targ.deathtype == "grenade")
+							{
+								deathstring = " found ";
+								deathstring2 = "'s grenade";
+								if (targ.health < -40)
+								{
+									if (clanring_playmode & CLANRING_NO_GIBS)
+									{
+										deathstring = " was annihilated by ";
+									}
+									else
+									{
+										deathstring = " was blown to chunks by ";
+									}
+
+									deathstring2 = "'s grenade";
+								}
+							}
+							else
+							{
+								if (targ.deathtype == "rocket")
+								{
+									if (attacker.super_damage_finished > time)
+									{
+										rnum = random()*3;
+										if (rnum < 2)
+										deathstring = " was obliterated by ";
+										else
+										if (rnum ==2)
+										deathstring = " was pummelled by ";
+										else
+										if (rnum >2)
+										deathstring = " was pulverized by ";
+										deathstring2 = "'s quad rocket";
+									}
+									else
+									{
+										deathstring = " rides ";
+										deathstring2 = "'s rocket";
+										if (targ.health < -40)
+										{
+											if (clanring_playmode & CLANRING_NO_GIBS)
+												deathstring = " was annihilated by ";
+											else
+												deathstring = " was blown to chunks by ";
+										}
+									}
+								}
+								else
+								{
+									if (targ.deathtype == "hook")
+									{
+										deathstring = " was hooked by ";
+									}
+									else
+									{
+										if (rnum == IT_AXE)
+										{
+											rnum=(random()*3);
+											if (rnum<2)  deathstring = " was chopped into little pieces by ";
+											if (rnum==2) deathstring = " was hacked up by ";
+											if (rnum>2)  deathstring = " was butchered by ";
+
+											if (attacker.super_damage_finished > 0 && targ.health < -10)
+												deathstring2 = "'s quad Axe";
+											else
+												deathstring2 = "'s cleaver";
+										}
+										else
+										{
+											if (rnum == IT_HOOK)
+											{
+												deathstring = " was hooked by ";
+											}
+											else
+											{
+												if (rnum == IT_SHOTGUN)
+												{
+													deathstring = " gets lead poisoned by ";
+													deathstring2 = "'s shotgun";
+												}
+												else
+												{
+													if (rnum == IT_SUPER_SHOTGUN)
+													{
+														deathstring = " got his head blown off by ";
+														deathstring2 = "'s buckshot";
+													}
+													else
+													{
+														if (rnum == IT_LIGHTNING)
+														{
+															deathstring = " was shocked by ";
+															deathstring2 = "'s thunderbolt";
+															
+															if (attacker.super_damage_finished > 0 && targ.health < -10)
+															{
+																deathstring = " was electrocuted by ";
+																
+																if (attacker.waterlevel > 1)
+																{
+																	deathstring2 = "'s quad discharge";
+																}
+																else
+																{
+																	deathstring2 = "'s quad thunderbolt";
+																}
+															}
+															else
+															{
+																if (attacker.waterlevel > 1)
+																{
+																	deathstring2 = "'s discharge";
+																}
+																else
+																{
+																	deathstring2 = "'s thunderbolt";
+																}
+															}	
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					announce4(targ.netname, deathstring, attacker.netname, deathstring2);
+				}
+			}
+			return;
+		}
+		else
+			{// targ got himself killed
+			targ.mangle_x = (targ.mangle_x + 1);
+			client_frag (targ, -1);
+
+			if (attacker.classname == "explo_box")
+			{
+				announce2(targ.netname, " blew up");
+				return;
+			}
+			if (targ.deathtype == "falling")
+			{
+				announce2(targ.netname, " burries himself in the ground");
+				return;
+			}
+			if ((targ.deathtype == "nail") || (targ.deathtype == "supernail"))
+			{
+				announce2(targ.netname, " was spiked");
+				return;
+			}
+			if (targ.deathtype == "laser")
+			{
+				announce2(targ.netname, " was zapped");
+				return;
+			}
+			if (attacker.classname == "fireball")
+			{
+				announce2(targ.netname, " coughed a lavaball");
+				return;
+			}
+			if (attacker.classname == "trigger_changelevel")
+			{
+				announce2(targ.netname, " tried to escape");
+				return;
+			}
+			rnum = targ.watertype;
+			if (rnum == CONTENT_WATER)
+			{
+				if (random() < 0.5)
+					announce2(targ.netname, " sinks like a rock");
+				else
+					announce2(targ.netname, " forgot to come up for air");
+				return;
+			}
+			else
+			{
+				if (rnum == CONTENT_SLIME)
+				{
+					if (random() < 0.5)
+						announce2(targ.netname, " discovers the hazards of toxic waste");
+					else
+						announce2(targ.netname, " dissolves in an acidic pool");
+					return;
+				}
+				else
+				{
+					if (rnum == CONTENT_LAVA)
+					{
+						if (targ.health < -15)
+						{
+							announce2(targ.netname, " burst into flames");
+							return;
+						}
+						if (random() < 0.5)
+							announce2(targ.netname, " melted in lava");
+						else
+							announce2(targ.netname, " takes a nice hot lava bath");
+						return;
+					}
+				}
+			}
+			announce2(targ.netname, " died");
+		}
+	}
+};

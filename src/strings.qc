@@ -1,0 +1,731 @@
+//
+// Strings.qc
+//
+// A bunch of routines for returning various strings.
+// Several routines were inspired by the clanring server mod.
+//
+// All code by J.P. Grossman unless otherwise commented.
+//
+
+//
+//  F T O S
+//
+//  Some numbers have been hard-coded to avoid the problems associated with
+//  a single ftosbuffer.
+//
+string (float n) strings_ftos=
+{
+	return (ftos(n));
+};
+
+//
+//  F T O S  G O L D
+//
+//  Return some gold number strings.
+//
+string (float n) strings_ftos_gold =
+{
+	return chr2str(18+n);
+};
+
+string (float n) strings_ftos_bronze =
+{
+	local string temp;
+	temp = sprintf("%-2g", floor(n));
+	return temp;
+};
+
+//
+//  G E T  A R M O U R  V A L
+//
+//  Returns a string containing the amount of armour the player has.
+//  Used for observer mode heads-up display.
+//
+
+string (entity e) strings_get_armour_val =
+{
+	local string temp = "";
+
+    if (e.items & IT_INVULNERABILITY)
+        return "\<\6\6\6\>";
+	temp = sprintf("%03g", self.armorvalue);
+	return temp;
+};
+
+string (entity e) strings_get_armor_type =
+{	
+   	if (e.items & IT_ARMOR3)	return "\n\b[\bR";    	
+   	if (e.items & IT_ARMOR2)	return "\n\b[\bY";   	
+   	if (e.items & IT_ARMOR1) 	return "\n\b[\bG";
+   	  
+	return "\n\b[";
+};
+
+string (entity e) strings_get_armor_val =
+{
+	local string temp = "";
+
+    if (e.items & IT_INVULNERABILITY)
+        return "\<\6\6\6\>";
+	temp = sprintf("%03g", self.armorvalue);
+	return temp;
+};
+
+//
+//  G E T  A R M O U R  T Y P E
+//
+//  Returns one of
+//
+//     "Armour: R "
+//     "Armour: Y "
+//     "Armour: G "
+//     "Armour: "
+//
+//  Used for observer mode heads-up display.
+//
+string (entity e) strings_get_armour_type =
+{
+
+    if (e.items & IT_INVULNERABILITY) return "Áòíïòº ";
+    if (e.armortype == 0.8) return "Áòíïòº R ";
+    if (e.armortype == 0.6) return "Áòíïòº Y ";
+    if (e.armortype == 0.3) return "Áòíïòº G ";
+    return "Áòíïòº ";
+};
+
+//
+//  G E T  W E A P O N
+//
+//  Returns "[QOR] <weapon>\n" where [QOR] are the quad, ring and
+//  suit flags (either present or absent) and <weapon> is the player's
+//  weapon (I'm sure you were having trouble figuring that one out).
+//  Used for observer mode heads-up display.
+//
+string (entity e) strings_get_weapon =
+{
+    if (e.items & IT_SUIT)
+    {
+        if (e.items & IT_QUAD)
+        {
+            if (e.items & IT_INVISIBILITY)
+            {
+                if (e.weapon == 32) return " Q’ƒ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return " Q’ƒ‘ Lightning Gun\n";
+                if (e.weapon == 16) return " Q’ƒ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return " Q’ƒ‘ Super Nailgun\n";
+                if (e.weapon == 2) return " Q’ƒ‘ Super Shotgun\n";
+                if (e.weapon == 4) return " Q’ƒ‘ Nailgun\n";
+                if (e.weapon == 1) return " Q’ƒ‘ Shotgun\n";
+                if (e.weapon == 4096) return " Q’ƒ‘ Axe\n";
+                return " Q’ƒ‘ No Weapon\n";
+            }
+            else
+            {
+                if (e.weapon == 32) return " Q ƒ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return " Q ƒ‘ Lightning Gun\n";
+                if (e.weapon == 16) return " Q ƒ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return " Q ƒ‘ Super Nailgun\n";
+                if (e.weapon == 2) return " Q ƒ‘ Super Shotgun\n";
+                if (e.weapon == 4) return " Q ƒ‘ Nailgun\n";
+                if (e.weapon == 1) return " Q ƒ‘ Shotgun\n";
+                if (e.weapon == 4096) return " Q ƒ‘ Axe\n";
+                return " Q ƒ‘ No Weapon\n";
+            }
+        }
+        else
+        {
+            if (e.items & IT_INVISIBILITY)
+            {
+                if (e.weapon == 32) return "  ’ƒ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return "  ’ƒ‘ Lightning Gun\n";
+                if (e.weapon == 16) return "  ’ƒ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return "  ’ƒ‘ Super Nailgun\n";
+                if (e.weapon == 2) return "  ’ƒ‘ Super Shotgun\n";
+                if (e.weapon == 4) return "  ’ƒ‘ Nailgun\n";
+                if (e.weapon == 1) return "  ’ƒ‘ Shotgun\n";
+                if (e.weapon == 4096) return "  ’ƒ‘ Axe\n";
+                return "    ’ƒ‘ No Weapon\n";
+            }
+            else
+            {
+                if (e.weapon == 32) return "   ƒ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return "   ƒ‘ Lightning Gun\n";
+                if (e.weapon == 16) return "   ƒ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return "   ƒ‘ Super Nailgun\n";
+                if (e.weapon == 2) return "   ƒ‘ Super Shotgun\n";
+                if (e.weapon == 4) return "   ƒ‘ Nailgun\n";
+                if (e.weapon == 1) return "   ƒ‘ Shotgun\n";
+                if (e.weapon == 4096) return "   ƒ‘ Axe\n";
+                return "     ƒ‘ No Weapon\n";
+            }
+        }
+    }
+    else
+    {
+        if (e.items & IT_QUAD)
+        {
+            if (e.items & IT_INVISIBILITY)
+            {
+                if (e.weapon == 32) return " Q’ ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return " Q’ ‘ Lightning Gun\n";
+                if (e.weapon == 16) return " Q’ ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return " Q’ ‘ Super Nailgun\n";
+                if (e.weapon == 2) return " Q’ ‘ Super Shotgun\n";
+                if (e.weapon == 4) return " Q’ ‘ Nailgun\n";
+                if (e.weapon == 1) return " Q’ ‘ Shotgun\n";
+                if (e.weapon == 4096) return " Q’ ‘ Axe\n";
+                return " Q’ ‘ No Weapon\n";
+            }
+            else
+            {
+                if (e.weapon == 32) return " Q  ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return " Q  ‘ Lightning Gun\n";
+                if (e.weapon == 16) return " Q  ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return " Q  ‘ Super Nailgun\n";
+                if (e.weapon == 2) return " Q  ‘ Super Shotgun\n";
+                if (e.weapon == 4) return " Q  ‘ Nailgun\n";
+                if (e.weapon == 1) return " Q  ‘ Shotgun\n";
+                if (e.weapon == 4096) return " Q  ‘ Axe\n";
+                return " Q  ‘ No Weapon\n";
+            }
+        }
+        else
+        {
+            if (e.items & IT_INVISIBILITY)
+            {
+                if (e.weapon == 32) return "  ’ ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return "  ’ ‘ Lightning Gun\n";
+                if (e.weapon == 16) return "  ’ ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return "  ’ ‘ Super Nailgun\n";
+                if (e.weapon == 2) return "  ’ ‘ Super Shotgun\n";
+                if (e.weapon == 4) return "  ’ ‘ Nailgun\n";
+                if (e.weapon == 1) return "  ’ ‘ Shotgun\n";
+                if (e.weapon == 4096) return "  ’ ‘ Axe\n";
+                return "    ’ ‘ No Weapon\n";
+            }
+            else
+            {
+                if (e.weapon == 32) return "    ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return "    ‘ Lightning Gun\n";
+                if (e.weapon == 16) return "    ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return "    ‘ Super Nailgun\n";
+                if (e.weapon == 2) return "    ‘ Super Shotgun\n";
+                if (e.weapon == 4) return "    ‘ Nailgun\n";
+                if (e.weapon == 1) return "    ‘ Shotgun\n";
+                if (e.weapon == 4096) return "    ‘ Axe\n";
+                return "      ‘ No Weapon\n";
+            }
+        }
+    }
+};
+
+
+//
+//  G E T  H E A L T H  A M M O
+//
+//  Returns "  Health: <amount>   Ammo: "
+//
+//  The nested ifs are to speed things up.  Used for observer mode
+//  heads-up display.
+//
+string (entity e) strings_get_health_ammo =
+{
+	if (e.health <= 125)
+	{
+		if (e.health <= 65)
+		{
+			if (e.health <= 30)
+			{
+				if (e.health <= 0)
+				return "  Èåáìôèº 0    Áííïº ";
+				if (e.health <= 5)
+				return "  Èåáìôèº 5    Áííïº ";
+				if (e.health <= 10)
+				return "  Èåáìôèº 10   Áííïº ";
+				if (e.health <= 15)
+				return "  Èåáìôèº 15   Áííïº ";
+				if (e.health <= 20)
+				return "  Èåáìôèº 20   Áííïº ";
+				if (e.health <= 25)
+				return "  Èåáìôèº 25   Áííïº ";
+				return "  Èåáìôèº 30   Áííïº ";
+			}
+			else
+			{
+				if (e.health <= 35)
+				return "  Èåáìôèº 35   Áííïº ";
+				if (e.health <= 40)
+				return "  Èåáìôèº 40   Áííïº ";
+				if (e.health <= 45)
+				return "  Èåáìôèº 45   Áííïº ";
+				if (e.health <= 50)
+				return "  Èåáìôèº 50   Áííïº ";
+				if (e.health <= 55)
+				return "  Èåáìôèº 55   Áííïº ";
+				if (e.health <= 60)
+				return "  Èåáìôèº 60   Áííïº ";
+				return "  Èåáìôèº 65   Áííïº ";
+			}
+		}
+		else
+		{
+			if (e.health <= 95)
+			{
+				if (e.health <= 70)
+				return "  Èåáìôèº 70   Áííïº ";
+				if (e.health <= 75)
+				return "  Èåáìôèº 75   Áííïº ";
+				if (e.health <= 80)
+				return "  Èåáìôèº 80   Áííïº ";
+				if (e.health <= 85)
+				return "  Èåáìôèº 85   Áííïº ";
+				if (e.health <= 90)
+				return "  Èåáìôèº 90   Áííïº ";
+				return "  Èåáìôèº 95   Áííïº ";
+			}
+			else
+			{
+				if (e.health <= 100)
+				return "  Èåáìôèº 100  Áííïº ";
+				if (e.health <= 105)
+				return "  Èåáìôèº 105  Áííïº ";
+				if (e.health <= 110)
+				return "  Èåáìôèº 110  Áííïº ";
+				if (e.health <= 115)
+				return "  Èåáìôèº 115  Áííïº ";
+				if (e.health <= 120)
+				return "  Èåáìôèº 120  Áííïº ";
+				return "  Èåáìôèº 125  Áííïº ";
+			}
+		}
+	}
+	else
+	{
+		if (e.health <= 195)
+		{
+			if (e.health <= 160)
+			{
+				if (e.health <= 130)
+				return "  Èåáìôèº 130  Áííïº ";
+				if (e.health <= 135)
+				return "  Èåáìôèº 135  Áííïº ";
+				if (e.health <= 140)
+				return "  Èåáìôèº 140  Áííïº ";
+				if (e.health <= 145)
+				return "  Èåáìôèº 145  Áííïº ";
+				if (e.health <= 150)
+				return "  Èåáìôèº 150  Áííïº ";
+				if (e.health <= 155)
+				return "  Èåáìôèº 155  Áííïº ";
+				return "  Èåáìôèº 160  Áííïº ";
+			}
+			else
+			{
+				if (e.health <= 165)
+				return "  Èåáìôèº 165  Áííïº ";
+				if (e.health <= 170)
+				return "  Èåáìôèº 170  Áííïº ";
+				if (e.health <= 175)
+				return "  Èåáìôèº 175  Áííïº ";
+				if (e.health <= 180)
+				return "  Èåáìôèº 180  Áííïº ";
+				if (e.health <= 185)
+				return "  Èåáìôèº 185  Áííïº ";
+				if (e.health <= 190)
+				return "  Èåáìôèº 190  Áííïº ";
+				return "  Èåáìôèº 195  Áííïº ";
+			}
+		}
+		else
+		{
+			if (e.health <= 225)
+			{
+				if (e.health <= 200)
+				return "  Èåáìôèº 200  Áííïº ";
+				if (e.health <= 205)
+				return "  Èåáìôèº 205  Áííïº ";
+				if (e.health <= 210)
+				return "  Èåáìôèº 210  Áííïº ";
+				if (e.health <= 215)
+				return "  Èåáìôèº 215  Áííïº ";
+				if (e.health <= 220)
+				return "  Èåáìôèº 220  Áííïº ";
+				return "  Èåáìôèº 225  Áííïº ";
+			}
+			else
+			{
+				if (e.health <= 230)
+				return "  Èåáìôèº 230  Áííïº ";
+				if (e.health <= 235)
+				return "  Èåáìôèº 235  Áííïº ";
+				if (e.health <= 240)
+				return "  Èåáìôèº 240  Áííïº ";
+				if (e.health <= 245)
+				return "  Èåáìôèº 245  Áííïº ";
+				if (e.health <= 600)
+				return "  Èåáìôèº 250  Áííïº ";
+				return "  Èåáìôèº 666  Áííïº ";
+			}
+		}
+	}
+};
+
+//
+//  G E T  T E A M N A M E
+//
+//  Return the colour string corresponding to a given team.
+//
+string (float num) strings_get_teamname =
+{
+	const string tab[] = 
+	{
+		"Brown team",	"Light Blue team",
+		"Green team",	"Red team",
+		"Olive team",	"Gold team",
+		"Flesh team",	"Lavender team",
+		"Purple team",	"Beige team",
+		"Aqua team",	"Yellow team",
+		"Blue team"
+	};
+	return tab[num-1];
+};
+
+//
+//  G E T  T E A M N A M E  B R O N Z E
+//
+//  Same as above, but in bronze letters - exactly 15 of them
+//  My God, I've gone insane.
+//
+string (float num) strings_get_teamname_bronze =
+{
+	const string tab[] = 
+	{
+		"\bBrown team     ",	"\bLight Blue team",
+		"\bGreen team     ",	"\bRed team       ",
+		"\bOlive team     ",	"\bGold team      ",
+		"\bFlesh team     ",	"\bLavender team  ",
+		"\bPurple team    ",	"\bBeige team     ",
+		"\bAqua team      ",	"\bYellow team    ",
+		"\bBlue team      "
+	};
+	return tab[num-1];
+};
+
+
+//
+//  G E T  T E A M N A M E 2
+//
+//  Return the colour string corresponding to a given team.
+//  The string contains EXACTLY 10 characters.
+//
+string (float num) strings_get_teamname2 =
+{
+	const string tab[] = 
+	{
+		"Brown     ",	"Light Blue",
+		"Green     ",	"Red       ",
+		"Olive     ",	"Gold      ",
+		"Flesh     ",	"Lavender  ",
+		"Purple    ",	"Beige     ",
+		"Aqua      ",	"Yellow    ",
+		"Blue      "
+	};
+	return tab[num-1];
+};
+//
+//  G E T  T E A M N A M E 3
+//
+//  For when 10 characters is too many.. I can't believe I'm doing this.
+//
+string (float num) strings_get_teamname3 =
+{
+	const string tab[] = 
+	{
+		"Brown   ",	"Lt. Blue",
+		"Green   ",	"Red     ",
+		"Olive   ",	"Gold    ",
+		"Flesh   ",	"Lavender",
+		"Purple  ",	"Beige   ",
+		"Aqua    ",	"Yellow  ",
+		"Blue    "
+	};
+	return tab[num-1];
+};
+
+//
+//  G E T  C O L O U R
+//
+//  Return the colour string corresponding to a given team.
+//
+string (float num) strings_get_colour =
+{
+	const string tab[] = 
+	{
+		"brown",	"light blue",
+		"green",	"red",
+		"olive",	"gold",
+		"flesh",	"lavender",
+		"purple",	"beige",
+		"aqua",		"yellow",
+		"blue"
+	};
+	return tab[num-1];
+};
+
+//
+//  G E T  T E A M N A M E  U P  B Y
+//
+//  Return the "colour up by " string corresponding to a given team.
+//
+string (float num) strings_get_teamname_up_by =
+{
+	return strpad(-20, strcat(strtrim(strings_get_teamname2(num)), " up by "));
+};
+
+//
+//  G E T  M A P N A M E
+//
+//  Return the nth map name.
+//
+string (float mapnum) strings_get_mapname =
+{
+    if (mapnum < 10)
+    {
+        if (mapnum == 0)
+            return "start";
+        if (mapnum == 1)
+            return "start0";
+        if (mapnum == 2)
+            return "start1";
+        if (mapnum == 3)
+            return "end";
+        return "";
+    }
+    if (mapnum < 20)
+    {
+        if (mapnum == 11)
+            return "e1m1";
+        if (mapnum == 12)
+            return "e1m2";
+        if (mapnum == 13)
+            return "e1m3";
+        if (mapnum == 14)
+            return "e1m4";
+        if (mapnum == 15)
+            return "e1m5";
+        if (mapnum == 16)
+            return "e1m6";
+        if (mapnum == 17)
+            return "e1m7";
+        if (mapnum == 18)
+            return "e1m8";
+        return "";
+    }
+    if (mapnum < 30)
+    {
+        if (mapnum == 21)
+            return "e2m1";
+        if (mapnum == 22)
+            return "e2m2";
+        if (mapnum == 23)
+            return "e2m3";
+        if (mapnum == 24)
+            return "e2m4";
+        if (mapnum == 25)
+            return "e2m5";
+        if (mapnum == 26)
+            return "e2m6";
+        if (mapnum == 27)
+            return "e2m7";
+        return "";
+    }
+    if (mapnum < 40)
+    {
+        if (mapnum == 31)
+            return "e3m1";
+        if (mapnum == 32)
+            return "e3m2";
+        if (mapnum == 33)
+            return "e3m3";
+        if (mapnum == 34)
+            return "e3m4";
+        if (mapnum == 35)
+            return "e3m5";
+        if (mapnum == 36)
+            return "e3m6";
+        if (mapnum == 37)
+            return "e3m7";
+        return ""; 
+    }
+    if (mapnum < 50)
+    {
+        if (mapnum == 41)
+            return "e4m1";
+        if (mapnum == 42)
+            return "e4m2";
+        if (mapnum == 43)
+            return "e4m3";
+        if (mapnum == 44)
+            return "e4m4";
+        if (mapnum == 45)
+            return "e4m5";
+        if (mapnum == 46)
+            return "e4m6";
+        if (mapnum == 47)
+            return "e4m7";
+        if (mapnum == 48)
+            return "e4m8";
+        return ""; 
+    }
+    if (mapnum < 60)
+    {
+        if (mapnum == 51)
+            return "dm1";
+        if (mapnum == 52)
+            return "dm2";
+        if (mapnum == 53)
+            return "dm3";
+        if (mapnum == 54)
+            return "dm4";
+        if (mapnum == 55)
+            return "dm5";
+        if (mapnum == 56)
+            return "dm6";
+        return "";
+    }
+	if (mapnum < 70)
+   	{
+		if (mapnum == 61)	return "ctf1"; 
+		if (mapnum == 62)	return "ctf2"; 
+		if (mapnum == 63)	return "ctf3"; 
+		if (mapnum == 64)	return "ctf4"; 
+		if (mapnum == 65)	return "ctf5"; 
+		if (mapnum == 66)	return "ctf6"; 
+		if (mapnum == 67)	return "ctf7"; 
+		if (mapnum == 68)	return "ctf8"; 
+		if (mapnum == 69)	return "";
+			return "";
+	}   	
+   	if (mapnum < 80) 
+   	{
+  		if (mapnum == 71)	return "ctf2m1";	
+  		if (mapnum == 72)	return "ctf2m2";
+  		if (mapnum == 73)	return "ctf2m3";
+  		if (mapnum == 74)	return "ctf2m4";
+  		if (mapnum == 75)	return "ctf2m5";
+  		if (mapnum == 76)	return "ctf2m6";
+  		if (mapnum == 77)	return "ctf2m7";
+  		if (mapnum == 78)	return "ctf2m8";
+  		if (mapnum == 79)	return "";
+  		return "";
+	}
+	if (mapnum < 90) 
+   	{
+  		if (mapnum == 81)	return "ctf3m1";	
+  		if (mapnum == 82)	return "ctf3m2";
+  		if (mapnum == 83)	return "ctf3m3";
+  		if (mapnum == 84)	return "ctf3m4";
+  		if (mapnum == 85)	return "ctf3m5";
+  		if (mapnum == 86)	return "ctf3m6";
+  		if (mapnum == 87)	return "ctf3m7";
+  		if (mapnum == 88)	return "ctf3m8";
+  		if (mapnum == 89)	return "ctf3m9";
+  		return "";
+	}
+	if (mapnum < 101)
+   	{
+  		if (mapnum == 91)	return "ctf1bsp1";	
+  		if (mapnum == 92)	return "ctf1bsp2";
+  		if (mapnum == 93)	return "ctf1bsp3";
+  		if (mapnum == 94)	return "ctf1bsp4";
+  		if (mapnum == 95)	return "ctf1bsp5";
+  		if (mapnum == 96)	return "ctf1bsp6";
+  		if (mapnum == 97)	return "ctf1bsp7";
+  		if (mapnum == 98)	return "ctf1bsp8";
+  		if (mapnum == 99)	return "ctf1bsp9";
+  		if (mapnum == 100)	return "ctf1bsp0";
+  		return "";               
+	}
+
+	if (mapnum < 110)
+   	{
+  		if (mapnum == 101)	return "ctfgold1";	
+  		if (mapnum == 102)	return "ctfgold2";
+  		if (mapnum == 103)	return "ctfgold3";
+  		if (mapnum == 104)	return "ctfgold4";
+  		if (mapnum == 105)	return "ctfgold5";
+  		if (mapnum == 106)	return "ctfgold6";
+  		if (mapnum == 107)	return "ctfgold7";
+  		if (mapnum == 108)	return "ctfgold8";
+  		return "";               
+	}
+
+	// userdefined maps 
+	local string mname;
+	if (mapnum < 121) 
+   	{  	
+		mapnum = ((mapnum - 1) - 110);	
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			mname = array_user_ctf_map[mapnum];	
+		else
+			mname = array_user_map[mapnum];	
+		return (mname);
+	}
+	return "";
+};
+
+//
+//  G E T  M O D E
+//
+//  Returns "Normal", "Practice", or "Match".
+//
+string (float mode) strings_get_mode =
+{
+	switch(mode)
+	{
+		case 0:	return "Normal";
+		case 1: return "Practice";
+		case 2: return "Match";
+		case 3: return "CTF";
+	}
+	return "";
+};
+
+string (float mode) strings_get_mode_gold =
+{
+	switch(mode)
+	{
+		case 0:	return "\bNormal";
+		case 1: return "\bPractice";
+		case 2: return "\bMatch";
+		case 3: return "\bCTF";
+	}
+	return "";
+};
+
+
+//
+//  S Z P L U R A L
+//
+//  Helper string for printing.
+//
+string (float n) strings_szplural =
+{
+    if (n == 1)
+        return "";
+    return "s";
+};
+
+string (entity e) strings_get_rune_type =
+{
+	if (e.player_flag & ITEM_RUNE1_FLAG)//Rune 1 - Earth Magic(resistance)
+	   return "\b]\nresistance";	
+	if (e.player_flag & ITEM_RUNE2_FLAG)//Rune 2 - Black Magic(strength)
+	   return "\b]\nstrength";
+	if (e.player_flag & ITEM_RUNE3_FLAG)//Rune 3 - Hell Magic(haste)
+	   return "\b]\nhaste";
+	if (e.player_flag & ITEM_RUNE4_FLAG)//Rune 4 - Elder Magic(regeneration)
+	   return "\b]\nregeneration";
+	   
+	return "\b]\n";
+};

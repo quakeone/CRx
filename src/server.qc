@@ -1,0 +1,1964 @@
+//
+// S E R V E R . Q C
+//
+// This is the main file for CRMod++.  CRMod++ was derived from the
+// Elohim server, which is why everything is still called "elohim".
+//
+// Developed by J.P. Grossman (a.k.a. ˘Mephistopheles) and Paul Baker
+//
+// All code by J.P. Grossman unless otherwise commented.
+//
+// Client fields used:
+//
+// General:
+//
+// .style           - Elohim player flags
+// .count           - used for entering password / ghostcode / warplevel
+// .cnt             - number of suicides remaining
+// .crmod_hack_count- count of admin attempts
+// .wait            - time to do periodic checks
+// .state           - unique player id
+// .finaldest_y     - used for pinging
+// .height          - used to store player team
+// .finaldest_x     - used to test for disconnected players
+// .use             - pointer to function to call when a number is entered
+// .finaldest_z     - the number that was entered
+// .owner           - players's ghost entity
+// .enemy           - stores last spawn point/camera location for admins
+// .next_team		- pointer to player's team (match) or next player (individual)
+// .next_player		- pointer to next player (match/individual)
+// .lip             - grenade spam count for practice mode
+// .delay			- touchback delay for quake tag
+//
+// Statistics:
+//
+// .dest1_x         - damage fired from bullets
+// .dest2_x         - damage done from bullets (to enemies)
+// .dest1_y         - damage fired from nails
+// .dest2_y         - damage done from nails (to enemies)
+// .dest1_z         - damage fired from lightning gun
+// .dest2_z         - damage done from lightning gun (to enemies)
+// .dest_x          - damage fired from rockets
+// .dest_y          - damage done from rockets (to enemies)
+// .mangle_x        - number of times killed self
+// .mangle_y        - number of times killed teammate
+// .mangle_z        - number of times was killed
+// .crmod_qdwep_x   - damage done with quad        // CRMOD
+// .crmod_qdwep_y   - damage fired with quad       // CRMOD
+// .crmod_qdwep_z   - number times quad pickedup   // CRMOD
+// .crmod_qdkill_x  - number of enemies killed     // CRMOD
+// .crmod_qdkill_y  - number of teammates killed   // CRMOD
+// .crmod_qdkill_z  - number of self kills         // CRMOD
+// .crmod_badstats_x - number of RL paks lost
+// .crmod_badstats_y - total damage done to self
+// .crmod_badstats_z - total damage done to teammates
+//
+// Observer mode:
+//
+// .trigger_field   - closest teleport when observing, last spawn if playing
+// .t_width         - activation radius for closest teleport
+// .dest            - stores destination for popping forward through doors
+// .dest1           - stores velocity for popping forward through doors
+// .delay           - time to refresh head's up display for observing
+// .speed           - z component of velocity from previous frame (for fly)
+// .movetarget      - player being watched in observer mode (world if none)
+// .owner           - last spawn point/camera for admins
+// .lip             - time to clear display when no target is in line of sight (walk/fly)
+// .attack_finished - used to delay before flying through obstacles
+//
+// Used for setting options:
+//
+// .delay     - time to update display (shared with observer.qc)
+// .pos1_x    - timelimit
+// .pos1_y    - fraglimit
+// .pos1_z    - mode
+// .pos2_x    - gibs
+// .pos2_y    - teamplay
+// .pos2_z    - noexit
+// .worldtype - sys_ticrate
+// .light_lev - deathmatch
+// .aflag     - pausable/quad/pent/ring/mode vote
+// .t_length  - which option is currently selected
+//
+// Ghost fields:
+//
+// .count			- ghostcode
+// .height			- team
+// .state			- indicates if the ghost contains copy on pause data
+// Always copied:
+// .frags
+// .dest
+// .dest1
+// .dest2
+// .mangle
+// .crmod_qdwep
+// .crmod_qdkill
+// .style
+// Copied on pause (if not dead):
+// .frame
+// .effects
+// .origin
+// .angles
+// .waterlevel
+// .watertype
+// .crmod_old_velocity
+// .punchangle
+// .nextthink
+// .think
+// .health
+// .items
+// .armortype
+// .armorvalue
+// .weapon
+// .weaponmodel
+// .weaponframe
+// .currentammo
+// .ammo_shells
+// .ammo_nails
+// .ammo_rockets
+// .ammo_cells
+// .flags
+// .walkframe
+// .attack_finished
+// .pain_finished
+// .air_finished
+// .invincible_finished
+// .invisible_finished
+// .super_damage_finished
+// .radsuit_finished
+// .invincible_time
+// .invisible_time
+// .super_time
+// .rad_time
+// .show_hostile
+// .jump_flag
+// .swim_flag
+// .bubble_count
+// 
+// Teams:
+//
+// .next_player   - first player in team
+// .next_team     - next team
+// .frags		  - team frags
+// .height		  - team pants colour
+// .count		  - number of players
+// .frags         - team score
+// .netname       - strings_get_teamname(...)
+// .mdl           - strings_get_teamname_bronze(...)
+// .ammo_rockets  - number of rocket launchers team has
+//
+// Sentinel:
+//
+// .next_player   - first player in list
+// .next_team     - first team in list
+// .next_camera   - first camera in list
+// .crmod_chase_score - ELOHIM_NEGINF
+// .frags         - ELOHIM_NEGINF
+// .think         - score_check_sudden_death
+// .nextthink     - check sudden death
+// .ammo_rockets  - number of rocket launchers in play
+//
+// Match timer:
+//
+// .lip		- minutes remaining
+// .count	- seconds remaining
+// .dest	- time intervals for countdown (fast/normal)
+//
+// Scoreboard:
+//
+// .timeslot  - slot used for time remaining
+//
+// Powerups
+//
+// .noise4	  - pickup message
+// .owner	  - player that picked it up
+// .height    - height of player that picked it up
+// .count	  - number of times in a row player picked it up
+// .cnt		  - number of times in a row team picked it up
+// .fly_sound - sound number for quakeTV
+//
+// Rockets
+//
+// .dmg              - did damage flag
+// .state            - rocket jump flag
+// .crmod_badstats_y - damage done to self
+//
+// Console variables used:
+//
+// samelevel  = elohim_playmode - server flags
+// scratch1   = elohim_level    - level number in user level sequence
+// scratch2   = elohim_overtime - length of overtime
+// temp1                          - console commands
+// v_kickpitch                    - used non-destructively for utils_stof
+//
+
+// function declarations
+void () clanring_remove_start_teleport;
+void () clanring_find_powerups;
+void () clanring_exec_configs;
+void (float value) clanring_set_teamplay;
+void (float value) clanring_set_fraglimit;
+void () stats_reset_player;
+void () stats_show_quadstats;
+void () stats_show_killstats;
+void () stats_show_efficiency;
+void () stats_show_summary;
+void () stats_impulse;
+void () score_init_world;
+void () score_client_connect;
+void () score_client_disconnect;
+void (float command) console_command;
+void () console_set_aliases;
+void () client_select_warp;
+void (float episode) votables_init_warp;
+void () votables_request_vote_exit;
+void (entity client) observer_disconnect_notify;
+void () votables_send_aliases;
+void () admin_impulse;
+void () admin_start_code;
+void (float fDoKick) admin_confirm_kick_response;
+void (float fDoKick) admin_confirm_ban_response;
+void (entity player) admin_disconnect_notify;
+void () observer_impulse;
+void () observer_help;
+void () observer_find_teleport;
+void () observer_check_size;
+void (float response) observer_confirm_leave_response;
+void () match_show_timelimit;
+void () match_impulse;
+void () match_init_world;
+void (entity player) match_disconnect_notify;
+void () vote_impulse;
+void () execute_changelevel;
+void () NextLevel;
+void (vector org, entity death_owner) spawn_tdeath;
+void () player_stand1;
+void (vector org) spawn_tfog;
+void () console_get_user_nextlevel;
+void () observer_start;
+void () W_ChangeWeapon;
+void () W_SetCurrentAmmo;
+void () TeamFlagStatusReport;
+void () UnHookPlayer;
+void () votables_request_set_runes;
+void () PreviousWeaponCommand;
+void () StartRuneSpawnStart;
+void () player_hook1;
+void () player_hook3;
+void () HookFire2;
+void () ban_kick_client;
+void (entity client) clanring_kick_player;
+
+//
+// C L E A R   A F K   S T A T U S
+//
+
+void (entity client) clear_afk_status =
+{
+	if (client.style & CLANRING_AFK_CLIENT && (client.style & CLANRING_CONNECTED))
+	{
+		updatename(client, client.netname);
+		client.style = client.style - (client.style & CLANRING_AFK_CLIENT);
+	}
+	client.afk_time = time;	
+}
+
+void () W_Precache;
+//
+//  I N I T  W O R L D
+//
+//  Called from worldspawn in World.qc
+//
+void () clanring_init_world =
+{
+	local float mode;
+	local string szmode;
+	local float temp;
+
+	clanring_version = "ClanRing Mod v3.6";
+	clanring_version_info = "ClanRing Mod v3.6";
+	clanring_version_number = "3.6";	// CRMOD - string to be used throughout
+				    					//         code to show version number.
+	clanring_version_red = "\bClanRing Mod v3.6";
+	// Initialize sentinel
+	clanring_sentinel = spawn();
+	banent = spawn();
+	
+	clanring_playmode = cvar("samelevel");
+	
+	clanring_sentinel.next_player = world;
+	clanring_sentinel.next_camera = world;
+	clanring_sentinel.clanring_chase_score = CLANRING_NEGINF;
+
+    // Initialize user map names, MOTD, and hotspots, etc..
+    userdefs_init_world();
+    motd_init_world();
+	score_init_world();
+	match_init_world();
+	//quaketag_init_world();
+
+	temp = 0;
+
+	while(temp < 10)
+	{
+		array_password[temp] = 0;
+		temp += 1;
+	}
+
+	// Hack to allow console to emulate an administrator
+	world.style = CLANRING_ADMINISTRATOR;
+
+    // Precache sounds
+    precache_sound("wizard/wsight.wav");
+	precache_sound("doors/drclos4.wav");
+	precache_sound("demon/sight2.wav");
+	precache_sound("dog/dsight.wav");
+	precache_sound("knight/ksight.wav");
+	precache_sound("ogre/ogwake.wav");
+	precache_sound("shambler/ssight.wav");
+	precache_sound("soldier/sight1.wav");
+
+	//	qsmack_init_server ();
+
+	// Check to see if we need to initialize the server
+	if (!(clanring_playmode & CLANRING_SERVER_INITIALIZED))
+	{
+		cprint("Initializing Server...\n");
+		// Set aliases for console commands
+		console_set_aliases ();
+		
+		// Initialize global variables
+		cvar_set ("scratch1", "1");//level index
+		cvar_set ("scratch2", "0");//overtime
+		cvar_set ("scratch3", "2");//maxteams			
+
+		serverflags	= 0;
+		
+		//clanring_playmode 	= clanring_playmode | CLANRING_NO_SPOOGE;//Discharge protection, FIXME: Move this to classic-mode init.
+		clanring_playmode 	= clanring_playmode | CLANRING_EXTENDED_OBITS;
+		clanring_playmode 	= clanring_playmode | CLANRING_RUNETOSS;	//can toss runes on by default.
+		clanring_playmode 	= clanring_playmode | CLANRING_MATCH_MODE;
+		clanring_playmode 	= clanring_playmode | CLANRING_CAPTURE_THE_FLAG;//default match clanring ctf
+		clanring_playmode 	= clanring_playmode | CLANRING_SERVER_INITIALIZED;
+		
+		utils_set_cvar("samelevel", clanring_playmode);		
+	}//initialized
+	
+	// Get/set console variables
+	teamplay = cvar("teamplay");
+	clanring_set_teamplay(-1);
+	timelimit = (cvar("timelimit") * 60);
+
+	//R00k: this is CRCTF not 3waveCTF anymore. I prefer a smooth hook with better physics.
+	//Zoid originally had hook speeds in version 1.0 at 1000 x 1000, then changed in 2.0 to 800x1000!
+	//I set it to 1200 x 850, which is more FLUID! 1000x800 kinda worked but some standard hook tricks were lost...
+
+	hookspeedfire = 1200;
+	hookspeedpull = 850;
+
+	// Set global variables
+	clanring_level 			= cvar("scratch1");
+	clanring_overtime 		= cvar("scratch2");
+	clanring_maxteams 		= cvar("scratch3");
+	clanring_levelcount 	= 0;
+
+//	clanring_player_ids 	= 1;
+	clanring_devparam 		= 0;
+	clanring_nextcheck 		= time;
+	clanring_nextcheck2 	= time;
+	clanring_request 		= world;
+	clanring_lastcount 		= 0;
+	clanring_state 			= 0;
+	//dm_num_spawns 	= 0;//R00k: Why reset this? the spawns are counted at map load before this init is called?
+	clanring_num_starts 	= 0;
+	clanring_num_cameras 	= 0;
+	clanring_debug_client 	= world;
+	
+	clanring_best_chase_target 	= world;
+	clanring_current_chase_target = world;
+	
+	clanring_chase_delay 		= 0;
+	
+	clanring_best_camera 		= world;
+	clanring_current_camera 	= world;
+	clanring_camera_delay 		= 0;
+	auto_parm1 					= 600; // only rocket bonus
+	auto_parm2 					= 1000; // pent proximity bonus
+	auto_parm3 					= 500; // quad proximity bonus
+	auto_parm4 					= 0;
+	clanring_pent 				= world;
+	clanring_quad 				= world;
+	
+	clanring_afk_check 			= 300; //R00k: 5 MINUTES default for AFK status.
+	clanring_afk_timeout 		= 1800; //Time to kick after AFK (30 minutes).
+
+	utils_make_scheduled_event(clanring_find_powerups, 5);
+	nextmap = "";
+
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		clanring_timelimit = cvar("timelimit");
+		if (clanring_timelimit == 0)
+			clanring_timelimit = 20;
+		if (clanring_timelimit < 2)
+			clanring_timelimit = 2;
+		default_timelimit = clanring_timelimit;//R00k added
+		match_show_timelimit();
+	}
+	else
+		default_timelimit = clanring_timelimit = 20;		
+	
+	if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_NORMAL_MODE))//Defaults for Pub CTF mode
+	{
+		cvar_set("teamplay","1");		
+		clanring_set_teamplay(1);
+		cvar_set("fraglimit","150");
+		clanring_set_fraglimit(150);
+		cvar_set("timelimit","30");
+		timelimit = (cvar("timelimit")*60);
+	}
+	else
+	if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_MATCH_MODE))
+	{
+		cvar_set("teamplay","1");		
+		clanring_set_teamplay(1);
+		clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
+	}
+	
+	W_Precache ();
+    // show mode		
+	mode = options_get_mode();
+	szmode = strings_get_mode(mode);
+	cprint2(szmode, " mode\n");
+
+	// schedule the config files for a bit later so that they don't
+	// get loaded twice on startup
+	utils_make_scheduled_event(clanring_exec_configs, 1);
+	// spawn runes if enabled, wait for the cfg to be read.
+	utils_make_scheduled_event(StartRuneSpawnStart, 2);
+	// fix the start teleport bug
+	utils_make_scheduled_event(clanring_remove_start_teleport, 3);
+};
+
+//
+//  R E M O V E  S T A R T  T E L E P O R T
+//
+void () clanring_remove_start_teleport = 
+{
+	if (mapname == "start")
+	{
+		other = find(world, classname, "trigger_teleport");
+		while (other)
+		{
+			if (other.absmin_z < -600)
+			{
+				remove(other);
+				cprint("\"start: bad teleport removed (this is not an error)\"\n");
+			}
+			other = find(other, classname, "trigger_teleport");
+		}
+	}
+	remove(self);
+};
+
+//
+//  F I N D  P O W E R U P S
+//
+void () clanring_find_powerups = 
+{
+	clanring_quad = find(world, classname, "item_artifact_super_damage");
+	clanring_pent = find(world, classname, "item_artifact_invulnerability");
+	remove(self);
+};
+
+//
+//  S E T  T E A M P L A Y
+//
+//  Sets the teamplay server variable to show teamplay and "ClanRing4.0".
+//  If value = -1 then the teamplay variable is preserved; otherwise it
+//  is changed to 'value'.
+//
+void (float value) clanring_set_teamplay =
+{
+	local string temp;
+
+	if (value != -1)
+		teamplay = value;
+	temp = ftos(teamplay);
+	localcmd5("teamplay \"", temp, "?ClanRing v", clanring_version_number, "\"\n");
+};
+
+//
+//  S E T  F R A G L I M I T
+//
+//  Sets the fraglimit server variable to show fraglimit, "CRMod++",
+//  and either "FFA", "Practice", "Match" or "Individual" depending on the 
+//  current mode.  If value = -1 then the fraglimit variable is preserved; 
+//  otherwise it is changed to 'value'.
+//
+void (float value) clanring_set_fraglimit =
+{
+	local string temp;
+
+	if (value != -1)
+		utils_set_cvar("fraglimit", value);
+
+	fraglimit = cvar("fraglimit");
+	temp = ftos(fraglimit);
+
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			localcmd3("fraglimit \"", temp, " : CRCTF ");
+		else
+			localcmd3("fraglimit \"", temp, " : CRMod++ ");
+
+		if (teamplay)
+			localcmd("Match\"\n");
+	}
+	else
+	{
+		localcmd3("fraglimit \"", temp, " : ClanRing ");
+		if (clanring_playmode & CLANRING_PRACTICE_MODE)
+			localcmd("Practice\"\n");
+		else
+			localcmd("Classic\"\n");
+	}
+};
+
+//
+//  S E T  A L I A S E S
+//
+//  This is scheduled using a temporary entity; the client
+//  is stored in self.owner.
+//
+void () clanring_set_aliases =
+{
+	local entity temp;
+
+	temp = self;
+	self = self.owner;
+
+    // Check for binds
+	if (self.style & CLANRING_FOUND_BINDINGS)
+	{
+		self = temp;
+		remove(self);
+		return;
+	}
+
+	sprint3(self, "Sending ", clanring_version, " bindings\n");
+
+	// Cheat fixes
+	stuffcmd(self, "alias r_ambient echo r_ambient has been disabled on this server.\n");
+
+    // Set aliases
+	stuffcmd(self, "alias dbbinds impulse 58\n");   // load undocumented debug aliases
+	stuffcmd(self, "alias help-server impulse 100\n");
+	stuffcmd(self, "alias helpserver impulse 100\n");
+	stuffcmd(self, "alias help-observer impulse 101\n");
+	stuffcmd(self, "alias rules impulse 103\n");
+
+	stuffcmd(self, "alias teamplay impulse 103\n");
+	stuffcmd(self, "alias deathmatch impulse 103\n");
+	stuffcmd(self, "alias timelimit impulse 103\n");
+	stuffcmd(self, "alias fraglimit impulse 103\n");
+	stuffcmd(self, "alias noexit impulse 103\n");
+
+	stuffcmd(self, "alias help-misc impulse 105\n");
+	stuffcmd(self, "alias commands impulse 106\n");
+	stuffcmd(self, "alias levels impulse 102\n");
+	stuffcmd(self, "alias warp impulse 107\n");
+	stuffcmd(self, "alias admin impulse 108\n");
+	stuffcmd(self, "alias motd impulse 109\n");
+	stuffcmd(self, "alias admins impulse 110\n");
+	stuffcmd(self, "alias autoweapon impulse 114\n");
+	stuffcmd(self, "alias aw impulse 114\n");
+	stuffcmd(self, "alias yes impulse 115\n");
+	stuffcmd(self, "alias no impulse 116\n");
+	stuffcmd(self, "alias vinfo impulse 117\n");
+	stuffcmd(self, "alias ticrate impulse 118\n");
+	stuffcmd(self, "alias autoid impulse 119\n");//R00k
+	stuffcmd(self, "alias ready impulse 120\n");
+	stuffcmd(self, "alias notready impulse 121\n");
+	stuffcmd(self, "alias unlock impulse 122\n");
+	stuffcmd(self, "alias ready? impulse 123\n");
+	stuffcmd(self, "alias timerstop impulse 124\n");
+	stuffcmd(self, "alias timerstart impulse 125\n");
+	stuffcmd(self, "alias ghostcode echo You do not have a ghost\n");
+	stuffcmd(self, "alias ghost impulse 127\n");
+	stuffcmd(self, "alias score impulse 128\n");
+	stuffcmd(self, "alias help-match impulse 129\n");
+	stuffcmd(self, "alias lock impulse 130\n");
+	stuffcmd(self, "alias +teamscores \"+showscores;impulse 131\"\n");
+	stuffcmd(self, "alias -teamscores \"-showscores;impulse 132\"\n");
+	stuffcmd(self, "alias rockets impulse 133\n");
+	stuffcmd(self, "alias observer impulse 140\n");
+	stuffcmd(self, "alias walk impulse 141\n");
+	stuffcmd(self, "alias flyme impulse 142\n");
+	stuffcmd(self, "alias chase impulse 143\n");
+	stuffcmd(self, "alias chasecam impulse 143\n");
+	stuffcmd(self, "alias help-walk impulse 144\n");
+	stuffcmd(self, "alias help-fly impulse 145\n");
+	stuffcmd(self, "alias help-chase impulse 146\n");
+	stuffcmd(self, "alias commentary impulse 147\n");
+	stuffcmd(self, "alias headsup impulse 148\n");
+	stuffcmd(self, "alias eyecam impulse 149\n");
+    stuffcmd(self, "alias tourney impulse 151\n");      // CRMOD - enables tournament mode chasecam
+    stuffcmd(self, "alias camera impulse 153\n");       // CRMOD - sets camera mode
+    stuffcmd(self, "alias autocam impulse 154\n");      // CRMOD - autocam
+    stuffcmd(self, "alias autocamera impulse 154\n");   // CRMOD - autocam
+    stuffcmd(self, "alias quaketv impulse 154\n");      // CRMOD - autocam
+	stuffcmd(self, "alias autochase impulse 155\n");
+	stuffcmd(self, "alias help-camera impulse 156\n");
+	stuffcmd(self, "alias killstats impulse 170\n");
+	stuffcmd(self, "alias efficiency impulse 171\n");
+    stuffcmd(self, "alias eff impulse 171\n");          // CRMOD - so people don't have to spell out efficiency
+	stuffcmd(self, "alias stats impulse 172\n");
+	stuffcmd(self, "alias quadstats impulse 173\n");    // CRMOD - new impulse
+	stuffcmd(self, "alias badstats impulse 174\n");
+	stuffcmd(self, "alias teamstats impulse 175\n");
+	stuffcmd(self, "alias flagstats impulse 176\n");
+	stuffcmd(self, "alias autostats impulse 178\n");
+	stuffcmd(self, "alias red \";color 4;w5;ready;\"\n");
+	stuffcmd(self, "alias blue \";color 13;w5;ready;\"\n");
+	stuffcmd(self, "alias help-stats impulse 179\n");
+	stuffcmd(self, "alias sm1 \"echo Smoothing ON ; cl_nolerp 1 ; alias smooth sm0\"\n");
+	stuffcmd(self, "alias sm0 \"echo Smoothing OFF ; cl_nolerp 0 ; alias smooth sm1\"\n");
+	stuffcmd(self, "alias smooth sm1\n");
+	stuffcmd(self, "alias init echo\n");                // CRMOD - So clients only see 'init' once
+	stuffcmd(self, "alias +hook impulse 98\n");
+	stuffcmd(self, "alias -hook impulse 97\n");
+	stuffcmd(self, "alias hook impulse 22\n");
+	stuffcmd(self, "alias dropammo impulse 20\n");
+	stuffcmd(self, "alias rune-use impulse 20\n");
+	stuffcmd(self, "alias dropweapon impulse 21\n");
+	stuffcmd(self, "alias flagstatus impulse 23\n");
+	stuffcmd(self, "alias rune-tell impulse 23\n");	
+	stuffcmd(self, "alias droprune impulse 19\n");		
+	stuffcmd(self, "alias rune-delete impulse 19\n");		
+	stuffcmd(self, "alias nextmap impulse 199\n");	
+	//stuffcmd(self, "alias vote-exit impulse 204\n");
+	stuffcmd(self, "alias faststart impulse 209\n");		
+	stuffcmd(self, "alias afk impulse 70\n");
+	
+	self.style = self.style | CLANRING_FOUND_BINDINGS;
+
+    // remove the temporary entity
+	self = temp;
+	self.nextthink = time + 0.02;
+	self.think = votables_send_aliases;
+};
+
+//
+//  P R E  S E T  A L I A S E S
+//
+void () clanring_pre_set_aliases =
+{
+	//sprint(self.owner, "\bUse \b-zone 512 \bif quake crashes\n");
+	sprint(self.owner, "Type \bCOMMANDS\b for help\n");
+
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)			//R00k
+		sprint(self.owner, "Type \bRED\b or \bBLUE\b to join\n");
+
+	self.think = clanring_set_aliases;
+	self.nextthink = time + 1;
+};
+
+//
+//  S E N D  I G N O R E  T H I S
+//
+void () clanring_send_ignore_this =
+{
+	// also test for ghost during autopause
+	local entity ghostent;
+	local float temp;
+
+	stuffcmd(self.owner, "clanring_ignorethis\n");	// test for binds 
+	temp = 0;
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+	{
+		ghostent = find(world, classname, "clanring_ghost");
+		while (ghostent)
+		{
+			if (ghostent.owner.owner != ghostent)
+				temp = 1;
+			ghostent = find(ghostent, classname, "clanring_ghost");
+		}
+	}
+	if (temp)
+		stuffcmd(self.owner, "ghost\n");
+
+	self.think = clanring_pre_set_aliases;
+	self.nextthink = time + 0.1;
+};
+
+//
+//  I N I T  T H I N K
+//
+//  Called 0.5 seconds after a client connects.  Plays the wizard sound
+//  and checks for an illegal name.
+//
+void () clanring_init_think =
+{
+	local entity temp;
+
+	temp = self;
+	self = self.owner;
+
+	if (!(clanring_playmode & CLANRING_MATCH_MODE) || !(clanring_state & CLANRING_MATCH_STARTED))
+		sound (world, CHAN_AUTO, "wizard/wsight.wav", 1, ATTN_NONE);
+
+	if (utils_illegal_name (self.netname))
+		stuffcmd(self, "name \bnew\bplayer\n");
+
+	//self.oldname = self.netname;
+
+	self = temp;
+	remove(self);
+};
+
+//
+//  S H O W  M O D E
+//
+//  Show mode and help info to a player after they connect.
+//
+void () clanring_show_mode =
+{
+	sprint2(self.owner, clanring_version, "\n");
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if (teamplay)
+			sprint(self.owner, "match mode \b- help-match for help\n");
+	}
+	else
+	{
+		if (clanring_playmode & CLANRING_PRACTICE_MODE)
+			sprint(self.owner, "practice mode\n");
+		else
+			sprint(self.owner, "classic mode\n");
+	}
+	remove(self);
+};
+
+//
+//  S E N D  D E T E C T
+//
+//  Figure out if they're using DOSQuake, WINQuake or GLQuake.  Also send
+//  a little gift for screenshots.
+//
+void () clanring_send_detect =
+{
+	local entity temp;
+
+	temp = self;
+	self = self.owner;
+	self.style = self.style | CLANRING_WINQUAKE | CLANRING_GLQUAKE;
+	// prevent screen shots in demo by aliasing coop to screenshot
+	stuffcmd(self, "alias coop screenshot\n");
+	stuffcmd(self, "alias detect impulse 62\n");
+	stuffcmd(self, "alias gl_texturemode alias detect impulse 60\n");
+	stuffcmd(self, "gl_texturemode\n");
+	stuffcmd(self, "detect\n");
+	self = temp;
+	remove(self);
+};
+
+//
+//  C H E C K  P L A Y E R  I N  L I S T 
+//
+float () clanring_check_player_in_list =
+{
+	local entity e;
+	local float check;
+	
+	e = clanring_sentinel;	
+	
+	check = 16;//crash test (fixme: change from 16 to SV_MAXPLAYERS)
+
+	while ((e != world) && (e.next_player))
+	{
+		if (check < 1)
+			return FALSE;
+			
+		if (e.next_player == self)
+			return TRUE;
+
+		check = check - 1;
+		e = e.next_player;
+	}
+	return FALSE;
+};
+
+//
+//  P U T  P L A Y E R  I N  L I S T
+//
+//This is for stats in Classic Mode.
+void () clanring_put_player_in_list =
+{
+	if (clanring_check_player_in_list() == FALSE)// just incase 
+	{
+		self.next_player = clanring_sentinel.next_player;
+		clanring_sentinel.next_player = self;
+	}
+};
+
+//
+//  R E M O V E  P L A Y E R  F R O M  L I S T
+//
+void () clanring_remove_player_from_list =
+{
+	local entity e;
+	local float check;
+	
+	e = clanring_sentinel;	
+	
+	check = 16;//lagouts can cause runaway loop errors
+
+	while ((e != world) && (e.next_player != world))
+	{
+		if (check < 1)
+			return;
+			
+		if (e.next_player == self)
+		{
+			e.next_player = self.next_player;
+			self.next_player = world;
+			return;
+		}
+		check = check - 1;
+		e = e.next_player;
+	}
+};
+
+
+//
+// B A N  K I C K  C L I E N T
+//
+// Used to kick connecting clients with an ip address which is on the banlist (ban.cfg).
+//
+void () ban_kick_client =
+{
+	local string temp;
+	local entity e;
+
+	if (banent != world)
+	{
+		e = self; 
+		
+		self = banent;
+				
+		localcmd("ban ");
+		localcmd(self.trueip);
+		localcmd(" 255.255.255.255\n");
+		temp = ftos(self.colormap);
+		localcmd3("kick # ", temp, "\n"); 
+
+		if (self.style & CLANRING_CONNECTED)		
+			ClientDisconnect ();
+		
+		self = e;
+		remove(self);
+		banent = world;
+	}
+};
+
+//R00k: this finds teams active, and updates the scoreboard for new connecting clients
+void () find_pqc_teamscore_teams =
+{
+	local entity e;
+	
+	e = clanring_sentinel.next_team;
+	
+	while (e)
+	{
+		pqc_new_team (world,e.height * 16 + e.height);
+		pqc_team_frags(world, e.height, e.frags);
+		e = e.next_team;
+	}
+};
+
+//
+//  C L I E N T  C O N N E C T
+//
+//  Called from ClientConnect in Client.qc when a client enters the
+//  server.  This occurs when the client first connects over the network
+//  and every time a new level is started.
+//
+void () clanring_client_connect =
+{
+	//local string text;
+	
+	if (parm10 & CLANRING_NEW_CLIENT)
+	{	
+		// This is a new client (just connected over the network)
+		// Show the MOTD
+		motd_create ();
+
+		utils_make_scheduled_event(clanring_init_think, 0.5);
+		// Get rid of the new client flag
+		parm10	= parm10 - (parm10 & CLANRING_NEW_CLIENT);
+		// Set default observer flags
+		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_WALK | OBSERVER_COMMENTARY;
+
+		parm13 = 0;
+		
+		stats_reset_player();
+		find_pqc_teamscore_teams ();//R00k
+		self.afk_time = time + 20;
+	}
+
+	// send aliases if necessary
+	utils_make_scheduled_event(clanring_send_ignore_this, 1);
+
+	//utils_make_scheduled_event(clanring_send_detect, 0.8);
+
+	// Check to see if there is a scoreboard conflict
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+		score_client_connect();
+	else
+		clanring_put_player_in_list();
+
+	utils_make_scheduled_event(clanring_show_mode, 0.5);
+    self.cnt = CLANRING_MAX_SUICIDES;  // numer of suicides allowed
+	self.clanring_hack_count = -1;  // count of admin code attempts
+	self.finaldest_y = MOVETYPE_WALK;
+	self.killed = 0;
+	self.owner = world;      // no ghost
+	self.trigger_field = world; // last spawn point
+	self.use = SUB_Null;//used for voting/warp
+	self.style = 0;
+	self.delayed_impulse = 0;
+	self.clanring_cam_delay = 0;
+	self.clanring_did_damage = time - 15;
+	self.attack_finished = time - 10;
+	self.style = self.style | CLANRING_GLQUAKE;//R00k: forced.
+	// This is to prevent a condition where one player is another player's
+	// movetarget, which can confuse the auto module.
+	self.movetarget = world;
+	self.name_ready = string_null;
+	self.wait = time + 1;
+	self.hack_timeout = 0;//Timer for bot scan
+		
+    parm10 = parm10 - (parm10 & (CLANRING_READY | CLANRING_KICK_CONFIRM | CLANRING_MOTD | CLANRING_SETTING_OPTIONS | CLANRING_SCOREBOARD | CLANRING_CONFIRM_LEAVE));
+};
+
+//
+//  C L I E N T  D I S C O N N E C T
+//
+//  Called from ClientDisconnect in Client.qc when a client leaves.
+//
+void () clanring_client_disconnect =
+{
+	self.style = self.style - (self.style & (CLANRING_CONNECTED | CLANRING_BLUE_TEAM | CLANRING_RED_TEAM | CLANRING_AUTOID | CLANRING_AFK_CLIENT));
+
+	self.plag                  	= 0;
+	self.cnt                   	= 0;
+	self.lagcount              	= 0;
+	self.lagcheck              	= -30;
+	self.finaldest_x 			= -30;	
+	self.items 					= self.items - (self.items & (IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD | IT_SUPERHEALTH));
+	self.invisible_finished 	= 0;	// don't die as eyes
+	self.invincible_finished 	= 0;
+	self.super_damage_finished 	= 0;
+	self.radsuit_finished 		= 0;
+	self.effects 				= 0;
+	self.killed 				= 0;
+	self.clanring_chase_score 	= CLANRING_NEGINF;// CRMOD make sure they don't have some high rating that can't be beat by the other players
+	self.oldname 				= string_null;
+
+	// If we're in match mode, then inform match and score modules
+	// Must inform score module first!  Score module checks to see if the
+	// player is the first person on the team.
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		score_client_disconnect();
+		match_disconnect_notify(self);
+	}
+	else
+		clanring_remove_player_from_list();
+	
+	self.oflags = self.oflags - (self.oflags & OBSERVER_QUAKETV);	//R00k
+    	
+    // Check to see if anyone was observing this client
+	// Don't do this until the player has been removed from the list!
+	observer_disconnect_notify(self);
+	
+	// Let the admin module know in case there's a kick in progress
+	admin_disconnect_notify(self);
+	
+    // Check to see if we were debugging this client
+	if (clanring_debug_client == self)
+		clanring_debug_client = world;
+};
+
+//
+//  B F  T H I N K
+//
+//  Creates a background flash - used for player spawns.
+//
+void () clanring_bf_think =
+{
+	stuffcmd(self.owner, "bf\n");
+	remove(self);
+};
+
+//
+//  O B S E R V E R  S T A R T  T H I N K
+//
+//  This is a hack.. observer_start is being called a second time, 0.6
+//  seconds after the first time, to cover a few details that don't make
+//  it when the client first connects (such as the observer colour).
+//
+void () clanring_observer_start_think =
+{
+	local entity oself;
+
+	oself = self;
+	self = self.owner;
+	if ((self.style & CLANRING_OBSERVER) || ((clanring_playmode & CLANRING_MATCH_MODE) && !(self.style & CLANRING_READY)))
+	observer_start();
+	self = oself;
+	remove(self);
+};
+
+void () teamplay_force_player_ready;
+//
+//  P U T  C L I E N T  I N  S E R V E R
+//
+//  Called from PutClientInServer in Client.qc
+//
+void () clanring_put_client_in_server =
+{
+	self.movetype = MOVETYPE_WALK;
+	self.finaldest_y = MOVETYPE_WALK;
+	self.style = self.style | CLANRING_CONNECTED;//placed here before assigning to a team
+
+	//	utils_make_scheduled_event(clanring_bf_think, 0.1);
+
+	if ((self.style & CLANRING_OBSERVER) || (self.oflags & OBSERVER_QUAKETV) || ((clanring_playmode & CLANRING_MATCH_MODE) && !(self.style & CLANRING_READY)))
+	{
+		observer_start ();
+		utils_make_scheduled_event(clanring_observer_start_think, 0.6);
+	}
+	else
+	{
+		//in classic mode auto join on connect
+		//This is called in client.qc but here again JUST to make sure.
+
+		if (teamplay)
+		{
+			if (clanring_playmode & CLANRING_NORMAL_MODE)
+			{
+				if  ((!(self.style & CLANRING_BLUE_TEAM)) && (!(self.style & CLANRING_RED_TEAM)))
+				{
+					utils_make_scheduled_event(teamplay_force_player_ready, 0.1);
+					return;//this is ok because "clanring_put_client_in_server" gets called again after they are forced on a team.
+				}	
+			}
+		}
+
+		if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+		{	
+			if (self.team == RED)  self.skin = 1;				
+			if (self.team == BLUE) self.skin = 3;								
+		}
+
+		UnHookPlayer();
+
+		player_stand1();
+		spawn_tdeath(self.origin, self);
+		makevectors(self.angles);
+		spawn_tfog(self.origin);// + (v_forward * 20)));
+
+		if (clanring_state & CLANRING_MATCH_PAUSED)
+			self.nextthink = self.nextthink + 1000000 - (time - clanring_match_pause_time);
+	}
+    // Prevent fire-on-respawn (in case player used attack button to respawn)
+	self.style = self.style - (self.style & CLANRING_OK_TO_SHOOT);
+
+	self.height = self.team - 1; // to prevent colour change announcements
+	self.button0 = 0;
+    self.wait = time + 2;    // for periodic checks
+    self.finaldest_x = time; // used to check for disconnected clients
+	self.lip = 0;            // grenade spam count
+};
+
+//
+//  H E L P
+//
+//  Show general help commands.
+//
+void () clanring_help =
+{
+	sprint2(self, clanring_version, "\n");
+	sprint(self, "Help commands (type in console):\n");
+	sprint(self, " vinfo         - server version info\n");
+	sprint(self, " help-misc     - misc commands\n");
+	sprint(self, " help-observer - observer commands\n");
+	sprint(self, " help-match    - match mode help\n");
+	sprint(self, " help-stats    - statistics help\n");
+	if (self.style & CLANRING_ADMINISTRATOR)
+		sprint(self, " help-admin    - admin commands\n");
+	sprint(self, " commands - list commands/impulses\n");
+};
+
+//
+//  H E L P  C H A N G E
+//
+//  Show help on how to change levels.
+//
+void () clanring_help_change =
+{
+	sprint(self, "\n");
+	sprint(self, " Type \bWarp\b to change maps\n");
+	//sprint(self, "‘Ô „Ë·ÓÁÂ ÏÂˆÂÏÛ¨ ÂÓÙÂÚ ÙËÂ Ó·ÌÂ ÔÊ\n");
+	//sprint(self, "ÙËÂ ÏÂˆÂÏ ÈÓ ÙËÂ „ÔÓÛÔÏÂÆ\n");
+};
+
+//
+//  H E L P  M I S C
+//
+//  Show misc commands.
+//
+void () clanring_help_misc =
+{
+	sprint(self, " admin      - enter admin code\n");
+	sprint(self, " admins     - list server admins\n");
+	sprint(self, " setquad    - enable/disable quad\n");
+	sprint(self, " setpent    - enable/disable pent\n");
+	sprint(self, " setring    - enable/disable ring\n");
+	sprint(self, " setrunes   - enable/disable runes\n");
+	sprint(self, " sethook    - enable/disable grappling hook\n");
+
+	if (clanring_playmode & CLANRING_MODE_VOTE)
+	{
+		sprint(self, " normal     - request FFA play\n");
+		sprint(self, " practice   - request practice mode\n");
+		sprint(self, " match      - request match mode\n");
+	}
+
+	sprint(self, " nogibs     - disable gibs\n");
+	sprint(self, " lowgibs    - set gibs to 'low'\n");
+	sprint(self, " highgibs   - set gibs to 'high'\n");
+	sprint(self, " motd       - show message of the day\n");
+	sprint(self, " commands   - list commands/impulses\n");
+	sprint(self, " observer   - toggle observer mode\n");
+	sprint(self, " warp       - choose a map for vote to load\n");
+	sprint(self, " rules      - view server rules\n");
+	sprint(self, " ticrate    - view sys_ticrate\n");
+	sprint(self, " autoid     - toggle auto teammate identify\n");
+	sprint(self, " autoweapon - toggle smartweapon\n");
+	sprint(self, " autopause  - toggle auto pausing\n");
+};
+
+//
+//  I N F O
+//
+void () clanring_info =
+{
+	sprint(self, "\n");
+};
+
+//
+//  C O M M A N D S
+//
+//  List all commands and impulses.
+//
+void () clanring_commands =
+{
+	// regular user commands
+	sprint(self, " vinfoÆÆÆÆÆÆÆÆÆÆììô help-serverÆÆÆìíí\n");
+	sprint(self, " help-miscÆÆÆÆÆÆìíó help-matchÆÆÆÆìîõ\n");
+	sprint(self, " help-observerÆÆìíì help-walkÆÆÆÆÆìññ\n");
+	sprint(self, " help-flyÆÆÆÆÆÆÆìñó help-chaseÆÆÆÆìñò\n");
+	sprint(self, " help-cameraÆÆÆÆìóò commandsÆÆÆÆÆÆìíò\n");
+	sprint(self, " levelsÆÆÆÆÆÆÆÆÆìíô autoweaponÆÆÆÆììñ\n");
+	sprint(self, " adminÆÆÆÆÆÆÆÆÆÆìíö motdÆÆÆÆÆÆÆÆÆÆìíõ\n");
+	sprint(self, " observerÆÆÆÆÆÆÆìñí walkÆÆÆÆÆÆÆÆÆÆìñì\n");
+	sprint(self, " flymeÆÆÆÆÆÆÆÆÆÆìñî chaseÆÆÆÆÆÆÆÆÆìñï\n");
+	sprint(self, " eyecamÆÆÆÆÆÆÆÆÆìñõ cameraÆÆÆÆÆÆÆÆìóï\n");
+	sprint(self, " autochaseÆÆÆÆÆÆìóó autocamÆÆÆÆÆÆÆìóñ\n");
+	sprint(self, " headsupÆÆÆÆÆÆÆÆìñö smoothÆÆÆÆÆÆÆÆN/A\n");
+	sprint(self, " tourneyÆÆÆÆÆÆÆÆìóì yesÆÆÆÆÆÆÆÆÆÆÆììó\n");
+	sprint(self, " noÆÆÆÆÆÆÆÆÆÆÆÆÆììò readyÆÆÆÆÆÆÆÆÆìîí\n");
+	sprint(self, " notreadyÆÆÆÆÆÆÆìîì ready?ÆÆÆÆÆÆÆÆìîï\n");
+	sprint(self, " unlockÆÆÆÆÆÆÆÆÆìîî lockÆÆÆÆÆÆÆÆÆÆìïí\n");
+	sprint(self, " timerstopÆÆÆÆÆÆìîñ timerstartÆÆÆÆìîó\n");
+	sprint(self, " +teamscoresÆÆÆÆN/A -teamscoresÆÆÆN/A\n");
+	sprint(self, " timesetÆÆÆÆÆÆÆÆîìó otsetÆÆÆÆÆÆÆÆÆîìò\n");
+	sprint(self, " ghostcodeÆÆÆÆÆÆN/A ghostÆÆÆÆÆÆÆÆÆìîô\n");
+	sprint(self, " scoreÆÆÆÆÆÆÆÆÆÆìîö nogibsÆÆÆÆÆÆÆÆîîó\n");
+	sprint(self, " lowgibsÆÆÆÆÆÆÆÆîîò highgibsÆÆÆÆÆÆîîô\n");
+	sprint(self, " setquadÆÆÆÆÆÆÆÆîîì setpentÆÆÆÆÆÆÆîîî\n");
+	sprint(self, " setringÆÆÆÆÆÆÆÆîîï normalÆÆÆÆÆÆÆÆîìô\n");
+	sprint(self, " practiceÆÆÆÆÆÆÆîìö matchÆÆÆÆÆÆÆÆÆîìõ\n");
+	sprint(self, " deathmatchÆÆÆÆÆîîí ticrateÆÆÆÆÆÆÆììö\n");
+	sprint(self, " killstatsÆÆÆÆÆÆìôí efficiencyÆÆÆÆìôì\n");
+	sprint(self, " statsÆÆÆÆÆÆÆÆÆÆìôî quadstatsÆÆÆÆÆìôï\n");
+	sprint(self, " badstatsÆÆÆÆÆÆÆìôñ autostatsÆÆÆÆÆìôö\n");
+	sprint(self, " help-statsÆÆÆÆÆìôõ commentaryÆÆÆÆìñô\n");
+	sprint(self, " obitsÆÆÆÆÆÆÆÆÆÆîìì rulesÆÆÆÆÆÆÆÆÆìíï\n");
+	sprint(self, " rocketsÆÆÆÆÆÆÆÆìïï autopauseÆÆÆÆÆîìí\n");
+	sprint(self, " adminsÆÆÆÆÆÆÆÆÆììí teamstatsÆÆÆÆÆìôó\n");
+	sprint(self, " flagstatsÆÆÆÆÆÆìôò sethookÆÆÆÆÆÆÆîíî\n");
+	sprint(self, " setrunesÆÆÆÆÆÆÆîíï autoidÆÆÆÆÆÆÆÆììõ\n");
+	sprint(self, " +hookÆÆÆÆÆÆÆÆÆÆÆõö -hookÆÆÆÆÆÆÆÆÆÆõô\n");
+	sprint(self, " dropruneÆÆÆÆÆÆÆÆìõ dropammoÆÆÆÆÆÆÆîí\n");
+	sprint(self, " dropweaponÆÆÆÆÆÆîì flagstatusÆÆÆÆÆîï\n");
+	sprint(self, " hookÆÆÆÆÆÆÆÆÆÆÆÆîî nextmapÆÆÆÆÆÆÆîíñ\n");
+
+	// admin commands
+	if (self.style & CLANRING_ADMINISTRATOR)
+	{
+		sprint(self, "ÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆÆ\n");
+		sprint(self, " help-adminÆÆÆÆÆîíí optionsÆÆÆÆÆÆÆîîõ\n");
+		sprint(self, " safepracticeÆÆÆîîñ kick!ÆÆÆÆÆÆÆÆÆîìï\n");
+		sprint(self, " abortmatchÆÆÆÆÆîìñ ghostlistÆÆÆÆÆîìî\n");
+		sprint(self, " modevoteÆÆÆÆÆÆÆîîö spotÆÆÆÆÆÆÆÆÆÆîóí\n");
+		sprint(self, " nextspawnÆÆÆÆÆÆîñò makespawnÆÆÆÆÆîñô\n");
+		sprint(self, " nextcamÆÆÆÆÆÆÆÆîñö makecamÆÆÆÆÆÆÆîñõ\n");
+		sprint(self, " dmsetÆÆÆÆÆÆÆÆÆÆîíô ipsÆÆÆÆÆÆÆÆÆÆÆîíò\n");
+		sprint(self, " maxteamsÆÆÆÆÆÆÆîíö faststartÆÆÆÆÆîíõ\n");
+		sprint(self, " autossÆÆÆÆÆÆÆÆÆîíñ ban!ÆÆÆÆÆÆÆÆÆÆîíó\n");
+		//sprint(self, " qsmackÆÆÆÆÆÆÆÆÆïô\n");
+	}
+	clanring_help_change ();
+};
+
+//
+//  L E V E L S
+//
+//  List all levels recognized by the server.
+//
+void () clanring_levels =
+{
+	sprint(self, "type \bwarp\b to change maps\n");
+};
+
+//
+//  P I N G  R E P L Y
+//
+//  Called when a client responds to a manual ping via impulse 38 (was 103).
+//
+void () clanring_ping_reply =
+{
+	
+	cprint3("reply from \"", self.netname, "\"\n");
+	self.lagcheck = time;	
+};
+
+//
+//  B A D  I M P U L S E
+//
+//  Seems like some people get stuck with the old clanring bindings.
+//  Let them know that something ain't right.
+//
+void () clanring_bad_impulse =
+{
+	sprint(self, "You have entered an invalid impulse.\n");
+	sprint(self, "Your bindings may be incorrect - try\n");
+	sprint(self, "reconnecting to the server.\n");//TODO force an update of the server aliases..
+};
+
+//
+//  V E R S I O N  I N F O
+//
+void () clanring_vinfo =
+{
+	sprint3(self, "\n", clanring_version_info, "\n\n");
+	sprint(self, "Adapted from the Elohim Server v2.2\n");
+};
+
+//
+//  T I C R A T E
+//
+void () clanring_ticrate =
+{
+	local float ticrate;
+
+	ticrate = cvar("sys_ticrate");
+	sprint(self, "sys_ticrate = ");
+	utils_print_floatn(ticrate, 3);
+};
+
+//
+//  S H O W  R U L E S
+//
+void () clanring_show_rules =
+{
+	local float temp;
+
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			sprint(self, "éCRCTF match modeé\n");
+		else
+			sprint(self, "éCRMod match modeé\n");
+	}
+	else
+	{
+		if (clanring_playmode & CLANRING_PRACTICE_MODE)
+		{
+			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+				sprint(self, "éctf practice modeé\n");
+			else
+				sprint(self, "épractice modeé\n");
+		}
+		else
+		{
+			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+				sprint(self, "éPublic CTF modeé\n");
+			else
+			{
+				if (teamplay)
+					sprint(self, "éPublic Team DeathMatch modeé\n");
+				else
+					sprint(self, "éFFA DeathMatch modeé\n");
+			}
+		}
+	}
+	temp = cvar("deathmatch");
+	sprint(self, "deathmatchÆÆÆ");
+	utils_print_float(temp);
+	temp = cvar("teamplay");
+	sprint(self, "teamplayÆÆÆÆÆ");
+	utils_print_float(temp);
+	if (!(clanring_playmode & CLANRING_MATCH_MODE))
+		temp = cvar("timelimit");
+	else
+		temp = clanring_timelimit;	
+
+	sprint(self, "timelimitÆÆÆÆ");
+	utils_print_float(temp);
+	temp = cvar("fraglimit");
+	sprint(self, "fraglimitÆÆÆÆ");
+	utils_print_float(temp);
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if (clanring_overtime > 0)
+		{
+			sprint(self, "overtimeÆÆÆÆÆ");
+			utils_print_float(clanring_overtime);
+		}
+		else
+		{
+			if (clanring_overtime == 0)
+				sprint(self, "overtimeÆÆÆÆÆdisabled\n");
+			else
+				sprint(self, "overtimeÆÆÆÆÆsudden death\n");
+		}
+	}
+	else
+	{
+		temp = cvar("noexit");
+		sprint(self, "noexitÆÆÆÆÆÆÆ");
+		utils_print_float(temp);
+	}
+
+	sprint(self, "quadÆÆÆÆÆÆÆÆÆ");
+
+	if (clanring_playmode & CLANRING_NO_QUAD)
+		sprint(self, "\bOFF\n");
+	else
+		sprint(self, "on\n");
+
+	sprint(self, "pentÆÆÆÆÆÆÆÆÆ");
+	if (clanring_playmode & CLANRING_NO_PENT)
+		sprint(self, "\bOFF\n");
+	else
+		sprint(self, "on\n");
+
+	sprint(self, "ringÆÆÆÆÆÆÆÆÆ");
+	if (clanring_playmode & CLANRING_NO_RING)
+		sprint(self, "\bOFF\n");
+	else
+		sprint(self, "on\n");
+
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+	{
+		sprint(self, "runesÆÆÆÆÆÆÆÆ");
+		if (clanring_playmode & CLANRING_RUNES)
+			sprint(self, "on\n");
+		else
+			sprint(self, "\bOFF\n"); 
+	
+		sprint(self, "hookÆÆÆÆÆÆÆÆÆ");
+		if (clanring_playmode & CLANRING_NO_HOOK)
+			sprint(self, "\bOFF\n");
+		else
+			sprint(self, "on\n");
+	}
+	
+	if (clanring_playmode & CLANRING_NO_SPOOGE)
+		sprint(self, "no spoogeÆÆÆÆon\n");
+
+	sprint(self, "\n");
+};
+
+//
+//  A D M I N S
+//
+//  List the server admins and the codes they used
+//
+void () clanring_admins =
+{
+	local entity e;
+	local string s;
+	local float found;
+
+	found = 0;
+	e = find(world, classname, "player");
+	while (e)
+	{
+		if ((e.style & CLANRING_CONNECTED) && (e.style & CLANRING_ADMINISTRATOR))
+			found = 1;
+		e = find(e, classname, "player");
+	}
+	if (!found)
+	{
+		sprint(self, "There are no administrators\n");
+		return;
+	}
+	sprint(self, "\n†√Ô‰Â†¸††††††Œ·ÌÂ\n");
+	sprint(self, "≠≠≠≠≠≠´≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠\n");
+	e = find(world, classname, "player");
+	while (e)
+	{
+		if ((e.style & CLANRING_CONNECTED) && (e.style & CLANRING_ADMINISTRATOR))
+		{
+			s = ftos(e.clanring_hack_count);
+			sprint5(self, "   ", s, "  ¸ ", e.netname, "\n");
+		}
+		e = find(e, classname, "player");
+	}
+};
+
+//R00k: this is pretty useless anymore...
+//
+//  W I N G L  D E T E C T
+//
+void (float quakever) clanring_wingl_detect =
+{
+	if (!(self.style & CLANRING_WINQUAKE) || !(self.style & CLANRING_GLQUAKE))
+	{
+		clanring_bad_impulse ();
+		return;
+	}
+	
+	self.style = self.style - (self.style & (CLANRING_WINQUAKE | CLANRING_GLQUAKE));
+	
+	if (quakever == 1)
+		self.style = self.style | CLANRING_WINQUAKE;
+	else if (quakever == 2)
+		self.style = self.style | CLANRING_GLQUAKE;
+};
+
+void () TossAmmo;
+void () TossWeapon;
+void () TossRune;
+void () HookOff;
+void () votables_request_set_faststarts;
+
+//
+//  I M P U L S E
+//
+//  Called from PlayerPreThink or observer_pre_think
+//
+void () clanring_impulse =
+{
+	if (self.impulse == 19)
+		TossRune ();
+	else if (self.impulse == 20)
+		TossAmmo();
+	else if (self.impulse == 21)
+		TossWeapon();
+	else if (self.impulse == 69)
+		PreviousWeaponCommand();
+	else if (self.impulse == 203)
+		votables_request_set_runes();
+	else if (self.impulse == 199)
+		votables_request_vote_exit();
+	else if (self.impulse == 209)
+		votables_request_set_faststarts();
+	else if (self.impulse == 70)//R00k: allow players to manually go afk, so they wont be counted in votes.
+	{
+		if (!(self.style & CLANRING_AFK_CLIENT))
+		{
+			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
+			afk_name();
+			self.style = self.style | CLANRING_AFK_CLIENT;
+			self.afk_time = time;
+		}		
+	}
+    else if (self.impulse == 119)
+	{
+		if (teamplay)
+			utils_toggle_flag(CLANRING_AUTOID, "Automatic Team Identifier");
+	}
+    else if (self.impulse == 23)
+	{
+		if (teamplay)
+			TeamFlagStatusReport ();
+	}
+	else if (self.impulse == 38)
+		clanring_ping_reply ();
+	else if (self.impulse == 39)
+	{
+		self.lagcheck    = self.finaldest_x;
+		self.finaldest_x = time;
+		if (self.finaldest_x - self.lagcheck <= 5 )
+			self.lagcount = self.lagcount + 1;
+		if (self.lagcount > 2)
+		{
+			self.lagcount  = 0.00;
+			self.plag      = 0.00;
+		}
+	}
+	else if (self.impulse >= 190)
+    	admin_impulse ();
+	else if (self.impulse >= 120 && self.impulse <= 139)
+    	match_impulse ();
+	else if (self.impulse >= 140 && self.impulse <= 159)
+    	observer_impulse ();
+	else if (self.impulse >= 170 && self.impulse <= 179)
+    	stats_impulse ();
+	else if (self.impulse == 100)
+    	clanring_help ();
+	else if (self.impulse == 101)
+    	observer_help ();
+	else if (self.impulse == 107)
+	{
+        self.finaldest_z    = 0;
+        self.warp_episode   = 0;
+        self.warp_map       = 0;
+        self.warp_menu      = 1;
+        self.use            = SUB_Null;
+        client_select_warp();
+	}
+	else if (self.impulse == 103)
+    	clanring_show_rules ();
+	else if (self.impulse == 105)
+    	clanring_help_misc ();
+	else if (self.impulse == 106)
+    	clanring_commands ();
+	else if (self.impulse == 102)
+    	clanring_levels ();
+	else if (self.impulse == 108)
+    	admin_start_code ();
+	else if (self.impulse == 109)
+    	motd_create ();
+	else if (self.impulse == 110)
+    	clanring_admins ();
+	else if (self.impulse == 114)
+    	utils_toggle_flag (CLANRING_SMART_WEAPON, "Smart weapon switching");
+	else if (self.impulse == 117)
+    	clanring_vinfo ();
+	else if (self.impulse == 118)
+    	clanring_ticrate ();
+	else if (self.impulse == 180)
+    	self.style = (self.style | CLANRING_FOUND_BINDINGS);
+	else if (self.impulse >= 115 && self.impulse <= 116)
+	{
+        if (self.style & CLANRING_KICK_CONFIRM)
+        {
+            if (clanring_kick_mode == KICK_KICK)
+                admin_confirm_kick_response (116 - self.impulse);
+            else if (clanring_kick_mode == KICK_BAN)
+                admin_confirm_ban_response ((116 - self.impulse));
+        }
+        else
+        {
+            if (self.style & CLANRING_CONFIRM_LEAVE)
+                observer_confirm_leave_response ((116 - self.impulse));
+            else
+                vote_impulse ();
+        }
+	}
+	else
+    	sprint(self, "type 'help-server' in console for help\n");
+	self.impulse = 0;
+};
+
+//
+//  C L I E N T  S U I C I D E
+//
+//  Called from ClientKill in Client.qc.  Checks to see if the player
+//  has exceeded their suicide limit and returns either CLANRING_SUICIDE_OK
+//  or CLANRING_TOO_MANY_SUICIDES accordingly.
+//
+float () clanring_client_suicide =
+{
+    local string temp;
+
+    // Always OK for admins or practice mode
+    if (self.style & CLANRING_ADMINISTRATOR)
+		return CLANRING_SUICIDE_OK;
+
+	self.cnt -= 1;
+	
+	if (self.cnt < 0)
+	{
+		// too many suicides
+		if (self.cnt >= -1) // only want to do this stuff once
+		{
+			announce2(self.netname, " kicked for suiciding");
+			clanring_kick_mode = KICK_KICK;
+			clanring_kick_player (self);
+		}
+		return CLANRING_TOO_MANY_SUICIDES;
+	}
+	temp = ftos(floor(self.cnt));
+	sprint3(self, "you have ", temp, " suicides remaining\n");
+	return CLANRING_SUICIDE_OK;
+};
+
+//
+//  C L I E N T  R E A D Y
+//
+//  Prevent "observer spamming": rapid observer/ready in normal/practice mode
+//
+float () clanring_client_ready =
+{
+	if (self.style & CLANRING_ADMINISTRATOR)
+		return FALSE;
+
+	self.cnt -= 1;
+
+	if (self.cnt < 0)
+	{
+		if (self.cnt >= -1)
+		{
+			announce2(self.netname, " kicked for observer spamming");
+			clanring_kick_mode = KICK_KICK;
+			clanring_kick_player(self);
+		}
+		return TRUE;
+	}
+	return FALSE;
+};
+
+entity (entity e) observer_find_target;
+entity (entity e) observer_find_camera;
+
+//
+//  P E R I O D I C  C H E C K S
+//
+//  Do various checks every second.  Called from PlayerPreThink in
+//  Client.qc.
+//
+void () clanring_periodic_checks =
+{
+	if (!(self.style & CLANRING_CONNECTED))
+		return;
+
+	local float inactive, c;
+
+	if (!(self.style & CLANRING_ADMINISTRATOR))
+	{
+		if (utils_illegal_name (self.netname))
+		{
+			// Let's be fairly draconian about this
+			updatename (self, "unnamed");//R00k...
+//			announce("Player kicked for illegal name");
+//			clanring_kick_mode = KICK_KICK;
+//			clanring_kick_player (self);
+//			return;
+		}
+	}
+
+	//Regenerate suicides 20% per second.
+	if (self.cnt < CLANRING_MAX_SUICIDES)
+		self.cnt = self.cnt + 0.2;
+
+	//Replenish grenade spam count once per sec.
+	if (clanring_playmode & CLANRING_NO_SPOOGE)
+	{
+		if (self.lip > 0)
+			self.lip -= 1;
+	}
+
+	if (self.style & CLANRING_OBSERVER)
+	{
+		observer_find_teleport();
+		observer_check_size();
+				
+		if (self.oflags & OBSERVER_QUAKETV) //Sputnik: reset between map loads.
+		{
+			if (!(self.movetarget))
+			{		        
+		        self.movetarget = observer_find_camera(world);// see if we can find a camera
+				if (self.movetarget)
+				{
+					self.oflags = self.oflags | OBSERVER_GO_AUTO;
+					observer_camera_start();
+				}
+				else
+				{
+					self.movetarget = observer_find_target(world);// see if we can find a player
+					if (self.movetarget)
+					{
+						self.oflags = self.oflags | OBSERVER_GO_AUTO;
+						observer_chase_start();
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		if (!self.deadflag)
+		{
+			auto_compute_score();
+		}
+	}
+
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if ((self.style & CLANRING_READY) && ((!(clanring_state & CLANRING_MATCH_STARTED)) && (!(clanring_state & CLANRING_MATCH_OVER))))
+		{
+			if (self.style & CLANRING_CONNECTED)
+			{				
+				ready_name();
+			}
+		}
+	}
+	
+	self.ping_time = client_ping(self);
+
+	inactive = time - self.afk_time;//Seconds of inactivity
+	c = floor(inactive / 60);		//Minutes of inactivity (round down).
+
+	if (self.style & CLANRING_AFK_CLIENT)
+	{
+		if (inactive >= clanring_afk_timeout)
+		{
+			clanring_kick_mode = KICK_AFK;			
+			clanring_kick_player(self);
+			return;
+		}
+
+		afk_name();
+		
+		local string s, pl;	
+
+		s = ftos((clanring_afk_timeout / 60) - c);
+		pl = strings_szplural((clanring_afk_timeout / 60) - c);
+		
+		if (c > ((clanring_afk_timeout / 60) - 5))	//If afk-timer is less than 5 minutes from timeout...
+		{		
+			if ((inactive - (c * 60)) < 1)//One minute has passed...sorta
+			{
+				stuffcmd(self, "play ");
+				//todo choose random?
+				//stuffcmd(self, "zombie/idle_w2.wav");	
+				stuffcmd(self, "demon/idle1");
+				stuffcmd(self, "\n");
+				sprint(self, "AFK ALERT: \bYou will be kicked in ",s," minute",pl,".\n");
+				sprint(self, "Press jump or fire to stay connected.\n");
+			}
+		}					
+	}
+	else
+	{
+		if ((inactive >= clanring_afk_check) && (!(self.style & CLANRING_ADMINISTRATOR)))
+		{
+			self.afk_time = time;
+			self.style = (self.style | CLANRING_AFK_CLIENT);
+	
+			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");			
+		}
+	}
+};
+
+//
+//  S T A R T  F R A M E
+//
+//  Called from StartFrame in World.qc.  This routine performs periodic
+//  checks in match mode and checks for server console commands.
+//
+void () clanring_start_frame =
+{
+	local float command;
+
+	if (!gameover)
+	{
+		if (sys_ready)
+		{
+			if (!(clanring_playmode & CLANRING_MATCH_MODE))
+			{
+				if (timelimit)
+				{
+					if (time >= timelimit)
+					{
+						if (clanring_levelcount == -1)
+						{
+							bprint("Timelimit Hit -- Game Over!\n");
+							NextLevel ();
+							return;
+						}
+					}
+				}
+			}
+
+			if (time >= clanring_nextcheck)
+			{
+				local entity player;
+				// update variables
+				timelimit 	= cvar("timelimit") * 60;
+				fraglimit 	= cvar("fraglimit");
+				teamplay 	= cvar("teamplay");
+				clanring_playmode 	= cvar("samelevel");
+
+				player = find(world, classname, "player");
+				while (player != world)
+				{
+					if (player.style & CLANRING_CONNECTED)
+					{
+						if (time > player.finaldest_x + 5)
+						{
+							// send out ping to test for disconnected players
+							msg_entity = player;
+							WriteByte(MSG_ONE, SVC_STUFFCMD);
+							WriteString(MSG_ONE, "impulse 39\n");
+						}
+
+						if ((time >= player.finaldest_x + 15) && (time < player.finaldest_x + 16))
+						{
+							bprint(player.netname," is \blagged\b.\n");
+							bprint("\bClanRing\b lag protection activated.\n");
+							player.plag = TRUE;							
+						}
+
+						if (time > player.finaldest_x + 25)
+						{
+							clanring_kick_mode = KICK_NONE;
+							clanring_kick_player (player);
+						}
+					}
+					else
+					{
+						if (!(player.style & CLANRING_NEW_CLIENT))
+						{
+							player.model 		= string_null;
+							player.solid 		= SOLID_NOT;
+							player.takedamage 	= DAMAGE_NO;
+							// Entity of disconnecting client not initialized fix
+							player.classname 	= string_null;
+							player.netname    	= "";
+						}
+					}
+					player = find(player, classname, "player");
+				}
+				clanring_nextcheck = time + 5;
+			}
+
+			if (time >= clanring_nextcheck2)
+			{
+				auto_schedule_cameras();
+				utils_make_scheduled_event(auto_chase, 0.3);
+				utils_make_scheduled_event(auto_camera, 0.6);				
+				
+				pqc_ping_times();
+
+				if (clanring_levelcount > 0)
+				{
+					// Check for end of file in levels.cfg.  We assume end of file
+					// if it's been 5 seconds since the last update to levelcount.
+					// When end of file is detected, levelcount is set to -1 to
+					// indicate that levels.cfg is finished.
+					if ((clanring_levelcount == clanring_lastcount))
+					{
+						cprint("levels.cfg: finished\n");
+						if (nextmap == "")
+							nextmap = clanring_firstlevel;
+						if (nextmap == "")
+							cprint("no nextmap found\n");
+						else
+							bprint("nextmap is \b", nextmap, "\b.\n");
+
+						clanring_levelcount = -1;
+						if (!(clanring_playmode & CLANRING_MATCH_MODE) && (cvar("noexit") != 1))
+							bprint("Exits activated\n");
+					}
+					clanring_lastcount = clanring_levelcount;
+				}
+														
+				if (timelimit && (clanring_playmode & CLANRING_MATCH_MODE))
+				{
+					if (rint(timelimit - time) == 300)
+					{
+						bprint("\n«·ÌÂ ÂÓ‰Û ÈÓ  ÌÈÓıÙÂÛ\n\n");
+					}
+					else
+					{
+						if (rint(timelimit - time) == 60)
+						{
+							bprint("\n«·ÌÂ ÂÓ‰Û ÈÓ  ÌÈÓıÙÂ\n\n");
+						}
+						else
+						{
+							if (rint(timelimit - time) == 30)
+							{
+								bprint("\n«·ÌÂ ÂÓ‰Û ÈÓ  ÛÂ„ÔÓ‰Û\n\n");
+							}
+							else
+							{
+								if (rint(timelimit - time) == 10)
+								{
+									bprint("\n«·ÌÂ ÂÓ‰Û ÈÓ  ÛÂ„ÔÓ‰Û\n\n");
+								}
+								else
+								{
+									if (rint(timelimit - time) == 5)
+									{
+										bprint("ù ó ë\n");
+									}
+									else
+									{
+										if (rint(timelimit - time) == 4)
+										{
+											bprint("ù ñ ë\n");
+										}
+										else
+										{
+											if (rint(timelimit - time) == 3)
+											{
+												bprint("ù ï ë\n");
+											}
+											else
+											{
+												if (rint(timelimit - time) == 2)
+												{
+													bprint("ù î ë\n");
+												}
+												else
+												{
+													if (rint(timelimit - time) == 1)
+													{
+														bprint("ù ì ë\n");
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}				
+				}								
+				clanring_nextcheck2 = time + 1;
+			}
+			auto_check_current_camera();
+		}
+	}
+
+	sys_ticrate = cvar("sys_ticrate");//R00k Added
+	//sv_friction = cvar("sv_friction");//R00k Added
+
+    // Check for a console command
+    command = cvar("temp1");
+    cvar_set("temp1", "0");
+    if (command)
+		console_command(command);
+};
