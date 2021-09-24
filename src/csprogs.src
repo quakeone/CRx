@@ -1,0 +1,4 @@
+./csprogs.dat
+./qsextensions.qc	//builtins and lots of extensions
+
+csqc_hud_vanilla.qc				//The actual hud code. self-contained, except for qc extensions.

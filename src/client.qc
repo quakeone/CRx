@@ -1659,7 +1659,27 @@ called when a player connects to a server
 void() ClientConnect =
 {
 	self.finaldest_x = time;//lagout timer
+
 	clanring_client_connect ();
+
+	if (stof(infokey(self, INFOKEY_P_CSQCACTIVE)))
+	{
+		sprint(self,"INFOKEY_P_CSQCACTIVE Found: CSQC Enabled.\n");
+		self.dimension_see = 1;
+	}
+	else
+	{
+		if (checkextension(ftos(SVC_CGAMEPACKET)))
+		{
+			sprint(self,"INFOKEY_P_CSQCACTIVE Found: CSQC Enabled.\n");
+			self.dimension_see = 1;
+		}
+		else
+		{
+			sprint(self,"INFOKEY_P_CSQCACTIVE \bFAILED\b: CSQC \bDISABLED\b.\n");
+			self.dimension_see = 2;
+		}
+	}
 };
 
 /*

@@ -66,7 +66,7 @@ void() stats_show_badstats =
 		tot_done = tot_enemy + player.clanring_badstats_y + player.clanring_badstats_z;
 		if (player == self)
 		{
-			sprint(self, " ");
+			sprint(self, "\x90");
 			utils_print_int3(player.clanring_badstats_x);
 			sprint(self, "‘ü ");
 			stats_print_percent3(player.clanring_badstats_y, tot_done);
@@ -119,7 +119,7 @@ void() stats_show_quadstats =
 	{
 		if (player == self)
 		{
-			sprint(self, "");
+			sprint(self, "\x90");
 			utils_print_int3(player.clanring_qdwep_z);
 			sprint(self, "‘ü");
 		}
@@ -174,7 +174,7 @@ void() stats_show_killstats =
 		break;
 		if (player == self)
 		{
-			sprint(self, "");
+			sprint(self, "\x90");
 			utils_print_int3(player.frags);
 			sprint(self, "‘ü");
 		}

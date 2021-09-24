@@ -75,7 +75,12 @@ void() votables_send_aliases =
 };
 
 //----------------------------------------------------------------
-
+//	V O T A B L E S  S E T  H O O K
+//
+//	R00K: Enable or disable the hook, only for ctf
+//	(TODO): allow in pub-tdm?
+//			voteable speeds for QW players
+//----------------------------------------------------------------
 void() votables_set_hook =
 {
 	local entity p;
@@ -246,7 +251,6 @@ void() votables_request_change_level =
 //  The level will be entered next; votables_request_change_level will be
 //  called when it is.
 //
-
 void(float episode) votables_init_warp =
 {
 	self.count = episode;
@@ -278,7 +282,6 @@ void() votables_starve_player =
 //
 //  Phatten up players when entering practice mode.
 //
-
 void() votables_phatten_player =
 {
 	self.items = IT_SHOTGUN | IT_AXE | IT_ROCKET_LAUNCHER | IT_ARMOR3 | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_GRENADE_LAUNCHER | IT_LIGHTNING | IT_SUPER_NAILGUN;
@@ -305,8 +308,6 @@ void() votables_phatten_player =
 //
 void() votables_set_mode =
 {
-
-
 	if (clanring_state & CLANRING_MATCH_STARTED)
 		return;
 
@@ -321,7 +322,7 @@ void() votables_set_mode =
 			
 			cvar_set("teamplay", "0");
 			
-			utils_do_players(votables_starve_player);//R00k ADDED, going from pmode to normal everyone has full inventory.
+			utils_do_players(votables_starve_player);//R00k ADDED, going from pmode to normal everyone has full inventory. (CVAR?)
 			clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
 		}
 		else
@@ -446,7 +447,7 @@ void(float newmode) votables_request_set_mode =
 //
 // V O T A B L E S  S E T  G A M E T Y P E
 //
-//  This flips the whole server into either CTF or TEAM-Deathmatch, 
+//  r00k: This flips the whole server into either CTF or TEAM-Deathmatch, 
 //  with sub-modes for each (match, normal, pmode)...
 //
 void(void) votables_set_gametype =
@@ -469,7 +470,7 @@ void(void) votables_set_gametype =
 //
 //	V O T A B L E S  R E Q U E S T  S E T  G A M E T Y P E
 //
-//	Vote to change gametype to CTF or TDM
+//	r00k: Vote to change gametype to CTF or TDM
 //
 void(void) votables_request_set_gametype =
 {

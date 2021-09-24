@@ -124,7 +124,7 @@ void() match_show_timelimit =
 			}
 			else
 			{
-				temp = ftos(clanring_match_timer.lip);//R00k: i think this is messing with FTE's gameclock.
+				temp = ftos(clanring_match_timer.lip);
 				localcmd2(temp, "\"\n");
 			}
 		}
@@ -188,7 +188,7 @@ void() match_reset =
 	if (self.classname == "clanring_match_timer")
 		remove(self);
 
-	pqc_match_time (world, 0, 0);
+	pqc_match_time (0, 0);
 	//reset between matches incase of overtime or interrupted match abort (FIXME?)
 	clanring_timelimit = default_timelimit;
 	utils_set_cvar ("timelimit", clanring_timelimit);
@@ -471,7 +471,7 @@ void() match_timer_think2 =
 	}
 
 	if (!(clanring_state & CLANRING_MATCH_PAUSED))
-		pqc_match_time(world, self.lip, self.count);
+		pqc_match_time(self.lip, self.count);
 
 	self.nextthink = time + 1;
 	score_update_time();
@@ -738,7 +738,7 @@ void() match_timer_think1 =
 		self.lip -= 1;
 	}
 	self.nextthink = time + 1;
-	pqc_match_time(world, self.lip, self.count);
+	pqc_match_time(self.lip, self.count);
 	score_update_time();
 
 	if (self.count == self.dest_x)
@@ -1519,7 +1519,7 @@ void() match_notready =
 	{
 		announce("Timer stopped");
 		remove(clanring_match_timer);
-		pqc_match_time(world, 0, 0);//fixed
+		pqc_match_time(0, 0);//fixed
 		clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
 		clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
 		match_show_timelimit();
@@ -2396,7 +2396,7 @@ void(entity player) match_disconnect_notify =
 		announce3("Only one ", clanring_szteam, " present");
 		announce("Timer stopped");		
 		remove(clanring_match_timer);
-		pqc_match_time (world, 0, 0);//fixed
+		pqc_match_time(0, 0);//fixed
 		clanring_state = (clanring_state - (clanring_state & CLANRING_TIMER_STARTED));
 		clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
 		match_show_timelimit();

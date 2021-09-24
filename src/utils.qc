@@ -261,7 +261,7 @@ void (string status) updatenameoverload =
 
 void (entity ent, string c_name) updatename =
 {
-	if ((strstrofs(infokey(self, INFOKEY_P_PROTOCOL),"world")) >= 0)//hack
+	if ((strstrofs(infokey(self, INFOKEY_P_PROTOCOL),"world")) >= 0)//fixme
 		return;
 
 	local float client;
@@ -1339,38 +1339,48 @@ void (entity e, float m, float s)pqc_match_time =
 	WriteString(msg_type, string_null);
 };
 */
-void(entity e, float m, float s)pqc_match_time =
+void(float m, float s)pqc_match_time =
 {    
-    local float msg_type;
+	local entity oldself;
 
-    if (e == world)
-        msg_type = MSG_ALL;
-    else
+    oldself = self;
+    self = find(world, classname, "player");
+    while (self)
     {
-        msg_entity = e;
-        msg_type = MSG_ONE;
-    }
+        if (self.style & CLANRING_CONNECTED)
+        {
+			if (self.dimension_see == 1)
+			{
+				dimension_send = 1;	
+				msg_entity = self;
+				WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
+				WriteByte(MSG_MULTICAST, PQC_MATCH_TIME);
+				WriteByte(MSG_MULTICAST, m);
+				WriteByte(MSG_MULTICAST, s);
+				multicast('0 0 0', MULTICAST_ONE_R);
+			}
 
-    if ((strstrofs(infokey(self, INFOKEY_P_PROTOCOL),"world")) >= 0)
-    {
-		WriteByte(MSG_MULTICAST, SVC_UPDATESTAT);
-		WriteByte(MSG_MULTICAST, 18);//STAT_MATCHTIME = 18
-		WriteShort(MSG_MULTICAST, (clanring_match_timer.lip)*1000);//send current matchtime, converted to ms.
-		multicast('0 0 0', MULTICAST_ALL_R);
+			if (self.dimension_see == 2)
+			{
+				dimension_send = 2;
+				msg_entity = self;
+				WriteByte(MSG_MULTICAST , SVC_STUFFCMD);
+				WriteByte(MSG_MULTICAST , MOD_PROQUAKE);
+				WriteByte(MSG_MULTICAST , PQC_MATCH_TIME);
+				WriteBytePQ (MSG_MULTICAST , m);
+				WriteBytePQ (MSG_MULTICAST , s);
+				WriteString(MSG_MULTICAST , string_null);
+				multicast('0 0 0', MULTICAST_ONE_R);
+			}
+		}
+        self = find(self, classname, "player");
     }
-    else
-    {
-        WriteByte(msg_type, SVC_STUFFCMD);
-        WriteByte(msg_type, MOD_PROQUAKE);
-        WriteByte(msg_type, PQC_MATCH_TIME);
-        WriteBytePQ (msg_type, m);
-        WriteBytePQ (msg_type, s);
-        WriteString(msg_type, string_null);
-    }
+    self = oldself;
 };
 
 void ()pqc_match_reset =
 {	
+	dimension_send = 2;
 	WriteByte(MSG_ALL, SVC_STUFFCMD);
 	WriteByte(MSG_ALL, MOD_PROQUAKE);
 	WriteByte(MSG_ALL, PQC_MATCH_RESET);

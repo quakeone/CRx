@@ -904,7 +904,8 @@ void () clanring_client_connect =
 		parm13 = 0;
 		
 		stats_reset_player();
-		find_pqc_teamscore_teams ();//R00k
+
+		utils_make_scheduled_event(find_pqc_teamscore_teams, 1.25);//R00k
 		self.afk_time = time + 20;
 	}
 
