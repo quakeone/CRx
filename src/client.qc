@@ -330,7 +330,7 @@ void() execute_changelevel =
 		other.takedamage = DAMAGE_NO;
 		other.solid = SOLID_NOT;
 		other.movetype = MOVETYPE_NONE;
-		other.finaldest_y = 0;
+		other.finaldest_y = MOVETYPE_NONE;
 		other.modelindex = 0;
 		other.model = "";
 		setorigin(other, intermission_pos.origin);
@@ -495,6 +495,16 @@ void() ClientKill =
 
 entity () TeamCaptureSpawn =
 {
+	local entity checkmap = world; 
+
+	//Test if the map has ctf spawnpoints, in case we are in CTF mode and on a TDM map.
+	checkmap = find(world, classname, "info_player_team1");
+	if (checkmap == world)
+	{
+		team1_lastspawn = find(team1_lastspawn, classname, "info_player_deathmatch");
+		return team1_lastspawn;
+	}
+
 	if ((self.team == RED) && (self.style & CLANRING_RED_TEAM))
 	{
 		team1_lastspawn = find(team1_lastspawn, classname, "info_player_team1");
@@ -537,6 +547,11 @@ entity () SelectSpawnPoint =
 	if ((self.killed == FALSE) && (clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (!(self.style & CLANRING_OBSERVER)))
 	{
 		spot = TeamCaptureSpawn();
+		if (spot.classname == "info_player_deathmatch")
+		{
+			centerprint(self, "\bMap has no CTF Team spawnpoints!\b\n");//Tell the player that joined the team
+			bprint("\bMap currently has no CTF Team spawnpoints; select another map.\b\n");//Tell everyone else too.
+		}
 		return spot;
 	}
 
@@ -713,7 +728,7 @@ void() PutClientInServer =
 	self.takedamage 			= DAMAGE_AIM;
 	self.solid 					= SOLID_SLIDEBOX;
 	self.movetype 				= MOVETYPE_WALK;
-	self.finaldest_y 			= 3;
+	self.finaldest_y 			= MOVETYPE_WALK;
 	self.show_hostile 			= 0;
 	self.max_health 			= 100;
 	self.flags					= FL_CLIENT;	
@@ -1193,7 +1208,7 @@ void() PlayerPreThink =
 	if (self.height != self.team - 1)
 		match_verify_team ();
 
-	if (self.movetype != self.finaldest_y)
+	if (self.movetype != self.finaldest_y) // dork used admin 0 noclip or fly (R00k: CL_PRIVILEGED was removed is this still needed?)
 		self.movetype = self.finaldest_y;
 
 	if (time > self.wait)
@@ -1239,8 +1254,7 @@ void() PlayerPreThink =
 	{
 		self.style = self.style | CLANRING_NO_POST_THINK;
 		self.velocity = '0 0 0';
-		if (self.movement)	//R00k: ignore user input(test?)
-			self.movement = '0 0 0';
+		self.movement = '0 0 0';//FIXME?
 		return;
 	}
 
@@ -1386,7 +1400,7 @@ void() CheckPowerups =
 		}// end
 		else
 		{
-			if (self.style & CLANRING_ADMINISTRATOR)
+			if ((self.style & CLANRING_ADMINISTRATOR)&&(clanring_playmode & CLANRING_PRACTICE_MODE))
 				admin_pushplayers();
 				
 			if (self.invincible_finished < time + 3)
@@ -1661,24 +1675,9 @@ void() ClientConnect =
 	self.finaldest_x = time;//lagout timer
 
 	clanring_client_connect ();
-
-	if (stof(infokey(self, INFOKEY_P_CSQCACTIVE)))
-	{
-		sprint(self,"INFOKEY_P_CSQCACTIVE Found: CSQC Enabled.\n");
-		self.dimension_see = 1;
-	}
-	else
-	{
-		if (checkextension(ftos(SVC_CGAMEPACKET)))
-		{
-			sprint(self,"INFOKEY_P_CSQCACTIVE Found: CSQC Enabled.\n");
-			self.dimension_see = 1;
-		}
-		else
-		{
-			sprint(self,"INFOKEY_P_CSQCACTIVE \bFAILED\b: CSQC \bDISABLED\b.\n");
-			self.dimension_see = 2;
-		}
+	if (stof(infokey(self, "csqcactive")))
+	{				
+		self.csqc_enabled = TRUE;
 	}
 };
 
@@ -1781,7 +1780,7 @@ void(entity client, float fragval) client_frag =
 		{
 			client.frags = (client.frags + fragval);
 			score_frag (client.next_team, fragval);
-			pqc_team_frags(world, (client.height), client.next_team.frags);
+			pqc_team_frags(client.height, client.next_team.frags);
 		}
 		else
 		{
@@ -1790,20 +1789,18 @@ void(entity client, float fragval) client_frag =
 
 		if (fraglimit)//R00k added fraglimit for Brazilians, they use fraglimit even in match mode!
 		{
-			if ((client.frags >= fraglimit))
+			if (client.frags >= fraglimit)
 			{
 				local entity ent;
 				ent = find(world,classname,"clanring_match_timer");
 				if (ent)
-				{
 					ent.think = match_end;
-				}
 			}
 		}
 	}
 	else
 	{
-		client.frags = (client.frags + fragval);
+		client.frags += fragval;
 		if (client.frags >= fraglimit)
 		{
 			if (fraglimit && (clanring_levelcount == -1))
@@ -1833,10 +1830,10 @@ void(entity targ, entity attacker) ClientObituary =
 	local entity head;
 	local float flag_radius;
 	local float flag_carrier_radius;
-	local string s;
+	local string s = "";
 	local float rnum;
-	local string deathstring;
-	local string deathstring2;
+	local string deathstring = "";
+	local string deathstring2 = "";
 
 	rnum = random ();
 	if (targ.classname == "player")
