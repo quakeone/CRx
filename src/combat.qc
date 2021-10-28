@@ -348,9 +348,9 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				if (inflictor.classname != "door") 	// because squishing a teammate is still possible
 				{
 					teamdamage = FALSE;
-					if ((attacker.weapon == IT_LIGHTNING))//Always damage teammates if discharging.
+					if (attacker.weapon == IT_LIGHTNING)//Always damage teammates if discharging.
 					{
-						if (targ.waterlevel)
+						if ((attacker.waterlevel > 1)&&(targ.waterlevel > 1))//fixed
 							teamdamage = TRUE;
 					}
 				}
@@ -538,8 +538,8 @@ void(entity inflictor, entity attacker, float damage, entity ignore, string dtyp
 	local 	float 	points, dist, radius;
 	local 	entity 	head;
 	local 	vector 	org;
-	local	float	attacker_damaged;
-	local	float	attacker_points;
+	local	float	attacker_damaged = FALSE;
+	local	float	attacker_points = FALSE;
 
 	radius = damage + 40;
 	
