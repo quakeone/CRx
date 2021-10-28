@@ -22,7 +22,7 @@
 		1: left
 	scr_sbaralpha: opacity of backgroundy elements
 */
-
+ 
 // items. FIXME: you should share these with your ssqc...
 float	IT_SHOTGUN				= 1<<0;
 float	IT_SUPER_SHOTGUN		= 1<<1;
@@ -52,10 +52,10 @@ float	IT_INVULNERABILITY		= 1<<20;
 float	IT_SUIT					= 1<<21;
 float	IT_QUAD					= 1<<22;
 
-float IT2_RUNE1					= 1<<5;
-float IT2_RUNE2					= 1<<6;
-float IT2_RUNE3					= 1<<7;
-float IT2_RUNE4					= 1<<8;
+float 	IT2_RUNE1				= 1<<5;
+float 	IT2_RUNE2				= 1<<6;
+float 	IT2_RUNE3				= 1<<7;
+float 	IT2_RUNE4				= 1<<8;
 
 //ProQuake commands
 float	PQC_NOP		    =	1;
@@ -66,8 +66,35 @@ float	PQC_MATCH_TIME	=	5;
 float 	PQC_MATCH_RESET	=	6;
 float 	PQC_PING_TIMES	=	7;
 
-float matchtime_minute;
+float matchtime_minutes;
 float matchtime_seconds;
+
+typedef struct 
+{
+	string 	topcolor;
+	string 	bottomcolor;
+	float	frags;
+}teamscores_t;
+
+teamscores_t cl_teamscores[14];
+
+static string teamcolor[14] =	
+{
+	"0.48 0.48 0.48",	// 0 Newspaper
+	"0.33 0.23 0.11",  	// 1 Brown
+	"0.31 0.31 0.45",	// 2 Light Blue
+	"0.22 0.22 0.03",	// 3 Green
+	"0.27 0.00 0.00",	// 4 Red
+	"0.37 0.28 0.04",	// 5 Mustard
+	"0.56 0.26 0.20",	// 6 Clay
+	"0.50 0.33 0.23",	// 7 Flesh
+	"0.34 0.21 0.26",	// 8 Lavendar
+	"0.37 0.20 0.23",	// 9 Grape
+	"0.42 0.34 0.28",	// 10 Biege
+	"0.18 0.26 0.22",	// 11 Aqua					
+	"0.49 0.39 0.03",	// 12 Lemon
+	"0.18 0.18 0.49"	// 13 Blue
+};
 
 //wad image names in array form, for easier access.
 static string number[10] = {
@@ -191,7 +218,6 @@ static void(vector pos, float value, float threshhold) Hud_DrawLargeValue =
 
 	if (value <= threshhold)
 	{	//use alternate (red) numbers
-
 		while(len>0)
 		{
 			len--;
@@ -431,7 +457,7 @@ static void Hud_DrawSBar(vector pos, vector virtsize)
 			Hud_PicOrModel(pos, "gfx/sb_rocket", "maps/b_rock1.bsp", 0, 80);
 		else if (sitems & IT_CELLS)
 			Hud_PicOrModel(pos, "gfx/sb_cells", "maps/b_batt1.bsp", 0, 80);
-		Hud_DrawLargeValue(pos-[24*3], getstatf(STAT_AMMO), 10);
+		Hud_DrawLargeValue(pos-([24*3]), getstatf(STAT_AMMO), 10);
 		return;
 	}
 	
@@ -503,7 +529,7 @@ static void Hud_DrawIBar(vector pos, vector br)
 		if (sitems & IT_SUPER_NAILGUN)		Hud_DrawWeapon(3, pos3+[0,16*3]);
 		if (sitems & IT_GRENADE_LAUNCHER)	Hud_DrawWeapon(4, pos3+[0,16*4]);
 		if (sitems & IT_ROCKET_LAUNCHER)	Hud_DrawWeapon(5, pos3+[0,16*5]);
-		if (sitems & IT_LIGHTNING)			Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos3+[0,16*6], 24, LIGHTNING_WIDTH);
+		if (sitems & IT_LIGHTNING)			Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos3+([0,16*6]), 24, LIGHTNING_WIDTH);
 	}
 	else
 	{	//standard nq sbar
@@ -515,7 +541,7 @@ static void Hud_DrawIBar(vector pos, vector br)
 		if (sitems & IT_SUPER_NAILGUN)		Hud_DrawWeapon(3, pos+[24*3,8]);
 		 if (sitems & IT_GRENADE_LAUNCHER)	Hud_DrawWeapon(4, pos+[24*4,8]);
 		if (sitems & IT_ROCKET_LAUNCHER)	Hud_DrawWeapon(5, pos+[24*5,8]);
-		if (sitems & IT_LIGHTNING)			Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos+[24*6,8], LIGHTNING_WIDTH, LIGHTNING_WIDTH);
+		if (sitems & IT_LIGHTNING)			Hud_DrawWeaponEx(6, flashtime[6], sweapon==IT_LIGHTNING, pos+([24*6,8]), LIGHTNING_WIDTH, LIGHTNING_WIDTH);
 
 		Hud_DrawAmmoCount(0, pos + '10 0 0', FALSE);
 		Hud_DrawAmmoCount(1, pos + '58 0 0', FALSE);
@@ -579,13 +605,13 @@ static void(vector pos, string num) Hud_DrawMatchNumbers =
 		if (c == ' ')
 			continue;
 		if (c == '/')
-			drawpic(pos, "gfx/num_slash", [24,24],[1,1,1],1,0);
+			drawpic(pos, "gfx/num_slash", ([24,24]),([1,1,1]),1,0);
 		else if (c == ':' || c == '.')
-			drawpic(pos, "gfx/num_colon", [24,24],[1,1,1],1,0);
+			drawpic(pos, "gfx/num_colon", ([24,24]),([1,1,1]),1,0);
 		else if (c == '-')
-			drawpic(pos, "gfx/num_minus", [24,24],[1,1,1],1,0);
+			drawpic(pos, "gfx/num_minus", ([24,24]),([1,1,1]),1,0);
 		else if (c >= '0' && c <= '9')
-			drawpic(pos, sprintf("gfx/num_%c", c), [24,24],[1,1,1],1,0);
+			drawpic(pos, sprintf("gfx/num_%c", c), ([24,24]),([1,1,1]),1,0);
 	}
 };
 //-------------------------------------
@@ -596,8 +622,33 @@ void() Hud_DrawMatchTime =
 	pos_x = autocvar(hud_matchtime_x, 10);
 	pos_y = autocvar(hud_matchtime_y, 10);
 
-	Hud_DrawMatchNumbers(pos+[144, 64], sprintf("%2.0f:%02.0f", matchtime_minute, matchtime_seconds));
+	Hud_DrawMatchNumbers(pos+([144, 64]), sprintf("%2.0f:%02.0f", matchtime_minutes, matchtime_seconds));
 }
+
+//TODO: use LARGE numbers/colored panels for big screens...
+void() Hud_DrawTeamScores = 
+{
+	local vector /*top,*/ bottom, pos;
+	local float f, i;
+	
+	pos_x = autocvar(hud_teamscores_x, 10);
+	pos_y = autocvar(hud_teamscores_y, 10);
+
+	for (i = 0 ; i < 14 ; i++)
+	{
+		f = cl_teamscores[i].frags;
+//		top = stov(cl_teamscores[i].topcolor);
+		bottom = stov(cl_teamscores[i].bottomcolor);
+
+		if (bottom)
+		{
+			drawfill(pos+([0,0]), ([28,9]), bottom, 1.0, 0); //Only use bottom color for team indicators
+			drawstring(pos+([2,0]), strpad(-3, ftos(f)), ([8,8]), ([1,1,1]),1,0);
+			pos_y += 24;
+		}
+	}
+};
+
 float numclientseats;
 static void Hud_Draw(vector virtsize, float scoreboard)
 {
@@ -644,15 +695,53 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 
 	if (autocvar(hud_matchtimer, 1))
 		Hud_DrawMatchTime();
+
+	Hud_DrawTeamScores();
 };
 
 void () CSQC_Parse_Event =
 {
-	local float ev = readbyte();
-	if (ev == PQC_MATCH_TIME)
+	local float ev, team;
+
+	ev = readbyte();
+
+	switch (ev)
 	{
-		matchtime_minute = readbyte();
-		matchtime_seconds = readbyte();
+		case PQC_MATCH_TIME:
+			matchtime_minutes = readbyte();
+			matchtime_seconds = readbyte();
+			break;
+
+		case PQC_NEW_TEAM:
+			team = readbyte();
+			if (team < 0 || team > 15) return;
+			cl_teamscores[team].bottomcolor = teamcolor[team];		//save out the rgb values for team number
+			cl_teamscores[team].frags = 0;
+			break;
+
+		case PQC_ERASE_TEAM:
+			team = readbyte();
+			if (team < 0 || team > 15) return;
+			cl_teamscores[team].bottomcolor = "0 0 0";
+			cl_teamscores[team].frags = 0;
+			break;
+
+		case PQC_TEAM_FRAGS:
+			local float frags;
+			team = readbyte();
+			if (team < 0 || team > 15) return;
+			frags = readshort();
+			cl_teamscores[team].frags = frags;
+			break;			
+			
+		case PQC_MATCH_RESET:
+			local float i;
+			for (i = 0 ; i < 14 ; i++)
+			{				
+				cl_teamscores[i].bottomcolor = "0 0 0";
+				cl_teamscores[i].frags = 0;
+			}
+			break;
 	}
 }
 
