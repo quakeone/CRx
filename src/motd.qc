@@ -17,7 +17,7 @@ string motd_top2;
 
 void() motd_init_world =
 {
-	motd_top1   = "€‚ ClanRing Mod €‚\nClanRing NetQuake Server\n\noriginal works by \nby J.P. Grossman & Dave 'Zoid' Kirsch\n\n??\n";
+	motd_top1   = "€‚ ClanRing Mod €‚\nClanRing NetQuake Server\n\noriginal works by \nJ.P. Grossman & Dave 'Zoid' Kirsch\n\n??\n";
 	motd_top2   = "\n";
 };
 

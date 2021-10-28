@@ -379,3 +379,4 @@ float	clanring_afk_timeout;
 float	stats_timelimit;
 float	stats_matchtype;
 
+.float  csqc_enabled;

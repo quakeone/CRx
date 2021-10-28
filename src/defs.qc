@@ -177,7 +177,7 @@ SOURCE FOR ENTVARS_T C STRUCTURE
 .float          armortype;              // save this fraction of incoming damage
 .float          armorvalue;
 
-.float          waterlevel;             // 0 = not in, 1 = feet, 2 = wast, 3 = eyes
+.float          waterlevel;             // 0 = not in, 1 = feet, 2 = waist, 3 = eyes
 .float          watertype;              // a contents value
 
 .float          ideal_yaw;
@@ -702,7 +702,6 @@ string(string s) precache_file2         = #77;          // registered version on
 
 void(entity e) setspawnparms            = #78;          // set parm1... to the
 */
-void(string s) changelevel = #70;	// R00k - removed defined in utils.qc
 // values at level start
 // for coop respawn
 

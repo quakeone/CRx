@@ -411,12 +411,11 @@ void() match_end =
 		}
 		match_unpause();
 		
-		//(FIXME: test this - reset the timelimit back?)
 		//reset between matches incase of overtime or interrupted match abort
 		clanring_timelimit = default_timelimit;
 		utils_set_cvar("timelimit", clanring_timelimit);
 		timelimit = (cvar("timelimit") * 60);
-
+		//---
 		clanring_numteams = 0;
 	}
 	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
@@ -439,13 +438,14 @@ void() match_end =
 	score_update_time();
 	// Dump statistics for anyone who has autostats set
 	utils_do_players(stats_autodump);
-	console_autodump();
+	console_autodump();//fixme
 
 //(FIXME: move this to when teams are created...)
 	//reset between matches incase of overtime or interrupted match abort
 	clanring_timelimit = default_timelimit;
 	utils_set_cvar("timelimit", clanring_timelimit);
 	timelimit = (cvar("timelimit") * 60);
+
 	announce("The match is over");
 	// Backup all statistics so that they don't go away
 	//stats_copy_statistics();
@@ -476,15 +476,10 @@ void() match_timer_think2 =
 	self.nextthink = time + 1;
 	score_update_time();
 
-	/* //CRMOD v6.2 change
-	if (clanring_sentinel.movetarget)
-	{
-		clanring_sentinel.movetarget.mangle_x = (clanring_sentinel.movetarget.mangle_x + clanring_sentinel.cnt);
-	}*/
-
+	// control stats
 	if (clanring_sentinel.movetarget)
 		clanring_sentinel.movetarget.mangle_x += 1;
-	
+
 	clanring_sentinel.cnt += 1;
 
 	if (self.lip)
@@ -656,7 +651,7 @@ void() match_begin =
 	temp = ftos(clanring_timelimit);
 	announce2(temp, " minutes remaining");
 
-	stats_matchtype = clanring_maxsize;	//3/6/2017 6:14AM added for stats header output, this will be incorrect if the game is unlocked.
+	stats_matchtype = clanring_maxsize;	//3/6/2017 6:14AM added for stats header output, this will be incorrect if the game is unlocked.(fixme)
 	stats_timelimit = clanring_timelimit;
 	
 	self.think = match_timer_think2;
@@ -667,8 +662,6 @@ void() match_begin =
 
 	// reset rocket launcher count
 	clanring_sentinel.ammo_rockets = 0;
-	
-	//clanring_sentinel.cnt = (5 / (3 * clanring_timelimit));
 	clanring_sentinel.cnt = 0;
 	
 	// reset quad, pent counts
@@ -676,7 +669,7 @@ void() match_begin =
 	utils_do_item(match_reset_owner, "item_super_damage");
 
 	// Temporarily turn the extra start points into spawn points if necessary
-	if (match_count_players () > dm_num_spawns)
+	if (match_count_players() > dm_num_spawns)
 	{
 		utils_do_item(match_add_spawn, "clanring_start_point");
 		dm_num_spawns = dm_num_spawns + clanring_num_starts;
@@ -998,7 +991,7 @@ float () match_put_player_in_team =
 	announce2(pteam.netname, " created");
 	announce3(self.netname, " has joined the ", pteam.netname);
 
-	pqc_new_team(world, (pteam.height * 16) + (pteam.height));
+	pqc_new_team(pteam.height);
 
  	if (clanring_numteams == 1)
 		announce("Only one team present");
@@ -1130,7 +1123,7 @@ void () match_make_ghost =
 //	self.owner.statstate = self.statstate;
 	self.owner.mangle = self.mangle;	// killstats
 	self.owner.movetype = MOVETYPE_NONE;
-	self.owner.finaldest_y = 0;
+	self.owner.finaldest_y = MOVETYPE_NONE;
 	match_send_ghost_aliases ();
 	stuffcmd(self, "ghostcode\n");
 };
@@ -2156,7 +2149,7 @@ void() match_verify_team =
 		{
 			if (clanring_maxsize != 16)
 			{
-				setcolor(self,0,0);
+				setcolour(self,0,0);
 				stuffcmd(self,";color 0;\n");
 //				sprint(self, "Match is LOCKED\n");
 				return;

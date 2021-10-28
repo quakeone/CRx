@@ -93,7 +93,7 @@ void (entity pteam, float fragval) score_frag =
 
 	// update the team score
 	pteam.frags = pteam.frags + fragval;
-	pqc_team_frags(world,pteam.height, pteam.frags);
+	pqc_team_frags(pteam.height, pteam.frags);
 
 	if (fragval > 0)
 	{

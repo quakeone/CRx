@@ -139,7 +139,7 @@ void() teamplay_verify_team =
 	{
 		if ((self.style & CLANRING_RED_TEAM))
 		{
-			setcolor(self,4,4);
+			setcolour(self,4,4);
 			stuffcmd(self,";color 4\n");			
 			self.team = RED;
 			self.height = self.team - 1;
@@ -149,7 +149,7 @@ void() teamplay_verify_team =
 			if ((self.style & CLANRING_BLUE_TEAM))
 			{
 				
-				setcolor(self,13,13);
+				setcolour(self,13,13);
 				stuffcmd(self,";color 13\n");			
 				self.team = BLUE;
 				self.height = self.team - 1;

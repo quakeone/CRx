@@ -1,4 +1,4 @@
-//Originally from Zoid
+//Originally from Zoid's 3Wave
 
 /*********\
 * LinkPos *

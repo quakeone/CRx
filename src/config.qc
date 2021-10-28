@@ -531,7 +531,7 @@ void() clanring_exec_configs =
 		if ((clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
 		{
 			cvar_set("teamplay","2");		
-			clanring_set_teamplay (2);	
+			clanring_set_teamplay(2);	
 		}	
 		clanring_levelcount = -1;
 		nextmap = mapname;//just restart samelevel

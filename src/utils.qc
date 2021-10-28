@@ -234,7 +234,7 @@ void (string s1, string s2, string s3, string s4, string s5, string s6) oprint6 
 		o = find(o, classname, "player");
 	}
 };
-void (entity ent, float clientshirt, float clientpants) setcolor =
+void (entity ent, float clientshirt, float clientpants) setcolour =
 {		
 	local float client;
 	
@@ -261,9 +261,6 @@ void (string status) updatenameoverload =
 
 void (entity ent, string c_name) updatename =
 {
-	if ((strstrofs(infokey(self, INFOKEY_P_PROTOCOL),"world")) >= 0)//fixme
-		return;
-
 	local float client;
 	if (ent.style & CLANRING_CONNECTED)
 	{
@@ -1039,6 +1036,22 @@ void (void () dofunc) utils_do_players =
     self = oldself;
 };
 
+/*
+void (void () dofunc) utils_do_players_event =
+{
+    local entity oldself;
+
+    oldself = self;
+    self = find(world, classname, "player");
+    while (self)
+    {
+        if (self.style & CLANRING_CONNECTED)
+		utils_make_scheduled_event(dofunc,0.1);
+        self = find(self, classname, "player");
+    }
+    self = oldself;
+};
+*/
 //
 //  S T O F
 //
@@ -1270,75 +1283,98 @@ void (float to, float f)WriteShortPQ =
 	
 void (float tm) pqc_erase_team =
 {	
-	WriteByte(MSG_ALL, SVC_STUFFCMD);
-	WriteByte(MSG_ALL, MOD_PROQUAKE);
-	WriteByte(MSG_ALL, PQC_ERASE_TEAM);
-	WriteByte(MSG_ALL, 16 + tm);
-	WriteString(MSG_ALL, string_null);
-};
-
-void (entity e, float tm, float tf) pqc_team_frags =
-{	
-	local float msg_type;
-
-	if (e.style & CLANRING_CONNECTED)
+	if (self.csqc_enabled)
 	{
-		msg_entity = e;
-		msg_type = MSG_ONE;
+		dimension_send = 1;	
+		WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
+		WriteByte(MSG_MULTICAST , PQC_ERASE_TEAM);
+		WriteByte(MSG_MULTICAST, tm);
+		multicast('0 0 0', MULTICAST_ALL);
 	}
 	else
-		msg_type = MSG_ALL;
-
-	if (tf < 0)
-		tf = tf + 65536;
-
-	WriteByte(msg_type, SVC_STUFFCMD);
-	WriteByte(msg_type, MOD_PROQUAKE);
-	WriteByte(msg_type, PQC_TEAM_FRAGS);
-	WriteByte(msg_type, 16 + tm);	// team
-	WriteShortPQ (msg_type, tf);	// frags
-	WriteString(msg_type, string_null);
+	{
+		WriteByte (MSG_ALL, SVC_STUFFCMD);
+		WriteByte (MSG_ALL, 1);
+		WriteByte (MSG_ALL, PQC_ERASE_TEAM);
+		WriteByte (MSG_ALL, 16 + tm);
+		WriteString (MSG_ALL, string_null);
+	}
 };
 
-void (entity e, float c) pqc_new_team =
+void (float tm, float tf) pqc_team_frags =
+{	
+	local entity oldself;
+
+    oldself = self;
+    self = find(world, classname, "player");
+
+	print("team: ", ftos(tm),"\n");
+    while (self)
+    {
+        if (self.style & CLANRING_CONNECTED)
+        {
+			if (self.csqc_enabled)
+			{
+				msg_entity = self;
+				WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
+				WriteByte(MSG_MULTICAST , PQC_TEAM_FRAGS);
+				WriteByte(MSG_MULTICAST, tm);
+				WriteShort(MSG_MULTICAST, tf);
+				multicast('0 0 0', MULTICAST_ONE_R);
+			}
+			else
+			{
+				msg_entity = self;
+				
+				WriteByte (MSG_ONE, SVC_STUFFCMD);
+				WriteByte (MSG_ONE, 1);
+				WriteByte (MSG_ONE, PQC_TEAM_FRAGS);
+				WriteByte (MSG_ONE, 16 + tm);	// team
+				WriteShortPQ (MSG_ONE, tf);	// frags
+				WriteString (MSG_ONE, string_null);
+			}
+		}
+        self = find(self, classname, "player");
+    }
+    self = oldself;
+};
+
+void (float c) pqc_new_team =
 {	
 	local float msg_type;
+	local entity oldself;
 
-	if (e.style & CLANRING_CONNECTED)
-	{
-		msg_entity = e;
-		msg_type = MSG_ONE;
+    oldself = self;
+    self = find(world, classname, "player");
+    while (self)
+    {
+        if (self.style & CLANRING_CONNECTED)
+        {
+			if (self.csqc_enabled)
+			{
+				msg_entity = self;
+				WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
+				WriteByte(MSG_MULTICAST, PQC_NEW_TEAM);
+				WriteByte(MSG_MULTICAST, c); // pants
+				multicast('0 0 0', MULTICAST_ONE_R);
+			}
+			else
+			{
+				msg_entity = self;
+				msg_type = MSG_ONE;
+				WriteByte(msg_type, SVC_STUFFCMD);
+				WriteByte(msg_type, MOD_PROQUAKE);
+				WriteByte(msg_type, PQC_NEW_TEAM);
+				WriteByte(msg_type, 16 + c & 15); // pants
+				WriteByte(msg_type, 16 + c / 16); // shirt
+				WriteString(msg_type, string_null);
+			}
+		}	
+		self = find(self, classname, "player");
 	}
-	else
-		msg_type = MSG_ALL;
-
-	WriteByte(msg_type, SVC_STUFFCMD);
-	WriteByte(msg_type, MOD_PROQUAKE);
-	WriteByte(msg_type, PQC_NEW_TEAM);
-	WriteByte(msg_type, 16 + c & 15); // pants
-	WriteByte(msg_type, 16 + c / 16); // shirt
-	WriteString(msg_type, string_null);
+	self = oldself;
 };
-/*
-void (entity e, float m, float s)pqc_match_time =
-{	
-	local float msg_type;
 
-	if (e == world)
-		msg_type = MSG_ALL;
-	else
-	{
-		msg_entity = e;
-		msg_type = MSG_ONE;
-	}
-	WriteByte(msg_type, SVC_STUFFCMD);
-	WriteByte(msg_type, MOD_PROQUAKE);
-	WriteByte(msg_type, PQC_MATCH_TIME);
-	WriteBytePQ (msg_type, m);
-	WriteBytePQ (msg_type, s);
-	WriteString(msg_type, string_null);
-};
-*/
 void(float m, float s)pqc_match_time =
 {    
 	local entity oldself;
@@ -1349,9 +1385,8 @@ void(float m, float s)pqc_match_time =
     {
         if (self.style & CLANRING_CONNECTED)
         {
-			if (self.dimension_see == 1)
+			if (self.csqc_enabled == 1)
 			{
-				dimension_send = 1;	
 				msg_entity = self;
 				WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
 				WriteByte(MSG_MULTICAST, PQC_MATCH_TIME);
@@ -1359,16 +1394,14 @@ void(float m, float s)pqc_match_time =
 				WriteByte(MSG_MULTICAST, s);
 				multicast('0 0 0', MULTICAST_ONE_R);
 			}
-
-			if (self.dimension_see == 2)
+			else
 			{
-				dimension_send = 2;
 				msg_entity = self;
 				WriteByte(MSG_MULTICAST , SVC_STUFFCMD);
 				WriteByte(MSG_MULTICAST , MOD_PROQUAKE);
 				WriteByte(MSG_MULTICAST , PQC_MATCH_TIME);
-				WriteBytePQ (MSG_MULTICAST , m);
-				WriteBytePQ (MSG_MULTICAST , s);
+				WriteBytePQ(MSG_MULTICAST , m);
+				WriteBytePQ(MSG_MULTICAST , s);
 				WriteString(MSG_MULTICAST , string_null);
 				multicast('0 0 0', MULTICAST_ONE_R);
 			}
@@ -1380,11 +1413,36 @@ void(float m, float s)pqc_match_time =
 
 void ()pqc_match_reset =
 {	
-	dimension_send = 2;
-	WriteByte(MSG_ALL, SVC_STUFFCMD);
-	WriteByte(MSG_ALL, MOD_PROQUAKE);
-	WriteByte(MSG_ALL, PQC_MATCH_RESET);
-	WriteString(MSG_ALL, string_null);
+	local entity oldself;
+
+    oldself = self;
+    self = find(world, classname, "player");
+    while (self)
+    {
+        if (self.style & CLANRING_CONNECTED)
+        {
+			if (self.csqc_enabled)
+			{
+			//	dimension_send = 1;	
+				msg_entity = self;
+				WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
+				WriteByte(MSG_MULTICAST , PQC_MATCH_RESET);
+				multicast('0 0 0', MULTICAST_ONE_R);
+			}
+			else
+			{
+			//	dimension_send = 2;
+				msg_entity = self;
+				WriteByte(MSG_MULTICAST , SVC_STUFFCMD);
+				WriteByte(MSG_MULTICAST , MOD_PROQUAKE);
+				WriteByte(MSG_MULTICAST , PQC_MATCH_RESET);
+				WriteString(MSG_MULTICAST , string_null);
+				multicast('0 0 0', MULTICAST_ONE_R);
+			}
+		}
+        self = find(self, classname, "player");
+    }
+    self = oldself;
 };
 
 float (entity e) client_ping =
@@ -1397,7 +1455,6 @@ float (entity e) client_ping =
 
 void ()pqc_ping_times =
 {	
-
 	local entity e;
 	local float i, ping;
 
@@ -1407,13 +1464,12 @@ void ()pqc_ping_times =
 
 	e = world;
 	for (i = 0; i < 16; i = i + 1)
-	{
+	{		
 		e = nextent (e);
-		if (e.classname == "bodyque")//unused?
-			i = 16;
-		else if ((e.style & CLANRING_CONNECTED) && e.ping_time)
+		
+		if ((e.style & CLANRING_CONNECTED) && e.ping_time)
 		{
-			ping = client_ping(e);//e.ping_time;
+			ping = e.ping_time;
 			WriteShortPQ (MSG_ALL, ping + (i * 4096));
 		}
 	}

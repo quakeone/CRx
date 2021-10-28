@@ -872,8 +872,8 @@ void () find_pqc_teamscore_teams =
 	
 	while (e)
 	{
-		pqc_new_team (world,e.height * 16 + e.height);
-		pqc_team_frags(world, e.height, e.frags);
+		pqc_new_team (e.height);
+		pqc_team_frags(e.height, e.frags);
 		e = e.next_team;
 	}
 };
@@ -1035,7 +1035,7 @@ void () clanring_put_client_in_server =
 	self.finaldest_y = MOVETYPE_WALK;
 	self.style = self.style | CLANRING_CONNECTED;//placed here before assigning to a team
 
-	//	utils_make_scheduled_event(clanring_bf_think, 0.1);
+	utils_make_scheduled_event(clanring_bf_think, 0.1);
 
 	if ((self.style & CLANRING_OBSERVER) || (self.oflags & OBSERVER_QUAKETV) || ((clanring_playmode & CLANRING_MATCH_MODE) && !(self.style & CLANRING_READY)))
 	{
@@ -1046,7 +1046,6 @@ void () clanring_put_client_in_server =
 	{
 		//in classic mode auto join on connect
 		//This is called in client.qc but here again JUST to make sure.
-
 		if (teamplay)
 		{
 			if (clanring_playmode & CLANRING_NORMAL_MODE)
@@ -1268,7 +1267,11 @@ void () clanring_bad_impulse =
 void () clanring_vinfo =
 {
 	sprint3(self, "\n", clanring_version_info, "\n\n");
-	sprint(self, "Adapted from the Elohim Server v2.2\n");
+	if (self.csqc_enabled)
+		sprint(self, "CSQC Enabled\n");
+	else 
+		sprint(self, "CSQC \bDisabled\n");
+	sprint(self, "\noriginal works by \nJ.P. Grossman, Paul Baker and Dave 'Zoid' Kirsch\n");
 };
 
 //
@@ -1725,7 +1728,7 @@ void () clanring_periodic_checks =
 		}
 	}
 	
-	self.ping_time = client_ping(self);
+	self.ping_time = client_ping(self);//Fixme this wont work for Qrack clients; revert back to pq method for those clients.
 
 	inactive = time - self.afk_time;//Seconds of inactivity
 	c = floor(inactive / 60);		//Minutes of inactivity (round down).
@@ -1868,7 +1871,7 @@ void () clanring_start_frame =
 					// if it's been 5 seconds since the last update to levelcount.
 					// When end of file is detected, levelcount is set to -1 to
 					// indicate that levels.cfg is finished.
-					if ((clanring_levelcount == clanring_lastcount))
+					if (clanring_levelcount == clanring_lastcount)
 					{
 						cprint("levels.cfg: finished\n");
 						if (nextmap == "")
@@ -1885,7 +1888,7 @@ void () clanring_start_frame =
 					clanring_lastcount = clanring_levelcount;
 				}
 														
-				if (timelimit && (clanring_playmode & CLANRING_MATCH_MODE))
+				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE))
 				{
 					if (rint(timelimit - time) == 300)
 					{

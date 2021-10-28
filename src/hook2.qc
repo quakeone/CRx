@@ -315,7 +315,7 @@ void(entity myself) W_FireHook2 =
 {
 	local entity hook;
 	local float linknum;
-	local entity link;
+	local entity link = world;
 	local entity prevlink;
 
 	if (time < self.attack_finished)

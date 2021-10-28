@@ -132,7 +132,7 @@ void() votables_request_set_hook =
 		return;
 	}
 
-	if ((self.style) & CLANRING_ADMINISTRATOR)
+	if (self.style & CLANRING_ADMINISTRATOR)
 	{
 		votables_set_hook();
 		return;
