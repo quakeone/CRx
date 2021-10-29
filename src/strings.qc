@@ -109,54 +109,54 @@ string (entity e) strings_get_weapon =
         {
             if (e.items & IT_INVISIBILITY)
             {
-                if (e.weapon == 32) return " Q’ƒ‘ Rocket Launcher\n";
-                if (e.weapon == 64) return " Q’ƒ‘ Lightning Gun\n";
-                if (e.weapon == 16) return " Q’ƒ‘ Grenade Launcher\n";
-                if (e.weapon == 8) return " Q’ƒ‘ Super Nailgun\n";
-                if (e.weapon == 2) return " Q’ƒ‘ Super Shotgun\n";
-                if (e.weapon == 4) return " Q’ƒ‘ Nailgun\n";
-                if (e.weapon == 1) return " Q’ƒ‘ Shotgun\n";
-                if (e.weapon == 4096) return " Q’ƒ‘ Axe\n";
-                return " Q’ƒ‘ No Weapon\n";
+                if (e.weapon == 32) return " Q’ƒ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return " Q’ƒ‘ Lightning Gun\n";
+                if (e.weapon == 16) return " Q’ƒ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return " Q’ƒ‘ Super Nailgun\n";
+                if (e.weapon == 2) return " Q’ƒ‘ Super Shotgun\n";
+                if (e.weapon == 4) return " Q’ƒ‘ Nailgun\n";
+                if (e.weapon == 1) return " Q’ƒ‘ Shotgun\n";
+                if (e.weapon == 4096) return " Q’ƒ‘ Axe\n";
+                return " Q’ƒ‘ No Weapon\n";
             }
             else
             {
-                if (e.weapon == 32) return " Q ƒ‘ Rocket Launcher\n";
-                if (e.weapon == 64) return " Q ƒ‘ Lightning Gun\n";
-                if (e.weapon == 16) return " Q ƒ‘ Grenade Launcher\n";
-                if (e.weapon == 8) return " Q ƒ‘ Super Nailgun\n";
-                if (e.weapon == 2) return " Q ƒ‘ Super Shotgun\n";
-                if (e.weapon == 4) return " Q ƒ‘ Nailgun\n";
-                if (e.weapon == 1) return " Q ƒ‘ Shotgun\n";
-                if (e.weapon == 4096) return " Q ƒ‘ Axe\n";
-                return " Q ƒ‘ No Weapon\n";
+                if (e.weapon == 32) return " Q ƒ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return " Q ƒ‘ Lightning Gun\n";
+                if (e.weapon == 16) return " Q ƒ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return " Q ƒ‘ Super Nailgun\n";
+                if (e.weapon == 2) return " Q ƒ‘ Super Shotgun\n";
+                if (e.weapon == 4) return " Q ƒ‘ Nailgun\n";
+                if (e.weapon == 1) return " Q ƒ‘ Shotgun\n";
+                if (e.weapon == 4096) return " Q ƒ‘ Axe\n";
+                return " Q ƒ‘ No Weapon\n";
             }
         }
         else
         {
             if (e.items & IT_INVISIBILITY)
             {
-                if (e.weapon == 32) return "  ’ƒ‘ Rocket Launcher\n";
-                if (e.weapon == 64) return "  ’ƒ‘ Lightning Gun\n";
-                if (e.weapon == 16) return "  ’ƒ‘ Grenade Launcher\n";
-                if (e.weapon == 8) return "  ’ƒ‘ Super Nailgun\n";
-                if (e.weapon == 2) return "  ’ƒ‘ Super Shotgun\n";
-                if (e.weapon == 4) return "  ’ƒ‘ Nailgun\n";
-                if (e.weapon == 1) return "  ’ƒ‘ Shotgun\n";
-                if (e.weapon == 4096) return "  ’ƒ‘ Axe\n";
-                return "    ’ƒ‘ No Weapon\n";
+                if (e.weapon == 32) return "  ’ƒ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return "  ’ƒ‘ Lightning Gun\n";
+                if (e.weapon == 16) return "  ’ƒ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return "  ’ƒ‘ Super Nailgun\n";
+                if (e.weapon == 2) return "  ’ƒ‘ Super Shotgun\n";
+                if (e.weapon == 4) return "  ’ƒ‘ Nailgun\n";
+                if (e.weapon == 1) return "  ’ƒ‘ Shotgun\n";
+                if (e.weapon == 4096) return "  ’ƒ‘ Axe\n";
+                return "    ’ƒ‘ No Weapon\n";
             }
             else
             {
-                if (e.weapon == 32) return "   ƒ‘ Rocket Launcher\n";
-                if (e.weapon == 64) return "   ƒ‘ Lightning Gun\n";
-                if (e.weapon == 16) return "   ƒ‘ Grenade Launcher\n";
-                if (e.weapon == 8) return "   ƒ‘ Super Nailgun\n";
-                if (e.weapon == 2) return "   ƒ‘ Super Shotgun\n";
-                if (e.weapon == 4) return "   ƒ‘ Nailgun\n";
-                if (e.weapon == 1) return "   ƒ‘ Shotgun\n";
-                if (e.weapon == 4096) return "   ƒ‘ Axe\n";
-                return "     ƒ‘ No Weapon\n";
+                if (e.weapon == 32) return "   ƒ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return "   ƒ‘ Lightning Gun\n";
+                if (e.weapon == 16) return "   ƒ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return "   ƒ‘ Super Nailgun\n";
+                if (e.weapon == 2) return "   ƒ‘ Super Shotgun\n";
+                if (e.weapon == 4) return "   ƒ‘ Nailgun\n";
+                if (e.weapon == 1) return "   ƒ‘ Shotgun\n";
+                if (e.weapon == 4096) return "   ƒ‘ Axe\n";
+                return "     ƒ‘ No Weapon\n";
             }
         }
     }
@@ -166,54 +166,54 @@ string (entity e) strings_get_weapon =
         {
             if (e.items & IT_INVISIBILITY)
             {
-                if (e.weapon == 32) return " Q’ ‘ Rocket Launcher\n";
-                if (e.weapon == 64) return " Q’ ‘ Lightning Gun\n";
-                if (e.weapon == 16) return " Q’ ‘ Grenade Launcher\n";
-                if (e.weapon == 8) return " Q’ ‘ Super Nailgun\n";
-                if (e.weapon == 2) return " Q’ ‘ Super Shotgun\n";
-                if (e.weapon == 4) return " Q’ ‘ Nailgun\n";
-                if (e.weapon == 1) return " Q’ ‘ Shotgun\n";
-                if (e.weapon == 4096) return " Q’ ‘ Axe\n";
-                return " Q’ ‘ No Weapon\n";
+                if (e.weapon == 32) return " Q’ ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return " Q’ ‘ Lightning Gun\n";
+                if (e.weapon == 16) return " Q’ ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return " Q’ ‘ Super Nailgun\n";
+                if (e.weapon == 2) return " Q’ ‘ Super Shotgun\n";
+                if (e.weapon == 4) return " Q’ ‘ Nailgun\n";
+                if (e.weapon == 1) return " Q’ ‘ Shotgun\n";
+                if (e.weapon == 4096) return " Q’ ‘ Axe\n";
+                return " Q’ ‘ No Weapon\n";
             }
             else
             {
-                if (e.weapon == 32) return " Q  ‘ Rocket Launcher\n";
-                if (e.weapon == 64) return " Q  ‘ Lightning Gun\n";
-                if (e.weapon == 16) return " Q  ‘ Grenade Launcher\n";
-                if (e.weapon == 8) return " Q  ‘ Super Nailgun\n";
-                if (e.weapon == 2) return " Q  ‘ Super Shotgun\n";
-                if (e.weapon == 4) return " Q  ‘ Nailgun\n";
-                if (e.weapon == 1) return " Q  ‘ Shotgun\n";
-                if (e.weapon == 4096) return " Q  ‘ Axe\n";
-                return " Q  ‘ No Weapon\n";
+                if (e.weapon == 32) return " Q  ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return " Q  ‘ Lightning Gun\n";
+                if (e.weapon == 16) return " Q  ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return " Q  ‘ Super Nailgun\n";
+                if (e.weapon == 2) return " Q  ‘ Super Shotgun\n";
+                if (e.weapon == 4) return " Q  ‘ Nailgun\n";
+                if (e.weapon == 1) return " Q  ‘ Shotgun\n";
+                if (e.weapon == 4096) return " Q  ‘ Axe\n";
+                return " Q  ‘ No Weapon\n";
             }
         }
         else
         {
             if (e.items & IT_INVISIBILITY)
             {
-                if (e.weapon == 32) return "  ’ ‘ Rocket Launcher\n";
-                if (e.weapon == 64) return "  ’ ‘ Lightning Gun\n";
-                if (e.weapon == 16) return "  ’ ‘ Grenade Launcher\n";
-                if (e.weapon == 8) return "  ’ ‘ Super Nailgun\n";
-                if (e.weapon == 2) return "  ’ ‘ Super Shotgun\n";
-                if (e.weapon == 4) return "  ’ ‘ Nailgun\n";
-                if (e.weapon == 1) return "  ’ ‘ Shotgun\n";
-                if (e.weapon == 4096) return "  ’ ‘ Axe\n";
-                return "    ’ ‘ No Weapon\n";
+                if (e.weapon == 32) return "  ’ ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return "  ’ ‘ Lightning Gun\n";
+                if (e.weapon == 16) return "  ’ ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return "  ’ ‘ Super Nailgun\n";
+                if (e.weapon == 2) return "  ’ ‘ Super Shotgun\n";
+                if (e.weapon == 4) return "  ’ ‘ Nailgun\n";
+                if (e.weapon == 1) return "  ’ ‘ Shotgun\n";
+                if (e.weapon == 4096) return "  ’ ‘ Axe\n";
+                return "    ’ ‘ No Weapon\n";
             }
             else
             {
-                if (e.weapon == 32) return "    ‘ Rocket Launcher\n";
-                if (e.weapon == 64) return "    ‘ Lightning Gun\n";
-                if (e.weapon == 16) return "    ‘ Grenade Launcher\n";
-                if (e.weapon == 8) return "    ‘ Super Nailgun\n";
-                if (e.weapon == 2) return "    ‘ Super Shotgun\n";
-                if (e.weapon == 4) return "    ‘ Nailgun\n";
-                if (e.weapon == 1) return "    ‘ Shotgun\n";
-                if (e.weapon == 4096) return "    ‘ Axe\n";
-                return "      ‘ No Weapon\n";
+                if (e.weapon == 32) return "    ‘ Rocket Launcher\n";
+                if (e.weapon == 64) return "    ‘ Lightning Gun\n";
+                if (e.weapon == 16) return "    ‘ Grenade Launcher\n";
+                if (e.weapon == 8) return "    ‘ Super Nailgun\n";
+                if (e.weapon == 2) return "    ‘ Super Shotgun\n";
+                if (e.weapon == 4) return "    ‘ Nailgun\n";
+                if (e.weapon == 1) return "    ‘ Shotgun\n";
+                if (e.weapon == 4096) return "    ‘ Axe\n";
+                return "      ‘ No Weapon\n";
             }
         }
     }
@@ -634,16 +634,15 @@ string (float mapnum) strings_get_mapname =
 	}
 	if (mapnum < 101)
    	{
-  		if (mapnum == 91)	return "ctf1bsp1";	
-  		if (mapnum == 92)	return "ctf1bsp2";
-  		if (mapnum == 93)	return "ctf1bsp3";
-  		if (mapnum == 94)	return "ctf1bsp4";
-  		if (mapnum == 95)	return "ctf1bsp5";
-  		if (mapnum == 96)	return "ctf1bsp6";
-  		if (mapnum == 97)	return "ctf1bsp7";
-  		if (mapnum == 98)	return "ctf1bsp8";
-  		if (mapnum == 99)	return "ctf1bsp9";
-  		if (mapnum == 100)	return "ctf1bsp0";
+  		if (mapnum == 91)	return "boom";	
+  		if (mapnum == 92)	return "kaboom";
+  		if (mapnum == 93)	return "ctf9";
+  		if (mapnum == 94)	return "q2ctf12";
+  		if (mapnum == 95)	return "fgoutpost";
+  		if (mapnum == 96)	return "elder";
+  		if (mapnum == 97)	return "ctf_desert";
+  		if (mapnum == 98)	return "ctf_space";
+  		if (mapnum == 99)	return "pigremix";
   		return "";               
 	}
 
