@@ -189,7 +189,7 @@ void() match_reset =
 		remove(self);
 
 	pqc_match_time (0, 0);
-	//reset between matches incase of overtime or interrupted match abort (FIXME?)
+	//reset between matches incase of overtime or interrupted match abort
 	clanring_timelimit = default_timelimit;
 	utils_set_cvar ("timelimit", clanring_timelimit);
 	timelimit = (cvar ("timelimit") * 60);
@@ -410,12 +410,7 @@ void() match_end =
 			return;
 		}
 		match_unpause();
-		
-		//reset between matches incase of overtime or interrupted match abort
-		clanring_timelimit = default_timelimit;
-		utils_set_cvar("timelimit", clanring_timelimit);
-		timelimit = (cvar("timelimit") * 60);
-		//---
+		match_reset();//R00k
 		clanring_numteams = 0;
 	}
 	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
@@ -439,14 +434,7 @@ void() match_end =
 	// Dump statistics for anyone who has autostats set
 	utils_do_players(stats_autodump);
 	console_autodump();//fixme
-
-//(FIXME: move this to when teams are created...)
-	//reset between matches incase of overtime or interrupted match abort
-	clanring_timelimit = default_timelimit;
-	utils_set_cvar("timelimit", clanring_timelimit);
-	timelimit = (cvar("timelimit") * 60);
-
-	announce("The match is over");
+	announce("The match is over");//used for cl_autodemo 2, stop the demo after stats_autodump.
 	// Backup all statistics so that they don't go away
 	//stats_copy_statistics();
 };
