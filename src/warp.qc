@@ -13,7 +13,7 @@ void() warp_menu_top =
 	sprint(self, " 6 Threewave CTF Levels Pak 1\n");
 	sprint(self, " 7 Threewave CTF Levels Pak 2\n");
 	sprint(self, " 8 League Of Capture\n");
-	sprint(self, " 9 ThunderWalker Pak\n");
+	sprint(self, " 9 Jur4ss1c Map Pak\n");
 	sprint(self, "10 CTF Gold Pak\n");
 	sprint(self, "11 Custom Maps\n");	
 	sprint(self, " ’ \bEXIT\n");
@@ -152,16 +152,15 @@ void() warp_menu_eight=
 void() warp_menu_nine=
 {
 	sprint(self,"Ÿ\n");
-	sprint(self," “ Holy Warz              \bctf1bsp1\n");
-	sprint(self," ” Tormented Fortress     \bctf1bsp2\n");
-	sprint(self," • The BanZoia            \bctf1bsp3\n");
-	sprint(self," – Barbie's Domain        \bctf1bsp4\n");
-	sprint(self," — [CapturE CastleS]      \bctf1bsp5\n");
-	sprint(self," ˜ Tickle-Me Shambler?    \bctf1bsp6\n");
-	sprint(self," ™ Never Mined            \bctf1bsp7\n");
-	sprint(self," š The Forgotten Outpost  \bctf1bsp8\n");
-	sprint(self," › Salvage The Weak       \bctf1bsp9\n");
-	sprint(self,"“’ Capturellamaphobopolis \bctf1bsp0\n");
+	sprint(self," “ Ba-Boom!                \bboom\n");
+	sprint(self," ” Ka-Boom!                \bkaboom\n");
+	sprint(self," • CTF9                    \bctf9\n");
+	sprint(self," – McKinley Revival        \bq2ctf12\n");
+	sprint(self," — The Forgotten Outpost   \bfgoutpost\n");
+	sprint(self," ˜ The Mystic Shrine       \belder\n");
+	sprint(self," ™ Strongholds in the Hale \bctf_desert\n");
+	sprint(self," š U.S.S. Starbridge       \bctf_space\n");
+	sprint(self," › Pig Remix               \bpigremix\n");
 	sprint(self," ’ \bEXIT\n");
 	sprint(self,"Ÿ\n");
 	sprint(self, " select map\n");
