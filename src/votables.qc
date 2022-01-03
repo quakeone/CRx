@@ -213,7 +213,7 @@ void() votables_request_change_level =
 	}
 
 	level = (self.warp_episode * 10) + (self.warp_map);//new r00k
-	newmap = strings_get_mapname(level);
+	newmap = warpmap[level].name;
 	//clear warp_flags;
 	self.warp_episode=0;
 	self.warp_map=0;

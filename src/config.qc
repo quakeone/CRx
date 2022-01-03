@@ -446,6 +446,69 @@ void(string command, string value) config_command =
 		}
 	}
 };
+//Todo: combine exec_warp_* functions to read the top portion of the file as the main menu
+//find the "xxxxx" string then start parsing mapnames/info for the map menus.
+void () exec_warp_main_menu =
+{
+	string line;
+	float i = 0;
+
+	filestream f = fopen("configs/warp_main_menu.cfg", FILE_READ);
+
+	if (f < 0)
+	{
+		return;
+	}
+
+	while ((line = fgets(f)) && (i < 12))
+	{
+		float argc = tokenize(line);
+		if (!argc)
+			continue;		
+		if (argv(0) == "//" || argv(0) == "#") continue;
+		warpmenutop[i] = strzone(line);
+		i++;
+	}
+	fclose(f);
+}
+//TODO: Maybe build the warp menu based on the gametype?
+void() exec_warp_cfg =
+{
+	filestream f = fopen("configs/warp.cfg", FILE_READ);
+	string line, mapfile;
+	float menunum = 1, level = 0, mapnum = 0;//Ya, 0 - 10 are reserved. warpmap[11] == e1m1. (menu1, map1)
+	
+	if (f < 0)
+	{
+		return;
+	}
+
+	while ((line = fgets(f)))
+	{
+		float argc = tokenize(line);
+		if (!argc)
+			continue;		
+
+		mapfile = argv(0);
+		
+		if (mapfile == "//" || mapfile == "#" ) continue;	// Skip comments
+		if ((mapfile == "****") || (level > 9))
+		{
+			menunum += 1;
+			level = 0;
+			continue;
+		}
+
+		level += 1;
+		mapnum = (menunum * 10) + level;
+
+		warpmap[mapnum].name = strzone(mapfile);
+		warpmap[mapnum].title = strzone(fgets(f));
+		warpmap[mapnum].author = strzone(fgets(f));
+		dprint(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
+	}
+	fclose(f);
+}
 
 void(string cfg) exec_clanring_cfg =
 {
@@ -463,7 +526,7 @@ void(string cfg) exec_clanring_cfg =
 		if (!argc)
 			continue;		
 		string cmd = argv(0);
-		if (cmd == "//" || cmd == "\n") continue; //Skip comments and blank lines.
+		if (cmd == "//" || cmd == "#" || cmd == "\n") continue; //Skip comments and blank lines.
 		string val = argv(1);
 		dprint(cmd," ",val,"\n");
 		config_command(cmd, val);				//Parse the line.
@@ -471,6 +534,15 @@ void(string cfg) exec_clanring_cfg =
 	fclose(f);
 }
 
+void() clanring_warp_config =
+{
+	cprint("Loading ClanRing Configuration File: \"configs/warp_main_menu.cfg\"\n");
+	exec_warp_main_menu();
+	cprint("Loading ClanRing Configuration File: \"configs/warp.cfg\"\n");
+	exec_warp_cfg();
+}
+
+//TODO: maybe combine these .ent .cam files together into per $mapname.cfg files with subsections for entity, camera, server settings for speed and ease?
 void() clanring_ent_config =
 {
 	//Entity Files
@@ -518,6 +590,7 @@ void() clanring_exec_configs =
 	console_noexit 		= cvar ("noexit");
 
 	clanring_main_config();
+	clanring_warp_config();
 //	clanring_map_config();//(FIXME)
 //	clanring_ent_config();//(FIXME)
 //	clanring_cam_config();//(FIXME)

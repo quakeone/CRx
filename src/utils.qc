@@ -1308,7 +1308,6 @@ void (float tm, float tf) pqc_team_frags =
     oldself = self;
     self = find(world, classname, "player");
 
-	print("team: ", ftos(tm),"\n");
     while (self)
     {
         if (self.style & CLANRING_CONNECTED)

@@ -17,12 +17,12 @@ string motd_top2;
 
 void() motd_init_world =
 {
-	motd_top1   = "€‚ ClanRing Mod €‚\nClanRing NetQuake Server\n\noriginal works by \nJ.P. Grossman & Dave 'Zoid' Kirsch\n\n??\n";
-	motd_top2   = "\n";
+	motd_top1   = "Ÿ\nClanRing Mod\n\nClanRing Multiplayer Server\n\noriginal works by \nJ.P. Grossman & Dave 'Zoid' Kirsch\n\n\n";
+	motd_top2   = "Welcome to Jur4ss1c\n\badmins\b: Moof and Infiniti\nŸ";
 };
 
 void() motd_think =
-{
+{	
 	if (self.count == 0)
 	{
 		if (self.owner.style & CLANRING_MOTD)
@@ -37,6 +37,7 @@ void() motd_think =
 	// remove the MOTD on fire or jump;	(R00k) or paused
 	if ((self.owner.button0) || (self.owner.button2) || (clanring_state & CLANRING_MATCH_PAUSED))
 	{
+		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
 		return;	
@@ -58,6 +59,7 @@ void() motd_think =
 	}
 	else
 	{
+		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
 	}

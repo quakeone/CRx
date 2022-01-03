@@ -86,7 +86,7 @@ string (entity e) strings_get_armor_val =
 string (entity e) strings_get_armour_type =
 {
 
-    if (e.items & IT_INVULNERABILITY) return "Áòíïòº ";
+    ///if (e.items & IT_INVULNERABILITY) return "Áòíïòº ";
     if (e.armortype == 0.8) return "Áòíïòº R ";
     if (e.armortype == 0.6) return "Áòíïòº Y ";
     if (e.armortype == 0.3) return "Áòíïòº G ";
@@ -489,6 +489,8 @@ string (float num) strings_get_teamname_up_by =
 //
 string (float mapnum) strings_get_mapname =
 {
+	return warpmap[mapnum].name;
+	/*
     if (mapnum < 10)
     {
         if (mapnum == 0)
@@ -670,6 +672,7 @@ string (float mapnum) strings_get_mapname =
 			mname = array_user_map[mapnum];	
 		return (mname);
 	}
+	*/
 	return "";
 };
 

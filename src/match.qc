@@ -189,10 +189,12 @@ void() match_reset =
 		remove(self);
 
 	pqc_match_time (0, 0);
-	//reset between matches incase of overtime or interrupted match abort
+	//reset between matches in case of overtime or interrupted match abort (fixme)
+/*
 	clanring_timelimit = default_timelimit;
 	utils_set_cvar ("timelimit", clanring_timelimit);
 	timelimit = (cvar ("timelimit") * 60);
+*/
 	pqc_match_reset ();
 };
 
@@ -410,7 +412,6 @@ void() match_end =
 			return;
 		}
 		match_unpause();
-		match_reset();//R00k
 		clanring_numteams = 0;
 	}
 	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);

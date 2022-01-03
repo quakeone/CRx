@@ -222,7 +222,7 @@ void(string s1, string s2, string s3, string s4) cprint4;
 .float 	plag;
 .float  lagcheck;
 .float	lagcount;
-.float 	warp_menu;//warp menu open
+
 .float 	warp_episode;//chosen episode to warp
 .float 	warp_map;//chosen map to warp
 
@@ -380,3 +380,14 @@ float	stats_timelimit;
 float	stats_matchtype;
 
 .float  csqc_enabled;
+
+typedef struct 
+{
+	string 	name;	// filename WITHOUT '.bsp'
+	string 	title;	
+	string	author; 
+}servermap_t;
+
+servermap_t warpmap[200];
+
+string warpmenutop[11]; // Customizable map categories for the warp menu contents.

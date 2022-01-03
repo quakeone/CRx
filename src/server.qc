@@ -1536,7 +1536,6 @@ void () clanring_impulse =
         self.finaldest_z    = 0;
         self.warp_episode   = 0;
         self.warp_map       = 0;
-        self.warp_menu      = 1;
         self.use            = SUB_Null;
         client_select_warp();
 	}

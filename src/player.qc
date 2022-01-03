@@ -511,7 +511,7 @@ void() GibFade =
 {
 	self.nextthink = time;
 	self.alpha = (self.alpha - (frametime * 0.8));
-	self.origin_z = (self.origin_z - (frametime * 11));
+	//self.origin_z = (self.origin_z - (frametime * 11));
 	if (self.alpha < 0.01)
 		remove(self);
 };

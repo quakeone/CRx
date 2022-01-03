@@ -359,6 +359,16 @@ void () observer_demo_start =
     self.think = SUB_Null;
 };
 
+void () observer_centerprint_join =
+{//TODO replace this with csqc...
+if (clanring_playmode & CLANRING_PRACTICE_MODE)
+		centerprint(self.owner, "\btype \bready\b in console to join");
+else	
+if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+	/*else if (clanring_playmode & CLANRING_MATCH_MODE)*/
+};
+
 //
 //  S T A R T
 //
@@ -393,8 +403,6 @@ void () observer_start =
 	// give him a new position.
 	if (self.deadflag != DEAD_NO)
 	{
-		cprint("?Observer_Start: self.deadflag != DEAD_NO, respawning\n");
-		
 		if (self.deadflag >= DEAD_DEAD)
 			respawn();
 		else
@@ -406,8 +414,8 @@ void () observer_start =
 
 	if (!(clanring_playmode & CLANRING_PRACTICE_MODE))	
     		TeamCaptureDropFlagOfPlayer (self, 1);//drop and reset the flag
-    		
-    self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));
+
+	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));
     	
 	self.style = self.style - (self.style & (CLANRING_RED_TEAM|CLANRING_BLUE_TEAM));
 
@@ -489,7 +497,10 @@ void () observer_start =
 		stuffcmd(self, "viewsize 120\n");
 
 	// Check to see if anyone was observing this client
-	observer_disconnect_notify(self);		
+	observer_disconnect_notify(self);	
+
+	if (!(self.style & CLANRING_MOTD))
+		utils_make_scheduled_event(observer_centerprint_join, 2);
 };
 
 //
@@ -693,7 +704,7 @@ void () observer_prev_target =
 //  L O O K  F O R  T A R G E T
 //
 //  Helper function for observer_get_target; looks in a single direction.
-//  Returns TRUE if a target is found; FLASE otherwise.
+//  Returns TRUE if a target is found; FALSE otherwise.
 //
 float (vector from) observer_look_for_target = 
 {
@@ -887,7 +898,7 @@ void () observer_find_enemy =
 //  Chase cameras are tricky business - they are notoriously choppy.
 //  This choppines is due to two problems:
 //
-//  1.  The network protocol quantizes angles into 256 discreet values.
+//  1.  The network protocol quantizes angles into 256 discrete values.
 //      The client, on the other hand, can set the angle (through user
 //      input) much more precisely.  Hence, the chase target's view
 //      angle is constantly being rounded off.
@@ -956,14 +967,12 @@ void () observer_set_chase_position =
 	// be the same as the one used by the client (after the angle has been
 	// garbled by the network protocol)
 	//
-	//R00k: removed this as we are using 16bit angles now
-	/*
 	if (!self.button0)
 	{
 		angle_x = 360.0 / 256.0 * rint(angle_x * 256.0 / 360.0);
 		angle_y = 360.0 / 256.0 * rint(angle_y * 256.0 / 360.0);
 	}
-	*/
+
     // The "ideal" position is 100 units behind and 40 units above the
     // chase target.  To deal with walls and ceilings, we first trace a
     // line 50 units up and then move 80% of the way along the
@@ -1402,8 +1411,8 @@ void () observer_update_display =
     {
 		if (clanring_state & CLANRING_MATCH_STARTED)
 			centerprint4(self, "\n\n\n\n\n\n\n\n\n\n\n\n               ", teamname, score, pad);
-		else
-			centerprint(self, " ");
+//		else
+//			centerprint(self, " ");//R00k: dont spam this!
         return;
     }
 
@@ -1569,6 +1578,7 @@ void () observer_fly_through_obstacle =
 	local vector spot, inc;
 
 	spot = self.origin + '0 0 22';
+	makevectors(self.v_angle);//R00k
 	traceline(spot, spot + 48 * v_forward, TRUE, self);
 	if (trace_fraction == 1)
 	{
@@ -1807,7 +1817,7 @@ void () observer_heads_up =
     else
     {
         self.style = self.style | CLANRING_HEADS_UP;
-        sprint(self, "Heads up display enabled\n");
+        sprint(self, "Heads up display enabled\n\btype \bheadsup\b again to disable.\n");
         stuffcmd(self, "viewsize 120\n");
     }
     self.delay = 0;

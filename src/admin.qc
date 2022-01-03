@@ -1254,7 +1254,7 @@ void() admin_impulse =
 	}
 
 	// votable commands
-	if (self.impulse >= 190 && self.impulse <= 196)
+	if (self.impulse >= 190 && self.impulse <= 196) //this is unused
 		votables_init_warp(self.impulse - 190);
 	else if (self.impulse == 202)
 		votables_request_set_hook();

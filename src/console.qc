@@ -1175,7 +1175,7 @@ void() console_get_user_nextlevel =
 	clanring_levelcount = 1;
 	clanring_lastcount = -1;
 	clanring_firstlevel = "";
-	localcmd("exec levels.cfg\n");
+	localcmd("exec levels.cfg\n");//FIXME
 	clanring_nextcheck = 0;
 	remove(self);
 };

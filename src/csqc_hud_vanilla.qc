@@ -597,6 +597,10 @@ static void(vector pos, string num) Hud_DrawMatchNumbers =
 {
 	float i;
 	float c;
+	local float a;
+
+	a = autocvar(hud_matchtime_alpha, 1);
+
 	for(i = 0; ; i++, pos_x += 24)
 	{
 		c = str2chr(num, i);
@@ -605,13 +609,13 @@ static void(vector pos, string num) Hud_DrawMatchNumbers =
 		if (c == ' ')
 			continue;
 		if (c == '/')
-			drawpic(pos, "gfx/num_slash", ([24,24]),([1,1,1]),1,0);
+			drawpic(pos, "gfx/num_slash", ([24,24]),([1,0,0]),a,0);
 		else if (c == ':' || c == '.')
-			drawpic(pos, "gfx/num_colon", ([24,24]),([1,1,1]),1,0);
+			drawpic(pos, "gfx/num_colon", ([24,24]),([1,0,0]),a,0);
 		else if (c == '-')
-			drawpic(pos, "gfx/num_minus", ([24,24]),([1,1,1]),1,0);
+			drawpic(pos, "gfx/anum_minus", ([24,24]),([1,1,1]),a,0);
 		else if (c >= '0' && c <= '9')
-			drawpic(pos, sprintf("gfx/num_%c", c), ([24,24]),([1,1,1]),1,0);
+			drawpic(pos, anumber[c-'0'], ([24,24]),([1,1,1]),a,0);
 	}
 };
 //-------------------------------------
@@ -628,11 +632,16 @@ void() Hud_DrawMatchTime =
 //TODO: use LARGE numbers/colored panels for big screens...
 void() Hud_DrawTeamScores = 
 {
-	local vector /*top,*/ bottom, pos;
-	local float f, i;
-	
-	pos_x = autocvar(hud_teamscores_x, 10);
-	pos_y = autocvar(hud_teamscores_y, 10);
+	local vector /*top,*/ bottom, pos1, pos2;
+	local float f, i, n = 0;
+
+	pos1_x = (autocvar(hud_team1scores_x,10));
+	pos1_y = (autocvar(hud_team1scores_y,10));
+
+	pos2_x = (autocvar(hud_team2scores_x,10));
+	pos2_y = (autocvar(hud_team2scores_y,40));
+
+	//todo add more teams here...
 
 	for (i = 0 ; i < 14 ; i++)
 	{
@@ -642,9 +651,19 @@ void() Hud_DrawTeamScores =
 
 		if (bottom)
 		{
-			drawfill(pos+([0,0]), ([28,9]), bottom, 1.0, 0); //Only use bottom color for team indicators
-			drawstring(pos+([2,0]), strpad(-3, ftos(f)), ([8,8]), ([1,1,1]),1,0);
-			pos_y += 24;
+			n += 1;
+
+			if (n == 1)
+			{
+				drawfill(pos1+([0,0]), ([28,9]), bottom, 1.0, 0); 
+				drawstring(pos1+([2,0]), strpad(-3, ftos(f)), ([8,8]), ([1,1,1]),1,0);
+			}
+			else
+			{
+				drawfill(pos2+([0,0]), ([28,9]), bottom, 1.0, 0); //Only use bottom color for team indicators
+				drawstring(pos2+([2,0]), strpad(-3, ftos(f)), ([8,8]), ([1,1,1]),1,0);
+				break;
+			}
 		}
 	}
 };
@@ -660,7 +679,7 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 	pos_x = (virtsize_x-320)/2;
 	pos_y = virtsize_y;
 
-	sitems = getstatbits(STAT_ITEMS, 0, 23);	//note that we could use getstati to read the items stat, but it'd degrade when then cast to a float, and QSS+DP don't support ints, so we have to use two floats. 
+	sitems 	= getstatbits(STAT_ITEMS, 0, 23);	//note that we could use getstati to read the items stat, but it'd degrade when then cast to a float, and QSS+DP don't support ints, so we have to use two floats. 
 	sitems2 = getstatbits(STAT_ITEMS, 23, 9);
 	sweapon = getstatf(STAT_ACTIVEWEAPON);
 	shealth = getstatf(STAT_HEALTH);
@@ -694,9 +713,9 @@ static void Hud_Draw(vector virtsize, float scoreboard)
 	}
 
 	if (autocvar(hud_matchtimer, 1))
-		Hud_DrawMatchTime();
+		Hud_DrawMatchTime();//todo add virtsize here too
 
-	Hud_DrawTeamScores();
+	Hud_DrawTeamScores(); //todo add virtsize here too
 };
 
 void () CSQC_Parse_Event =
@@ -725,7 +744,18 @@ void () CSQC_Parse_Event =
 			cl_teamscores[team].bottomcolor = "0 0 0";
 			cl_teamscores[team].frags = 0;
 			break;
-
+/*
+		case PQC_TEAM_OVERLAY:
+			local float teammate;
+			teammate = readbyte();
+			if ((teamate <= 0)||(teammate > 8)) return;//FIXME: SV_MAXPLAYERS
+			cl_teamoverlay[teammate].health = readshort();
+			cl_teamoverlay[teammate].armor = readshort();
+			cl_teamoverlay[teammate].weapon = readshort();
+			cl_teamoverlay[teammate].ammo = readshort();
+			cl_teamoverlay[teammate].powerup = readshort();
+			break;			
+*/
 		case PQC_TEAM_FRAGS:
 			local float frags;
 			team = readbyte();
