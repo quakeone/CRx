@@ -33,6 +33,8 @@ float () vote_majority;
 //
 float (string s1, string s2, void() accept) vote_init =
 {	
+	clear_afk_status(self);	//R00k: (1/3/2022 12:54pm)
+
 	// Check to see if there's already a vote in progress
 	if (clanring_request)
 	{
@@ -80,6 +82,8 @@ void () vote_clear =
 //
 void () vote_yes =
 {
+	clear_afk_status(self);	//R00k: (1/3/2022 12:55pm)
+
     if (self.style & CLANRING_ADMINISTRATOR)
     {
         // accept immediately
@@ -108,6 +112,8 @@ void () vote_yes =
 //
 void() vote_no =
 {	
+	clear_afk_status(self);	//R00k: (1/3/2022 12:55pm)
+
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
 		// reject immediately
