@@ -1111,7 +1111,8 @@ void () clanring_help =
 void () clanring_help_change =
 {
 	sprint(self, "\n");
-	sprint(self, " Type \bWarp\b to change maps\n");
+	sprint(self, " type \bwarp\b to change maps\n");
+	sprint(self, "\n");
 	//sprint(self, "Το γθαξηε μεφεμσ¬ εξτες τθε ξανε οζ\n");
 	//sprint(self, "τθε μεφεμ ιξ τθε γοξσομε®\n");
 };
@@ -1168,6 +1169,7 @@ void () clanring_info =
 void () clanring_commands =
 {
 	// regular user commands
+	sprint(self, "\n");
 	sprint(self, " vinfo®®®®®®®®®®““™ help-server®®®“’’\n");
 	sprint(self, " help-misc®®®®®®“’— help-match®®®®“”›\n");
 	sprint(self, " help-observer®®“’“ help-walk®®®®®“––\n");
@@ -1211,7 +1213,9 @@ void () clanring_commands =
 	// admin commands
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
-		sprint(self, "®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®\n");
+		sprint(self, "\n");
+		sprint(self, " αδνιξ γονναξδσ\n");
+		sprint(self, "\n");
 		sprint(self, " help-admin®®®®®”’’ options®®®®®®®””›\n");
 		sprint(self, " safepractice®®®””– kick!®®®®®®®®®”“•\n");
 		sprint(self, " abortmatch®®®®®”“– ghostlist®®®®®”“”\n");
