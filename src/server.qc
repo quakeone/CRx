@@ -547,7 +547,7 @@ void () clanring_set_aliases =
 		return;
 	}
 
-	sprint3(self, "Sending ", clanring_version, " bindings\n");
+	//sprint3(self, "Sending ", clanring_version, " bindings\n");
 
 	// Cheat fixes
 	stuffcmd(self, "alias r_ambient echo r_ambient has been disabled on this server.\n");
