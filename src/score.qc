@@ -264,10 +264,10 @@ void () score_fix_connect =
 		{
 			if (msg_entity.style & CLANRING_CONNECTED)
 			{
-				if (self.colormap == msg_entity.timeslot)
+				if (self.colormap == msg_entity.timeslot)// .colormap - 1 ??
 					score_write_time(msg_entity.timeslot);
 				else
-					score_write_name(self.colormap, "");
+					score_write_name(self.colormap - 1, "");//FIXED? (issue #43)
 			}
 		}
 		msg_entity = find(msg_entity, classname, "player");
