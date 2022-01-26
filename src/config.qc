@@ -268,6 +268,7 @@ void(string command, string value) config_command =
 			break;
 		}
 // entity file commands
+/*
 		case "newspawn":
 		{
 			console_make_entity("info_player_deathmatch", 1);
@@ -305,7 +306,7 @@ void(string command, string value) config_command =
 			utils_do_items(console_change_item);
 			break;
 		}
-
+*/
 // control commands
 		case "-init-":
 		case "-ffa-":		// basic normal dm
@@ -505,7 +506,7 @@ void() exec_warp_cfg =
 		warpmap[mapnum].name = strzone(mapfile);
 		warpmap[mapnum].title = strzone(fgets(f));
 		warpmap[mapnum].author = strzone(fgets(f));
-		dprint(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
+		//dprint(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
 	}
 	fclose(f);
 }
