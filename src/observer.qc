@@ -185,8 +185,8 @@ void () observer_fly_start =
 	observer_check_demo_end();
 	observer_clear_flags();
 	self.oflags = self.oflags | OBSERVER_FLY;
-	self.movetype = MOVETYPE_FLY;
-	self.finaldest_y = MOVETYPE_FLY;
+	self.movetype = MOVETYPE_NOCLIP;			//R00k: changed (2022-01-26 11:01) from MOVETYPE_FLY;
+	self.finaldest_y = MOVETYPE_NOCLIP;			//R00k: changed (2022-01-26 11:01) from MOVETYPE_FLY;
 	self.view_ofs = '0 0 22';
 	self.flags = self.flags | FL_ONGROUND;
 	self.waterlevel = 0;
