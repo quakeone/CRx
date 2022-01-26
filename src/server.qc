@@ -547,7 +547,7 @@ void () clanring_set_aliases =
 		return;
 	}
 
-	sprint3(self, "Sending ", clanring_version, " bindings\n");
+	//sprint3(self, "Sending ", clanring_version, " bindings\n");
 
 	// Cheat fixes
 	stuffcmd(self, "alias r_ambient echo r_ambient has been disabled on this server.\n");
@@ -1111,7 +1111,8 @@ void () clanring_help =
 void () clanring_help_change =
 {
 	sprint(self, "\n");
-	sprint(self, " Type \bWarp\b to change maps\n");
+	sprint(self, " type \bwarp\b to change maps\n");
+	sprint(self, "\n");
 	//sprint(self, "Ôï ãèáîçå ìåöåìó¬ åîôåò ôèå îáíå ïæ\n");
 	//sprint(self, "ôèå ìåöåì éî ôèå ãïîóïìå®\n");
 };
@@ -1168,6 +1169,7 @@ void () clanring_info =
 void () clanring_commands =
 {
 	// regular user commands
+	sprint(self, "\n");
 	sprint(self, " vinfo®®®®®®®®®®““™ help-server®®®“’’\n");
 	sprint(self, " help-misc®®®®®®“’— help-match®®®®“”›\n");
 	sprint(self, " help-observer®®“’“ help-walk®®®®®“––\n");
@@ -1211,7 +1213,9 @@ void () clanring_commands =
 	// admin commands
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
-		sprint(self, "®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®®\n");
+		sprint(self, "\n");
+		sprint(self, " áäíéî ãïííáîäó\n");
+		sprint(self, "\n");
 		sprint(self, " help-admin®®®®®”’’ options®®®®®®®””›\n");
 		sprint(self, " safepractice®®®””– kick!®®®®®®®®®”“•\n");
 		sprint(self, " abortmatch®®®®®”“– ghostlist®®®®®”“”\n");

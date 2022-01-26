@@ -1283,7 +1283,7 @@ void() W_ChangeWeapon =
 
 	if (!(self.items & fl))
 	{	// don't have the weapon or the ammo
-		sprint (self, "no weapon.\n");
+		//sprint (self, "no weapon.\n");
 		return;
 	}
 
@@ -1483,7 +1483,7 @@ void() PreviousWeaponCommand =
 
 	if (!(self.items & self.previous_weapon))
 	{
-		sprint(self, "no weapon.\n");
+		//sprint(self, "no weapon.\n");
 		return;
 	}
 

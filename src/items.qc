@@ -242,10 +242,10 @@ void() health_touch =
 	
 	if (donttake == 0)
 	{
-		sprint(other, "You receive ");
+		//sprint(other, "You receive ");
 		s = ftos(self.healamount);
-		sprint(other, s);
-		sprint(other, " health\n");
+		//sprint(other, s);
+		//sprint(other, " health\n");
 		sound (other, CHAN_ITEM, self.noise, 1, ATTN_NORM);
 	//	stuffcmd(other, "bf\n");
 		self.model = string_null;
