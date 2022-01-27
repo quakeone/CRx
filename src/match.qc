@@ -952,6 +952,8 @@ float () match_put_player_in_team =
 	pteam.count 					= 1; 
 	pteam.height 					= self.height;
 	
+	//setcolour(self, pteam.height, pteam.height);//Teams, are solid pants and shirts... fixme?
+
 	//refresh skins
 	if ((self.height + 1) == RED)
 	{		
@@ -1037,6 +1039,7 @@ void() match_start_timer =
 		clanring_match_timer.count 	= 59;
 		announce("Match begins in 1 minute");
 	}
+
 	score_update_time();
 };
 
@@ -1663,12 +1666,12 @@ void() match_show_not_ready =
 	else
 	{
 		local entity player;
-		sprint(self, "The following players are not ready:\n");
+		bprint("The following players are not ready:\n");
 		player = find(world, classname, "player");
 		while (player)
 		{
 			if (!(player.style & (CLANRING_OBSERVER | CLANRING_READY)) && (player.style & CLANRING_CONNECTED))
-				sprint3(self, " ", player.netname, "\n");
+				bprint(" ", player.netname, "\n");
 			player = find(player, classname, "player");
 		}
 	}
