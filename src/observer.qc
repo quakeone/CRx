@@ -1705,7 +1705,7 @@ void () observer_pre_think =
 			self.waterlevel = 0;
             observer_fly_move();
             self.flags = self.flags | FL_ONGROUND;
-            self.finaldest_y = self.movetype = MOVETYPE_FLY;
+            self.finaldest_y = self.movetype = MOVETYPE_NOCLIP;//R00k: changed to MOVETYPE_NOCLIP was MOVETYPE_FLY
         }
         observer_check_teleport();
 
