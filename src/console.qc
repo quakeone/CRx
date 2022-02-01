@@ -132,6 +132,13 @@ void() console_set_aliases =
 	localcmd("alias setadmin8 \"temp1 88\"\n");
 	localcmd("alias setadmin9 \"temp1 89\"\n");
 	localcmd(";alias banned \"temp1 91\"\n");
+	localcmd("alias modes \"temp1 92\"\n");
+	localcmd("alias gameplay \"temp1 93\"\n");
+	localcmd("alias watch \"temp1 94\"\n");
+	localcmd("alias stat \"temp1 95\"\n");
+	localcmd("alias misc \"temp1 96\"\n");
+	localcmd("alias modhelp \"temp1 97\"\n");
+	localcmd("alias shc \"temp1 98\"\n");
   	//localcmd(";alias * \"temp1 1256;wait\"\n");
 };
 

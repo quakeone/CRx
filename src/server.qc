@@ -248,6 +248,13 @@ void () player_hook3;
 void () HookFire2;
 void () ban_kick_client;
 void (entity client) clanring_kick_player;
+void () modes_commands;
+void () gameplay_commands;
+void () watch_commands;
+void () stat_commands;
+void () misc_commands;
+void () modhelp_commands;
+void () shc_commands;
 
 //
 // C L E A R   A F K   S T A T U S
@@ -641,6 +648,13 @@ void () clanring_set_aliases =
 	//stuffcmd(self, "alias vote-exit impulse 204\n");
 	stuffcmd(self, "alias faststart impulse 209\n");		
 	stuffcmd(self, "alias afk impulse 70\n");
+	stuffcmd(self, "alias modes impulse 181\n");
+	stuffcmd(self, "alias gameplay impulse 182\n");
+	stuffcmd(self, "alias watch impulse 183\n");
+	stuffcmd(self, "alias stat impulse 184\n");
+	stuffcmd(self, "alias misc impulse 185\n");
+	stuffcmd(self, "alias modhelp impulse 186\n");
+	stuffcmd(self, "alias shc impulse 187\n");
 	
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
@@ -1170,64 +1184,134 @@ void () clanring_commands =
 {
 	// regular user commands
 	sprint(self, "\n");
-	sprint(self, " vinfo®®®®®®®®®®““™ help-server®®®“’’\n");
-	sprint(self, " help-misc®®®®®®“’— help-match®®®®“”›\n");
-	sprint(self, " help-observer®®“’“ help-walk®®®®®“––\n");
-	sprint(self, " help-fly®®®®®®®“–— help-chase®®®®“–˜\n");
-	sprint(self, " help-camera®®®®“—˜ commands®®®®®®“’˜\n");
-	sprint(self, " levels®®®®®®®®®“’™ autoweapon®®®®““–\n");
-	sprint(self, " admin®®®®®®®®®®“’š motd®®®®®®®®®®“’›\n");
-	sprint(self, " observer®®®®®®®“–’ walk®®®®®®®®®®“–“\n");
-	sprint(self, " flyme®®®®®®®®®®“–” chase®®®®®®®®®“–•\n");
-	sprint(self, " eyecam®®®®®®®®®“–› camera®®®®®®®®“—•\n");
-	sprint(self, " autochase®®®®®®“—— autocam®®®®®®®“—–\n");
-	sprint(self, " headsup®®®®®®®®“–š smooth®®®®®®®®N/A\n");
-	sprint(self, " tourney®®®®®®®®“—“ yes®®®®®®®®®®®““—\n");
-	sprint(self, " no®®®®®®®®®®®®®““˜ ready®®®®®®®®®“”’\n");
-	sprint(self, " notready®®®®®®®“”“ ready?®®®®®®®®“”•\n");
-	sprint(self, " unlock®®®®®®®®®“”” lock®®®®®®®®®®“•’\n");
-	sprint(self, " timerstop®®®®®®“”– timerstart®®®®“”—\n");
-	sprint(self, " +teamscores®®®®N/A -teamscores®®®N/A\n");
-	sprint(self, " timeset®®®®®®®®”“— otset®®®®®®®®®”“˜\n");
-	sprint(self, " ghostcode®®®®®®N/A ghost®®®®®®®®®“”™\n");
-	sprint(self, " score®®®®®®®®®®“”š nogibs®®®®®®®®””—\n");
-	sprint(self, " lowgibs®®®®®®®®””˜ highgibs®®®®®®””™\n");
-	sprint(self, " setquad®®®®®®®®””“ setpent®®®®®®®”””\n");
-	sprint(self, " setring®®®®®®®®””• normal®®®®®®®®”“™\n");
-	sprint(self, " practice®®®®®®®”“š match®®®®®®®®®”“›\n");
-	sprint(self, " deathmatch®®®®®””’ ticrate®®®®®®®““š\n");
-	sprint(self, " killstats®®®®®®“™’ efficiency®®®®“™“\n");
-	sprint(self, " stats®®®®®®®®®®“™” quadstats®®®®®“™•\n");
-	sprint(self, " badstats®®®®®®®“™– autostats®®®®®“™š\n");
-	sprint(self, " help-stats®®®®®“™› commentary®®®®“–™\n");
-	sprint(self, " obits®®®®®®®®®®”““ rules®®®®®®®®®“’•\n");
-	sprint(self, " rockets®®®®®®®®“•• autopause®®®®®”“’\n");
-	sprint(self, " admins®®®®®®®®®““’ teamstats®®®®®“™—\n");
-	sprint(self, " flagstats®®®®®®“™˜ sethook®®®®®®®”’”\n");
-	sprint(self, " setrunes®®®®®®®”’• autoid®®®®®®®®““›\n");
-	sprint(self, " +hook®®®®®®®®®®®›š -hook®®®®®®®®®®›™\n");
-	sprint(self, " droprune®®®®®®®®“› dropammo®®®®®®®”’\n");
-	sprint(self, " dropweapon®®®®®®”“ flagstatus®®®®®”•\n");
-	sprint(self, " hook®®®®®®®®®®®®”” nextmap®®®®®®®”’–\n");
+	sprint(self, " ùåó        vote yes\n");
+	sprint(self, " îï         vote no\n");
+	sprint(self, " ÷áòð       initiate vote to change level\n");
+	sprint(self, " íïäåó      mode switch commands\n");
+	sprint(self, " çáíåðìáù   match/game variable commands\n");
+	sprint(self, " ÷áôãè      observer commands\n");
+	sprint(self, " óôáô       statistics commands\n");
+	sprint(self, " óèã        command shortcuts\n");
+	sprint(self, " íéóã       miscellaneous commands\n");
+	sprint(self, " íïäèåìð    detailed commands usage\n");
+	sprint(self, " áäíéî      enter admin code\n");
+	sprint(self, "\n");
+	
 
 	// admin commands
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
+		sprint(self, " admin commands\n");
 		sprint(self, "\n");
-		sprint(self, " áäíéî ãïííáîäó\n");
+		sprint(self, " áâïòôíáôãè   ëéãë¡\n"); // abortmatch  kick!
+		sprint(self, " áõôïóó       íïäöïôå\n"); // autoss  modvote
+		sprint(self, " âáî¡         íáëåóðá÷î\n"); // ban!  makespawn
+		sprint(self, " äíóåô        íáøôåáíó\n"); // dmset  maxteams
+		sprint(self, " æáóôóôáòô    îåøôóðá÷î\n"); // faststart  nextspawn
+		sprint(self, " çèïóôìéóô    îåøôãáí\n"); // ghostlist  nextcam
+		sprint(self, " èåìð­áäíéî   ïðôéïîó\n"); // help-admin  options
+		sprint(self, " éðó          óáæåðòáãôéãå\n"); // ips safepractice
 		sprint(self, "\n");
-		sprint(self, " help-admin®®®®®”’’ options®®®®®®®””›\n");
-		sprint(self, " safepractice®®®””– kick!®®®®®®®®®”“•\n");
-		sprint(self, " abortmatch®®®®®”“– ghostlist®®®®®”“”\n");
-		sprint(self, " modevote®®®®®®®””š spot®®®®®®®®®®”—’\n");
-		sprint(self, " nextspawn®®®®®®”–˜ makespawn®®®®®”–™\n");
-		sprint(self, " nextcam®®®®®®®®”–š makecam®®®®®®®”–›\n");
-		sprint(self, " dmset®®®®®®®®®®”’™ ips®®®®®®®®®®®”’˜\n");
-		sprint(self, " maxteams®®®®®®®”’š faststart®®®®®”’›\n");
-		sprint(self, " autoss®®®®®®®®®”’– ban!®®®®®®®®®®”’—\n");
-		//sprint(self, " qsmack®®®®®®®®®•™\n");
 	}
-	clanring_help_change ();
+	//clanring_help_change ();
+};
+
+//  C O M M A N D S SUB MENUS
+//
+//  List all commands and impulses.
+
+void () modes_commands =
+{
+		sprint(self, "\n");
+		sprint(self, " äí\n"); // dm
+		sprint(self, " ãôæ\n"); // ctf
+		sprint(self, " ðòáãôéãå\n"); // practice
+		sprint(self, " ææá\n"); // ffa
+		sprint(self, " íáôãè\n"); // match
+		sprint(self, "\n");
+};
+
+void () gameplay_commands =
+{
+		sprint(self, "\n");
+		sprint(self, " äòïðòõîå\n"); // droprune
+		sprint(self, " æìáçóôáôõó\n"); // flagstatus
+		sprint(self, " çèïóô\n"); // ghost
+		sprint(self, " çèïóôãïäå\n"); // ghostcode
+		sprint(self, " èïïë\n"); // hook
+		sprint(self, " ìïãë\n"); // lock
+		sprint(self, " ïôóåô\n"); // otset
+		sprint(self, " òåáäù\n"); // ready
+		sprint(self, " òåáäù¿\n"); // ready?
+		sprint(self, " óåôðåîô\n"); // setpent
+		sprint(self, " óåôñõáä\n"); // setquad
+		sprint(self, " óåôòéîç\n"); // set ring
+		sprint(self, " ôéíåòóôáòô\n"); // timerstart
+		sprint(self, " ôéíåòóôïð\n"); // timerstop
+		sprint(self, " ôéíåóåô\n"); // timeset
+		sprint(self, " õîìïãë \n"); // unlock
+		sprint(self, "\n");
+};
+
+void () watch_commands =
+{
+		sprint(self, "\n");
+		sprint(self, " áõôïãáí\n"); // autocam
+		sprint(self, " áõôïãèáóå\n"); // autochase
+		sprint(self, " åùåãáí\n"); // autoeye
+		sprint(self, " æìùíå\n"); // eyecam
+		sprint(self, " ôïõòîåù\n"); // flyme
+		sprint(self, "\n");
+};
+
+void () stat_commands =
+{
+		sprint(self, "\n");
+		sprint(self, " âáäóôáôó\n"); // badstats
+		sprint(self, " åææéãéåîãù\n"); // efficiency
+		sprint(self, " æìáçóôáôó\n"); // flagstats
+		sprint(self, " ëéììóôáôó\n"); // killstats
+		sprint(self, " ñõáäóôáôó\n"); // quadstats
+		sprint(self, " óôáôó\n"); // stats
+		sprint(self, " ôåáíóôáôó\n"); // teamstats
+		sprint(self, "\n");
+};
+
+void () misc_commands =
+{
+		sprint(self, "\n");
+		sprint(self, " äåáôèíáôãè\n"); // deathmatch
+		sprint(self, " äòïðáííï\n"); // dropammo
+		sprint(self, " äòïð÷åáðïî\n"); // dropweapon
+		sprint(self, " íïôä\n"); // motd
+		sprint(self, "\n");
+};
+
+void () modhelp_commands =
+{
+		sprint(self, "\n");
+		sprint(self, " èåìð­ãáíåòá\n"); // help-camera
+		sprint(self, " èåìð­ãèáóå\n"); // help-chase
+		sprint(self, " èåìð­æìù\n"); // help-fly
+		sprint(self, " èåìð­íáôãè\n"); // help-match
+		sprint(self, " èåìð­íéóã\n"); // help-misc
+		sprint(self, " èåìð­ïâóåòöåò\n"); // help-observer
+		sprint(self, " èåìð­óåòöåò\n"); // help-server
+		sprint(self, " èåìð­÷áìë\n"); // help-walk
+		sprint(self, " öéîæï\n"); // vinfo
+
+		sprint(self, "\n");
+};
+
+void () shc_commands =
+{
+		sprint(self, "\n");
+		sprint(self, " íáðø  warp to   îò   notready\n");
+		sprint(self, " ¿     ready?    ò    ready\n");
+		sprint(self, " âì    blue      òä   red\n");
+		sprint(self, " å     eyecam    ùì   yellow\n");
+		sprint(self, " î     no        ù    yes\n");
+		sprint(self, "\n");
 };
 
 //
@@ -1565,6 +1649,20 @@ void () clanring_impulse =
     	clanring_ticrate ();
 	else if (self.impulse == 180)
     	self.style = (self.style | CLANRING_FOUND_BINDINGS);
+	else if (self.impulse == 181)
+    	modes_commands ();
+	else if (self.impulse == 182)
+    	gameplay_commands ();
+	else if (self.impulse == 183)
+    	watch_commands ();
+	else if (self.impulse == 184)
+    	stat_commands ();
+	else if (self.impulse == 185)
+    	misc_commands ();
+	else if (self.impulse == 186)
+    	modhelp_commands ();
+	else if (self.impulse == 187)
+    	shc_commands ();
 	else if (self.impulse >= 115 && self.impulse <= 116)
 	{
         if (self.style & CLANRING_KICK_CONFIRM)
