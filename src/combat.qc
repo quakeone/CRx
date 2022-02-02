@@ -384,7 +384,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	save = 0;
 	
-	if (teamdamage)
+	if ((teamdamage)&&(!(match_prewar())))
 	{
 		if ((targ.deathtype != "drowning") || (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
 		{			
