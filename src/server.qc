@@ -254,7 +254,7 @@ void () watch_commands;
 void () stat_commands;
 void () misc_commands;
 void () modhelp_commands;
-void () shc_commands;
+void () shortcuts_commands;
 
 //
 // C L E A R   A F K   S T A T U S
@@ -654,7 +654,7 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias stat impulse 184\n");
 	stuffcmd(self, "alias misc impulse 185\n");
 	stuffcmd(self, "alias modhelp impulse 186\n");
-	stuffcmd(self, "alias shc impulse 187\n");
+	stuffcmd(self, "alias shortcuts impulse 187\n");
 	
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
@@ -1184,14 +1184,14 @@ void () clanring_commands =
 {
 	// regular user commands
 	sprint(self, "\n");
-	sprint(self, " \byes\b        vote yes\n");
-	sprint(self, " \bno\b         vote no\n");
+	sprint(self, " \byes [y]\b    vote yes\n");
+	sprint(self, " \bno [n]\b     vote no\n");
 	sprint(self, " \bwarp\b       initiate vote to change level\n");
 	sprint(self, " \bmodes\b      mode switch commands\n");
 	sprint(self, " \bgameplay\b   match/game variable commands\n");
 	sprint(self, " \bwatch\b      observer commands\n");
 	sprint(self, " \bstat\b       statistics commands\n");
-	sprint(self, " \bshc\b        command shortcuts\n");
+	sprint(self, " \bshortcuts\b  command shortcuts\n");
 	sprint(self, " \bmisc\b       miscellaneous commands\n");
 	sprint(self, " \bmodhelp\b    detailed commands usage\n");
 	sprint(self, " \badmin\b      enter admin code\n");
@@ -1234,14 +1234,15 @@ void () modes_commands =
 void () gameplay_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " \bdroprune\b      \bready?\b\n");
-		sprint(self, " \bflagstatus\b    \bsetpent\b\n");
-		sprint(self, " \bghost\b         \bsetquad\b\n");
-		sprint(self, " \bghostcode\b     \bsetring\b\n");
-		sprint(self, " \bhook\b          \btimerstart\b\n");
-		sprint(self, " \block\b          \btimerstop\b\n");
-		sprint(self, " \botset\b         \btimeset\b\n");
-		sprint(self, " \bready\b         \bunlock\b\n");
+		sprint(self, " \bdroprune [dr]\b   \bsetpent\b\n");
+		sprint(self, " \bflagstatus\b      \bsetquad\b\n");
+		sprint(self, " \bghost\b           \bsetring\b\n");
+		sprint(self, " \bghostcode\b       \btimerstart [st]\b\n");
+		sprint(self, " \bhook\b            \btimerstop [pa]\b\n");
+		sprint(self, " \block\b            \btimeset\b\n");
+		sprint(self, " \botset\b           \btimeset10 [t10]\b\n");
+		sprint(self, " \bready [r]\b       \btimeset20 [t20]\b\n");
+		sprint(self, " \bready? [?]\b      \bunlock\b\n");
 		sprint(self, "\n");
 };
 
@@ -1251,7 +1252,7 @@ void () watch_commands =
 		sprint(self, " \bautocam\b\n");
 		sprint(self, " \bautochase\b\n");
 		sprint(self, " \bautoeye\b\n");
-		sprint(self, " \beyecam\b\n");
+		sprint(self, " \beyecam [e]\b\n");
 		sprint(self, " \bflyme\b\n");
 		sprint(self, "\n");
 };
@@ -1294,16 +1295,16 @@ void () modhelp_commands =
 		sprint(self, "\n");
 };
 
-void () shc_commands =
+void () shortcuts_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " \bmapx\b  warp to    \brd\b    red\n");
-		sprint(self, " \b?\b     ready?     \bt10\b   timelimit10\n");
-		sprint(self, " \bbl\b    blue       \bt20\b   timelimit20\n");
-		sprint(self, " \be\b     eyecam     \bst\b    timerstart\n");
-		sprint(self, " \bn\b     no         \bpa\b    timerstop\n");
-		sprint(self, " \bnr\b    notready   \byl\b    yellow\n");
-		sprint(self, " \br\b     ready      \by\b     yes\n");
+		sprint(self, " \bmapx\b  warp to    \brd\b   red\n");
+		sprint(self, " \b?\b     ready?     \bt10\b  timeset10\n");
+		sprint(self, " \bbl\b    blue       \bt20\b  timeset20\n");
+		sprint(self, " \be\b     eyecam     \bst\b   timerstart\n");
+		sprint(self, " \bn\b     no         \bpa\b   timerstop\n");
+		sprint(self, " \bnr\b    notready   \byl\b   yellow\n");
+		sprint(self, " \br\b     ready      \by\b    yes\n");
 		sprint(self, "\n");
 };
 
@@ -1655,7 +1656,7 @@ void () clanring_impulse =
 	else if (self.impulse == 186)
     	modhelp_commands ();
 	else if (self.impulse == 187)
-    	shc_commands ();
+    	shortcuts_commands ();
 	else if (self.impulse >= 115 && self.impulse <= 116)
 	{
         if (self.style & CLANRING_KICK_CONFIRM)

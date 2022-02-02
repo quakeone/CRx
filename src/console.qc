@@ -138,7 +138,7 @@ void() console_set_aliases =
 	localcmd("alias stat \"temp1 95\"\n");
 	localcmd("alias misc \"temp1 96\"\n");
 	localcmd("alias modhelp \"temp1 97\"\n");
-	localcmd("alias shc \"temp1 98\"\n");
+	localcmd("alias shortcuts \"temp1 98\"\n");
   	//localcmd(";alias * \"temp1 1256;wait\"\n");
 };
 
