@@ -153,29 +153,37 @@ void() SetNewParms2 =
 	}
 	else
 	{
-		if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+		if (!(clanring_state & CLANRING_TIMER_STARTED))					//R00k: prewar! (or whatever we call it) aka BOSHMODeA
 		{
-			parm1 = IT_SHOTGUN | IT_AXE;
-			parm2 = 100;
-			parm3 = 0;
-			parm4 = 25;
-			parm5 = 0;
-			parm6 = 0;
-			parm7 = 0;
-			parm8 = IT_SHOTGUN;
-			parm9 = 0;
+			SetPracticeParms ();
 		}
 		else
 		{
-			parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
-			parm2 = 100;
-			parm3 = 50;
-			parm4 = 25;
-			parm5 = 0;
-			parm6 = 0;
-			parm7 = 0;
-			parm8 = IT_SHOTGUN;
-			parm9 = 30;
+			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
+			{
+				parm1 = IT_SHOTGUN | IT_AXE;
+				parm2 = 100;
+				parm3 = 0;
+				parm4 = 25;
+				parm5 = 0;
+				parm6 = 0;
+				parm7 = 0;
+				parm8 = IT_SHOTGUN;
+				parm9 = 0;
+			}
+			else
+			{
+				parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
+				parm2 = 100;
+				parm3 = 50;
+				parm4 = 25;
+				parm5 = 0;
+				parm6 = 0;
+				parm7 = 0;
+				parm8 = IT_SHOTGUN;
+				parm9 = 30;
+			}
 		}
 	}
 		
@@ -833,14 +841,20 @@ potential spawning position for deathmatch games
 void() info_player_deathmatch =
 {
 	dm_num_spawns = dm_num_spawns + 1.00;
+//	precache_model ("progs/s_light.spr");
+//	setmodel (self, "progs/s_light.spr");
 };
 
 void() info_player_team1 =
 {
+//	precache_model ("progs/s_light.spr");
+//	setmodel (self, "progs/s_light.spr");
 };
 
 void() info_player_team2 =
 {
+//	precache_model ("progs/s_light.spr");
+//	setmodel (self, "progs/s_light.spr");
 };
 /*QUAKED info_player_coop (1 0 1) (-16 -16 -24) (16 16 24)
 potential spawning position for coop games
