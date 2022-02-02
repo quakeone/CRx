@@ -329,7 +329,7 @@ void() W_FireShotgun =
 //	self.punchangle_x = -2;
 
 	// ELOHIM_MOD - infinite ammo in practice mode
-	if (!(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
 	self.currentammo = self.ammo_shells = self.ammo_shells - 1;
 	makevectors(self.v_angle); // ELOHIM_MOD - added this
 	dir = aim (self, 100000);
@@ -355,7 +355,7 @@ void() W_FireSuperShotgun =
 
 //	self.punchangle_x = -4;
     // ELOHIM_MOD - infinite ammo in practice mode
-	if (!(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
 		self.currentammo = self.ammo_shells = self.ammo_shells - 2;
     // END_MOD
     makevectors(self.v_angle); // ELOHIM_MOD - added this
@@ -479,7 +479,7 @@ void() W_FireRocket =
 	local entity missile;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-	if (!(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
 		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
 	// END_MOD
 	sound (self, CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM);
@@ -612,7 +612,7 @@ void() W_FireLightning =
 	//self.punchangle_x = -2;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-    if (!(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
         self.currentammo = self.ammo_cells = self.ammo_cells - 1;
     // END_MOD
 
@@ -694,7 +694,7 @@ void() W_FireGrenade =
 	local	entity missile;
 
 	// ELOHIM_MOD - infinite ammo in practice mode unless safepractice is on
-	if (!(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
 		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;		
 	//else //allow no spooge in match mode
 	if (clanring_playmode & CLANRING_NO_SPOOGE)
@@ -784,7 +784,7 @@ void() W_FireSuperSpikes =
 	self.attack_finished = time + 0.2;
 	
 	// ELOHIM_MOD - infinite ammo in practice mode
-	if (!(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
 		self.currentammo = self.ammo_nails = self.ammo_nails - 2;		
 	// END_MOD
 
@@ -837,7 +837,7 @@ void(float ox) W_FireSpikes =
 	self.attack_finished = time + 0.2;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-	if (!(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
 		self.currentammo = self.ammo_nails = self.ammo_nails - 1;
     // END_MOD
 
@@ -1283,7 +1283,7 @@ void() W_ChangeWeapon =
 
 	if (!(self.items & fl))
 	{	// don't have the weapon or the ammo
-		//sprint (self, "no weapon.\n");
+		sprint (self, "no weapon.\n");
 		return;
 	}
 
@@ -1483,7 +1483,7 @@ void() PreviousWeaponCommand =
 
 	if (!(self.items & self.previous_weapon))
 	{
-		//sprint(self, "no weapon.\n");
+		sprint(self, "no weapon.\n");
 		return;
 	}
 
