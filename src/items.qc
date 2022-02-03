@@ -1056,10 +1056,10 @@ void() powerup_touch =
 	if (other.health <= 0)
 		return;
 
-//	sprint(other, "You got the ");
-//	sprint(other, self.netname);
-//	sprint(other,"\n");
-//	stuffcmd(other, "bf\n");
+	sprint(other, "You got the ");
+	sprint(other, self.netname);
+	sprint(other,"\n");
+	stuffcmd(other, "bf\n");
 
 	if (deathmatch != 2)	// R00k
 	{
