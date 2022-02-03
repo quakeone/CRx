@@ -117,29 +117,29 @@ void() TeamCapturePlayerUpdate =
 
 	if ((self.player_flag & ITEM_RUNE1_FLAG))
 	{
-		s1 = "Òåóéóô  ";
+		s1 = "òåóéóô   ";
 	}
 	else
 	{
 		if ((self.player_flag & ITEM_RUNE2_FLAG))
 		{
-			s1 = "Óôòåîçôè";
+			s1 = "óôòåîçôè ";
 		}
 		else
 		{
 			if ((self.player_flag & ITEM_RUNE3_FLAG))
 			{
-				s1 = "Èáóôå   ";
+				s1 = "èáóôå    ";
 			}
 			else
 			{
 				if ((self.player_flag & ITEM_RUNE4_FLAG))
 				{
-					s1 = "Òåçåî   ";
+					s1 = "òåçåî    ";
 				}
 				else
 				{
-					s1 = "        ";
+					s1 = "         ";
 				}
 			}
 		}
@@ -178,73 +178,32 @@ void() TeamCapturePlayerUpdate =
 	}
 	if (((teamscr1 == 0) && (teamscr2 == 0)))
 	{
-		centerprint (self, res, s1, s2, s3, "              ", clanring_version_red);
+		centerprint (self, res, s1, s2, s3, "                              ");
 		return;
 	}
-	if ((time < (last_flag_capture + TEAM_CAPTURE_FRAG_CARRIER_ASSIST_TIMEOUT)))
+
+	if ((teamscr1 > teamscr2))
 	{
-		if ((last_capture_team == RED))
-		{
-			if ((teamscr1 > teamscr2))
-			{
-				t = "                    ÒÅÄ ";
-				n = ftos((teamscr1 - teamscr2));
-			}
-			else
-			{
-				if ((teamscr1 < teamscr2))
-				{
-					t = "                   ÂÌÕÅ ";
-					n = ftos((teamscr2 - teamscr1));
-				}
-				else
-				{
-					t = "                   TIED ";
-					n = "";
-				}
-			}
-		}
+		if ((teamscr1 - teamscr2) > 99)
+			t = "                   òåä ";
 		else
-		{
-			if ((teamscr1 > teamscr2))
-			{
-				t = "                    ÒÅÄ ";
-				n = ftos((teamscr1 - teamscr2));
-			}
-			else
-			{
-				if ((teamscr1 < teamscr2))
-				{
-					t = "                   ÂÌÕÅ ";
-					n = ftos((teamscr2 - teamscr1));
-				}
-				else
-				{
-					t = "                   TIED ";
-					n = "";
-				}
-			}
-		}
+			t = "                    òåä ";
+		n = ftos((teamscr1 - teamscr2));
 	}
 	else
 	{
-		if ((teamscr1 > teamscr2))
+		if ((teamscr1 < teamscr2))
 		{
-			t = "                    ÒÅÄ ";
-			n = ftos((teamscr1 - teamscr2));
+			if ((teamscr2 - teamscr1) > 99)
+				t = "                  â??å ";
+			else
+				t = "                   â??å ";
+			n = ftos((teamscr2 - teamscr1));
 		}
 		else
 		{
-			if ((teamscr1 < teamscr2))
-			{
-				t = "                   ÂÌÕÅ ";
-				n = ftos((teamscr2 - teamscr1));
-			}
-			else
-			{
-				t = "                   TIED ";
-				n = "";
-			}
+			t = "                   tied ";
+			n = "";
 		}
 	}
 	centerprint (self, res, s1, s2, s3, t, n);

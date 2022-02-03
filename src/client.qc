@@ -417,8 +417,9 @@ void(entity ent) CreateDeadBody;
 // called by ClientKill and DeadThink
 void() respawn =
 {
+	//Don't leave dead bodies anymore
 //	CopyToBodyQue (self);//R00k remove bodies when player respawns.
-	CreateDeadBody (self);//R00k new corpse routine.
+//	CreateDeadBody (self);//R00k new corpse routine.
 	SetNewParms2 ();
 
 	updatename(self, self.netname);	
@@ -1545,6 +1546,21 @@ void() PlayerPostThink =
 	{
 		observer_post_think ();
 		return;
+	}
+	else if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
+	{
+		clanring_show_rules_prematch();
+	}
+	else if ((clanring_state & CLANRING_MATCH_STARTED))
+	{
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			TeamCapturePlayerUpdate();
+		else if (clanring_match_timer.lip == clanring_timelimit)
+			centerprint(self, " \n\n\n"); //make sure rules centerprint is gone
+	}
+	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+	{
+		TeamCapturePlayerUpdate();
 	}
 
 	if (self.impulse)

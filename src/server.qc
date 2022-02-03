@@ -1404,6 +1404,147 @@ void () clanring_show_rules =
 	sprint(self, "\n");
 };
 
+void (float num) utils_gold_number =
+{
+	if (num == 0)
+		return "\0";
+	else if (num == 1)
+		return "\1";
+	else if (num == 2)
+		return "\2";
+	else if (num == 3)
+		return "\3";
+	else if (num == 4)
+		return "\4";
+	else if (num == 5)
+		return "\5";
+	else if (num == 6)
+		return "\6";
+	else if (num == 7)
+		return "\7";
+	else if (num == 8)
+		return "\8";
+	else if (num == 9)
+		return "\9";
+	else if (num == 10)
+		return "\1\0";
+	else
+		return ftos(num);
+};
+
+//
+//  S H O W  R U L E S  P R E M A T C H
+//
+void () clanring_show_rules_prematch =
+{
+	if (clanring_state & CLANRING_MATCH_STARTED || clanring_match_timer.count > 10 || clanring_match_timer.count < 1)
+	{
+		centerprint(self, "\n");
+		return;
+	}
+
+	local float temp;
+	local string s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12;
+
+	if (clanring_match_timer.count > 9)
+		s0 = sprintf("\bcountdown:   \b%s\n\n", utils_gold_number(clanring_match_timer.count));
+	else
+		s0 = sprintf("\bcountdown:    \b%s\n\n", utils_gold_number(clanring_match_timer.count));
+
+	if (clanring_match_timer.count > 3)
+	{
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			s1 = "Žcrctf match modeŽ\n\n";
+		else
+			s1 = "Žcrmod match modeŽ\n\n";
+
+		temp = clanring_timelimit;	
+		if (temp > 9)
+			s2 = sprintf("%s%s\n", "\btimelimit    ", ftos(temp));
+		else
+			s2 = sprintf("%s%s\n", "\btimelimit     ", ftos(temp));
+		temp = cvar("fraglimit");
+		if (temp > 9)
+			s3 = sprintf("%s%s\n", "\bfraglimit    ", ftos(temp));
+		else if (temp > 99)
+			s3 = sprintf("%s%s\n", "\bfraglimit   ", ftos(temp));			
+		else
+			s3 = sprintf("%s%s\n", "\bfraglimit     ", ftos(temp));
+		
+		temp = cvar("deathmatch");
+		if (temp == 1)
+			s4 = "\bweaponstay  \boff\n";
+		else if (temp == 3)
+			s4 = "\bweaponstay   \bon\n";
+		else
+			s4 = sprintf("%s%s\n", "\bdeathmatch    ", ftos(temp));
+
+		temp = cvar("teamplay");
+		s5 = sprintf("%s%s\n", "\bteamplay      ", ftos(temp));
+
+		if (clanring_overtime > 0)
+		{
+			if (clanring_overtime > 9)
+				s6 = sprintf("%s%s\n", "\bovertime     ", ftos(clanring_overtime));
+			else
+				s6 = sprintf("%s%s\n", "\bovertime      ", ftos(clanring_overtime));
+		}
+		else
+		{
+			if (clanring_overtime == 0)
+				s6 = "      \bovertime     \bdisabled\n";
+			else
+				s6 = "          \bovertime     \bsudden death\n";
+		}
+
+		if (clanring_playmode & CLANRING_NO_QUAD)
+			s7 = "\bquad        \boff\n";
+		else
+			s7 = "\bquad         \bon\n";
+
+		if (clanring_playmode & CLANRING_NO_PENT)
+			s8 = "\bpent        \boff\n";
+		else
+			s8 = "\bpent         \bon\n";
+
+		if (clanring_playmode & CLANRING_NO_RING)
+			s9 = "\bring        \boff\n";
+		else
+			s9 = "\bring         \bon\n";
+
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		{
+			if (clanring_playmode & CLANRING_RUNES)
+				s10 = "\brunes        \bon\n";
+			else
+				s10 = "\brunes       \boff\n"; 
+		
+			if (clanring_playmode & CLANRING_NO_HOOK)
+				s11 = "\bhook        \boff\n";
+			else
+				s11 = "\bhook         \bon\n";
+		}
+		else
+		{
+			s10 = "";
+			s11 = "";
+		}
+		
+		if (clanring_playmode & CLANRING_NO_SPOOGE)
+			s12 = "\bno spooge    \bon\n";
+
+		local string cp1, cp2, cp3;
+		cp1 = sprintf("%s%s%s", s2, s3, s4);
+		cp2 = sprintf("%s%s%s", s6, s7, s8);
+		cp3 = sprintf("%s%s%s%s", s9, s10, s11, s12);
+		centerprint(self, s0, s1, cp1, cp2, cp3);
+	}
+	else if (clanring_match_timer.count > 0)
+	{
+		centerprint(self, s0, "\n\n\n\n\n\n\n\n\n\n\n\n\n");
+	}
+};
+
 //
 //  A D M I N S
 //
@@ -1498,6 +1639,10 @@ void () clanring_impulse =
 			self.style = self.style | CLANRING_AFK_CLIENT;
 			self.afk_time = time;
 		}		
+	}
+	else if (self.impulse >= 71 && self.impulse <= 81) {
+		self.statstate = self.impulse - 71;
+		sprint(self, "Status bar set\n");
 	}
     else if (self.impulse == 119)
 	{
