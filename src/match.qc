@@ -733,50 +733,36 @@ void() match_timer_think1 =
 
 	if (self.count == self.dest_x)
 	{
-		match_bprint_timelimit();
-		bprint("Use 'ôéíåóåô' to change timelimit\n");
-	}
-	if (self.count == self.dest_y)
-	{
+		if (self.count != 5)
+		{
+			match_bprint_timelimit();
+			bprint("Use 'ôéíåóåô' to change timelimit\n");
+		}
+
 		// respawn all items; reset information
 		utils_do_items(SUB_regen);
 		utils_do_item(match_reset_powerup, "item_artifact_invulnerability");
 		utils_do_item(match_reset_powerup, "item_artifact_super_damage");
 		announce("All items have respawned");
 
-		if (clanring_playmode & (CLANRING_NO_QUAD | CLANRING_NO_PENT | CLANRING_NO_RING))
-			cprint("- ");
-
 		if (clanring_playmode & CLANRING_NO_QUAD)
 		{
-			bprint("ŽQuad is ÏÆÆ");
-			localcmd("Quad is OFF - ");
 			utils_do_item(votables_disable_item, "item_artifact_super_damage");
 		}
 		if (clanring_playmode & CLANRING_NO_PENT)
 		{
-			bprint("ŽPent is ÏÆÆ");
-			localcmd("Pent is OFF - ");
 			utils_do_item(votables_disable_item, "item_artifact_invulnerability");
 		}
 		if (clanring_playmode & CLANRING_NO_RING)
 		{
-			bprint("ŽRing is ÏÆÆ");
-			localcmd("Ring is OFF - ");
 			utils_do_item(votables_disable_item, "item_artifact_invisibility");
-		}
-		if (clanring_playmode & (CLANRING_NO_QUAD | CLANRING_NO_PENT | CLANRING_NO_RING))
-		{
-			bprint("Ž\n");
-			localcmd("\n");
 		}
 		if (self.count == 30)
 			announce("Match begins in 30 seconds");
-		match_bprint_timelimit();
 	}
 	else
 	{
-		if (self.count == self.dest_z)
+		if (self.count == self.dest_y)
 		{
 			match_get_maxsize();
 			temp = ftos(clanring_maxsize);
@@ -784,7 +770,6 @@ void() match_timer_think1 =
 				announce4("Match is currently ", temp, "v", temp);
 			if (self.count == 20)
 				announce("Match begins in 20 seconds");
-			match_bprint_timelimit();
 		}
 		else
 		{
@@ -792,19 +777,26 @@ void() match_timer_think1 =
 			{
 				if (self.count == 10)
 				{
-					announce("Match begins in T minus");
+					//announce("Match begins in T minus");
+					sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
 					//quaketag_clear();
-
+				}
+				else if (self.count == 9)
+				{
 					if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 						TeamCaptureRegenFlags();// respawn flags
 					
 					clanring_state = clanring_state | CLANRING_NULL_FLAG;
 				}
-				temp = ftos(self.count);
-				plural = strings_szplural(self.count);
-				announce4("  ", temp, " second", plural);
+				//temp = ftos(self.count);
+				//plural = strings_szplural(self.count);
+				//announce4("  ", temp, " second", plural);
+				if (self.count <= 3)
+					sound (world, CHAN_AUTO, "buttons/switch04.wav", 1, ATTN_NONE);
 				if (self.count == 1)
+				{
 					self.think = match_begin;
+				}
 			}
 		}
 	}
@@ -1037,13 +1029,12 @@ void() match_start_timer =
 
 	if (clanring_playmode & CLANRING_FAST_START)
 	{
-		clanring_match_timer.dest 	= '18 15 12';
-		clanring_match_timer.count 	= 19;
-		announce("Match begins in 20 seconds");
+		clanring_match_timer.dest 	= '5 11 0';
+		clanring_match_timer.count 	= 12;
 	}
 	else
 	{
-		clanring_match_timer.dest 	= '55 30 20';
+		clanring_match_timer.dest 	= '55 20 0';
 		clanring_match_timer.count 	= 59;
 		announce("Match begins in 1 minute");
 	}
@@ -1899,6 +1890,8 @@ void() match_unpause_countdown_think =
 	{
 		sz = ftos(self.count);
 		announce2(" ", sz);
+		if (self.count <= 3)
+			sound (world, CHAN_AUTO, "buttons/switch04.wav", 1, ATTN_NONE);
 		self.nextthink = time + 1;
 		self.count = self.count - 1;
 	}

@@ -343,6 +343,7 @@ void() worldspawn =
 	precache_sound ("boss1/sight1.wav"); //haste
 	precache_sound ("hknight/slash1.wav"); //rune toss
 
+	precache_sound("buttons/switch04.wav"); //match timer countdown
 
 	//
 	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
