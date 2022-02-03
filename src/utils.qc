@@ -136,37 +136,37 @@ void (string s1, string s2, string s3, string s4, string s5, string s6, string s
 
 void (string s1) announce =
 {
-	cprint3("\"", s1, "\"\n");
+	//cprint3("\"", s1, "\"\n");
 	bprint2(s1, "\n");
 };
 
 void (string s1, string s2) announce2 =
 {
-	cprint4("\"", s1, s2, "\"\n");
+	//cprint4("\"", s1, s2, "\"\n");
 	bprint3(s1, s2, "\n");
 };
 
 void (string s1, string s2, string s3) announce3 =
 {
-	cprint5("\"", s1, s2, s3, "\"\n");
+	//cprint5("\"", s1, s2, s3, "\"\n");
 	bprint4 (s1, s2, s3, "\n");
 };
 
 void (string s1, string s2, string s3, string s4) announce4 =
 {
-	cprint6("\"", s1, s2, s3, s4, "\"\n");
+	//cprint6("\"", s1, s2, s3, s4, "\"\n");
 	bprint5(s1, s2, s3, s4, "\n");
 };
 
 void (string s1, string s2, string s3, string s4, string s5) announce5 =
 {
-	cprint7("\"", s1, s2, s3, s4, s5, "\"\n");
+	//cprint7("\"", s1, s2, s3, s4, s5, "\"\n");
 	bprint6(s1, s2, s3, s4, s5, "\n");
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6) announce6 =
 {
-	cprint8("\"", s1, s2, s3, s4, s5, s6, "\"\n");
+	//cprint8("\"", s1, s2, s3, s4, s5, s6, "\"\n");
 	bprint7 (s1, s2, s3, s4, s5, s6, "\n");
 };
 
@@ -234,18 +234,20 @@ void (string s1, string s2, string s3, string s4, string s5, string s6) oprint6 
 		o = find(o, classname, "player");
 	}
 };
+
 void (entity ent, float clientshirt, float clientpants) setcolour =
 {		
 	local float client;
 	
 	if (ent.style & CLANRING_CONNECTED)
-	{	
+	{
 		client = (ent.colormap - 1);	
 	
 		msg_entity = ent;
 		WriteByte(MSG_ALL, SVC_UPDATECOLORS);
 		WriteByte(MSG_ALL, client);
    		WriteByte(MSG_ALL, (clientshirt * 16 + clientpants));
+		forceinfokey(ent, "team", strings_get_teamname(clientpants));
    	}
 };
 
@@ -264,7 +266,9 @@ void (entity ent, string c_name) updatename =
 	local float client;
 	if (ent.style & CLANRING_CONNECTED)
 	{
-		client		= (ent.colormap - 1);	
+		client		= (ent.colormap - 1);
+		if ((client < 0) || (client > 16))
+			return;
 		msg_entity	= ent;
 		WriteByte	(MSG_ALL, SVC_UPDATENAME);
 		WriteByte	(MSG_ALL, client);
