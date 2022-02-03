@@ -68,9 +68,9 @@ void() stats_show_badstats =
 		{
 			sprint(self, "\x90");
 			utils_print_int3(player.clanring_badstats_x);
-			sprint(self, "‘ü ");
+			sprint(self, "‘ü \x90");
 			stats_print_percent3(player.clanring_badstats_y, tot_done);
-			sprint(self, "‘ü ");
+			sprint(self, "‘ü \x90");
 			stats_print_percent3(player.clanring_badstats_z, tot_done);
 			sprint(self, "‘ü ");
 		}
@@ -209,21 +209,28 @@ void() stats_show_killstats =
 //
 void (float frac, float tot) stats_print_percent3 =
 {
-    if (tot)
-    {
-        local float n;
-        local string temp;
+	if (frac > tot)	//R00k
+	{
+		sprint (self, "100");
+	}
+	else
+	{
+		if (tot)
+		{
+			local float n;
+			local string temp = "";
 
-        n = floor(100 * frac / tot);
-        if (n < 10)
-            sprint(self, " ");
-        temp = ftos(n);
-        sprint(self, temp);
-        if (n < 100)
-            sprint(self, "%");
-    }
-    else
-        sprint(self, "N/A");
+			n = floor(100 * frac / tot);
+			if (n < 10)
+				sprint(self, " ");
+			temp = ftos(n);
+			sprint(self, temp);
+			if (n < 100)
+				sprint(self, "%");
+		}
+		else
+			sprint(self, "N/A");
+	}
 };
 
 //
@@ -261,9 +268,9 @@ void () stats_show_efficiency =
 			tot_done = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
 			if (player == self)
 			{
-				sprint(self, "");
+				sprint(self, "\x90");
 				stats_print_percent3(tot_done, tot_fired);
-				sprint(self, "‘ü");
+				sprint(self, "\x91");
 			}
 			else
 			{
@@ -314,7 +321,7 @@ void() stats_show_fstats =
 		{
 			if (player == self)
 			{
-				sprint(self, "");
+				sprint(self, "\x90");
 				utils_print_int3(player.fpickups);//pickups
 				sprint(self, "‘ü");
 			}
@@ -340,7 +347,7 @@ void() stats_show_fstats =
 			utils_sprint_stat_time(self,(player.captime));
 			if (player == self)
 			{
-				sprint(self, "ü");
+				sprint(self, "ü\x90");
 				sprint(self, player.netname);
 				sprint(self, "‘\n");
 			}
@@ -407,9 +414,9 @@ void () stats_show_summary =
 		wfrac = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
 		if (player == self)
 		{
-			sprint(self, "");
+			sprint(self, "\x90");
 			stats_print_percent3(kfrac, ktot);
-			sprint(self, "‘ü");
+			sprint(self, "‘ü\x90");
 			stats_print_percent3(wfrac, wtot);
 			sprint(self, "‘ü");
 		}
