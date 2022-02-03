@@ -294,6 +294,8 @@ float   EF_RED          	= 128;
 //float   EF_GREEN          	= 256;
 
 float  	sys_ticrate;
+float  	clanring_ctf_ticrate;
+float  	clanring_tdm_ticrate;
 //float	sv_friction;
 
 .float 	hurt_together_time;
