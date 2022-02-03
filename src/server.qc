@@ -254,7 +254,7 @@ void () watch_commands;
 void () stat_commands;
 void () misc_commands;
 void () modhelp_commands;
-void () shc_commands;
+void () shortcuts_commands;
 
 //
 // C L E A R   A F K   S T A T U S
@@ -654,7 +654,7 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias stat impulse 184\n");
 	stuffcmd(self, "alias misc impulse 185\n");
 	stuffcmd(self, "alias modhelp impulse 186\n");
-	stuffcmd(self, "alias shc impulse 187\n");
+	stuffcmd(self, "alias shortcuts impulse 187\n");
 	
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
@@ -1184,17 +1184,17 @@ void () clanring_commands =
 {
 	// regular user commands
 	sprint(self, "\n");
-	sprint(self, " ωεσ        vote yes\n");
-	sprint(self, " ξο         vote no\n");
-	sprint(self, " χαςπ       initiate vote to change level\n");
-	sprint(self, " νοδεσ      mode switch commands\n");
-	sprint(self, " ηανεπμαω   match/game variable commands\n");
-	sprint(self, " χατγθ      observer commands\n");
-	sprint(self, " στατ       statistics commands\n");
-	sprint(self, " σθγ        command shortcuts\n");
-	sprint(self, " νισγ       miscellaneous commands\n");
-	sprint(self, " νοδθεμπ    detailed commands usage\n");
-	sprint(self, " αδνιξ      enter admin code\n");
+	sprint(self, " \byes [y]\b    vote yes\n");
+	sprint(self, " \bno [n]\b     vote no\n");
+	sprint(self, " \bwarp\b       initiate vote to change level\n");
+	sprint(self, " \bmodes\b      mode switch commands\n");
+	sprint(self, " \bgameplay\b   match/game variable commands\n");
+	sprint(self, " \bwatch\b      observer commands\n");
+	sprint(self, " \bstat\b       statistics commands\n");
+	sprint(self, " \bshortcuts\b  command shortcuts\n");
+	sprint(self, " \bmisc\b       miscellaneous commands\n");
+	sprint(self, " \bmodhelp\b    detailed commands usage\n");
+	sprint(self, " \badmin\b      enter admin code\n");
 	sprint(self, "\n");
 	
 
@@ -1203,14 +1203,14 @@ void () clanring_commands =
 	{
 		sprint(self, " admin commands\n");
 		sprint(self, "\n");
-		sprint(self, " αβοςτνατγθ   λιγλ‘\n"); // abortmatch  kick!
-		sprint(self, " αυτοσσ       νοδφοτε\n"); // autoss  modvote
-		sprint(self, " βαξ‘         ναλεσπαχξ\n"); // ban!  makespawn
-		sprint(self, " δνσετ        ναψτεανσ\n"); // dmset  maxteams
-		sprint(self, " ζαστσταςτ    ξεψτσπαχξ\n"); // faststart  nextspawn
-		sprint(self, " ηθοστμιστ    ξεψτγαν\n"); // ghostlist  nextcam
-		sprint(self, " θεμπ­αδνιξ   οπτιοξσ\n"); // help-admin  options
-		sprint(self, " ιπσ          σαζεπςαγτιγε\n"); // ips safepractice
+		sprint(self, " \babortmatch\b   \bkick!\b\n");
+		sprint(self, " \bautoss\b       \bmodvote\b\n");
+		sprint(self, " \bban!\b         \bmakespawn\b\n");
+		sprint(self, " \bdmset\b        \bmaxteams\b\n");
+		sprint(self, " \bfaststart\b    \bnextspawn\b\n");
+		sprint(self, " \bghostlist\b    \bnextcam\b\n");
+		sprint(self, " \bhelp-admin\b   \boptions\b\n");
+		sprint(self, " \bips\b          \bsafepractice\b\n");
 		sprint(self, "\n");
 	}
 	//clanring_help_change ();
@@ -1223,94 +1223,88 @@ void () clanring_commands =
 void () modes_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " δν\n"); // dm
-		sprint(self, " γτζ\n"); // ctf
-		sprint(self, " πςαγτιγε\n"); // practice
-		sprint(self, " ζζα\n"); // ffa
-		sprint(self, " νατγθ\n"); // match
+		sprint(self, " \bdm\b\n");
+		sprint(self, " \bctf\b\n");
+		sprint(self, " \bpractice\b\n");
+		sprint(self, " \bffa\b\n");
+		sprint(self, " \bmatch\b\n");
 		sprint(self, "\n");
 };
 
 void () gameplay_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " δςοπςυξε\n"); // droprune
-		sprint(self, " ζμαηστατυσ\n"); // flagstatus
-		sprint(self, " ηθοστ\n"); // ghost
-		sprint(self, " ηθοστγοδε\n"); // ghostcode
-		sprint(self, " θοολ\n"); // hook
-		sprint(self, " μογλ\n"); // lock
-		sprint(self, " οτσετ\n"); // otset
-		sprint(self, " ςεαδω\n"); // ready
-		sprint(self, " ςεαδωΏ\n"); // ready?
-		sprint(self, " σετπεξτ\n"); // setpent
-		sprint(self, " σετρυαδ\n"); // setquad
-		sprint(self, " σετςιξη\n"); // set ring
-		sprint(self, " τινεςσταςτ\n"); // timerstart
-		sprint(self, " τινεςστοπ\n"); // timerstop
-		sprint(self, " τινεσετ\n"); // timeset
-		sprint(self, " υξμογλ \n"); // unlock
+		sprint(self, " \bdroprune [dr]\b   \bsetpent\b\n");
+		sprint(self, " \bflagstatus\b      \bsetquad\b\n");
+		sprint(self, " \bghost\b           \bsetring\b\n");
+		sprint(self, " \bghostcode\b       \btimerstart [st]\b\n");
+		sprint(self, " \bhook\b            \btimerstop [pa]\b\n");
+		sprint(self, " \block\b            \btimeset\b\n");
+		sprint(self, " \botset\b           \btimeset10 [t10]\b\n");
+		sprint(self, " \bready [r]\b       \btimeset20 [t20]\b\n");
+		sprint(self, " \bready? [?]\b      \bunlock\b\n");
 		sprint(self, "\n");
 };
 
 void () watch_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " αυτογαν\n"); // autocam
-		sprint(self, " αυτογθασε\n"); // autochase
-		sprint(self, " εωεγαν\n"); // autoeye
-		sprint(self, " ζμωνε\n"); // eyecam
-		sprint(self, " τουςξεω\n"); // flyme
+		sprint(self, " \bautocam\b\n");
+		sprint(self, " \bautochase\b\n");
+		sprint(self, " \bautoeye\b\n");
+		sprint(self, " \beyecam [e]\b\n");
+		sprint(self, " \bflyme\b\n");
 		sprint(self, "\n");
 };
 
 void () stat_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " βαδστατσ\n"); // badstats
-		sprint(self, " εζζιγιεξγω\n"); // efficiency
-		sprint(self, " ζμαηστατσ\n"); // flagstats
-		sprint(self, " λιμμστατσ\n"); // killstats
-		sprint(self, " ρυαδστατσ\n"); // quadstats
-		sprint(self, " στατσ\n"); // stats
-		sprint(self, " τεανστατσ\n"); // teamstats
+		sprint(self, " \bbadstats\b\n");
+		sprint(self, " \befficiency\b\n");
+		sprint(self, " \bflagstats\b\n");
+		sprint(self, " \bkillstats\b\n");
+		sprint(self, " \bquadstats\b\n");
+		sprint(self, " \bstats\b\n");
+		sprint(self, " \bteamstats\b\n");
 		sprint(self, "\n");
 };
 
 void () misc_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " δεατθνατγθ\n"); // deathmatch
-		sprint(self, " δςοπαννο\n"); // dropammo
-		sprint(self, " δςοπχεαποξ\n"); // dropweapon
-		sprint(self, " νοτδ\n"); // motd
+		sprint(self, " \bdeathmatch\b\n");
+		sprint(self, " \bdropammo\b\n");
+		sprint(self, " \bdropweapon\b\n");
+		sprint(self, " \bmotd\b\n");
 		sprint(self, "\n");
 };
 
 void () modhelp_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " θεμπ­γανεςα\n"); // help-camera
-		sprint(self, " θεμπ­γθασε\n"); // help-chase
-		sprint(self, " θεμπ­ζμω\n"); // help-fly
-		sprint(self, " θεμπ­νατγθ\n"); // help-match
-		sprint(self, " θεμπ­νισγ\n"); // help-misc
-		sprint(self, " θεμπ­οβσεςφες\n"); // help-observer
-		sprint(self, " θεμπ­σεςφες\n"); // help-server
-		sprint(self, " θεμπ­χαμλ\n"); // help-walk
-		sprint(self, " φιξζο\n"); // vinfo
-
+		sprint(self, " \bhelp-camera\b\n");
+		sprint(self, " \bhelp-chase\b\n");
+		sprint(self, " \bhelp-fly\b\n");
+		sprint(self, " \bhelp-match\b\n");
+		sprint(self, " \bhelp-misc\b\n");
+		sprint(self, " \bhelp-observer\b\n");
+		sprint(self, " \bhelp-server\b\n");
+		sprint(self, " \bhelp-walk\b\n");
+		sprint(self, " \bvinfo\b\n");
 		sprint(self, "\n");
 };
 
-void () shc_commands =
+void () shortcuts_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " ναπψ  warp to   ξς   notready\n");
-		sprint(self, " Ώ     ready?    ς    ready\n");
-		sprint(self, " βμ    blue      ςδ   red\n");
-		sprint(self, " ε     eyecam    ωμ   yellow\n");
-		sprint(self, " ξ     no        ω    yes\n");
+		sprint(self, " \bmapx\b  warp to    \brd\b   red\n");
+		sprint(self, " \b?\b     ready?     \bt10\b  timeset10\n");
+		sprint(self, " \bbl\b    blue       \bt20\b  timeset20\n");
+		sprint(self, " \be\b     eyecam     \bst\b   timerstart\n");
+		sprint(self, " \bn\b     no         \bpa\b   timerstop\n");
+		sprint(self, " \bnr\b    notready   \byl\b   yellow\n");
+		sprint(self, " \br\b     ready      \by\b    yes\n");
 		sprint(self, "\n");
 };
 
@@ -1662,7 +1656,7 @@ void () clanring_impulse =
 	else if (self.impulse == 186)
     	modhelp_commands ();
 	else if (self.impulse == 187)
-    	shc_commands ();
+    	shortcuts_commands ();
 	else if (self.impulse >= 115 && self.impulse <= 116)
 	{
         if (self.style & CLANRING_KICK_CONFIRM)
