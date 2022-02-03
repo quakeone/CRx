@@ -11,6 +11,16 @@ void(string command, string value) config_command =
 {
 	switch(command)
 	{
+		case "ctfticrate":
+		{
+			clanring_ctf_ticrate = stof(value);
+			break;
+		}
+		case "tdmticrate":
+		{
+			clanring_tdm_ticrate = stof(value);
+			break;
+		}
 		case "setadmin":
 		{
 			array_password[0] = stof(value);
