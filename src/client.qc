@@ -1557,7 +1557,8 @@ void() PlayerPostThink =
 	// - changed gameover test from (self.view_ofs == '0 0 0') to (gameover)
 
 	if (self.style & CLANRING_OBSERVER)
-	{
+	{		
+		self.effects = 0;
 		observer_post_think ();
 		return;
 	}
@@ -1626,6 +1627,12 @@ void() PlayerPostThink =
 				self.id_time = (time + 0.2);
 			}
 		}
+	}
+	//R00k: indicate to the player they are not ready. 
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	if (!(self.style & CLANRING_READY))
+	{
+		self.effects = (self.effects | EF_RED);
 	}
 
 	// check to see if player landed and play landing sound

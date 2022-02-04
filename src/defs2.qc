@@ -295,6 +295,8 @@ float   EF_RED          	= 128;
 
 float  	sys_ticrate;
 //float	sv_friction;
+float clanring_ctf_ticrate;
+float clanring_tdm_ticrate;
 
 .float 	hurt_together_time;
 .float 	hurt_nextthink;
