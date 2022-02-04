@@ -1407,6 +1407,12 @@ void () observer_update_display =
 	if ((player != world) && (player.classname == "clanring_camera"))
 		player = player.movetarget;
     
+	if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
+	{
+		clanring_show_rules_prematch();
+		return;
+	}
+
     if (!player)
     {
 		if (clanring_state & CLANRING_MATCH_STARTED)

@@ -25,6 +25,25 @@ string (float n) strings_ftos=
 //
 string (float n) strings_ftos_gold =
 {
+	local float d1, d2, d3, d4, t1;
+	if (n > 999)
+	{
+		return ftos(n); //sol for now
+	}
+	else if (n > 99)
+	{
+		d1 = n % 10;
+		t1 = (n - d1) / 10;
+		d2 = t1 % 10;
+		d3 = (t1 - d2) / 10;
+		return sprintf("%s%s%s", chr2str(18+d3), chr2str(18+d2), chr2str(18+d1));
+	}
+	else if (n > 9)
+	{
+		d1 = n % 10;
+		d2 = (n - d1) / 10;
+		return sprintf("%s%s", chr2str(18+d2), chr2str(18+d1));
+	}
 	return chr2str(18+n);
 };
 

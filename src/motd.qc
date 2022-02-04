@@ -42,6 +42,13 @@ void() motd_think =
 		remove(self);
 		return;	
 	}
+	else if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
+	{
+		//remove motd if pre-match rules are being printed
+		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
+		remove(self);
+		return;
+	}
 
 	if (self.count < 240)
 	{

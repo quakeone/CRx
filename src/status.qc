@@ -195,9 +195,9 @@ void() TeamCapturePlayerUpdate =
 		if ((teamscr1 < teamscr2))
 		{
 			if ((teamscr2 - teamscr1) > 99)
-				t = "                  т??х ";
+				t = "                  тьѕх ";
 			else
-				t = "                   т??х ";
+				t = "                   тьѕх ";
 			n = ftos((teamscr2 - teamscr1));
 		}
 		else
