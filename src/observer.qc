@@ -172,7 +172,7 @@ void () observer_walk_start =
 	else
 		stuffcmd(self, "cl_nolerp 0\n");// CRMOD - send the real thing instead
 	stuffcmd(self, "v_centerspeed 500\n");
-	sprint(self, "walk mode - help-walk for help\n");
+	sprint(self, "walk mode\n");
 	//if (!(self.style & CLANRING_HEADS_UP))
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 };
@@ -192,7 +192,7 @@ void () observer_fly_start =
 	self.waterlevel = 0;
 	stuffcmd(self, "sm0\n");		// CRMOD - smoothing off
 	stuffcmd(self, "v_centerspeed 500\n");
-	sprint(self, "fly mode - help-fly for help\n");
+	sprint(self, "fly mode\n");
 	//if (!(self.style & CLANRING_HEADS_UP))
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 };
@@ -350,7 +350,7 @@ void () observer_demo_start =
     setmodel(self, string_null);
     observer_set_demo_position();
     stuffcmd(self, "v_centerspeed 0\n");
-    sprint(self, "eyecam mode - help-chase for help\n");
+    sprint(self, "eyecam mode\n");
    // if (!(self.style & CLANRING_HEADS_UP))
         //sprint(self, "type 'headsup' for fullscreen display\n");
 	sprint(self, "type 'smooth' to eliminate choppines\n");

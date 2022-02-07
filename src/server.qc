@@ -753,7 +753,7 @@ void () clanring_show_mode =
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (teamplay)
-			sprint(self.owner, "match mode \b- help-match for help\n");
+			sprint(self.owner, "match mode\n");
 	}
 	else
 	{
