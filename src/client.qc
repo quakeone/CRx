@@ -153,51 +153,36 @@ void() SetNewParms2 =
 	}
 	else
 	{
-		if (clanring_playmode & CLANRING_MATCH_MODE)
+		if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_TIMER_STARTED)))	//R00k: prewar! (or whatever we call it) aka BOSHMODeA
 		{
-			if (!(clanring_state & CLANRING_TIMER_STARTED))					//R00k: prewar! (or whatever we call it) aka BOSHMODeA
+			SetPracticeParms ();
+		}
+		else
+		{
+			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
 			{
-				SetPracticeParms ();
+				parm1 = IT_SHOTGUN | IT_AXE;
+				parm2 = 100;
+				parm3 = 0;
+				parm4 = 25;
+				parm5 = 0;
+				parm6 = 0;
+				parm7 = 0;
+				parm8 = IT_SHOTGUN;
+				parm9 = 0;
 			}
 			else
 			{
-				if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
-				{
-					parm1 = IT_SHOTGUN | IT_AXE;
-					parm2 = 100;
-					parm3 = 0;
-					parm4 = 25;
-					parm5 = 0;
-					parm6 = 0;
-					parm7 = 0;
-					parm8 = IT_SHOTGUN;
-					parm9 = 0;
-				}
-				else
-				{
-					parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
-					parm2 = 100;
-					parm3 = 50;
-					parm4 = 25;
-					parm5 = 0;
-					parm6 = 0;
-					parm7 = 0;
-					parm8 = IT_SHOTGUN;
-					parm9 = 30;
-				}
+				parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
+				parm2 = 100;
+				parm3 = 50;
+				parm4 = 25;
+				parm5 = 0;
+				parm6 = 0;
+				parm7 = 0;
+				parm8 = IT_SHOTGUN;
+				parm9 = 30;
 			}
-		}
-		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		{
-			parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
-			parm2 = 100;
-			parm3 = 50;
-			parm4 = 25;
-			parm5 = 0;
-			parm6 = 0;
-			parm7 = 0;
-			parm8 = IT_SHOTGUN;
-			parm9 = 30;
 		}
 	}
 		
@@ -510,7 +495,6 @@ void() ClientKill =
 			self.style = self.style | CLANRING_READY;
 			respawn();
 			self.style = self.style - CLANRING_READY;
-			self.effects = (self.effects | EF_RED);//R00k: indicate to the player they are not ready.
 			return;
 		}
 	}
@@ -1572,7 +1556,8 @@ void() PlayerPostThink =
 	// - changed gameover test from (self.view_ofs == '0 0 0') to (gameover)
 
 	if (self.style & CLANRING_OBSERVER)
-	{
+	{		
+		self.effects = 0;
 		observer_post_think ();
 		return;
 	}
@@ -1641,6 +1626,11 @@ void() PlayerPostThink =
 				self.id_time = (time + 0.2);
 			}
 		}
+	}
+	//R00k: indicate to the player they are not ready. 
+	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(self.style & CLANRING_READY)))
+	{
+		self.effects = (self.effects | EF_RED);
 	}
 
 	// check to see if player landed and play landing sound
