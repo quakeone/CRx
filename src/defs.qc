@@ -556,8 +556,6 @@ float   AS_MISSILE              = 4;
 // misc
 //
 .float          cnt;                    // misc flag
-.float          prtvolume;              // infin - misc_particles support
-.float          prtcolor;
 
 //
 // subs

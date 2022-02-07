@@ -409,60 +409,10 @@ void() trap_shooter =
 
 /*
 ===============================================================================
-misc_particles (from progs_dump & rubicon2)
+
+
 ===============================================================================
 */
-void() splash_use =
-{
-	if (self.spawnflags & START_OFF)
-		self.spawnflags = self.spawnflags - START_OFF;
-	else
-		self.spawnflags = self.spawnflags + START_OFF;
-};
-
-void() splash_think =
-{
-	if (self.spawnflags & START_OFF)
-	{
-		self.nextthink = time + 0.1;
-		self.think = splash_think;
-	}
-	else
-	{
-		local vector vec;
-		local float variance;
-		variance = vlen(self.movedir) / 2;
-		vec_x = self.movedir_x - variance + random() * variance * 2;
-		vec_y = self.movedir_y - variance + random() * variance * 2;
-		vec_z = self.movedir_z - variance + random() * variance * 2;
-		particle (self.origin, vec, self.prtcolor, self.prtvolume);
-		self.nextthink = time + self.wait;
-	}
-};
-
-/*QUAKED misc_particles (0 .5 .8) (-8 -8 -8) (8 8 8) START_OFF
-Produces a continuous particle splash for waterfalls and other effects
-"color" color of particles.  0 through 15, corresponds to a row of the quake palette. (default 0)
-"movedir" average movement vector of particles (default 0 0 4)
-"wait" time between particle generation cycles.  (default 0.1)
-"volume" density of particles. (default 10)
-*/
-void() misc_particles =
-{
-	if (!self.wait)
-		self.wait = 0.1;
-	if (!self.movedir)
-		self.movedir = '0 0 4';
-	if (!self.prtvolume)
-		self.prtvolume = 10;
-	self.prtcolor = self.prtcolor * 16;
-
-	self.use = splash_use;
-	self.nextthink = time + self.wait;
-	self.think = splash_think;
-};
-
-//============================================================================
 
 void() make_bubbles;
 void() bubble_remove;
