@@ -242,9 +242,9 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 	if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);	
-		if ((client <= 0)||(client >15))
+		if ((client <= 0)||(client >16))
 		{
-			cprint("setcolour: if ((client <= 0)||(client >15))\n");
+			cprint("warning in setcolour: if ((client <= 0)||(client >16))\n");
 			return;
 		}
 		msg_entity = ent;
