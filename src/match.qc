@@ -68,6 +68,10 @@ void() match_init_world =
 
 float() match_prewar =
 {
+	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//Fixed non matchmode unlimited ammo
+	
+		return FALSE;
+
 	if ((clanring_playmode & CLANRING_MATCH_MODE)&&((clanring_state & CLANRING_TIMER_STARTED)))
 		return FALSE;
 	else
@@ -168,7 +172,6 @@ void() match_init_player =
 void() match_unready_player =
 {
 	self.style = self.style - (self.style & CLANRING_READY);
-	self.effects = (self.effects | EF_RED);//R00k: indicate to the player they are not ready.
 	clear_name();
 };
 
@@ -731,7 +734,6 @@ void() match_timer_think1 =
 	self.nextthink = time + 1;
 	pqc_match_time(self.lip, self.count);
 	score_update_time();
-
 	if (self.count == self.dest_x)
 	{
 		if (self.count != 5)
@@ -1386,8 +1388,6 @@ void() match_ready =
 
 	self.style = self.style | CLANRING_READY;
 
-	self.effects = self.effects - (self.effects & EF_RED);
-
 	// check to see if we need to start the timer
 	if (clanring_numteams > 1 && !(clanring_state & CLANRING_TIMER_STARTED) && match_all_ready())
 	{
@@ -1476,8 +1476,6 @@ void() match_notready =
 	}
 
 	self.style = self.style - (self.style & CLANRING_READY);
-
-	self.effects = (self.effects | EF_RED);//R00k: indicate to the player they are not ready. 
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		TeamCaptureDropFlagOfPlayer (self, 1);
