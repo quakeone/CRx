@@ -153,8 +153,7 @@ void() SetNewParms2 =
 	}
 	else
 	{
-		if (clanring_playmode & CLANRING_MATCH_MODE)
-		if (!(clanring_state & CLANRING_TIMER_STARTED))					//R00k: prewar! (or whatever we call it) aka BOSHMODeA
+		if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_TIMER_STARTED)))	//R00k: prewar! (or whatever we call it) aka BOSHMODeA
 		{
 			SetPracticeParms ();
 		}
