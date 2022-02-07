@@ -242,12 +242,15 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 	if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);	
-	
+		if ((client <= 0)||(client >15))
+		{
+			cprint("setcolour: if ((client <= 0)||(client >15))\n");
+			return;
+		}
 		msg_entity = ent;
 		WriteByte(MSG_ALL, SVC_UPDATECOLORS);
 		WriteByte(MSG_ALL, client);
    		WriteByte(MSG_ALL, (clientshirt * 16 + clientpants));
-		forceinfokey(ent, "team", strings_get_teamname(clientpants));
    	}
 };
 
