@@ -546,14 +546,15 @@ void(entity ent) CreateDeadBody =
 	new.nextthink 	= time + 20;
 };
 
-void() dead_name;
+//void() dead_name;
 
 void() PlayerDead =
 {
 	self.nextthink 	= -1;
 	self.deadflag 	= DEAD_DEAD;// allow respawn after a certain time
 	self.jump_flag = 0; // CLANRING_MOD - fix "falling after discharge" bug
-	dead_name();//R00k v3.51
+	//if (clanring_playmode & CLANRING_ARENA_MODE) //TODO: enable for Clan Arena mode.
+	//dead_name();//R00k v3.51
 
 	if ((clanring_playmode & CLANRING_MATCH_MODE))
 	{
