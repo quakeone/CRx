@@ -1669,12 +1669,12 @@ void() match_show_not_ready =
 	else
 	{
 		local entity player;
-		announce("players not ready");
+		sprint(self, "The following players are not ready:\n");
 		player = find(world, classname, "player");
 		while (player)
 		{
 			if (!(player.style & (CLANRING_OBSERVER | CLANRING_READY)) && (player.style & CLANRING_CONNECTED))
-				announce(player.netname);
+				sprint3(self, " ", player.netname, "\n");
 			player = find(player, classname, "player");
 		}
 	}
