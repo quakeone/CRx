@@ -168,6 +168,7 @@ void() match_init_player =
 void() match_unready_player =
 {
 	self.style = self.style - (self.style & CLANRING_READY);
+	self.effects = (self.effects | EF_RED);//R00k: indicate to the player they are not ready.
 	clear_name();
 };
 

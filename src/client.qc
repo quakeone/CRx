@@ -510,6 +510,7 @@ void() ClientKill =
 			self.style = self.style | CLANRING_READY;
 			respawn();
 			self.style = self.style - CLANRING_READY;
+			self.effects = (self.effects | EF_RED);//R00k: indicate to the player they are not ready.
 			return;
 		}
 	}
