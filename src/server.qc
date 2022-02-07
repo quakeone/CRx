@@ -347,7 +347,6 @@ void () clanring_init_world =
 		clanring_playmode 	= clanring_playmode | CLANRING_MATCH_MODE;
 		clanring_playmode 	= clanring_playmode | CLANRING_CAPTURE_THE_FLAG;//default match clanring ctf
 		clanring_playmode 	= clanring_playmode | CLANRING_SERVER_INITIALIZED;
-		//clanring_state 		= clanring_state 	| CLANRING_TEAM_CAPTURE_CUSTOM;
 		
 		utils_set_cvar("samelevel", clanring_playmode);		
 	}//initialized
@@ -390,24 +389,18 @@ void () clanring_init_world =
 	clanring_best_camera 		= world;
 	clanring_current_camera 	= world;
 	clanring_camera_delay 		= 0;
-	auto_parm1 					= 600; 	// only rocket bonus
+	auto_parm1 					= 600; // only rocket bonus
 	auto_parm2 					= 1000; // pent proximity bonus
-	auto_parm3 					= 500; 	// quad proximity bonus
+	auto_parm3 					= 500; // quad proximity bonus
 	auto_parm4 					= 0;
 	clanring_pent 				= world;
 	clanring_quad 				= world;
 	
-	clanring_afk_check 			= 300; 	//R00k: 5 MINUTES default for AFK status.
+	clanring_afk_check 			= 300; //R00k: 5 MINUTES default for AFK status.
 	clanring_afk_timeout 		= 1800; //Time to kick after AFK (30 minutes).
 
 	utils_make_scheduled_event(clanring_find_powerups, 5);
 	nextmap = "";
-
-	//R00k: ticrate defaults for different modes :|
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		cvar_set("sys_ticrate", ftos(clanring_ctf_ticrate));
-	else
-		cvar_set("sys_ticrate", ftos(clanring_tdm_ticrate));
 
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
@@ -654,7 +647,7 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias nextmap impulse 199\n");	
 	//stuffcmd(self, "alias vote-exit impulse 204\n");
 	stuffcmd(self, "alias faststart impulse 209\n");		
-	stuffcmd(self, "alias afk impulse 57\n");
+	stuffcmd(self, "alias afk impulse 70\n");
 	stuffcmd(self, "alias modes impulse 181\n");
 	stuffcmd(self, "alias gameplay impulse 182\n");
 	stuffcmd(self, "alias watch impulse 183\n");
@@ -1054,7 +1047,7 @@ void () clanring_put_client_in_server =
 {
 	self.movetype = MOVETYPE_WALK;
 	self.finaldest_y = MOVETYPE_WALK;
-	self.style = self.style | CLANRING_CONNECTED | CLANRING_AUTOID;//placed here before assigning to a team
+	self.style = self.style | CLANRING_CONNECTED;//placed here before assigning to a team
 
 	utils_make_scheduled_event(clanring_bf_think, 0.1);
 
@@ -1489,6 +1482,34 @@ void () clanring_show_rules =
 	sprint(self, "\n");
 };
 
+void (float num) utils_gold_number =
+{
+	if (num == 0)
+		return "\0";
+	else if (num == 1)
+		return "\1";
+	else if (num == 2)
+		return "\2";
+	else if (num == 3)
+		return "\3";
+	else if (num == 4)
+		return "\4";
+	else if (num == 5)
+		return "\5";
+	else if (num == 6)
+		return "\6";
+	else if (num == 7)
+		return "\7";
+	else if (num == 8)
+		return "\8";
+	else if (num == 9)
+		return "\9";
+	else if (num == 10)
+		return "\1\0";
+	else
+		return ftos(num);
+};
+
 //
 //  S H O W  R U L E S  P R E M A T C H
 //
@@ -1501,12 +1522,12 @@ void () clanring_show_rules_prematch =
 	}
 
 	local float temp;
-	local string s0 = "", s1 = "", s2 = "", s3 = "", s4 = "", s5 = "", s6 = "", s7 = "", s8 = "", s9 = "", s10 = "", s11 = "", s12 = "";
+	local string s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12;
 
 	if (clanring_match_timer.count > 9)
-		s0 = sprintf("\bcountdown:   \b%s\n\n", strings_ftos_gold(clanring_match_timer.count));
+		s0 = sprintf("\bcountdown:   \b%s\n\n", utils_gold_number(clanring_match_timer.count));
 	else
-		s0 = sprintf("\bcountdown:    \b%s\n\n", strings_ftos_gold(clanring_match_timer.count));
+		s0 = sprintf("\bcountdown:    \b%s\n\n", utils_gold_number(clanring_match_timer.count));
 
 	if (clanring_match_timer.count > 3)
 	{
@@ -1589,10 +1610,8 @@ void () clanring_show_rules_prematch =
 		
 		if (clanring_playmode & CLANRING_NO_SPOOGE)
 			s12 = "\bno spooge    \bon\n";
-		else
-			s12 = "";
-			
-		local string cp1 = "", cp2 = "", cp3 = ""; //initialize locals so we dont have residual garbage next time used.
+
+		local string cp1, cp2, cp3;
 		cp1 = sprintf("%s%s%s", s2, s3, s4);
 		cp2 = sprintf("%s%s%s", s6, s7, s8);
 		cp3 = sprintf("%s%s%s%s", s9, s10, s11, s12);
@@ -1603,7 +1622,6 @@ void () clanring_show_rules_prematch =
 		centerprint(self, s0, "\n\n\n\n\n\n\n\n\n\n\n\n\n");
 	}
 };
-
 
 //
 //  A D M I N S
@@ -1690,7 +1708,7 @@ void () clanring_impulse =
 		votables_request_vote_exit();
 	else if (self.impulse == 209)
 		votables_request_set_faststarts();
-	else if (self.impulse == 57)//R00k: allow players to manually go afk, so they wont be counted in votes.(changed to use imp 70 to toggle off the ctf hud)
+	else if (self.impulse == 70)//R00k: allow players to manually go afk, so they wont be counted in votes.
 	{
 		if (!(self.style & CLANRING_AFK_CLIENT))
 		{
@@ -1704,7 +1722,6 @@ void () clanring_impulse =
 		self.statstate = self.impulse - 71;
 		sprint(self, "Status bar set\n");
 	}
-
     else if (self.impulse == 119)
 	{
 		if (teamplay)
