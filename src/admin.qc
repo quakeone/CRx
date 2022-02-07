@@ -834,7 +834,7 @@ void(float val) admin_dmset =
 	if (val != -1)
 	deathmatch = val - 1;
 	deathmatch = deathmatch + 1;
-	if (deathmatch == 4)
+	if (deathmatch > 4)//R00k changed to allow dmm4
 	deathmatch = 1;
 	temp = ftos(deathmatch);
 	localcmd3("deathmatch ", temp, "\n");
