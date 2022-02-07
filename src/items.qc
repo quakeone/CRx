@@ -211,7 +211,7 @@ void(entity rotowner, entity mega) MakeHealthRot =
 void() health_touch =
 {
 	local float	donttake = 0;
-	local string 	s;
+//	local string 	s;
 
 // ELOHIM_MOD
 	if (((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED)))
@@ -243,7 +243,7 @@ void() health_touch =
 	if (donttake == 0)
 	{
 		//sprint(other, "You receive ");
-		s = ftos(self.healamount);
+		//s = ftos(self.healamount);
 		//sprint(other, s);
 		//sprint(other, " health\n");
 		sound (other, CHAN_ITEM, self.noise, 1, ATTN_NORM);
