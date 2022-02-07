@@ -432,6 +432,9 @@ void () clanring_init_world =
 		timelimit = (cvar("timelimit")*60);
 	}
 	else
+	if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_PRACTICE_MODE))
+		clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
+	else
 	if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_MATCH_MODE))
 	{
 		cvar_set("teamplay","1");		
