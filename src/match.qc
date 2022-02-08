@@ -487,21 +487,8 @@ void() match_timer_think2 =
 	{
 		if (self.count)
 			return;
-
-		if (self.lip > 1)
-		{
-			temp = ftos(self.lip);
-			match_show_timelimit();
-			announce3("Match ends in ", temp, " minutes");
-			if (self.lip == 5 * floor(self.lip / 5))
-				match_bprint_score();
-		}
-		else
-		{
-			match_show_timelimit();
+		if (self.lip <= 1)
 			announce("Match ends in 1 minute");
-			match_bprint_score();
-		}
 	}
 	else
 	{
