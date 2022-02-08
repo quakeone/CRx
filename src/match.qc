@@ -633,8 +633,8 @@ void() match_begin =
 	// Set the team size so that unwanted A-holes can't join in
 	match_get_maxsize();
 	temp = ftos(clanring_maxsize);
-	if (teamplay)
-		announce4("Match is ", temp, "v", temp);
+	//if (teamplay)
+		//announce4("Match is ", temp, "v", temp);
 
 	temp = ftos(clanring_timelimit);
 	announce2(temp, " minutes remaining");
@@ -646,7 +646,7 @@ void() match_begin =
 	self.nextthink = time + 1;
 	self.lip = clanring_timelimit;
 	self.count = 0;
-	match_show_timelimit();
+	//match_show_timelimit();
 
 	// reset rocket launcher count
 	clanring_sentinel.ammo_rockets = 0;
@@ -733,7 +733,7 @@ void() match_timer_think1 =
 		utils_do_items(SUB_regen);
 		utils_do_item(match_reset_powerup, "item_artifact_invulnerability");
 		utils_do_item(match_reset_powerup, "item_artifact_super_damage");
-		announce("All items have respawned");
+		//announce("All items have respawned");
 
 		if (clanring_playmode & CLANRING_NO_QUAD)
 		{
@@ -756,8 +756,8 @@ void() match_timer_think1 =
 		{
 			match_get_maxsize();
 			temp = ftos(clanring_maxsize);
-			if (teamplay)
-				announce4("Match is currently ", temp, "v", temp);
+			//if (teamplay)
+				//announce4("Match is currently ", temp, "v", temp);
 			if (self.count == 20)
 				announce("Match begins in 20 seconds");
 		}
