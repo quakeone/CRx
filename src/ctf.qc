@@ -50,31 +50,31 @@ void(entity flg) TeamCaptureReturnFlag =
 	RegenFlag (flg);
 
 	p = find(world, classname, "player");
-	while (p != world)
-	{		
-		if ((p.style & CLANRING_OBSERVER) && (flg.team == RED))
-		{
-			centerprint(p, "\bRED\b flag has been returned to base!\n");
-		}
-		else
-		{			
-			if ((p.style & CLANRING_OBSERVER) && (flg.team == BLUE))
+	while (p != world && !(clanring_playmode & CLANRING_MATCH_MODE))
+	{	
+			if ((p.style & CLANRING_OBSERVER) && (flg.team == RED))
 			{
-				centerprint(p, "\bBLUE\b flag has been returned to base!\n");
+				centerprint(p, "\bRED\b flag has been returned to base!\n");
 			}
 			else
-			{
-				if (p.team != flg.team)
+			{			
+				if ((p.style & CLANRING_OBSERVER) && (flg.team == BLUE))
 				{
-					centerprint(p, "Enemy \bflag\b has been returned to base!");
+					centerprint(p, "\bBLUE\b flag has been returned to base!\n");
 				}
 				else
 				{
-					if (p.team == flg.team)
+					if (p.team != flg.team)
 					{
-						centerprint (p, "Your \bflag\b has been returned to base!");
+						centerprint(p, "Enemy \bflag\b has been returned to base!");
 					}
-				}
+					else
+					{
+						if (p.team == flg.team)
+						{
+							centerprint (p, "Your \bflag\b has been returned to base!");
+						}
+					}
 			}
 		}
 		p = find(p, classname, "player");
@@ -279,13 +279,13 @@ void() TeamCaptureFlagTouch =
 					p = find(world, classname, "player");
 					while (p != world)
 					{
-						if ((p.style & CLANRING_OBSERVER) && (other.team == RED))
+						if ((p.style & CLANRING_OBSERVER) && (other.team == RED) && !(clanring_playmode & CLANRING_MATCH_MODE))
 						{
 							centerprint(p, "\bRED\b TEAM captured the blue flag!\n");
 						}
 						else
 						{			
-							if ((p.style & CLANRING_OBSERVER) && (other.team == BLUE))
+							if ((p.style & CLANRING_OBSERVER) && (other.team == BLUE)  && !(clanring_playmode & CLANRING_MATCH_MODE))
 							{
 								centerprint(p, "\bBLUE\b TEAM captured the red flag!\n");
 							}
@@ -295,7 +295,8 @@ void() TeamCaptureFlagTouch =
 						
 						if (p.team == other.team)
 						{
-							centerprint(p, "Your team captured the flag!\n");
+							if (!(clanring_playmode & CLANRING_MATCH_MODE))
+								centerprint(p, "Your team captured the flag!\n");
 							
 							client_frag(p, TEAM_CAPTURE_TEAM_BONUS); //team score for capture
 							
@@ -315,7 +316,8 @@ void() TeamCaptureFlagTouch =
 						}
 						else
 						{
-							centerprint(p, "Your flag was captured!\n");
+							if (!(clanring_playmode & CLANRING_MATCH_MODE))
+								centerprint(p, "Your flag was captured!\n");
 							p.last_hurt_carrier = -5;
 						}
 						
@@ -392,7 +394,7 @@ void() TeamCaptureFlagTouch =
 
 	while (p != world)
 	{
-		if (p != other)
+		if (p != other && !(clanring_playmode & CLANRING_MATCH_MODE))
 		{
 			if (p.style & CLANRING_OBSERVER)
 			{
