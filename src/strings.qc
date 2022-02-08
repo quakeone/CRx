@@ -25,7 +25,7 @@ string (float n) strings_ftos=
 //
 string (float n) strings_ftos_gold =
 {
-	local float d1, d2, d3, d4, t1;
+	local float d1, d2, d3, t1;
 	if (n > 999)
 	{
 		return ftos(n); //sol for now

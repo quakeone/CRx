@@ -487,8 +487,21 @@ void() match_timer_think2 =
 	{
 		if (self.count)
 			return;
-		if (self.lip <= 1)
+
+		if (self.lip > 1)
+		{
+//			temp = ftos(self.lip);
+			match_show_timelimit();
+//			announce3("Match ends in ", temp, " minutes");
+//			if (self.lip == 5 * floor(self.lip / 5))
+//				match_bprint_score();
+		}
+		else
+		{
+			match_show_timelimit();
 			announce("Match ends in 1 minute");
+//			match_bprint_score();
+		}
 	}
 	else
 	{
@@ -646,7 +659,7 @@ void() match_begin =
 	self.nextthink = time + 1;
 	self.lip = clanring_timelimit;
 	self.count = 0;
-	//match_show_timelimit();
+	match_show_timelimit();//This updates the server's TIMELIMIT cvar with match information that is used on the CCREQ_RULE_INFO for the web server browser.
 
 	// reset rocket launcher count
 	clanring_sentinel.ammo_rockets = 0;
@@ -710,7 +723,7 @@ void () match_reset_powerup =
 //
 void() match_timer_think1 =
 {
-	local string temp, plural;
+	//local string temp, plural;
 
 	self.count -= 1;
 	if (self.count < 0)
@@ -755,7 +768,7 @@ void() match_timer_think1 =
 		if (self.count == self.dest_y)
 		{
 			match_get_maxsize();
-			temp = ftos(clanring_maxsize);
+			//temp = ftos(clanring_maxsize);
 			//if (teamplay)
 				//announce4("Match is currently ", temp, "v", temp);
 			if (self.count == 20)

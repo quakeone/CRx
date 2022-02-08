@@ -45,13 +45,15 @@ void(entity flg) RegenFlag =
 
 void(entity flg) TeamCaptureReturnFlag =
 {
-	local entity p;
-
 	RegenFlag (flg);
 
-	p = find(world, classname, "player");
-	while (p != world && !(clanring_playmode & CLANRING_MATCH_MODE))
-	{	
+	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//  Only show newbie messages in newbie mode.
+	{
+		local entity p;
+		p = find(world, classname, "player");
+
+		while (p != world)
+		{		
 			if ((p.style & CLANRING_OBSERVER) && (flg.team == RED))
 			{
 				centerprint(p, "\bRED\b flag has been returned to base!\n");
@@ -72,14 +74,14 @@ void(entity flg) TeamCaptureReturnFlag =
 					{
 						if (p.team == flg.team)
 						{
-							centerprint (p, "Your \bflag\b has been returned to base!");
+							centerprint (p, "Your \bflag\b has been returned to base!");	
 						}
 					}
+				}
 			}
+			p = find(p, classname, "player");
 		}
-		p = find(p, classname, "player");
 	}
-
 	sound (world, CHAN_AUTO, self.noise1, 1, ATTN_NONE);
 };
 
@@ -279,18 +281,21 @@ void() TeamCaptureFlagTouch =
 					p = find(world, classname, "player");
 					while (p != world)
 					{
-						if ((p.style & CLANRING_OBSERVER) && (other.team == RED) && !(clanring_playmode & CLANRING_MATCH_MODE))
+						if (!(clanring_playmode & CLANRING_MATCH_MODE))
 						{
-							centerprint(p, "\bRED\b TEAM captured the blue flag!\n");
-						}
-						else
-						{			
-							if ((p.style & CLANRING_OBSERVER) && (other.team == BLUE)  && !(clanring_playmode & CLANRING_MATCH_MODE))
+							if ((p.style & CLANRING_OBSERVER) && (other.team == RED))
 							{
-								centerprint(p, "\bBLUE\b TEAM captured the red flag!\n");
+								centerprint(p, "\bRED\b TEAM captured the blue flag!\n");
+							}
+							else
+							{			
+								if ((p.style & CLANRING_OBSERVER) && (other.team == BLUE))
+								{
+									centerprint(p, "\bBLUE\b TEAM captured the red flag!\n");
+								}
 							}
 						}
-						
+
 						p.killed = FALSE;
 						
 						if (p.team == other.team)
@@ -390,39 +395,42 @@ void() TeamCaptureFlagTouch =
 	self.solid	= SOLID_NOT;
 	self.owner	= other;
 
-	p = find(world, classname, "player");
-
-	while (p != world)
+	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
-		if (p != other && !(clanring_playmode & CLANRING_MATCH_MODE))
+		p = find(world, classname, "player");
+	
+		while (p != world)
 		{
-			if (p.style & CLANRING_OBSERVER)
+			if (p != other)
 			{
-				if (self.team == RED)
+				if (p.style & CLANRING_OBSERVER)
 				{
-					centerprint (p, "ред flag has been taken");
+					if (self.team == RED)
+					{
+						centerprint (p, "ред flag has been taken");
+					}
+					else
+					{
+						if (self.team == BLUE)
+						{
+							centerprint (p, "блуе flag has been taken");
+						}
+					}
 				}
 				else
 				{
-					if (self.team == BLUE)
+					if (p.team != other.team)
 					{
-						centerprint (p, "блуе flag has been taken");
+						centerprint (p, "Your флаг has been taken!");
+					}
+					else
+					{
+						centerprint (p, "Your team has the enemy флаг!");
 					}
 				}
 			}
-			else
-			{
-				if (p.team != other.team)
-				{
-					centerprint (p, "Your флаг has been taken!");
-				}
-				else
-				{
-					centerprint (p, "Your team has the enemy флаг!");
-				}
-			}
+			p = find(p, classname, "player");
 		}
-		p = find(p, classname, "player");
 	}
 };
 
