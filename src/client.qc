@@ -1628,9 +1628,15 @@ void() PlayerPostThink =
 		}
 	}
 	//R00k: indicate to the player they are not ready. 
-	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(self.style & CLANRING_READY)))
+	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		self.effects = (self.effects | EF_RED);
+		if (!(self.style & CLANRING_OBSERVER))
+		{
+			if (!(self.style & CLANRING_READY))
+				self.effects |= EF_RED;
+			else
+				self.effects = self.effects - (self.effects & EF_RED);
+		}
 	}
 
 	// check to see if player landed and play landing sound
