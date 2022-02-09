@@ -1701,7 +1701,10 @@ void () clanring_impulse =
 			self.afk_time = time;
 		}		
 	}
-	else if (self.impulse >= 71 && self.impulse <= 81) {
+	else if (self.impulse == 70)
+			self.statstate = -1;
+	else if (self.impulse >= 71 && self.impulse <= 81) 
+	{
 		self.statstate = self.impulse - 71;
 		sprint(self, "Status bar set\n");
 	}
