@@ -453,6 +453,17 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		}
 	}
 
+	//calculate prewar frags
+	if (match_prewar() && attacker.classname == "player" && targ != attacker)
+	{
+		attacker.dmg_tally += damage;
+		if (attacker.dmg_tally >= 300)
+		{
+			attacker.frags += 1;
+			attacker.dmg_tally = attacker.dmg_tally % 300;
+		}
+	}
+
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (!(clanring_state & CLANRING_MATCH_STARTED))
