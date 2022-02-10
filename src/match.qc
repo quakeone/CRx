@@ -723,7 +723,7 @@ void () match_reset_powerup =
 //
 void() match_timer_think1 =
 {
-	local string temp;
+	//local string temp;
 
 	self.count -= 1;
 	if (self.count < 0)
