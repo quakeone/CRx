@@ -282,6 +282,7 @@ float  	last_capture_team;
 .float	true_kills;
 .float 	dmg_taken;
 .float 	dmg_given;
+.float	dmg_tally;
 .float 	captime;
 
 //weapon toss times
