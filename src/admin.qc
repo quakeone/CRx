@@ -1246,13 +1246,6 @@ void() admin_auto_screenshot =
 
 void() admin_impulse =
 {
-	if (self.impulse == 220)
-	{
-		votables_request_set_gametype();
-		self.impulse = 0;
-		return;
-	}
-
 	// votable commands
 	if (self.impulse >= 190 && self.impulse <= 196) //this is unused
 		votables_init_warp(self.impulse - 190);

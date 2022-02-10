@@ -5,7 +5,7 @@
 //
 
 float (string s1, string s2, void() accept) vote_init;
-void() votables_request_change_level;
+void(optional string requestmap) votables_request_change_level;
 void() client_select_warp;
 
 void() warp_menu_top =

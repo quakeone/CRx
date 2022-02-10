@@ -692,7 +692,7 @@ void() match_bprint_timelimit =
 	local string digit;
 	local float temp;
 
-	bprint("Τινεμινιτ ισ ");
+	bprint("Γ”Γ©Γ­Γ¥Γ¬Γ©Γ­Γ©Γ΄ Γ©Γ³ Β");
 	temp = floor(clanring_timelimit / 10);
 	if (temp)
 	{
@@ -701,7 +701,7 @@ void() match_bprint_timelimit =
 	}
 	temp = clanring_timelimit - 10 * temp;
 	digit = strings_ftos_gold(temp);
-	bprint2(digit, "\n");
+	bprint2(digit, "Β\n");
 };
 
 //
@@ -723,7 +723,7 @@ void () match_reset_powerup =
 //
 void() match_timer_think1 =
 {
-	//local string temp, plural;
+	local string temp;
 
 	self.count -= 1;
 	if (self.count < 0)
@@ -739,7 +739,7 @@ void() match_timer_think1 =
 		if (self.count != 5)
 		{
 			match_bprint_timelimit();
-			bprint("Use 'τινεσετ' to change timelimit\n");
+			bprint("Use 'Γ΄Γ©Γ­Γ¥Γ³Γ¥Γ΄' to change timelimit\n");
 		}
 
 		// respawn all items; reset information
@@ -791,9 +791,6 @@ void() match_timer_think1 =
 					
 					clanring_state = clanring_state | CLANRING_NULL_FLAG;
 				}
-				//temp = ftos(self.count);
-				//plural = strings_szplural(self.count);
-				//announce4("  ", temp, " second", plural);
 				if (self.count <= 3)
 					sound (world, CHAN_AUTO, "buttons/switch04.wav", 1, ATTN_NONE);
 				if (self.count == 1)
@@ -1345,7 +1342,7 @@ void(entity ghostent) match_restore_ghost =
 		pteam = pteam.next_team;
 	}
 
-	vote_init("υξπαυσε τθε νατγθ", "", match_start_unpause_countdown);
+	vote_init("ΓµΓ®Γ°Γ΅ΓµΓ³Γ¥Β Γ΄Γ¨Γ¥Β Γ­Γ΅Γ΄Γ£Γ¨", "", match_start_unpause_countdown);
 };
 
 //
@@ -1553,7 +1550,7 @@ void() match_request_unlock =
 	{
 		if (self.style & CLANRING_READY)
 		{
-			if (vote_init("αμμοχ ξεχ πμαωεςσ το κοιξ", "", match_unlock))
+			if (vote_init("Γ΅Γ¬Γ¬Γ―Γ·Β Γ®Γ¥Γ·Β Γ°Γ¬Γ΅ΓΉΓ¥Γ²Γ³Β Γ΄Γ―Β ΓªΓ―Γ©Γ®", "", match_unlock))
 				vote_yes();
 		}
 		else
@@ -1614,7 +1611,7 @@ void() match_request_lock =
 	{
 		if (self.style & CLANRING_READY)
 		{
-			if (vote_init("μογλ τθε νατγθ", "", match_lock))
+			if (vote_init("Γ¬Γ―Γ£Γ«Β Γ΄Γ¨Γ¥Β Γ­Γ΅Γ΄Γ£Γ¨", "", match_lock))
 				vote_yes();
 		}
 		else
@@ -1730,7 +1727,7 @@ void() match_show_pause =
 	WriteByte(MSG_ALL, 2);
 	WriteByte(MSG_ALL, 2);
 	WriteByte(MSG_ALL, 3);
-	WriteString(MSG_ALL, "\n„ΠΑΥΣΕΔ†\n‡‰");
+	WriteString(MSG_ALL, "\nΒ„ΓΓΓ•Γ“Γ…Γ„Β†\nΒ‡ΒΒΒΒΒΒΒ‰");
 	clanring_match_timer.nextthink = time + 0.5;
 	clanring_match_timer.think = match_show_pause;
 };
@@ -1950,7 +1947,7 @@ void() match_request_unpause =
 		if (self.style & CLANRING_ADMINISTRATOR)
 			match_start_timer ();
 		else
-		if (vote_init("σταςτ τθε τινες", "", match_start_timer))
+		if (vote_init("Γ³Γ΄Γ΅Γ²Γ΄Β Γ΄Γ¨Γ¥Β Γ΄Γ©Γ­Γ¥Γ²", "", match_start_timer))
 			vote_yes();
 
 		return;
@@ -1965,7 +1962,7 @@ void() match_request_unpause =
 	if (self.style & CLANRING_ADMINISTRATOR)
 		match_start_unpause_countdown ();
 	else
-	if (vote_init("υξπαυσε τθε νατγθ", "", match_start_unpause_countdown))
+	if (vote_init("ΓµΓ®Γ°Γ΅ΓµΓ³Γ¥Β Γ΄Γ¨Γ¥Β Γ­Γ΅Γ΄Γ£Γ¨", "", match_start_unpause_countdown))
 		vote_yes();
 };
 

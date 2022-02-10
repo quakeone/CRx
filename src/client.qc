@@ -2373,3 +2373,39 @@ void(entity targ, entity attacker) ClientObituary =
 		}
 	}
 };
+
+void(string cmd) SV_ParseClientCommand =
+{
+    local float args, ep_index, index, n;
+    local string arg0 = "";
+
+    args = tokenize(cmd);
+	if (args > 0)
+    	arg0 = argv(0);
+
+    switch (arg0)
+    {
+		case "dm":
+			votables_request_set_gametype(0);
+			return;
+    	case "ctf":
+			votables_request_set_gametype(1);
+			return;
+		default:
+			for (ep_index = 1; ep_index < 10; ep_index += 1)
+			{
+				for (index = 1 ; index < 10 ; index += 1)
+				{
+					n = (ep_index * 10) + index;
+					if (warpmap[n].name != "" && warpmap[n].name == arg0)
+					{
+						votables_request_change_level(arg0);
+						return;
+					}
+				}
+			}
+			break;
+	}
+	clientcommand(self, cmd);
+	return;
+};

@@ -552,6 +552,7 @@ void (float value) clanring_set_fraglimit =
 void () clanring_set_aliases =
 {
 	local entity temp;
+	local float ep_index, index, n;
 
 	temp = self;
 	self = self.owner;
@@ -665,6 +666,19 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias misc impulse 185\n");
 	stuffcmd(self, "alias modhelp impulse 186\n");
 	stuffcmd(self, "alias shortcuts impulse 187\n");
+
+	//send map warp aliases
+	for (ep_index = 1; ep_index < 10; ep_index += 1)
+	{
+		for (index = 1 ; index < 10 ; index += 1)
+		{
+			n = (ep_index * 10) + index;
+			if (warpmap[n].name != "")
+			{
+				stuffcmd(self, sprintf("alias %s cmd %s\n", warpmap[n].name, warpmap[n].name));
+			}
+		}
+	}
 	
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
