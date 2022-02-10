@@ -1384,9 +1384,6 @@ void() match_ready =
 	}
 
 	self.style = self.style | CLANRING_READY;
-	
-	self.dmg_tally = 0;
-	self.frags = 0;
 
 	// check to see if we need to start the timer
 	if (clanring_numteams > 1 && !(clanring_state & CLANRING_TIMER_STARTED) && match_all_ready())

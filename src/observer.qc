@@ -514,6 +514,7 @@ void() observer_end =
 		return;
 
 	self.style 	= self.style - (self.style & CLANRING_OBSERVER);
+	self.dmg_tally = 0;
 	self.frags 	= 0;
 	self.killed = 0;
 	observer_check_demo_end();
