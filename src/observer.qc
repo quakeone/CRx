@@ -172,9 +172,9 @@ void () observer_walk_start =
 	else
 		stuffcmd(self, "cl_nolerp 0\n");// CRMOD - send the real thing instead
 	stuffcmd(self, "v_centerspeed 500\n");
-	sprint(self, "walk mode - help-walk for help\n");
-	if (!(self.style & CLANRING_HEADS_UP))
-		sprint(self, "type 'headsup' for fullscreen display\n");
+	sprint(self, "walk mode\n");
+	//if (!(self.style & CLANRING_HEADS_UP))
+		//sprint(self, "type 'headsup' for fullscreen display\n");
 };
 
 //
@@ -192,9 +192,9 @@ void () observer_fly_start =
 	self.waterlevel = 0;
 	stuffcmd(self, "sm0\n");		// CRMOD - smoothing off
 	stuffcmd(self, "v_centerspeed 500\n");
-	sprint(self, "fly mode - help-fly for help\n");
-	if (!(self.style & CLANRING_HEADS_UP))
-		sprint(self, "type 'headsup' for fullscreen display\n");
+	sprint(self, "fly mode\n");
+	//if (!(self.style & CLANRING_HEADS_UP))
+		//sprint(self, "type 'headsup' for fullscreen display\n");
 };
 
 // CRMOD
@@ -263,8 +263,8 @@ void () observer_camera_start =
 	else																// CRMOD
 		sprint(self,"type 'autocam' for automatic camera switching\n");	// CRMOD
 
-	if (!(self.style & CLANRING_HEADS_UP))
-		sprint(self, "type 'headsup' for fullscreen display\n");
+	//if (!(self.style & CLANRING_HEADS_UP))
+		//sprint(self, "type 'headsup' for fullscreen display\n");
 
 	sprint(self, "type 'smooth' to eliminate choppines\n");
 };
@@ -308,8 +308,8 @@ void () observer_chase_start =
 	if (self.oflags & OBSERVER_TOURNEY)
 		sprint(self, "Tournament Mode Enabled.\n");
 	// END_CRMOD
-	if (!(self.style & CLANRING_HEADS_UP))
-		sprint(self, "type 'headsup' for fullscreen display\n");
+	//if (!(self.style & CLANRING_HEADS_UP))
+		//sprint(self, "type 'headsup' for fullscreen display\n");
 	
 	sprint(self, "type 'smooth' to eliminate choppines\n");
 };
@@ -350,9 +350,9 @@ void () observer_demo_start =
     setmodel(self, string_null);
     observer_set_demo_position();
     stuffcmd(self, "v_centerspeed 0\n");
-    sprint(self, "eyecam mode - help-chase for help\n");
-    if (!(self.style & CLANRING_HEADS_UP))
-        sprint(self, "type 'headsup' for fullscreen display\n");
+    sprint(self, "eyecam mode\n");
+   // if (!(self.style & CLANRING_HEADS_UP))
+        //sprint(self, "type 'headsup' for fullscreen display\n");
 	sprint(self, "type 'smooth' to eliminate choppines\n");
 
 	self.nextthink = -1;

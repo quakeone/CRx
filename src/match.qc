@@ -490,17 +490,17 @@ void() match_timer_think2 =
 
 		if (self.lip > 1)
 		{
-			temp = ftos(self.lip);
+//			temp = ftos(self.lip);
 			match_show_timelimit();
-			announce3("Match ends in ", temp, " minutes");
-			if (self.lip == 5 * floor(self.lip / 5))
-				match_bprint_score();
+//			announce3("Match ends in ", temp, " minutes");
+//			if (self.lip == 5 * floor(self.lip / 5))
+//				match_bprint_score();
 		}
 		else
 		{
 			match_show_timelimit();
 			announce("Match ends in 1 minute");
-			match_bprint_score();
+//			match_bprint_score();
 		}
 	}
 	else
@@ -646,8 +646,8 @@ void() match_begin =
 	// Set the team size so that unwanted A-holes can't join in
 	match_get_maxsize();
 	temp = ftos(clanring_maxsize);
-	if (teamplay)
-		announce4("Match is ", temp, "v", temp);
+	//if (teamplay)
+		//announce4("Match is ", temp, "v", temp);
 
 	temp = ftos(clanring_timelimit);
 	announce2(temp, " minutes remaining");
@@ -659,7 +659,7 @@ void() match_begin =
 	self.nextthink = time + 1;
 	self.lip = clanring_timelimit;
 	self.count = 0;
-	match_show_timelimit();
+	match_show_timelimit();//This updates the server's TIMELIMIT cvar with match information that is used on the CCREQ_RULE_INFO for the web server browser.
 
 	// reset rocket launcher count
 	clanring_sentinel.ammo_rockets = 0;
@@ -692,7 +692,7 @@ void() match_bprint_timelimit =
 	local string digit;
 	local float temp;
 
-	bprint("Τινεμινιτ ισ ");
+	bprint("Γ”Γ©Γ­Γ¥Γ¬Γ©Γ­Γ©Γ΄ Γ©Γ³ Β");
 	temp = floor(clanring_timelimit / 10);
 	if (temp)
 	{
@@ -701,7 +701,7 @@ void() match_bprint_timelimit =
 	}
 	temp = clanring_timelimit - 10 * temp;
 	digit = strings_ftos_gold(temp);
-	bprint2(digit, "\n");
+	bprint2(digit, "Β\n");
 };
 
 //
@@ -739,14 +739,14 @@ void() match_timer_think1 =
 		if (self.count != 5)
 		{
 			match_bprint_timelimit();
-			bprint("Use 'τινεσετ' to change timelimit\n");
+			bprint("Use 'Γ΄Γ©Γ­Γ¥Γ³Γ¥Γ΄' to change timelimit\n");
 		}
 
 		// respawn all items; reset information
 		utils_do_items(SUB_regen);
 		utils_do_item(match_reset_powerup, "item_artifact_invulnerability");
 		utils_do_item(match_reset_powerup, "item_artifact_super_damage");
-		announce("All items have respawned");
+		//announce("All items have respawned");
 
 		if (clanring_playmode & CLANRING_NO_QUAD)
 		{
@@ -768,9 +768,9 @@ void() match_timer_think1 =
 		if (self.count == self.dest_y)
 		{
 			match_get_maxsize();
-			temp = ftos(clanring_maxsize);
-			if (teamplay)
-				announce4("Match is currently ", temp, "v", temp);
+			//temp = ftos(clanring_maxsize);
+			//if (teamplay)
+				//announce4("Match is currently ", temp, "v", temp);
 			if (self.count == 20)
 				announce("Match begins in 20 seconds");
 		}
@@ -1342,7 +1342,7 @@ void(entity ghostent) match_restore_ghost =
 		pteam = pteam.next_team;
 	}
 
-	vote_init("υξπαυσε τθε νατγθ", "", match_start_unpause_countdown);
+	vote_init("ΓµΓ®Γ°Γ΅ΓµΓ³Γ¥Β Γ΄Γ¨Γ¥Β Γ­Γ΅Γ΄Γ£Γ¨", "", match_start_unpause_countdown);
 };
 
 //
@@ -1550,7 +1550,7 @@ void() match_request_unlock =
 	{
 		if (self.style & CLANRING_READY)
 		{
-			if (vote_init("αμμοχ ξεχ πμαωεςσ το κοιξ", "", match_unlock))
+			if (vote_init("Γ΅Γ¬Γ¬Γ―Γ·Β Γ®Γ¥Γ·Β Γ°Γ¬Γ΅ΓΉΓ¥Γ²Γ³Β Γ΄Γ―Β ΓªΓ―Γ©Γ®", "", match_unlock))
 				vote_yes();
 		}
 		else
@@ -1611,7 +1611,7 @@ void() match_request_lock =
 	{
 		if (self.style & CLANRING_READY)
 		{
-			if (vote_init("μογλ τθε νατγθ", "", match_lock))
+			if (vote_init("Γ¬Γ―Γ£Γ«Β Γ΄Γ¨Γ¥Β Γ­Γ΅Γ΄Γ£Γ¨", "", match_lock))
 				vote_yes();
 		}
 		else
@@ -1727,7 +1727,7 @@ void() match_show_pause =
 	WriteByte(MSG_ALL, 2);
 	WriteByte(MSG_ALL, 2);
 	WriteByte(MSG_ALL, 3);
-	WriteString(MSG_ALL, "\n„ΠΑΥΣΕΔ†\n‡‰");
+	WriteString(MSG_ALL, "\nΒ„ΓΓΓ•Γ“Γ…Γ„Β†\nΒ‡ΒΒΒΒΒΒΒ‰");
 	clanring_match_timer.nextthink = time + 0.5;
 	clanring_match_timer.think = match_show_pause;
 };
@@ -1947,7 +1947,7 @@ void() match_request_unpause =
 		if (self.style & CLANRING_ADMINISTRATOR)
 			match_start_timer ();
 		else
-		if (vote_init("σταςτ τθε τινες", "", match_start_timer))
+		if (vote_init("Γ³Γ΄Γ΅Γ²Γ΄Β Γ΄Γ¨Γ¥Β Γ΄Γ©Γ­Γ¥Γ²", "", match_start_timer))
 			vote_yes();
 
 		return;
@@ -1962,7 +1962,7 @@ void() match_request_unpause =
 	if (self.style & CLANRING_ADMINISTRATOR)
 		match_start_unpause_countdown ();
 	else
-	if (vote_init("υξπαυσε τθε νατγθ", "", match_start_unpause_countdown))
+	if (vote_init("ΓµΓ®Γ°Γ΅ΓµΓ³Γ¥Β Γ΄Γ¨Γ¥Β Γ­Γ΅Γ΄Γ£Γ¨", "", match_start_unpause_countdown))
 		vote_yes();
 };
 

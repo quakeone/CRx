@@ -432,6 +432,9 @@ void () clanring_init_world =
 		timelimit = (cvar("timelimit")*60);
 	}
 	else
+	if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_PRACTICE_MODE))
+		clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
+	else
 	if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_MATCH_MODE))
 	{
 		cvar_set("teamplay","1");		
@@ -764,7 +767,7 @@ void () clanring_show_mode =
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (teamplay)
-			sprint(self.owner, "match mode \b- help-match for help\n");
+			sprint(self.owner, "match mode\n");
 	}
 	else
 	{
@@ -1712,7 +1715,10 @@ void () clanring_impulse =
 			self.afk_time = time;
 		}		
 	}
-	else if (self.impulse >= 71 && self.impulse <= 81) {
+	else if (self.impulse == 70)
+			self.statstate = -1;
+	else if (self.impulse >= 71 && self.impulse <= 81) 
+	{
 		self.statstate = self.impulse - 71;
 		sprint(self, "Status bar set\n");
 	}
