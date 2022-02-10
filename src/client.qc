@@ -2367,3 +2367,27 @@ void(entity targ, entity attacker) ClientObituary =
 		}
 	}
 };
+
+void(string cmd) SV_ParseClientCommand =
+{
+    local float args;
+    local string arg0 = "";
+
+    args = tokenize(cmd);
+	if (args > 0)
+    	arg0 = argv(0);
+
+    switch (arg0)
+    {
+		case "dm":
+			votables_request_set_gametype(0);
+			return;
+    	case "ctf":
+			votables_request_set_gametype(1);
+			return;
+		default:
+		break;
+	}
+	clientcommand(self, cmd);
+	return;
+};

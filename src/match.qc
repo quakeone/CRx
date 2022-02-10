@@ -723,7 +723,7 @@ void () match_reset_powerup =
 //
 void() match_timer_think1 =
 {
-	local string temp, plural;
+	local string temp;
 
 	self.count -= 1;
 	if (self.count < 0)
@@ -791,9 +791,6 @@ void() match_timer_think1 =
 					
 					clanring_state = clanring_state | CLANRING_NULL_FLAG;
 				}
-				//temp = ftos(self.count);
-				//plural = strings_szplural(self.count);
-				//announce4("  ", temp, " second", plural);
 				if (self.count <= 3)
 					sound (world, CHAN_AUTO, "buttons/switch04.wav", 1, ATTN_NONE);
 				if (self.count == 1)

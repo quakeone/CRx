@@ -49,8 +49,8 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias normal impulse 217\n");
 	stuffcmd(self, "alias practice impulse 218\n");
 	stuffcmd(self, "alias match impulse 219\n");
-	stuffcmd(self, "alias dm impulse 220\n");//	same impulse for dm or ctf
-	stuffcmd(self, "alias ctf impulse 220\n");//	all it does is toggle the value...
+	stuffcmd(self, "alias dm cmd dm\n");
+	stuffcmd(self, "alias ctf cmd ctf\n");
 	// number aliases
 	stuffcmd(self, "alias 0 impulse 230\n");
 	stuffcmd(self, "alias 1 impulse 231\n");
@@ -193,7 +193,7 @@ void () votables_change_level =
 //
 //  Called when a player requests a new level.
 //
-void() votables_request_change_level =
+void(optional string requestmap = "") votables_request_change_level =
 {
 	local float level;
 	local string newmap;
@@ -212,8 +212,13 @@ void() votables_request_change_level =
 		return;
 	}
 
-	level = (self.warp_episode * 10) + (self.warp_map);//new r00k
-	newmap = warpmap[level].name;
+	if (requestmap == "")
+	{
+		level = (self.warp_episode * 10) + (self.warp_map);//new r00k
+		newmap = warpmap[level].name;
+	} else {
+		newmap = requestmap;
+	}
 	//clear warp_flags;
 	self.warp_episode=0;
 	self.warp_map=0;
@@ -450,29 +455,34 @@ void(float newmode) votables_request_set_mode =
 //  r00k: This flips the whole server into either CTF or TEAM-Deathmatch, 
 //  with sub-modes for each (match, normal, pmode)...
 //
-void(void) votables_set_gametype =
+void(void) votables_set_gametype_dm =
 {
-	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
-	{
-		clanring_playmode = (clanring_playmode | CLANRING_CAPTURE_THE_FLAG);
-		bprint("gametype set to Capture The Flag\n");
-	}
-	else
-	{
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
-		bprint("gametype set to Deathmatch\n");
-	}
+	bprint("gametype set to Deathmatch\n");
+
 	utils_set_cvar ("samelevel", clanring_playmode);
 
-	changelevel (mapname);	
+	changelevel ("dm3");	
+};
+
+void(void) votables_set_gametype_ctf =
+{
+	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
+		clanring_playmode = (clanring_playmode | CLANRING_CAPTURE_THE_FLAG);
+	bprint("gametype set to Capture The Flag\n");
+
+	utils_set_cvar ("samelevel", clanring_playmode);
+
+	changelevel ("ctf1");	
 };
 
 //
 //	V O T A B L E S  R E Q U E S T  S E T  G A M E T Y P E
 //
-//	r00k: Vote to change gametype to CTF or TDM
+//	r00k: Vote to change gametype to CTF (1) or TDM (0)
 //
-void(void) votables_request_set_gametype =
+void(float ctf) votables_request_set_gametype =
 {
 	if (clanring_state & CLANRING_MATCH_STARTED)
 	{
@@ -489,20 +499,38 @@ void(void) votables_request_set_gametype =
 	//If ya'll could pass my vote, thanks!
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
-		votables_set_gametype();
+		if (ctf)
+		{
+			votables_set_gametype_ctf();
+			
+		}
+		else
+		{
+			votables_set_gametype_dm();
+		}
 	}
 	else
 	{
-		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		if (!ctf)
 		{
-			if (vote_init("\bChange Gametype to \b","Team DeathMatch", votables_set_gametype))
+			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
+			{
+				sprint(self, "Already in DeathMatch mode\n");
+				return;
+			}
+			if (vote_init("\bChange Gametype to \b","Team DeathMatch", votables_set_gametype_dm))
 			{				
 				vote_yes();
 			}
 		}
 		else
 		{
-			if (vote_init("\bChange Gametype to \b","Capture The Flag", votables_set_gametype))
+			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			{
+				sprint(self, "Already in Capture The Flag mode\n");
+				return;
+			}
+			if (vote_init("\bChange Gametype to \b","Capture The Flag", votables_set_gametype_ctf))
 			{
 				vote_yes();
 			}
