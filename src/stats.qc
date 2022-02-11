@@ -52,7 +52,9 @@ void() stats_show_badstats =
 		sprint(self, "badstats valid in match mode only\n");
 		return;
 	}
-
+	sprint(self, "\n");
+	sprint(self, "\bbad stuff\n");
+	sprint(self, "\n");
 	sprint(self, "paks - number of RL paks given away\n");
 	sprint(self, "self - percent damage done to self\n");
 	sprint(self, "team - percent damage done to team\n");
@@ -87,6 +89,7 @@ void() stats_show_badstats =
 		sprint2(self, player.netname, "\n");
 		player = player.next_player;
 	}
+	sprint(self, "\n");
 };
 
 //
@@ -104,12 +107,8 @@ void() stats_show_quadstats =
 	else
 		useteams = FALSE;
 
-	sprint(self, "-Quad Stats-\n");
-	sprint(self, "quads - quads picked up\n");
-	sprint(self, "eff   - quad weapon efficiency\n");
-	sprint(self, "opp   - number of opponents killed\n");
-	sprint(self, "slf   - number of times killed self\n");
-	sprint(self, "tm    - number of teammates killed\n");
+	sprint(self, "\n");
+	sprint(self, "\bquad damage\b\n");
 	sprint(self, "\n");
 	sprint(self, "quadsüeffüoppüslfütm ü     name\n");
 	sprint(self, "­­­­­«­­­«­­­«­­­«­­­«­­­­­­­­­­­­­­­\n");
@@ -146,6 +145,7 @@ void() stats_show_quadstats =
 			pteam = player.next_team;
 		}
 	}
+	sprint(self, "\n");
 };
 
 void() stats_show_killstats =
@@ -155,13 +155,8 @@ void() stats_show_killstats =
 
 	c = 16;//Workaround for lag-out players corrupting the link list...
 
-	sprint(self, "-Kill Stats-\n");
-	sprint(self, "opp - number of opponents killed\n");
-	sprint(self, "slf - number of times killed self\n");
-	sprint(self, "tm  - number of teammates killed\n");
-	sprint(self, "kld - number of times killed by enemy\n");
-	sprint(self, "dtk - amount of damage taken\n");
-	sprint(self, "dgv - amount of damage given\n");
+	sprint(self, "\n");
+	sprint(self, "\bkills\b\n");
 	sprint(self, "\n");
 	sprint(self, "fragsüoppüslfütm ükldü dtk ü dgv ü     name\n");
 	sprint(self, "­­­­­«­­­«­­­«­­­«­­­«­­­­­«­­­­­«­­­­­­­­­­­­­­­\n");
@@ -199,6 +194,7 @@ void() stats_show_killstats =
 		player = player.next_player;
 		c -= 1;
 	}
+	sprint(self, "\n");
 };
 
 //
@@ -243,11 +239,6 @@ void () stats_show_efficiency =
     local entity player;
     local float tot_fired, tot_done;
 
-	sprint(self, "-Efficiency Stats-\n");
-	sprint(self, "bul - bullet efficiency\n");
-	sprint(self, "nls - nail efficiency\n");
-	sprint(self, "rox - rocket efficiency\n");
-	sprint(self, "lg  - lightning gun efficiency\n");
 	sprint(self, "\n");
 	sprint(self, "bulünlsüroxülg ütotalü     name\n");
 	sprint(self, "­­­«­­­«­­­«­­­«­­­­­«­­­­­­­­­­­­­­­\n");
@@ -268,9 +259,9 @@ void () stats_show_efficiency =
 			tot_done = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
 			if (player == self)
 			{
-				sprint(self, "\x90");
+				sprint(self, " ");
 				stats_print_percent3(tot_done, tot_fired);
-				sprint(self, "\x91");
+				sprint(self, " ü");
 			}
 			else
 			{
@@ -282,6 +273,7 @@ void () stats_show_efficiency =
 		}
 		player = find(player,classname, "player");
 	}
+	sprint(self, "\n");
 };
 
 //
@@ -300,16 +292,9 @@ void() stats_show_fstats =
 	else
 		useteams = FALSE;
 
-	sprint(self, "-Flag Stats-\n");
-	sprint(self, "flag \b-\b pickups\n");
-	sprint(self, "cap  \b-\b captures\n");
-	sprint(self, "def  \b-\b defenses\n");
-	sprint(self, "rtn  \b-\b returns\n");
-	sprint(self, "fcd  \b-\b carrier defenses\n");
-	sprint(self, "fca  \b-\b carrier assists\n");
-	sprint(self, "fck  \b-\b flag carriers killed\n");
-	sprint(self, "time \b-\b best capture time\n");
-	sprint(self, "­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­­\n");
+	sprint(self, "\n");
+	sprint(self, "\bctf related\b\n");
+	sprint(self, "\n");
 	sprint(self, "flag ücapüdefürtnüfcdüfcaüfckü  time  ü     name\n");
 	sprint(self, "­­­­­«­­­«­­­«­­­«­­­«­­­«­­­«­­­­­­­­«­­­­­­­­­­­­­­­\n");
 
@@ -384,9 +369,8 @@ void () stats_show_summary =
 	else
 		useteams = FALSE;
 
-	sprint(self, "-Stats Summary-\n");
-	sprint(self, "kill  - kill efficiency\n");
-	sprint(self, "weapn - weapon efficiency\n");
+	sprint(self, "\n");
+	sprint(self, "\befficiency\b\n");
 	sprint(self, "\n");
 	if (useteams)
 	{
@@ -431,6 +415,7 @@ void () stats_show_summary =
 		sprint2(self, player.netname, "\n");
 		player = player.next_player;
 	}
+	sprint(self, "\n");
 };
 
 //
@@ -480,6 +465,9 @@ void() stats_show_teamstats =
 		sprint(self, "Teamstats available to observers only\n");
 		return;
 	}
+	sprint(self, "\n");
+	sprint(self, "\bteam related\b\n");
+	sprint(self, "\n");
 	sprint(self, "          ");
 	pteam = clanring_sentinel.next_team;
 	while (pteam)
@@ -495,35 +483,35 @@ void() stats_show_teamstats =
 		sprint(self, "«­­­­­­­­");
 		pteam = pteam.next_team;
 	}
-	sprint(self, "\nQ˜˜˜ÒÉÎÇ");
+	sprint(self, "\nQ˜˜˜ring");
 	pteam = clanring_sentinel.next_team;
 	while (pteam)
 	{
 		stats_format_vector(pteam.dest2);
 		pteam = pteam.next_team;
 	}
-	sprint(self, "\nÒÌÌÇÇÌ  ");
+	sprint(self, "\nRLLGGL  ");
 	pteam = clanring_sentinel.next_team;
 	while (pteam)
 	{
 		stats_format_vector(pteam.dest1);
 		pteam = pteam.next_team;
 	}
-	sprint(self, "\nÓÎÇÎÇÍÈ ");
+	sprint(self, "\nSNGNGMH ");
 	pteam = clanring_sentinel.next_team;
 	while (pteam)
 	{
 		stats_format_vector(pteam.pos1);
 		pteam = pteam.next_team;
 	}
-	sprint(self, "\nÒÁÙÁÇÁ  ");
+	sprint(self, "\nRAYAGA  ");
 	pteam = clanring_sentinel.next_team;
 	while (pteam)
 	{
 		stats_format_vector(pteam.dest);
 		pteam = pteam.next_team;
 	}
-	sprint(self, "\nòìğáë «¯­ ");
+	sprint(self, "\nrlpak +/- ");
 	pteam = clanring_sentinel.next_team;
 	while (pteam)
 	{
@@ -539,7 +527,7 @@ void() stats_show_teamstats =
 		pteam = pteam.next_team;
 	}
 
-	sprint(self, "\n\bcontrol   ");
+	sprint(self, "\ncontrol   ");
 	pteam = clanring_sentinel.next_team;
 	while (pteam)
 	{
@@ -556,6 +544,7 @@ void() stats_show_teamstats =
 		pteam = pteam.next_team;
 	}
 	sprint(self, "\n");
+	sprint(self, "\n");
 };
 
 //
@@ -565,50 +554,49 @@ void() stats_show_teamstats =
 //
 void() stats_autodump =
 {
-	if (self.style & CLANRING_AUTOSTATS)
-	{
 		sprint(self, "\n");
-		sprint(self, "\bclanring match statisticsŸ\n");
+		sprint(self, "\n");
+		sprint(self, "\bmatch statisticsŸ\n");
 		sprint(self, "\n");
 		stats_show_summary ();
-		sprint(self, "\n");
+		//sprint(self, "\n");
+
+		stats_show_efficiency();
+		//sprint(self, "\n");
+
+		stats_show_killstats();
+		//sprint(self, "\n");
 
 		if (!(clanring_playmode & CLANRING_NO_QUAD))//R00k -added-
 		{
 			stats_show_quadstats ();
-			sprint(self, "\n");
+			//sprint(self, "\n");
 		}
 /*
 		if (!(clanring_playmode & CLANRING_NO_PENT))//R00k -TODO-
 		{
 			stats_show_pentstats ();
-			sprint(self, "\n");
+			//sprint(self, "\n");
 		}
 */
 		if ((clanring_playmode & CLANRING_MATCH_MODE) && (teamplay == 2))
 		{
 			stats_show_badstats();
-			sprint(self, "\n");
+			//sprint(self, "\n");
 		}
-
-		stats_show_efficiency();
-		sprint(self, "\n");
-
-		stats_show_killstats();
-		sprint(self, "\n");
 
 		if (teamplay)
 		{
 			stats_show_teamstats();
-			sprint(self, "\n");
+			//sprint(self, "\n");
 		}
 
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		{
 			stats_show_fstats();
-			sprint(self, "\n");
+			//sprint(self, "\n");
 		}
-	}
+		sprint(self, "\n");
 };
 
 //
@@ -616,15 +604,63 @@ void() stats_autodump =
 //
 void () stats_help =
 {
-	sprint(self, "Statistics commands:\n");
-	sprint(self, " stats      - summarize statistics\n");
-	sprint(self, " killstats  - list player kill stats\n");
-	sprint(self, " efficiency - list player efficiency\n");
-	sprint(self, " quadstats  - list player quad stats\n");
-	sprint(self, " badstats   - team game blunders\n");
-	sprint(self, " teamstats  - various team statistics\n");
-	sprint(self, " autostats  - automatically dump stats\n");
-	sprint(self, "              at the end of matches\n");
+	sprint(self, "\n");
+	sprint(self, "\bweapon efficiency\b\n");
+	sprint(self, "\n");
+	sprint(self, "bul - bullet efficiency\n");
+	sprint(self, "nls - nail efficiency\n");
+	sprint(self, "rox - rocket efficiency\n");
+	sprint(self, "lg  - lightning gun efficiency\n");
+
+	sprint(self, "\n");
+
+	sprint(self, "\n");
+	sprint(self, "\bkills\b\n");
+	sprint(self, "\n");
+	sprint(self, "opp - number of opponents killed\n");
+	sprint(self, "slf - number of times killed self\n");
+	sprint(self, "tm  - teammates killed\n");
+	sprint(self, "kld - times killed by enemy\n");
+	sprint(self, "dtk - damage taken\n");
+	sprint(self, "dgv - damage given\n");
+	
+
+	sprint(self, "\n");
+
+	sprint(self, "\n");
+	sprint(self, "\bquad damage\b\n");
+	sprint(self, "\n");
+	sprint(self, "quads - quads picked up\n");
+	sprint(self, "eff   - quad weapon efficiency\n");
+	sprint(self, "opp   - opponents killed\n");
+	sprint(self, "slf   - killed self\n");
+	sprint(self, "tm    - teammates killed\n");
+
+	sprint(self, "\n");
+
+	sprint(self, "\n");
+	sprint(self, "\bbad stuff\n");
+	sprint(self, "\n");
+	sprint(self, "paks - number of RL paks given away\n");
+	sprint(self, "self - percent damage done to self\n");
+	sprint(self, "team - percent damage done to team\n");
+	
+	sprint(self, "\n");
+
+	sprint(self, "\n");
+	sprint(self, "\bctf related\b\n");
+	sprint(self, "\n");
+	sprint(self, "flag - pickups\n");
+	sprint(self, "cap  - captures\n");
+	sprint(self, "def  - defenses\n");
+	sprint(self, "rtn  - returns\n");
+	sprint(self, "fcd  - carrier defenses\n");
+	sprint(self, "fca  - carrier assists\n");
+	sprint(self, "fck  - flag carriers killed\n");
+	sprint(self, "time - best capture time\n");
+
+	sprint(self, "\n");
+
 };
 
 //
@@ -636,7 +672,7 @@ void () stats_impulse =
 	{
 		case 170: stats_show_killstats();	break;	
 		case 171: stats_show_efficiency();	break;
-		case 172: stats_show_summary();		break;
+		case 172: stats_autodump();			break;
 		case 173: stats_show_quadstats();	break;
 		case 174: stats_show_badstats();	break;
 		case 175: stats_show_teamstats();	break;

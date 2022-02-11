@@ -1214,7 +1214,7 @@ void () clanring_commands =
 	sprint(self, " \bmodes\b      mode switch commands\n");
 	sprint(self, " \bgameplay\b   match/game variable commands\n");
 	sprint(self, " \bwatch\b      observer commands\n");
-	sprint(self, " \bstat\b       statistics commands\n");
+	sprint(self, " \bstats\b      match statistics\n");
 	sprint(self, " \bshortcuts\b  command shortcuts\n");
 	sprint(self, " \bmisc\b       miscellaneous commands\n");
 	sprint(self, " \bmodhelp\b    detailed commands usage\n");
@@ -1314,6 +1314,7 @@ void () modhelp_commands =
 		sprint(self, " \bhelp-misc\b\n");
 		sprint(self, " \bhelp-observer\b\n");
 		sprint(self, " \bhelp-server\b\n");
+		sprint(self, " \bhelp-stats\b\n");
 		sprint(self, " \bhelp-walk\b\n");
 		sprint(self, " \bvinfo\b\n");
 		sprint(self, "\n");
