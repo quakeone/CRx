@@ -479,7 +479,7 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 	if (newmode >= 0)
 	{
 		mode = strings_get_mode (newmode);
-		if ((newmode == options_get_mode()) && !(self.style & CLANRING_SETTING_OPTIONS))
+		if ((newmode == options_get_mode()) && !(self.style & CLANRING_SETTING_OPTIONS) && newtype < 0 && newmap == "")
 		{
 			if (self == world)
 				cprint3("Already in ", mode, " mode\n");
