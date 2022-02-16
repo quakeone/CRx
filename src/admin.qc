@@ -1243,6 +1243,7 @@ void() admin_auto_screenshot =
 //
 //  Called by elohim_impulse in Server.qc
 //
+// 217,218,219,220 unused
 
 void() admin_impulse =
 {
@@ -1251,8 +1252,6 @@ void() admin_impulse =
 		votables_init_warp(self.impulse - 190);
 	else if (self.impulse == 202)
 		votables_request_set_hook();
-	else if (self.impulse >= 217 && self.impulse <= 219)
-		votables_request_set_mode(self.impulse - 217);
 	else if (self.impulse == 210)
 		votables_request_set_autopause();
 	else if (self.impulse == 211)

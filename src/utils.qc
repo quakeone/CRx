@@ -1268,6 +1268,40 @@ vector (vector m1, vector m2) Rvec =
 	return  v;
 };
 
+// returns true if the maparg matches a name in the warp list
+float(string maparg) found_in_warp_list =
+{
+	local float ep_index, index, n, mapfound = FALSE;
+	for (ep_index = 1; ep_index < 10; ep_index += 1)
+	{
+		for (index = 1 ; index < 10 ; index += 1)
+		{
+			n = (ep_index * 10) + index;
+			if (warpmap[n].name != "" && warpmap[n].name == maparg)
+			{
+				mapfound = TRUE;
+				break;
+			}
+		}
+		if (mapfound)
+			break;
+	}
+	return mapfound;
+};
+
+// used to determine mode from client command
+float(string modearg) get_mode_from_string =
+{
+	if (modearg == "match")
+		return 2;
+	else if (modearg == "practice")
+		return 1;
+	else if (modearg == "normal")
+		return 0;
+	else
+		return -1;
+};
+
 //-------------------------------------------------------------------
 // PROQUAKE BUILT-IN FEATURES
 //-------------------------------------------------------------------

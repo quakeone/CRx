@@ -1683,7 +1683,7 @@ void(float command) console_command =
 		case 14:
 		case 15:
 		{
-			votables_request_set_mode(command - 12);
+			votables_request_set_gametype_mode_map(-1, command - 12, "");
 			break;
 		}
 		case 16: console_show_quadstats();	break;

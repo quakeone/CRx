@@ -891,7 +891,7 @@ void () options_finish_setting =
     if ((self.aflag & CLANRING_MODE_VOTE) != (clanring_playmode & CLANRING_MODE_VOTE))
 		utils_toggle_sflag(CLANRING_MODE_VOTE, "Mode voting"); // mode vote has changed
     if (self.pos1_z != mode)
-        votables_request_set_mode(self.pos1_z);
+        votables_request_set_gametype_mode_map(-1, self.pos1_z, "");
 
     self.style = self.style - CLANRING_SETTING_OPTIONS;
     self.style = self.style - (self.style & CLANRING_OK_TO_SHOOT);

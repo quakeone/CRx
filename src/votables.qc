@@ -12,6 +12,7 @@ float request_timelimit;    // Used for requesting a new time limit
 float request_overtime;		// Used for requesting a new overtime
 float request_gibs;         // Used to set gib level
 float request_mode;         // Used to request a new mode
+float request_gametype;		// Used to request a new game type
 
 void() UnHookPlayer;
 
@@ -46,9 +47,9 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias lowgibs impulse 226\n");
 	stuffcmd(self, "alias highgibs impulse 227\n");
 	// playmode aliases
-	stuffcmd(self, "alias normal impulse 217\n");
-	stuffcmd(self, "alias practice impulse 218\n");
-	stuffcmd(self, "alias match impulse 219\n");
+	stuffcmd(self, "alias normal cmd normal\n");
+	stuffcmd(self, "alias practice cmd practice\n");
+	stuffcmd(self, "alias match cmd match\n");
 	stuffcmd(self, "alias dm cmd dm\n");
 	stuffcmd(self, "alias ctf cmd ctf\n");
 	// number aliases
@@ -158,8 +159,6 @@ void() votables_request_set_hook =
 	}	
 };
 
-string request_mapname;
-
 //
 //  C H A N G E  L E V E L
 //
@@ -196,7 +195,7 @@ void () votables_change_level =
 void(optional string requestmap = "") votables_request_change_level =
 {
 	local float level;
-	local string newmap;
+	local string newmap = "";
 
 	self.use = SUB_Null;
 
@@ -245,7 +244,6 @@ void(optional string requestmap = "") votables_request_change_level =
 		request_mapname = newmap;
 		vote_yes();
 	}
-
 };
 
 
@@ -307,186 +305,144 @@ void() votables_phatten_player =
 };
 
 //
-//  S E T  M O D E
+// V O T A B L E S  S E T  G A M E T Y P E  M O D E  M A P
 //
-//  Called when a request to set the mode passes.
-//
-void() votables_set_mode =
+// Called when a request to set the gametype/mode/level passes.
+void() votables_set_gametype_mode_map =
 {
 	if (clanring_state & CLANRING_MATCH_STARTED)
 		return;
 
-	clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE));
-	
-	// Set the default timelimit if it was not set by options	
-	if (!(self.style & CLANRING_SETTING_OPTIONS) || (self.pos1_x != cvar ("timelimit")))
+	local string newmapname = mapname;
+	if (request_gametype >= 0)
 	{
-		if (request_mode == ADMIN_NORMAL_MODE)
+		if (request_gametype == 0)
 		{
-			utils_set_cvar("timelimit", clanring_timelimit);
-			
-			cvar_set("teamplay", "0");
-			
-			utils_do_players(votables_starve_player);//R00k ADDED, going from pmode to normal everyone has full inventory. (CVAR?)
-			clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
-		}
-		else
-		{
-			if (request_mode == ADMIN_PRACTICE_MODE)
-			{
-				cvar_set("timelimit", "0");
-				cvar_set("teamplay", "0");
-			}
-		}
-	}
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			bprint("gametype set to Deathmatch\n");
 
-	if (request_mode == ADMIN_PRACTICE_MODE)
-	{
-		cvar_set("timelimit", "0");
-		cvar_set("teamplay", "0");
-		clanring_playmode = clanring_playmode | CLANRING_PRACTICE_MODE;
-		utils_do_players(votables_phatten_player);
-	}
-	else
-	{
-		if (request_mode == ADMIN_MATCH_MODE)
-		{
-			clanring_playmode = clanring_playmode | CLANRING_MATCH_MODE;
-			utils_do_players(votables_starve_player);//R00k ADDED
-			utils_set_cvar("timelimit", clanring_timelimit);
-			
-			if (!(self.style & CLANRING_SETTING_OPTIONS))
-			{
-				if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-					cvar_set("teamplay", "1");//default for CTF
-				else
-					cvar_set("teamplay", "2");
-			}	
+			newmapname = "dm3";
 		}
 		else
+		{
+			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
+				clanring_playmode = clanring_playmode | CLANRING_CAPTURE_THE_FLAG;
+			bprint("gametype set to Capture The Flag\n");
+
+			newmapname = "ctf1";
+		}
+		utils_set_cvar ("samelevel", clanring_playmode);
+	}
+	if (request_mode >= 0)
+	{
+		clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE));
+		
+		// Set the default timelimit if it was not set by options	
+		if (!(self.style & CLANRING_SETTING_OPTIONS) || (self.pos1_x != cvar ("timelimit")))
 		{
 			if (request_mode == ADMIN_NORMAL_MODE)
 			{
 				utils_set_cvar("timelimit", clanring_timelimit);
+				
 				cvar_set("teamplay", "0");
-				utils_do_players(votables_starve_player);
+				
+				utils_do_players(votables_starve_player);//R00k ADDED, going from pmode to normal everyone has full inventory. (CVAR?)
 				clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
 			}
-		}
-	}
-
-	local string mode;
-	mode = strings_get_mode(request_mode);
-	announce3("playmode set to '", mode, "'");
-	utils_set_cvar("samelevel", clanring_playmode);
-	changelevel(mapname);
-};
-
-//
-//  R E Q U E S T  S E T  M O D E
-//
-//  Request to change to the mode indicated by 'newmode':
-//
-//      0   -   normal
-//      1   -   practice
-//      2   -   match
-//		3	-	individual
-//
-void(float newmode) votables_request_set_mode =
-{
-	local string mode;
-
-	if (clanring_levelcount != -1)
-	{
-		if (self == world)
-			cprint("Wait for levels.cfg to finish\n");
-		else
-			sprint(self, "Wait for map to initialize\n");
-		return;
-	}
-	mode = strings_get_mode (newmode);
-	if ((newmode == options_get_mode()) && !(self.style & CLANRING_SETTING_OPTIONS))
-	{
-		if (self == world)
-			cprint3("Already in ", mode, " mode\n");
-		else
-			sprint3(self, "Already in ", mode, " mode\n");
-		return;
-	}
-	mode = strings_get_mode_gold(newmode);
-	if (clanring_state & CLANRING_MATCH_STARTED)
-	{
-		if (self == world)
-			cprint("Cannot change mode while match is in progress\n");
-		else
-			sprint(self, "Match has started; cannot change mode\n");
-		return;
-	}
-	if (self.style & CLANRING_ADMINISTRATOR)
-	{
-		request_mode = newmode;
-		votables_set_mode();
-	}
-	else
-	{
-		if (!(clanring_playmode & CLANRING_MODE_VOTE))
-		{
-			sprint(self, "Mode voting has been disabled\n");
-		}
-		else
-		{
-			if ((newmode == 1) && (clanring_state & CLANRING_NO_PRACTICE))
-				sprint(self, "Practice mode has been disabled\n");
 			else
 			{
-				if (vote_init("γθαξηε νοδε το ", mode, votables_set_mode))
+				if (request_mode == ADMIN_PRACTICE_MODE)
 				{
-					request_mode = newmode;
-					vote_yes();
+					cvar_set("timelimit", "0");
+					cvar_set("teamplay", "0");
 				}
 			}
 		}
+
+		if (request_mode == ADMIN_PRACTICE_MODE)
+		{
+			cvar_set("timelimit", "0");
+			cvar_set("teamplay", "0");
+			clanring_playmode = clanring_playmode | CLANRING_PRACTICE_MODE;
+			utils_do_players(votables_phatten_player);
+		}
+		else
+		{
+			if (request_mode == ADMIN_MATCH_MODE)
+			{
+				clanring_playmode = clanring_playmode | CLANRING_MATCH_MODE;
+				utils_do_players(votables_starve_player);//R00k ADDED
+				utils_set_cvar("timelimit", clanring_timelimit);
+				
+				if (!(self.style & CLANRING_SETTING_OPTIONS))
+				{
+					if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+						cvar_set("teamplay", "1");//default for CTF
+					else
+						cvar_set("teamplay", "2");
+				}	
+			}
+			else
+			{
+				if (request_mode == ADMIN_NORMAL_MODE)
+				{
+					utils_set_cvar("timelimit", clanring_timelimit);
+					cvar_set("teamplay", "0");
+					utils_do_players(votables_starve_player);
+					clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
+				}
+			}
+		}
+
+		local string mode;
+		mode = strings_get_mode(request_mode);
+		announce3("playmode set to '", mode, "'");
+		utils_set_cvar("samelevel", clanring_playmode);
 	}
+	if (request_mapname != "")
+	{
+		utils_set_cvar("timelimit", clanring_timelimit);
+
+		if (request_mapname == "start0")
+		{
+			serverflags = 0;
+			newmapname = "start";
+		}
+		else if (request_mapname == "start1")
+		{
+			serverflags = 15;
+			newmapname = "start";
+		}
+		else
+		newmapname = request_mapname;
+	}
+
+	changelevel (newmapname);
 };
 
 //
-// V O T A B L E S  S E T  G A M E T Y P E
+// V O T A B L E S  R E Q U E S T  S E T  G A M E T Y P E  M O D E  M A P
 //
-//  r00k: This flips the whole server into either CTF or TEAM-Deathmatch, 
-//  with sub-modes for each (match, normal, pmode)...
+// newtype
+//     -1	-	no change
+//		0	-	dm
+//		1	-	ctf
 //
-void(void) votables_set_gametype_dm =
+// newmode
+//	   -1	-	no change
+//      0   -   normal
+//      1   -   practice
+//      2   -   match
+void(float newtype, float newmode, optional string newmap = "") votables_request_set_gametype_mode_map =
 {
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
-	bprint("gametype set to Deathmatch\n");
+	local string mode = "";
 
-	utils_set_cvar ("samelevel", clanring_playmode);
-
-	changelevel ("dm3");	
-};
-
-void(void) votables_set_gametype_ctf =
-{
-	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
-		clanring_playmode = (clanring_playmode | CLANRING_CAPTURE_THE_FLAG);
-	bprint("gametype set to Capture The Flag\n");
-
-	utils_set_cvar ("samelevel", clanring_playmode);
-
-	changelevel ("ctf1");	
-};
-
-//
-//	V O T A B L E S  R E Q U E S T  S E T  G A M E T Y P E
-//
-//	r00k: Vote to change gametype to CTF (1) or TDM (0)
-//
-void(float ctf) votables_request_set_gametype =
-{
 	if (clanring_state & CLANRING_MATCH_STARTED)
 	{
-		sprint(self, "Cannot change gametype while match is in progress\n");
+		if (self == world)
+			cprint("Cannot change map or mode while match is in progress\n");
+		else
+			sprint(self, "Match has started; cannot change map or mode\n");
 		return;
 	}
 
@@ -496,45 +452,134 @@ void(float ctf) votables_request_set_gametype =
 		return;//(REQUIRED for FTEsv)
 	}
 
+	if (clanring_levelcount != -1)
+	{
+		if (self == world)
+			cprint("Wait for levels.cfg to finish\n");
+		else
+			sprint(self, "Wait for map to initialize\n");
+		return;
+	}
+
+	if (newtype >= 0)
+	{
+		//if request is only to change to the game type we are already in
+		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in DeathMatch mode\n");
+			return;
+		}
+		if (newtype == 1 && clanring_playmode & CLANRING_CAPTURE_THE_FLAG && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in Capture The Flag mode\n");
+			return;
+		}
+	}
+
+	if (newmode >= 0)
+	{
+		mode = strings_get_mode (newmode);
+		if ((newmode == options_get_mode()) && !(self.style & CLANRING_SETTING_OPTIONS))
+		{
+			if (self == world)
+				cprint3("Already in ", mode, " mode\n");
+			else
+				sprint3(self, "Already in ", mode, " mode\n");
+			return;
+		}
+		mode = strings_get_mode_gold(newmode);
+		if (!(self.style & CLANRING_ADMINISTRATOR) && !(clanring_playmode & CLANRING_MODE_VOTE))
+		{
+			sprint(self, "Mode voting has been disabled\n");
+			return;
+		}
+		if ((request_mode == 1) && !(self.style & CLANRING_ADMINISTRATOR) && (clanring_state & CLANRING_NO_PRACTICE))
+		{
+			sprint(self, "Practice mode has been disabled\n");
+			return;
+		}
+	}
+
+	if (newmap != "")
+	{
+		self.use = SUB_Null;
+	}
+
+	//clear warp_flags;
+	self.warp_episode=0;
+	self.warp_map=0;
+	request_gametype = newtype;
+	request_mode = newmode;
+	request_mapname = newmap;
+
 	//If ya'll could pass my vote, thanks!
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
-		if (ctf)
-		{
-			votables_set_gametype_ctf();
-			
-		}
-		else
-		{
-			votables_set_gametype_dm();
-		}
+		votables_set_gametype_mode_map();
 	}
 	else
 	{
-		if (!ctf)
+		//start vote
+		local string gametype_string = "", mode_string = "", vote_title_string = "", vote_string = "";
+
+		if (request_gametype == 0)
 		{
-			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
+			vote_title_string = "\bChange Gametype to\b";
+			gametype_string = "Team DeathMatch";
+		}
+		else if (request_gametype == 1)
+		{
+			vote_title_string = "\bChange Gametype to\b";
+			gametype_string = "Capture The Flag";
+		}				
+
+		if (request_mode >= 0)
+		{
+			if (request_gametype < 0)
 			{
-				sprint(self, "Already in DeathMatch mode\n");
-				return;
+				vote_title_string = "\bChange Mode to\b";
+				mode_string = mode;
 			}
-			if (vote_init("\bChange Gametype to \b","Team DeathMatch", votables_set_gametype_dm))
-			{				
-				vote_yes();
+			else
+			{
+				mode_string = sprintf("%s %s", gametype_string, mode);
+			}
+		}
+
+		if (request_mapname != "")
+		{
+			if (request_gametype < 0 && request_mode < 0)
+			{
+				vote_title_string = "\bChange Map to\b";
+				vote_string = newmap;
+			}
+			else if (request_mode < 0)
+			{
+				vote_string = sprintf("%s on %s", gametype_string, newmap);
+			}
+			else
+			{
+				vote_string = sprintf("%s on %s", mode_string, newmap);
 			}
 		}
 		else
 		{
-			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			if (request_mode < 0)
 			{
-				sprint(self, "Already in Capture The Flag mode\n");
-				return;
+				vote_string = gametype_string;
 			}
-			if (vote_init("\bChange Gametype to \b","Capture The Flag", votables_set_gametype_ctf))
+			else
 			{
-				vote_yes();
+				vote_string = mode_string;
 			}
-		}				
+		}
+
+		vote_string = sprintf("%s", gametype_string);
+
+		if (vote_init(vote_title_string, vote_string, votables_set_gametype_mode_map))
+		{
+			vote_yes();
+		}
 	}
 };
 
