@@ -2376,33 +2376,130 @@ void(entity targ, entity attacker) ClientObituary =
 
 void(string cmd) SV_ParseClientCommand =
 {
-    local float args, ep_index, index, n;
-    local string arg0 = "";
+    local float args, modecmd;
+    local string arg0 = "", arg1 = "", arg2 = "";
 
     args = tokenize(cmd);
 	if (args > 0)
     	arg0 = argv(0);
+	if (args > 1)
+    	arg1 = argv(1);
+	if (args > 2)
+    	arg2 = argv(2);
 
     switch (arg0)
     {
 		case "dm":
-			votables_request_set_gametype(0);
-			return;
-    	case "ctf":
-			votables_request_set_gametype(1);
-			return;
-		default:
-			for (ep_index = 1; ep_index < 10; ep_index += 1)
+			if (arg2 != "")
 			{
-				for (index = 1 ; index < 10 ; index += 1)
+				modecmd = get_mode_from_string(arg1);
+				if (modecmd < 0)
 				{
-					n = (ep_index * 10) + index;
-					if (warpmap[n].name != "" && warpmap[n].name == arg0)
+					sprint2(self, arg1, " is not a recognized mode.\n");
+					return;
+				}
+
+				if (found_in_warp_list(arg2))
+					votables_request_set_gametype_mode_map(0, modecmd, arg2);
+				else
+					sprint2(self, arg2, " is not a recognized map.\n");
+				return;
+			}
+			else if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))
+				{
+					votables_request_set_gametype_mode_map(0, -1, arg1);
+				}
+				else
+				{
+					modecmd = get_mode_from_string(arg1);
+					if (modecmd < 0)
 					{
-						votables_request_change_level(arg0);
+						sprint2(self, arg1, " is not a recognized map or mode.\n");
 						return;
 					}
+					votables_request_set_gametype_mode_map(0, modecmd, "");
 				}
+				return;
+			}
+			votables_request_set_gametype_mode_map(0, -1, "");
+			return;
+    	case "ctf":
+			if (arg2 != "")
+			{
+				modecmd = get_mode_from_string(arg1);
+				if (modecmd < 0)
+				{
+					sprint2(self, arg1, " is not a recognized mode.\n");
+					return;
+				}
+
+				if (found_in_warp_list(arg2))
+					votables_request_set_gametype_mode_map(1, modecmd, arg2);
+				else
+					sprint2(self, arg2, " is not a recognized map.\n");
+				return;
+			}
+			else if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))
+				{
+					votables_request_set_gametype_mode_map(1, -1, arg1);
+				}
+				else
+				{
+					modecmd = get_mode_from_string(arg1);
+					if (modecmd < 0)
+					{
+						sprint2(self, arg1, " is not a recognized map or mode.\n");
+						return;
+					}
+					votables_request_set_gametype_mode_map(1, modecmd, "");
+				}
+				return;
+			}
+			votables_request_set_gametype_mode_map(1, -1, "");
+			return;
+		case "normal":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(-1, 0, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(-1, 0, "");
+			return;
+		case "practice":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(-1, 1, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(-1, 1, "");
+			return;
+		case "match":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(-1, 2, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(-1, 2, "");
+			return;
+		default:
+			if (found_in_warp_list(arg0))
+			{
+				//votables_request_change_level(arg0);
+				votables_request_set_gametype_mode_map(-1, -1, arg0);
+				return;
 			}
 			break;
 	}
