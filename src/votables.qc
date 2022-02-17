@@ -498,6 +498,7 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 			sprint(self, "Practice mode has been disabled\n");
 			return;
 		}
+		mode = strings_get_mode (newmode);
 	}
 
 	if (newmap != "")
@@ -524,57 +525,57 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 
 		if (request_gametype == 0)
 		{
-			vote_title_string = "\bChange Gametype to\b";
 			gametype_string = "Team DeathMatch";
 		}
 		else if (request_gametype == 1)
 		{
-			vote_title_string = "\bChange Gametype to\b";
 			gametype_string = "Capture The Flag";
 		}				
-
-		if (request_mode >= 0)
-		{
-			if (request_gametype < 0)
-			{
-				vote_title_string = "\bChange Mode to\b";
-				mode_string = mode;
-			}
-			else
-			{
-				mode_string = sprintf("%s %s", gametype_string, mode);
-			}
-		}
 
 		if (request_mapname != "")
 		{
 			if (request_gametype < 0 && request_mode < 0)
 			{
-				vote_title_string = "\bChange Map to\b";
+				vote_title_string = "\bChange Map to\b ";
 				vote_string = newmap;
 			}
 			else if (request_mode < 0)
 			{
-				vote_string = sprintf("%s on %s", gametype_string, newmap);
+				vote_title_string = "\bChange Gametype/Map to\b ";
+				vote_string = sprintf("%s \bon\b %s", gametype_string, newmap);
+			}
+			else if (request_gametype < 0)
+			{
+				vote_title_string = "\bChange Mode/Map to\b ";
+				vote_string = sprintf("%s \bon\b %s", mode, newmap);
 			}
 			else
 			{
-				vote_string = sprintf("%s on %s", mode_string, newmap);
+				vote_title_string = "\bChange Gametype/Mode/Map to\b ";
+				vote_string = sprintf("%s %s \bon\b %s", gametype_string, mode, newmap);
 			}
 		}
 		else
 		{
 			if (request_mode < 0)
 			{
+				vote_title_string = "\bChange Gametype to\b ";
 				vote_string = gametype_string;
 			}
 			else
 			{
-				vote_string = mode_string;
+				if (request_gametype < 0)
+				{
+					vote_title_string = "\bChange Mode to\b ";
+					vote_string = mode;
+				}
+				else
+				{
+					vote_title_string = "\bChange Gametype/Mode to\b ";
+					vote_string = sprintf("%s %s", gametype_string, mode);
+				}
 			}
 		}
-
-		vote_string = sprintf("%s", gametype_string);
 
 		if (vote_init(vote_title_string, vote_string, votables_set_gametype_mode_map))
 		{
