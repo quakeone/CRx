@@ -1718,16 +1718,17 @@ void() match_pause_player =
 //
 void() match_show_pause =
 {
-	WriteByte(MSG_ALL, SVC_CENTERPRINT);
-	WriteByte(MSG_ALL, 1);
-	WriteByte(MSG_ALL, 2);
-	WriteByte(MSG_ALL, 2);
-	WriteByte(MSG_ALL, 2);
-	WriteByte(MSG_ALL, 2);
-	WriteByte(MSG_ALL, 2);
-	WriteByte(MSG_ALL, 2);
-	WriteByte(MSG_ALL, 3);
-	WriteString(MSG_ALL, "\nÐÁÕÓÅÄ\n");
+    local entity oldself;
+
+    oldself = self;
+    self = find(world, classname, "player");
+    while (self)
+    {
+		centerprint(self,"\n\bPAUSED\b\n");
+        self = find(self, classname, "player");
+    }
+    self = oldself;
+
 	clanring_match_timer.nextthink = time + 0.5;
 	clanring_match_timer.think = match_show_pause;
 };

@@ -110,6 +110,9 @@ void() TeamCapturePlayerUpdate =
 	if (self.style & CLANRING_MOTD)//r00k v3.21
 		return;
 
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		return;
+
 	TeamCaptureCheckUpdate ();
 
 	self.laststattime = (time + PLAYERSTATTIME);
