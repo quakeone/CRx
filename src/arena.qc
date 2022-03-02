@@ -75,11 +75,12 @@ float () mode_is_arena
     return FALSE;
 }
 
-float (entity player) IS_CA_OBSERVER
+float (entity e) IS_CA_OBSERVER
 {
-    if (player.style & CLANRING_OBSERVER)
+     if ((e.style & CLANRING_OBSERVER) && (clanring_playmode & CLANRING_CA_MODE))
         return TRUE;
-    return FALSE;
+     else
+        return FALSE;
 }
   
 float (entity team1) number_teammates =
