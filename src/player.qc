@@ -680,6 +680,11 @@ void() PlayerDie =
 {
 	local float i;
 
+	if (mode_is_arena())
+	{
+		im_dead_now_what();
+	}
+
 	self.items 					= self.items - (self.items & (IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD| IT_SUPERHEALTH));	
 	self.invisible_finished 	= 0;
 	self.invincible_finished 	= 0;
@@ -691,7 +696,7 @@ void() PlayerDie =
 	if (self.items & IT_ROCKET_LAUNCHER)
 		quaketv_lost_rl (self);
 
-	if (deathmatch && !(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if (deathmatch && !(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
 	{
 		DropBackpack ();
 		TeamCaptureDropFlagOfPlayer (self, 0);		

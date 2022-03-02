@@ -225,8 +225,6 @@ void(optional string requestmap = "") votables_request_change_level =
 	if (newmap == "")
 	{
 		sprint(self, "Invalid level\n");
-		self.warp_episode=0;
-		self.warp_map=0;
 		return;
 	}
 
@@ -234,8 +232,6 @@ void(optional string requestmap = "") votables_request_change_level =
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
 		request_mapname = newmap;
-		self.warp_episode=0;
-		self.warp_map=0;
 		votables_change_level();
 	}
 	else
@@ -318,24 +314,47 @@ void() votables_set_gametype_mode_map =
 	{
 		if (request_gametype == 0)
 		{
-			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_CAPTURE_THE_FLAG | CLANRING_CA_MODE | CLANRING_RA_MODE));
 			bprint("gametype set to Deathmatch\n");
 
 			newmapname = "dm3";
 		}
-		else
+		else if (request_gametype == 1)
 		{
+			clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_CA_MODE | CLANRING_RA_MODE));
 			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 				clanring_playmode = clanring_playmode | CLANRING_CAPTURE_THE_FLAG;
 			bprint("gametype set to Capture The Flag\n");
 
 			newmapname = "ctf1";
 		}
+		else if (request_gametype == 2)
+		{
+			clanring_playmode = clanring_playmode - 
+				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_RA_MODE));
+			if (!(clanring_playmode & CLANRING_CA_MODE))
+				clanring_playmode = clanring_playmode | CLANRING_CA_MODE;
+			bprint("gametype set to Clan Arena X\n");
+
+			newmapname = "dm3";
+		}
+		else if (request_gametype == 3)
+		{
+			clanring_playmode = clanring_playmode - 
+				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_CA_MODE));
+			if (!(clanring_playmode & CLANRING_CA_MODE))
+				clanring_playmode = clanring_playmode | CLANRING_RA_MODE;
+			bprint("gametype set to Rocket Arena\n");
+
+			//newmapname = "dm3";
+		}
 		utils_set_cvar ("samelevel", clanring_playmode);
 	}
 	if (request_mode >= 0)
 	{
-		clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE));
+		// Changing playmode from RA or CA, changes gametype to DM
+		clanring_playmode = clanring_playmode - 
+			(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CA_MODE | CLANRING_RA_MODE));
 		
 		// Set the default timelimit if it was not set by options	
 		if (!(self.style & CLANRING_SETTING_OPTIONS) || (self.pos1_x != cvar ("timelimit")))
@@ -427,8 +446,10 @@ void() votables_set_gametype_mode_map =
 //     -1	-	no change
 //		0	-	dm
 //		1	-	ctf
+//		2	-	ca
+//		3	-	ra
 //
-// newmode
+// newmode		(dm/ctf)
 //	   -1	-	no change
 //      0   -   normal
 //      1   -   practice
@@ -472,6 +493,16 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		if (newtype == 1 && clanring_playmode & CLANRING_CAPTURE_THE_FLAG && newmode < 0 && newmap == "")
 		{
 			sprint(self, "Already in Capture The Flag mode\n");
+			return;
+		}
+		if (newtype == 2 && clanring_playmode & CLANRING_CA_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in Clan Arena X mode\n");
+			return;
+		}
+		if (newtype == 3 && clanring_playmode & CLANRING_RA_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in Rcoket Arena mode\n");
 			return;
 		}
 	}
@@ -530,7 +561,11 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		else if (request_gametype == 1)
 		{
 			gametype_string = "Capture The Flag";
-		}				
+		}
+		else if (request_gametype == 2)
+		{
+			gametype_string = "Clan Arena X";
+		}
 
 		if (request_mapname != "")
 		{

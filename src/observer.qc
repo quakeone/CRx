@@ -28,6 +28,7 @@ void () observer_set_demo_position;
 void () observer_heads_up;
 void () SetNewParms2;
 void () observer_get_target;
+void () observer_next_target;
 void () WaterMove;
 void () CheckWaterJump;
 void (entity player) match_remove_player;
@@ -175,6 +176,15 @@ void () observer_walk_start =
 	sprint(self, "walk mode\n");
 	//if (!(self.style & CLANRING_HEADS_UP))
 		//sprint(self, "type 'headsup' for fullscreen display\n");
+	if (mode_is_arena)
+	{
+		self.style = self.style - (self.style & CLANRING_MOTD);
+
+		if (clanring_playmode & CLANRING_CA_MODE)
+			motd_ca_start();
+		if (clanring_playmode & CLANRING_RA_MODE)
+			motd_ra_start();
+	}
 };
 
 //
@@ -328,6 +338,19 @@ void () observer_chase_start =
 //
 void () observer_demo_start =
 {
+	if (mode_is_arena())
+	{
+		if (boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
+		{		
+			return;
+		}
+
+		if ((self.movetarget == world) || (self.movetarget.ca_player_flag == PF_DEAD))
+		{
+			observer_next_target();
+		}
+	}
+
     if (!self.movetarget || self.movetarget.classname != "player")
     {
         // see if we can find a target to chase
@@ -467,6 +490,20 @@ void () observer_start =
 	stuffcmd(self, ";color 0;\n");
 	self.height = 0;// fixed observer color cheat?
 
+	if (mode_is_arena())
+	{
+		if (self.ca_player_flag == PF_DEAD)
+		{
+			observer_next_target();
+			observer_demo_start();
+		}
+		else
+		{
+			observer_walk_start();
+		}
+		return;
+	}
+
 	if (self.oflags & OBSERVER_FLY)
 		observer_fly_start();
 	else
@@ -510,9 +547,27 @@ void () observer_start =
 //
 void() observer_end =
 {
+	local string tmp = "";
+
 	if (!(self.style & CLANRING_OBSERVER))
 		return;
 
+	if (mode_is_arena())
+	{
+		self.team2 = self.next_team.team2;//reinit your team ownership
+		clear_name();
+		setcolour (self, self.team2,self.team2);
+		tmp = ftos (self.team2);
+		stuffcmd (self, "color ");
+		stuffcmd (self, tmp);
+		stuffcmd (self, "\n");
+
+		self.velocity = '0 0 0';//R00k 1.95
+		self.ca_player_flag = PF_PLAYING;
+		self.enemy = world;//R00k, v1.92
+		self.delay = 0;
+		self.wait = time;//11/6/2014 11:29AM
+	}
 	self.style 	= self.style - (self.style & CLANRING_OBSERVER);
 	self.dmg_tally = 0;
 	self.frags 	= 0;
@@ -522,7 +577,7 @@ void() observer_end =
 	stuffcmd(self, "v_centerspeed 500\n");
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 100\n");
-	if (!(clanring_playmode & CLANRING_MATCH_MODE))
+	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 	{
 		centerprint(self, "Observer mode off");
 		clanring_put_player_in_list();
@@ -647,17 +702,38 @@ entity (entity e) observer_find_target =
 //
 void () observer_next_target =
 {
+	if (mode_is_arena() && boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
+	{
+		observer_walk_start ();
+		return;
+	}
+
     self.movetarget = observer_find_target(self.movetarget);
+
+	if (mode_is_arena() && (self.movetarget == world))
+	{
+		observer_walk_start ();
+		return;
+	}
 
     // Force an immediate update of the heads-up display
     self.delay = 0;
     
-    if ((self.oflags & OBSERVER_DEMO) && (self.movetarget != world))
+	if ((mode_is_arena() == FALSE) || (mode_is_arena() && (self.movetarget.ca_player_flag == PF_PLAYING)))
 	{
-		msg_entity = self;
-		WriteByte(MSG_ONE, SVC_SETVIEWPORT);
-		WriteEntity(MSG_ONE, self.movetarget);
-		observer_set_demo_position();
+		if ((self.oflags & OBSERVER_DEMO) && (self.movetarget != world))
+		{
+			msg_entity = self;
+			WriteByte(MSG_ONE, SVC_SETVIEWPORT);
+			WriteEntity(MSG_ONE, self.movetarget);
+			observer_set_demo_position();
+		}
+	}
+
+	if (mode_is_arena())
+	{
+		sprint (self, "Tracking ", self.movetarget.netname, "\n");
+		centerprint (self,self.movetarget.netname);
 	}
 };
 
@@ -1730,12 +1806,15 @@ void () observer_post_think =
 {
 	if (!gameover)
 	{
-		if (self.oflags & OBSERVER_CHASE)
-			observer_set_chase_position();
-		else if (self.oflags & OBSERVER_DEMO)
-			observer_set_demo_position();
-		else if (self.oflags & OBSERVER_CAMERA)
-    		observer_set_camera_position();
+		if ((mode_is_arena() == FALSE) || (mode_is_arena() && self.movetarget.ca_player_flag == PF_PLAYING))
+		{
+			if (self.oflags & OBSERVER_CHASE)
+				observer_set_chase_position();
+			else if (self.oflags & OBSERVER_DEMO)
+				observer_set_demo_position();
+			else if (self.oflags & OBSERVER_CAMERA)
+				observer_set_camera_position();
+		}
     		
 		// When an observer touches a door they are not teleported through
 		// the door immediately as this doesn't seem to work.  Instead, the
@@ -1778,6 +1857,19 @@ void () observer_post_think =
 				}
 			}
 		}
+		else
+		if ((clanring_playmode & CLANRING_CA_MODE) && self.impulse >= 1 && self.impulse <= 5)
+		{
+			if (boss.state != CA_MATCH_CLEANUP)
+			{
+				Teamplay_Select_Team ();
+			}
+			else
+			{
+				sprint (self, "Match has ended, you may not join at this time.\n");
+			}
+		}
+		else
         if ((self.impulse >= 20) && (self.impulse <= 250))
             clanring_impulse ();
     }

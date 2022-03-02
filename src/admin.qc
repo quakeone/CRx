@@ -1300,7 +1300,15 @@ void() admin_impulse =
 	else if (self.impulse == 213)
 		admin_start_kick ();
 	else if (self.impulse == 214)
-		match_end ();
+    {
+        if (mode_is_arena())
+        {
+            boss.aborted = TRUE;
+            arena_match_end();
+        }
+        else
+            match_end();
+    }
 	else if (self.impulse == 224)
 		utils_toggle_sflag (CLANRING_NO_SPOOGE, "Safe practice mode");
 	else if (self.impulse == 228)

@@ -17,6 +17,8 @@ warp.qc
 angles.qc
 server.qc
 ctf.qc
+arena.qc
+ra.qc
 stats.qc
 teamplay.qc
 score.qc

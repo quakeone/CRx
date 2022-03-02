@@ -285,6 +285,16 @@ void () clear_name =
 		updatename(self,self.netname);		
 };
 
+void (entity who) wait_name =
+{
+	local string text;
+
+	text = " \bwaiting\b";
+	who.name_ready = strpad(16, who.netname);
+	who.name_ready = strcat (who.name_ready, text);
+	updatename(who,who.name_ready);
+};
+
 void () ready_name =
 {		
 	local string text;
@@ -1022,6 +1032,29 @@ void (void () dofunc) utils_do_flags =
 	utils_do_item(dofunc, "item_flag_team2");
 };
 
+void () reset_frags =
+{
+	if (self.next_team == world)
+		self.frags = -99;
+	else
+		self.frags = 0;
+};
+
+void (void () dofunc) utils_do_arena_players =
+{
+	local entity oldself;
+
+	oldself = self;
+	self = find(world, classname, "player");
+	while (self)
+	{
+		if ((self.style & CLANRING_CONNECTED) && (self.next_team))
+			dofunc ();
+		self = find(self, classname, "player");
+	}
+	self = oldself;
+};
+
 //
 //  D O  P L A Y E R S
 //
@@ -1236,22 +1269,22 @@ float (string cname) utils_illegal_name =
 	else return FALSE;
 };
 
-entity (float whichteam) find_team_entity =
-{
-	local entity e;
+// entity (float whichteam) find_team_entity =
+// {
+// 	local entity e;
 	
-	e = clanring_sentinel.next_team;
+// 	e = clanring_sentinel.next_team;
 
-	while (e)
-	{
-		if (e.height == whichteam)
-		{
-			return e;
-		}
-		e = e.next_team;
-	}
-	return world;
-};
+// 	while (e)
+// 	{
+// 		if (e.height == whichteam)
+// 		{
+// 			return e;
+// 		}
+// 		e = e.next_team;
+// 	}
+// 	return world;
+// };
 
 //Returns a random vector bewteen m1 and m2
 

@@ -63,6 +63,18 @@ float() crandom =
 	return 2*(random() - 0.5);
 };
 
+void () Practice_Object_Remove =
+{
+	local entity e;
+	
+	e = find (world, classname, "practice_object");
+		
+	if (e != world)
+	{
+		remove (e);
+	}
+};
+
 /*
 ================
 W_FireAxe
@@ -581,6 +593,18 @@ void() W_FireLightning =
 	local	vector		org;
 	local	float		cells;
 
+	if (self.delayed_impulse)
+	{
+		self.impulse = self.delayed_impulse;
+
+		if ((self.impulse >= 1 && self.impulse <= 8))
+		{
+			self.delayed_impulse = 0;
+			W_ChangeWeapon ();
+			return;
+		}
+	}
+
 	if (self.ammo_cells < 1)
 	{
 		self.weapon = W_BestWeapon ();
@@ -780,6 +804,18 @@ void() W_FireSuperSpikes =
 	local vector	dir;
 //	local entity	old;
 
+	if (self.delayed_impulse)
+	{
+		self.impulse = self.delayed_impulse;
+
+		if ((self.impulse >= 1 && self.impulse <= 8))
+		{
+			self.delayed_impulse = 0;
+			W_ChangeWeapon ();
+			return;
+		}
+	}
+
 	sound (self, CHAN_WEAPON, "weapons/spike2.wav", 1, ATTN_NORM);
 	self.attack_finished = time + 0.2;
 	
@@ -817,6 +853,18 @@ void(float ox) W_FireSpikes =
 {
 	local vector	dir;
 //	local entity	old;
+
+	if (self.delayed_impulse)
+	{
+		self.impulse = self.delayed_impulse;
+
+		if ((self.impulse >= 1 && self.impulse <= 8))
+		{
+			self.delayed_impulse = 0;
+			W_ChangeWeapon ();
+			return;
+		}
+	}
 
 	makevectors (self.v_angle);
 
@@ -1561,6 +1609,12 @@ void() W_WeaponFrame =
 		ImpulseCommands ();
 	}
 	// END_MOD
+
+	if (self.deadflag)
+		return;
+	
+	if (((clanring_playmode & CLANRING_CA_MODE) && (boss.timetofight == FALSE)))
+		return;
 
 // check for attack
     // ELOHIM_MOD - don't fire unless ELOHIM_OK_TO_SHOOT is set

@@ -223,6 +223,7 @@ void () observer_impulse;
 void () observer_help;
 void () observer_find_teleport;
 void () observer_check_size;
+void (float response) arena_observer_confirm_leave_response;
 void (float response) observer_confirm_leave_response;
 void () match_show_timelimit;
 void () match_impulse;
@@ -255,6 +256,11 @@ void () stat_commands;
 void () misc_commands;
 void () modhelp_commands;
 void () shortcuts_commands;
+float () mode_is_arena;
+void () arena_init_world;
+void () rocket_arena_init_world;
+void () arena_main_loop;
+void () arena_precache;
 
 //
 // C L E A R   A F K   S T A T U S
@@ -447,6 +453,17 @@ void () clanring_init_world =
 	mode = options_get_mode();
 	szmode = strings_get_mode(mode);
 	cprint2(szmode, " mode\n");
+
+	if (mode_is_arena())
+	{
+		arena_precache();
+		utils_do_items(SUB_Remove);
+
+		if (clanring_playmode & CLANRING_CA_MODE)
+			arena_init_world();
+		// else if (clanring_playmode & CLANRING_RA_MODE)
+		// 	rocket_arena_init_world();
+	}
 
 	// schedule the config files for a bit later so that they don't
 	// get loaded twice on startup
@@ -980,6 +997,17 @@ void () clanring_client_connect =
 	self.hack_timeout = 0;//Timer for bot scan
 		
     parm10 = parm10 - (parm10 & (CLANRING_READY | CLANRING_KICK_CONFIRM | CLANRING_MOTD | CLANRING_SETTING_OPTIONS | CLANRING_SCOREBOARD | CLANRING_CONFIRM_LEAVE));
+
+	if (mode_is_arena())
+	{
+		self.team2	     = TEAM_SPECTATOR;
+		self.next_team	     = world;
+		self.frags           = 0;
+		self.trigger_field   = world;
+		self.skin	     = 0;
+		self.afk_time 	     = time;
+		self.ca_player_flag     = PF_WAITING;
+	}
 };
 
 //
@@ -1013,6 +1041,27 @@ void () clanring_client_disconnect =
 	{
 		score_client_disconnect();
 		match_disconnect_notify(self);
+	}
+	else if (mode_is_arena())
+	{
+		self.team2    		= TEAM_SPECTATOR;
+		self.frags          	= 0;
+		//self.lagtimer    	= -30;
+		self.state          	= 0;	
+		self.classname 		= string_null;
+		//self.myip		= string_null;
+		self.trueip		= string_null;
+		self.takedamage 	= DAMAGE_NO;
+		self.afk_time		= time;
+		self.cc_queue 		= 0;//R00k
+		self.cc_queue_vote	= 0;//R00k
+		
+		admin_disconnect_notify (self);
+		observer_disconnect_notify (self);
+
+		self.ca_player_flag	= PF_WAITING;//v1.97
+		self.nextthink		= -1;
+		self.think		= SUB_Null;	
 	}
 	else
 		clanring_remove_player_from_list();
@@ -1075,6 +1124,11 @@ void () clanring_put_client_in_server =
 
 	utils_make_scheduled_event(clanring_bf_think, 0.1);
 
+	if ((mode_is_arena()) && ((self.ca_player_flag == PF_WAITING) || (self.ca_player_flag == PF_DEAD)) || ((boss.state == CA_MATCH_WAITING)))
+	{
+		observer_start();
+		return;
+	}
 	if ((self.style & CLANRING_OBSERVER) || (self.oflags & OBSERVER_QUAKETV) || ((clanring_playmode & CLANRING_MATCH_MODE) && !(self.style & CLANRING_READY)))
 	{
 		observer_start ();
@@ -1100,6 +1154,13 @@ void () clanring_put_client_in_server =
 		{	
 			if (self.team == RED)  self.skin = 1;				
 			if (self.team == BLUE) self.skin = 3;								
+		}
+
+		if (mode_is_arena())
+		{
+			self.cc_queue	= 0;//R00k - test		
+			self.cc_queue_vote	= 0;//R00k - test
+			self.ca_player_flag 	= PF_PLAYING;
 		}
 
 		UnHookPlayer();
@@ -1815,7 +1876,12 @@ void () clanring_impulse =
         else
         {
             if (self.style & CLANRING_CONFIRM_LEAVE)
-                observer_confirm_leave_response ((116 - self.impulse));
+			{
+				if (mode_is_arena())
+					arena_observer_confirm_leave_response((116 - self.impulse));
+				else
+                	observer_confirm_leave_response ((116 - self.impulse));
+			}
             else
                 vote_impulse ();
         }
@@ -2030,7 +2096,17 @@ void () clanring_start_frame =
 	{
 		if (sys_ready)
 		{
-			if (!(clanring_playmode & CLANRING_MATCH_MODE))
+			if (clanring_playmode & CLANRING_CA_MODE)
+			{
+				if (time >= clanring_rulescheck)
+				{
+					if (boss != world)
+						arena_main_loop();
+
+					clanring_rulescheck = (time + 1);
+				}
+			}
+			else if (!(clanring_playmode & CLANRING_MATCH_MODE))
 			{
 				if (timelimit)
 				{

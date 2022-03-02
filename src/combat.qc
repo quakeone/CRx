@@ -232,6 +232,25 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	
 	if (clanring_state & CLANRING_MATCH_PAUSED) return;
 
+	if (mode_is_arena())
+	{
+		if ((inflictor.classname == "teledeath") && (timetofight == FALSE)) //This is here for pre-game spawn's tdeath_touch to push the player out of the way...
+		{
+			if (targ.classname == "player")
+			{
+				makevectors(targ.v_angle);
+				targ.velocity = (targ.velocity + ((v_forward * 320) * 8));
+				inflictor.owner.velocity = (inflictor.owner.velocity - ((v_forward * 320 ) * 8));
+			}
+			return;
+		}
+
+		if (boss.timetofight == FALSE)
+		{
+			return;
+		}
+	}
+
 	if ((targ.plag)&&(attacker.classname=="player"))
 	{
 		centerprint(attacker,"\bClanring\b Lag Protection \bActivated");
@@ -356,6 +375,10 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				}
 			}
 		}
+		else if ((clanring_playmode & CLANRING_CA_MODE) && (targ.team > 0)&&(targ.team == attacker.team))
+		{
+			teamdamage = FALSE;
+		}
 	}
 	
 	if (attacker.player_flag & ITEM_RUNE2_FLAG)
@@ -437,6 +460,12 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		targ.velocity = targ.velocity + dir*damage*8;
 	}
 
+	//no self or team damage in CA
+	if ((clanring_playmode & CLANRING_CA_MODE) && (targ.team > 0)&&(targ.team == attacker.team))
+	{
+        return;
+	}
+
 	// *XXX* EXPERT CTF mark players who hurt the flag carrier, so they are worth more points for a while.
 	if ((attacker.classname == "player") && (targ.flag_carrier) && (attacker.team != targ.team))
 	{
@@ -506,6 +535,18 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	{
 		targ.dmg_taken = targ.dmg_taken + save + overkill;
 		attacker.dmg_given = attacker.dmg_given + save + overkill;
+
+		if (mode_is_arena())
+		{
+			attacker.dmg_given_round = (attacker.dmg_given_round + (save + overkill));
+			attacker.dmg_cache = (attacker.dmg_cache + (save + overkill));
+			
+			while (attacker.dmg_cache >= (boss.health + boss.armorvalue))
+			{
+				attacker.frags = attacker.frags + 1; //give player point for max damage+cache
+				attacker.dmg_cache = (attacker.dmg_cache - (boss.health + boss.armorvalue));//leftover damage carries over
+			}
+		}
 	}
 	
 	// do the damage

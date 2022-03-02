@@ -6,8 +6,16 @@
 //
 // All code by J.P. Grossman unless otherwise commented.
 //
+float (entity team1) number_teammates;
+entity (float whichteam) find_team_entity;
+
 string motd_top1;
 string motd_top2;
+string motd_top3;
+string motd_top4;
+string motd_top5;
+string motd_top6;
+string motd_top7;
 
 //
 //  I N I T  W O R L D
@@ -89,4 +97,82 @@ void() motd_create =
 	intro.count = 0;
 	intro.cnt = 0;
 	intro.lip = 0;
+};
+
+void () motd_end =
+{
+	self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
+	remove (self);
+};
+
+void ()motd_print =
+{	
+	if (self.style & CLANRING_AFK_CLIENT)
+		return;//R00k v1.95 save some bandwidth...
+
+	if ((!(self.style & CLANRING_CONNECTED)) || (clanring_state & CLANRING_MATCH_PAUSED))//this deters overflow buffer errors
+		return;
+		
+	if (intermission_running)
+		return;
+
+	if (self.ca_player_flag == PF_PLAYING) //R00k: 6/12/2017 9:50AM (airshot practice)
+		return;
+
+	//R00k: is this used anymore??
+	if ((boss.state == CA_MATCH_WAITING) && (self.next_team != world))
+	{		
+		centerprint7 (self, motd_top1, motd_top2, motd_top3, motd_top4, motd_top5, motd_top6, motd_top7);
+		return;
+	}
+	
+	if ((!(self.style & OBSERVER_WALK)) || (self.next_team != world))
+	{
+		self.style = self.style - (self.style & CLANRING_MOTD);
+		return;
+	}
+	
+	centerprint7 (self, motd_top1, motd_top2, motd_top3, motd_top4, motd_top5, motd_top6, motd_top7);
+};
+
+void ()motd_ca_start =
+{
+	if (self.style & CLANRING_AFK_CLIENT)
+		return;//R00k v1.95 save some bandwidth...
+		
+	if (self.style & CLANRING_MOTD || (!(self.style & CLANRING_CONNECTED)) || clanring_state & CLANRING_MATCH_PAUSED)
+		return;	
+	
+	motd_top1 = "\x80\x81\x81\x81\x81\x81 ClanArena X \x81\x81\x81\x81\x81\x82\n";
+	motd_top7 = "\n\n\n\n";
+
+	if (clanring_playmode & CLANRING_CA_MODE)
+	{
+		motd_top2 = "\n\x85Competition\x85\n\n";
+		motd_top3 = "\nchoose a team\n\n";
+		motd_top4 = "\x13 blue   \n\x14 red    \n\x15 yellow \n\x16 green  \n\npress \x17 to uncommit from team\n";
+	}	
+
+	self.style = self.style | CLANRING_MOTD;
+};
+
+void ()motd_ra_start =
+{
+	if (self.style & CLANRING_AFK_CLIENT)
+		return;//R00k v1.95 save some bandwidth...
+		
+	if (self.style & CLANRING_MOTD || (!(self.style & CLANRING_CONNECTED)) || clanring_state & CLANRING_MATCH_PAUSED)
+		return;	
+	
+	motd_top1 = "\x80\x81\x81\x81\x81\x81 Rocket Arena \x81\x81\x81\x81\x81\x82\n";
+	motd_top7 = "\n\n\n\n";
+
+	if (clanring_playmode & CLANRING_RA_MODE)
+	{
+		motd_top2 = "\n\x85Competition\x85\n\n";
+		motd_top3 = "\n1 to join\n\n";
+		motd_top4 = "\n2 to ????\n";
+	}	
+
+	self.style = self.style | CLANRING_MOTD;
 };

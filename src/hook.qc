@@ -39,14 +39,14 @@ void() HookVanish =
 
 void() UnHookPlayer =
 {
-	local entity unhook_self;
+	local entity oself;
 
 	if (self.hook_out)
 	{
-		unhook_self = self;
+		oself = self;
 		self = self.hookentity;
 		HookVanish ();
-		self = unhook_self;
+		self = oself;
 	}
 };
 
@@ -149,17 +149,10 @@ void() HookPull =
 	if (hookspeedpull < 600)
 		hookspeedpull = 850;
 
+	if (v <= 100)
+			vel = normalize(vel) * v * 10;  
 	if ( v > 100 )
-	{
-		vel = (normalize(vel) * hookspeedpull);
-	}
-	else
-	{
-		if (v <= 100)
-		{			
-				vel = ((normalize(vel) * v) * 10);
-		}
-	}
+			vel = normalize(vel) * hookspeedpull;  
 
 	self.owner.velocity = vel;
 	

@@ -82,6 +82,8 @@ float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
 //float UNUSED			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
+float CLANRING_CA_MODE				= 4194304;
+float CLANRING_RA_MODE				= 8388608;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
@@ -394,3 +396,69 @@ typedef struct
 servermap_t warpmap[200];
 
 string warpmenutop[11]; // Customizable map categories for the warp menu contents.
+
+
+//Arena
+entity boss;
+
+.float dmg_given;
+.float dmg_given_round;
+.float dmg_cache;
+.float round;
+.float max_rounds;
+.float max_players;
+.float start_players;
+.float ca_player_flag;
+
+.float busy;
+.float aborted;
+.float forced;
+.float unpausing;
+.float allready;
+.float timetofight;
+.float maprecycle;
+.float weaponlevel;
+.float motd_delay;
+
+.entity chain_gang;
+
+.entity next_player;
+.entity next_team;
+.float team2;
+//.float killed;
+.float wins;
+.float losses;
+.vector old_velocity;	// for pause
+.float cc_queue;
+.float cc_queue_vote;
+
+entity team_first_place;
+entity team_second_place;
+entity team_third_place;
+entity ca_mvp_entity;
+
+float clanring_rulescheck;
+.float max_teams;
+
+float COLOR_BLUE = 13;
+float COLOR_RED = 4;
+float COLOR_YELLOW = 12;
+float COLOR_GREEN = 3;
+
+float TEAM_BLUE = 14;
+float TEAM_RED = 5;
+float TEAM_YELLOW = 13;
+float TEAM_GREEN = 4;
+
+float PF_WAITING = 1;
+float PF_DEAD = 2;
+float PF_READY = 3;
+float PF_PLAYING = 4;
+
+float TEAM_SPECTATOR = 0;
+
+float CA_MATCH_WAITING = 1;
+float CA_MATCH_ROUNDSTART = 2;
+float CA_MATCH_PLAYING = 3;
+float CA_MATCH_OVER = 4;
+float CA_MATCH_CLEANUP = 5;

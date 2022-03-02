@@ -482,6 +482,16 @@ string (float num) strings_get_teamname_up_by =
 };
 
 //
+//  G E T  T E A M N A M E  U P  B Y
+//
+//  Return the "colour up by " string corresponding to a given team.
+//
+string (float num) strings_get_teamname_leads_by =
+{
+	return strpad(-20, strcat(strtrim(strings_get_teamname2(num)), " leads by "));
+};
+
+//
 //  G E T  M A P N A M E
 //
 //  Return the nth map name.
