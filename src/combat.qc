@@ -473,7 +473,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	}
 
 	// ELOHIM_MOD - print info for practice mode; check for pre-match
-	if (clanring_playmode & CLANRING_PRACTICE_MODE)
+	if ((clanring_playmode & CLANRING_PRACTICE_MODE) || (clanring_playmode & CLANRING_CA_MODE))
 	{
 		if (targ.classname == "player" && attacker.classname == "player" && targ != attacker)
 		{

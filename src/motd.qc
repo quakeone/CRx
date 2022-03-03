@@ -126,7 +126,7 @@ void ()motd_print =
 		return;
 	}
 	
-	if ((!(self.style & OBSERVER_WALK)) || (self.next_team != world))
+	if ((!(self.oflags & OBSERVER_WALK)) || (self.next_team != world))
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
 		return;

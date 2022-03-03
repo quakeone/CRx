@@ -1299,8 +1299,6 @@ void() PlayerPreThink =
 			}
 		}
 
-		motd_print ();
-
 		if (self.style & CLANRING_MOTD && self.motd_delay < time)
 		{
 			if (self.plag == FALSE)
@@ -1794,10 +1792,6 @@ void() PlayerPostThink =
 			}
 		}
 	}
-
-	if (mode_is_arena())
-		if (self.lip > 0)
-			self.lip = (self.lip - 1);
 
 	CheckPowerups ();
 

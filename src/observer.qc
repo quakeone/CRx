@@ -1821,9 +1821,9 @@ void () observer_post_think =
 		// POP_FORWARD flag is set and they are teleported through the next
 		// time observer_post_think is called.
 		//
-		if (self.style & OBSERVER_POP_FORWARD)
+		if (self.oflags & OBSERVER_POP_FORWARD)
 		{
-			self.style = self.style - OBSERVER_POP_FORWARD;
+			self.oflags = self.oflags - OBSERVER_POP_FORWARD;
 			setorigin(self, self.dest);
 			self.velocity = self.dest1;
 		}
@@ -1869,7 +1869,7 @@ void () observer_post_think =
 				sprint (self, "Match has ended, you may not join at this time.\n");
 			}
 		}
-		else
+
         if ((self.impulse >= 20) && (self.impulse <= 250))
             clanring_impulse ();
     }
@@ -1897,7 +1897,7 @@ void () observer_door_touch =
     other.dest = other.dest * (temp / vlen(other.dest));
     other.dest = other.origin + other.dest;
     if (pointcontents(other.dest) != CONTENT_SOLID)
-        other.style = other.style | OBSERVER_POP_FORWARD;
+        other.oflags = other.oflags | OBSERVER_POP_FORWARD;
 };
 
 //

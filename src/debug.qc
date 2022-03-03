@@ -258,8 +258,8 @@ void() debug_client_flags =
         sprint(self, "CLANRING_ADMINISTRATOR\n");
 /*   	if (self.movetarget.style & CRMOD_DETECTING_QSMACK)	// CRMOD was SMOOTH
 		sprint(self, "CRMOD_DETECTING_QSMACK\n");					// CRMOD was SMOOTH*/
-	if (self.movetarget.style & OBSERVER_POP_FORWARD)
-        sprint(self, "CLANRING_POP_FORWARD\n");
+	if (self.movetarget.oflags & OBSERVER_POP_FORWARD)
+        sprint(self, "OBSERVER_POP_FORWARD\n");
     if (self.movetarget.style & CLANRING_READY)
         sprint(self, "CLANRING_READY\n");
     if (self.movetarget.style & CLANRING_YES)

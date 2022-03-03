@@ -52,6 +52,8 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias match cmd match\n");
 	stuffcmd(self, "alias dm cmd dm\n");
 	stuffcmd(self, "alias ctf cmd ctf\n");
+	stuffcmd(self, "alias ca cmd ca\n");
+	stuffcmd(self, "alias ra cmd ra\n");
 	// number aliases
 	stuffcmd(self, "alias 0 impulse 230\n");
 	stuffcmd(self, "alias 1 impulse 231\n");
