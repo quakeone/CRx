@@ -1729,7 +1729,7 @@ void() match_show_pause =
     }
     self = oldself;
 
-	clanring_match_timer.nextthink = time + 0.5;
+	clanring_match_timer.nextthink = time + 1.5;
 	clanring_match_timer.think = match_show_pause;
 };
 
@@ -1740,6 +1740,11 @@ void() match_show_pause =
 //
 void() match_pause =
 {
+	if (mode_is_arena())
+	{
+		arena_pause();
+		return;
+	}
 	if (!(clanring_state & CLANRING_MATCH_STARTED) || (clanring_state & CLANRING_MATCH_PAUSED))
 		return;
 
@@ -1767,10 +1772,13 @@ void() match_pause =
 //
 void() match_request_pause =
 {
-	if (!(clanring_state & CLANRING_MATCH_STARTED))
+	if (!(mode_is_arena()))
 	{
-		sprint(self, "No match in progress\n");
-		return;
+		if (!(clanring_state & CLANRING_MATCH_STARTED))
+		{
+			sprint(self, "No match in progress\n");
+			return;
+		}
 	}
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 	{
@@ -1903,8 +1911,15 @@ void() match_unpause_countdown_think =
 //
 //  S T A R T  U N P A U S E  C O U N T D O W N
 //
+
 void() match_start_unpause_countdown =
 {
+	if (mode_is_arena())
+	{
+		arena_start_unpause_countdown();
+		return;
+	}
+
 	local entity countdown;
 
 	if (clanring_state & CLANRING_UNPAUSING)
@@ -1927,6 +1942,7 @@ void() match_request_unpause =
 	if (clanring_state & CLANRING_UNPAUSING)
 		return;
 
+	if (!(mode_is_arena()))
 	if (!(clanring_state & CLANRING_MATCH_STARTED))
 	{
 		if (clanring_state & CLANRING_TIMER_STARTED)
@@ -2016,6 +2032,24 @@ void() match_impulse =
 
 	if (self.impulse == 129)
 		match_help ();
+
+	if (mode_is_arena())
+	{
+		switch (self.impulse)
+		{
+			case (124):
+			{
+				match_request_pause();
+				break;
+			}
+			case (125):
+			{
+				match_request_unpause();
+				break;
+			}
+		}
+		return;
+	}
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{

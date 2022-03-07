@@ -261,7 +261,7 @@ void () arena_init_world;
 void () rocket_arena_init_world;
 void () arena_main_loop;
 void () arena_precache;
-
+void () RemoveFromTeam;//R00k: ca mode
 //
 // C L E A R   A F K   S T A T U S
 //
@@ -658,9 +658,9 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias red \";color 4;w5;ready;\"\n");
 	stuffcmd(self, "alias blue \";color 13;w5;ready;\"\n");
 	stuffcmd(self, "alias help-stats impulse 179\n");
-	stuffcmd(self, "alias sm1 \"echo Smoothing ON ; cl_nolerp 1 ; alias smooth sm0\"\n");
-	stuffcmd(self, "alias sm0 \"echo Smoothing OFF ; cl_nolerp 0 ; alias smooth sm1\"\n");
-	stuffcmd(self, "alias smooth sm1\n");
+//	stuffcmd(self, "alias sm1 \"echo Smoothing ON ; cl_nolerp 1 ; alias smooth sm0\"\n");
+//	stuffcmd(self, "alias sm0 \"echo Smoothing OFF ; cl_nolerp 0 ; alias smooth sm1\"\n");
+//	stuffcmd(self, "alias smooth sm1\n");
 	stuffcmd(self, "alias init echo\n");                // CRMOD - So clients only see 'init' once
 	stuffcmd(self, "alias +hook impulse 98\n");
 	stuffcmd(self, "alias -hook impulse 97\n");
@@ -923,13 +923,27 @@ void () find_pqc_teamscore_teams =
 {
 	local entity e;
 	
-	e = clanring_sentinel.next_team;
-	
-	while (e)
+	if (clanring_playmode & CLANRING_CA_MODE)
+	{		
+		e = boss.next_team;
+
+		while (e)
+		{
+			pqc_new_team (e.team2);
+			pqc_team_frags(e.team2, e.wins);
+			e = e.next_team;
+		}
+	}
+	else
 	{
-		pqc_new_team (e.height);
-		pqc_team_frags(e.height, e.frags);
-		e = e.next_team;
+		e = clanring_sentinel.next_team;
+		
+		while (e)
+		{
+			pqc_new_team (e.height);
+			pqc_team_frags(e.height, e.frags);
+			e = e.next_team;
+		}
 	}
 };
 
@@ -1044,24 +1058,22 @@ void () clanring_client_disconnect =
 	}
 	else if (mode_is_arena())
 	{
+		RemoveFromTeam();//R00k
 		self.team2    		= TEAM_SPECTATOR;
-		self.frags          	= 0;
+		self.frags          = 0;
 		//self.lagtimer    	= -30;
-		self.state          	= 0;	
+		self.state          = 0;	
 		self.classname 		= string_null;
-		//self.myip		= string_null;
-		self.trueip		= string_null;
+		//self.myip			= string_null;
+		self.trueip			= string_null;
 		self.takedamage 	= DAMAGE_NO;
 		self.afk_time		= time;
 		self.cc_queue 		= 0;//R00k
 		self.cc_queue_vote	= 0;//R00k
-		
-		admin_disconnect_notify (self);
-		observer_disconnect_notify (self);
-
 		self.ca_player_flag	= PF_WAITING;//v1.97
 		self.nextthink		= -1;
-		self.think		= SUB_Null;	
+		self.think			= SUB_Null;	
+		self.solid			= SOLID_NOT;
 	}
 	else
 		clanring_remove_player_from_list();

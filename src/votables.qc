@@ -72,7 +72,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias 14 impulse 244\n");
 	stuffcmd(self, "alias 15 impulse 245\n");
 	// send this LAST to make sure that client received all impulses
-	stuffcmd(self, "alias clanring_ignorethis \"impulse 180 ; sm0\"\n");
+	stuffcmd(self, "alias clanring_ignorethis \"impulse 180;\"\n");
 	self = temp;
 	remove(self);
 };

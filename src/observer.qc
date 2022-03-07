@@ -168,15 +168,17 @@ void () observer_walk_start =
 	self.flags = self.flags - (self.flags & FL_ONGROUND);
 	self.view_ofs = '0 0 22';
 //	droptofloor(0, 0);
-	if (self.style & CLANRING_FOUND_BINDINGS)// CRMOD - don't send sm0 if they don't have that alias
+//R00k: removing this junk (3/04/2022)
+/*	if (self.style & CLANRING_FOUND_BINDINGS)// CRMOD - don't send sm0 if they don't have that alias
 		stuffcmd(self, "sm0\n");// CRMOD - smoothing off
 	else
 		stuffcmd(self, "cl_nolerp 0\n");// CRMOD - send the real thing instead
 	stuffcmd(self, "v_centerspeed 500\n");
 	sprint(self, "walk mode\n");
-	//if (!(self.style & CLANRING_HEADS_UP))
-		//sprint(self, "type 'headsup' for fullscreen display\n");
-	if (mode_is_arena)
+	if (!(self.style & CLANRING_HEADS_UP))
+		sprint(self, "type 'headsup' for fullscreen display\n");
+*/
+	if (mode_is_arena())
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
 
@@ -200,11 +202,13 @@ void () observer_fly_start =
 	self.view_ofs = '0 0 22';
 	self.flags = self.flags | FL_ONGROUND;
 	self.waterlevel = 0;
+/*
 	stuffcmd(self, "sm0\n");		// CRMOD - smoothing off
 	stuffcmd(self, "v_centerspeed 500\n");
 	sprint(self, "fly mode\n");
-	//if (!(self.style & CLANRING_HEADS_UP))
-		//sprint(self, "type 'headsup' for fullscreen display\n");
+	if (!(self.style & CLANRING_HEADS_UP))
+		sprint(self, "type 'headsup' for fullscreen display\n");
+*/
 };
 
 // CRMOD
@@ -276,7 +280,7 @@ void () observer_camera_start =
 	//if (!(self.style & CLANRING_HEADS_UP))
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 
-	sprint(self, "type 'smooth' to eliminate choppines\n");
+	//sprint(self, "type 'smooth' to eliminate choppines\n");
 };
 
 //
@@ -321,7 +325,7 @@ void () observer_chase_start =
 	//if (!(self.style & CLANRING_HEADS_UP))
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 	
-	sprint(self, "type 'smooth' to eliminate choppines\n");
+	//sprint(self, "type 'smooth' to eliminate choppines\n");
 };
 
 //
@@ -376,7 +380,7 @@ void () observer_demo_start =
     sprint(self, "eyecam mode\n");
    // if (!(self.style & CLANRING_HEADS_UP))
         //sprint(self, "type 'headsup' for fullscreen display\n");
-	sprint(self, "type 'smooth' to eliminate choppines\n");
+	//sprint(self, "type 'smooth' to eliminate choppines\n");
 
 	self.nextthink = -1;
     self.think = SUB_Null;
@@ -444,6 +448,13 @@ void () observer_start =
 
 	self.clanring_chase_score = CLANRING_NEGINF;// CRMOD make sure they don't have some high rating that can't be beat by the other players
 	
+	if (mode_is_arena())
+	{
+		setcolour (self, 0, 0);
+		stuffcmd (self, ";color 0;\n");
+		self.team2 	= TEAM_SPECTATOR;//dont allow dead teammates to talk to playing teammates
+		self.team 	= ((self.team2) + 1);
+	}
 	self.takedamage = DAMAGE_NO;
 	self.solid = SOLID_NOT;
 
@@ -467,7 +478,9 @@ void () observer_start =
 	self.ammo_rockets = 0;
 	self.ammo_cells = 0;
 	self.currentammo = 0;	
-	self.frags = -99;		
+	if (self.next_team == world)
+		self.frags = -99;
+
 	self.show_hostile = 0;
 
 	// model and view offset
@@ -489,20 +502,6 @@ void () observer_start =
 	//setcolor (self, 0,0);
 	stuffcmd(self, ";color 0;\n");
 	self.height = 0;// fixed observer color cheat?
-
-	if (mode_is_arena())
-	{
-		if (self.ca_player_flag == PF_DEAD)
-		{
-			observer_next_target();
-			observer_demo_start();
-		}
-		else
-		{
-			observer_walk_start();
-		}
-		return;
-	}
 
 	if (self.oflags & OBSERVER_FLY)
 		observer_fly_start();
@@ -530,6 +529,14 @@ void () observer_start =
 	else
 		observer_walk_start();
 
+	if (mode_is_arena())
+	{
+		if (self.ca_player_flag == PF_DEAD)
+		{
+			observer_next_target();
+			observer_demo_start();
+		}
+	}
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 120\n");
 
@@ -570,11 +577,13 @@ void() observer_end =
 	}
 	self.style 	= self.style - (self.style & CLANRING_OBSERVER);
 	self.dmg_tally = 0;
-	self.frags 	= 0;
+	if (!mode_is_arena())
+		self.frags 	= 0;
+
 	self.killed = 0;
 	observer_check_demo_end();
-	stuffcmd(self, "sm0\n");// CRMOD - smoothing off
-	stuffcmd(self, "v_centerspeed 500\n");
+//	stuffcmd(self, "sm0\n");// CRMOD - smoothing off
+//	stuffcmd(self, "v_centerspeed 500\n");
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 100\n");
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
@@ -1862,11 +1871,12 @@ void () observer_post_think =
 		{
 			if (boss.state != CA_MATCH_CLEANUP)
 			{
-				Teamplay_Select_Team ();
+				Teamplay_Select_Team ();//self.impulse is cleared in this function.
 			}
 			else
 			{
 				sprint (self, "Match has ended, you may not join at this time.\n");
+				self.impulse = 0; //R00k cleanup console spam after match end.
 			}
 		}
 
