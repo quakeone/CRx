@@ -767,6 +767,7 @@ void() PutClientInServer =
 		spot = SelectSpawnPoint();
 	}
 
+	self.colormap 				= num_for_edict(self);//R00k: testing (2/23/2022)
 	self.trigger_field			= spot;
 	self.classname 				= "player";
 	self.health 				= 100;
@@ -1032,6 +1033,25 @@ void() PlayerDeathThink =
 			self.velocity = forward * normalize(self.velocity);
 	}
 
+	if (mode_is_arena())
+	{
+		local vector angle = '0 0 0';
+
+		//R00k 1.55 look at enemy when dead
+		if ((self.enemy.classname == "player") && (self.enemy != self))
+				self.movetarget = self.enemy;
+		
+		if (self.movetarget.ca_player_flag == PF_PLAYING)
+		{
+			makevectors (self.v_angle);
+			traceline (self.origin, self.movetarget.origin, TRUE, self.movetarget);
+			if (trace_fraction == 1)
+			{
+				angle = angles_bestaim (self.origin, self.movetarget.origin);
+				angles_fixangle (angle);
+			}
+		}
+	}
 	// wait for all buttons released
 	if (self.deadflag == DEAD_DEAD)
 	{
@@ -1267,8 +1287,8 @@ void() PlayerPreThink =
 	{
 		if (self.style & CLANRING_CONNECTED)
 		{	
-			if (self.team != ((self.team2) + 1))
-			{				
+			if (self.team != (self.team2 + 1))
+			{		
 				if (self.next_team == world)
 				{
 					if (self.team == 14)

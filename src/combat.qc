@@ -234,7 +234,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	if (mode_is_arena())
 	{
-		if ((inflictor.classname == "teledeath") && (timetofight == FALSE)) //This is here for pre-game spawn's tdeath_touch to push the player out of the way...
+		if ((inflictor.classname == "teledeath") && (boss.timetofight == FALSE)) //This is here for pre-game spawn's tdeath_touch to push the player out of the way...
 		{
 			if (targ.classname == "player")
 			{

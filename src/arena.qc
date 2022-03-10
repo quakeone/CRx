@@ -458,10 +458,10 @@ string () report_winning_team =
 	if ((team_first_place.wins > team_second_place.wins))
 	{
 		team_score_number = (team_first_place.wins - team_second_place.wins);
-		team_winning_teamname = strings_get_teamname_leads_by (team_first_place.team2);
+		team_winning_teamname = team_first_place.netname;
 
 		tmp = ftos(team_score_number);
-		output = (strcat("\x85The",team_winning_teamname));
+		output = (sprintf("\x85The %s leads by ",team_winning_teamname));
 		output = (strcat(output,tmp));
 
 		tnum = (ceil(boss.max_rounds / 2));
@@ -812,15 +812,14 @@ void(float whichteam) Join_Team =
 		return;//already on a team
 	}
 
-	self.lip = self.lip + 1;
-	
-	if (self.lip > 2)//R00k: FIXME
+	if (self.lip > time)//R00k: FIXed?
 	{
 		sprint(self,"\bYou may not join at this time.\n");
-		self.lip = 0;
 		return;
 	}
-			
+
+	self.lip = time + 2; //R00k: two seconds between team choice will stop script spam
+
 	pteam = find_team_entity(whichteam);
 
 	if (pteam == world)
@@ -1073,6 +1072,7 @@ void () Teamplay_Select_Team =
 	if (boss.busy == TRUE)
 	{
 		sprint(self,"Cleaning up match end. Try again in a few seconds...\n");
+		self.impulse = 0; //R00k cleanup console spam.
 		return;
 	}
 
@@ -1110,6 +1110,7 @@ void () Teamplay_Select_Team =
 	// We don't want this team anymore
 	if (self.impulse == 5)
 	{
+		motd_ca_start();	//r00k
 		if (self.cc_queue_vote)
 		{
 			if ((clanring_request.classname == "cc_vote") && (clanring_request.owner == self))
@@ -1580,8 +1581,12 @@ void () arena_main_loop =
 {
 	if ((clanring_state & CLANRING_MATCH_PAUSED) && (!boss.unpausing))
 	{
-		WriteByte (MSG_ALL, SVC_CENTERPRINT);
-		WriteString (MSG_ALL, "\n\X90PAUSED\X91\n");
+		if (time > boss.lip)
+		{
+			WriteByte (MSG_ALL, SVC_CENTERPRINT);
+			WriteString (MSG_ALL, "\n\X90PAUSED\X91\n");
+			boss.lip = time + 1.5;
+		}
 		return;
 	}
 

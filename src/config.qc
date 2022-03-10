@@ -480,13 +480,14 @@ void () exec_warp_main_menu =
 		warpmenutop[i] = strzone(line);
 		i++;
 	}
+	strunzone(line);
 	fclose(f);
 }
 //TODO: Maybe build the warp menu based on the gametype?
 void() exec_warp_cfg =
 {
 	filestream f = fopen("configs/warp.cfg", FILE_READ);
-	string line, mapfile;
+	string line = "", mapfile = "";
 	float menunum = 1, level = 0, mapnum = 0;//Ya, 0 - 10 are reserved. warpmap[11] == e1m1. (menu1, map1)
 	
 	if (f < 0)

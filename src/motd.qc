@@ -120,12 +120,14 @@ void ()motd_print =
 		return;
 
 	//R00k: is this used anymore??
+/*
 	if ((boss.state == CA_MATCH_WAITING) && (self.next_team != world))
 	{		
 		centerprint7 (self, motd_top1, motd_top2, motd_top3, motd_top4, motd_top5, motd_top6, motd_top7);
 		return;
 	}
-	
+*/
+
 	if ((!(self.oflags & OBSERVER_WALK)) || (self.next_team != world))
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
