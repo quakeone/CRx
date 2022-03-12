@@ -261,6 +261,7 @@ void () arena_init_world;
 void () rocket_arena_init_world;
 void () arena_main_loop;
 void () arena_precache;
+void () arena_clean_items;
 void () RemoveFromTeam;//R00k: ca mode
 //
 // C L E A R   A F K   S T A T U S
@@ -454,15 +455,17 @@ void () clanring_init_world =
 	szmode = strings_get_mode(mode);
 	cprint2(szmode, " mode\n");
 
-	if (mode_is_arena())
+	if (mode_is_arena() == TRUE)
 	{
 		arena_precache();
-		utils_do_items(SUB_Remove);
+		//arena_clean_items();
 
 		if (clanring_playmode & CLANRING_CA_MODE)
 			arena_init_world();
 		// else if (clanring_playmode & CLANRING_RA_MODE)
 		// 	rocket_arena_init_world();
+
+		utils_make_scheduled_event(arena_clean_items, 4);
 	}
 
 	// schedule the config files for a bit later so that they don't
@@ -781,6 +784,8 @@ void () clanring_init_think =
 void () clanring_show_mode =
 {
 	sprint2(self.owner, clanring_version, "\n");
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		sprint(self.owner, "capture the flag\n");
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (teamplay)
@@ -788,7 +793,11 @@ void () clanring_show_mode =
 	}
 	else
 	{
-		if (clanring_playmode & CLANRING_PRACTICE_MODE)
+		if (clanring_playmode & CLANRING_CA_MODE)
+			sprint(self.owner, "clan arena x\n");
+		else if (clanring_playmode & CLANRING_RA_MODE)
+			sprint(self.owner, "rocket arena\n");
+		else if (clanring_playmode & CLANRING_PRACTICE_MODE)
 			sprint(self.owner, "practice mode\n");
 		else
 			sprint(self.owner, "classic mode\n");

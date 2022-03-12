@@ -237,11 +237,11 @@ void (string s1, string s2, string s3, string s4, string s5, string s6) oprint6 
 
 void (entity ent, float clientshirt, float clientpants) setcolour =
 {		
-//	local float client;
+	local float client;
 	
 	if (ent.style & CLANRING_CONNECTED)
 	{
-/*
+
 		client = (ent.colormap - 1);	
 		if ((client < 0)||(client >16))
 		{
@@ -252,8 +252,8 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 		WriteByte(MSG_ALL, SVC_UPDATECOLORS);
 		WriteByte(MSG_ALL, client);
    		WriteByte(MSG_ALL, (clientshirt * 16 + clientpants));
-*/
-		setcolor(ent, (clientshirt * 16 + clientpants));//builtin #401; /* Part of DP_SV_SETCOLOR
+
+		//setcolors(ent, (clientshirt * 16 + clientpants));//builtin #401; /* Part of DP_SV_SETCOLOR
    	}
 };
 

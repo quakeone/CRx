@@ -50,7 +50,7 @@ float(entity targ, entity inflictor, string dtype) CanDamage =	// 1998-10-04 Hit
 	// this fix only damages players in the water/slime.
 
 	if (dtype == "discharge")
-	{		
+	{
 		if (clanring_playmode & CLANRING_NO_SPOOGE)//Admin option set to safe DC for pmode.
 		{
 			if (targ.waterlevel < 1) //Not in the water.
@@ -209,6 +209,11 @@ void(entity targ, entity attacker) Killed =
 	self.th_die ();		
 
 	self = oself;
+
+	if (clanring_playmode & CLANRING_CA_MODE)
+	{
+		CheckForLastTwoPlayers();
+	}
 };
 
 
@@ -543,7 +548,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			
 			while (attacker.dmg_cache >= (boss.health + boss.armorvalue))
 			{
-				attacker.frags = attacker.frags + 1; //give player point for max damage+cache
+				attacker.frags += 1; //give player point for max damage+cache
 				attacker.dmg_cache = (attacker.dmg_cache - (boss.health + boss.armorvalue));//leftover damage carries over
 			}
 		}

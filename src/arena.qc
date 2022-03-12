@@ -30,6 +30,11 @@ void () arena_precache =
 	precache_sound ("ra/gong.wav");	
 }
 
+void () arena_clean_items
+{
+	utils_do_items(SUB_Remove);
+}
+
 void () arena_init_world =
 {
 	local entity oself;
@@ -47,7 +52,7 @@ void () arena_init_world =
 	boss.ammo_shells 	= 100;
 	boss.ammo_nails  	= 100;
 	boss.ammo_rockets	= 50;
-	boss.ammo_cells  	= 100;
+	boss.ammo_cells  	= 30;
 	boss.items 			= ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
 
 
@@ -58,7 +63,7 @@ void () arena_init_world =
     
     oself = self;
     self = boss;
-    self.weapon = W_BestWeapon();
+    self.weapon = IT_ROCKET_LAUNCHER;// W_BestWeapon();
     self = oself;	
 
 	boss.timetofight 	= FALSE;
@@ -1228,6 +1233,14 @@ void () arena_unpause_player =
 	self.nextthink = ((self.nextthink - 1000000) + clanring_match_pause_time);
 };
 
+void () arena_fight_and_shoot =
+{
+	if (!(self.style & CLANRING_OK_TO_SHOOT))
+		self.style = self.style | CLANRING_OK_TO_SHOOT;
+
+	centerprint(self, "\bFIGHT!");
+};
+
 void () arena_unpause =
 {
 	if (!(clanring_state & CLANRING_MATCH_PAUSED))
@@ -1241,6 +1254,7 @@ void () arena_unpause =
 	announce ("game on!");
 	WriteByte (MSG_ALL, SVC_CENTERPRINT);
 	WriteString (MSG_ALL, " ");
+	utils_do_arena_players (arena_fight_and_shoot);
 };
 
 //R00k changed:v1.4
@@ -1250,7 +1264,7 @@ void () arena_unpause_countdown_think =
 	{
 		boss.unpausing = FALSE;
 		arena_unpause ();
-		ctprint("\bFIGHT!");
+		//ctprint("\bFIGHT!");
 		sound(world, CHAN_AUTO, "ra/fight.wav", 1, ATTN_NONE);
 		remove (self);
 	}
@@ -1671,7 +1685,8 @@ void () arena_main_loop =
 				if (boss.count == 0)
 				{
 					sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
-					ctprint ("\bFIGHT!");
+					//ctprint ("\bFIGHT!");
+					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
 					boss.state = CA_MATCH_PLAYING;
 					if (boss.round == 1)

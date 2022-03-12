@@ -482,7 +482,10 @@ void() ClientKill =
 	announce2(self.netname, " suicides");
 	set_suicide_frame ();
 	DropRune();
-	DropBackpack();
+	if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
+	{
+		DropBackpack();
+	}
 	TeamCaptureDropFlagOfPlayer (self, 1);
 	UnHookPlayer();
 	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));//added for server mod hook
@@ -1914,7 +1917,10 @@ void() ClientDisconnect =
 	if (!(self.style & CLANRING_OBSERVER))
 	{
 		DropRune();
-		DropBackpack ();
+		if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
+		{
+			DropBackpack ();
+		}
 		UnHookPlayer ();
 		self.hook2 = self.hook2 - (self.hook2 & HOOK_OUT);//TODO remove the off-hand newbie hook...
 	}
@@ -2288,7 +2294,8 @@ void(entity targ, entity attacker) ClientObituary =
 						attacker.clanring_qdkill_x = attacker.clanring_qdkill_x + 1;
 
 					targ.mangle_z = targ.mangle_z + 1;//STATS
-					client_frag (attacker, 1);
+					if (mode_is_arena() == FALSE)
+						client_frag (attacker, 1);
 					attacker.true_kills = (attacker.true_kills + 1);
 					deathstring2 = "";
 					rnum = attacker.weapon;
@@ -2659,7 +2666,6 @@ void(string cmd) SV_ParseClientCommand =
 		default:
 			if (found_in_warp_list(arg0))
 			{
-				//votables_request_change_level(arg0);
 				votables_request_set_gametype_mode_map(-1, -1, arg0);
 				return;
 			}

@@ -1260,6 +1260,8 @@ void() admin_impulse =
 		votables_select_timelimit();
 	else if (self.impulse == 216)
 		votables_select_overtime();
+	else if (self.impulse == 217)
+		votables_force_start();
 	else if (self.impulse == 221)
 		votables_request_set_quad();
 	else if (self.impulse == 222)
