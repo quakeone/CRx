@@ -110,6 +110,11 @@ void() StartItem =
         }
     }
     // END_MOD
+	else if (mode_is_arena() == TRUE)
+	{
+		remove(self);
+		return;
+	}
 
 	self.nextthink = time + 0.2;	// items start after other solids
 	self.think = PlaceItem;

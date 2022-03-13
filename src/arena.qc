@@ -30,11 +30,6 @@ void () arena_precache =
 	precache_sound ("ra/gong.wav");	
 }
 
-void () arena_clean_items
-{
-	utils_do_items(SUB_Remove);
-}
-
 void () arena_init_world =
 {
 	local entity oself;

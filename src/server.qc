@@ -261,7 +261,6 @@ void () arena_init_world;
 void () rocket_arena_init_world;
 void () arena_main_loop;
 void () arena_precache;
-void () arena_clean_items;
 void () RemoveFromTeam;//R00k: ca mode
 //
 // C L E A R   A F K   S T A T U S
@@ -458,14 +457,11 @@ void () clanring_init_world =
 	if (mode_is_arena() == TRUE)
 	{
 		arena_precache();
-		//arena_clean_items();
 
 		if (clanring_playmode & CLANRING_CA_MODE)
 			arena_init_world();
 		// else if (clanring_playmode & CLANRING_RA_MODE)
 		// 	rocket_arena_init_world();
-
-		utils_make_scheduled_event(arena_clean_items, 4);
 	}
 
 	// schedule the config files for a bit later so that they don't
