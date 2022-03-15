@@ -482,7 +482,10 @@ void() ClientKill =
 	announce2(self.netname, " suicides");
 	set_suicide_frame ();
 	DropRune();
-	DropBackpack();
+	if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
+	{
+		DropBackpack();
+	}
 	TeamCaptureDropFlagOfPlayer (self, 1);
 	UnHookPlayer();
 	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));//added for server mod hook
@@ -1686,9 +1689,9 @@ void() PlayerPostThink =
 		}
 	}
 
-	if ((mode_is_arena()) && (clanring_state & CLANRING_MATCH_PAUSED)) 
-		return;
-
+//	if ((mode_is_arena()) && (clanring_state & CLANRING_MATCH_PAUSED)) 
+//		return;
+// Players will lag-out if this check is here...
 	if (IS_CA_OBSERVER(self))
 	{
 		observer_post_think();
@@ -1914,7 +1917,10 @@ void() ClientDisconnect =
 	if (!(self.style & CLANRING_OBSERVER))
 	{
 		DropRune();
-		DropBackpack ();
+		if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
+		{
+			DropBackpack ();
+		}
 		UnHookPlayer ();
 		self.hook2 = self.hook2 - (self.hook2 & HOOK_OUT);//TODO remove the off-hand newbie hook...
 	}
@@ -1955,6 +1961,9 @@ void() ClientDisconnect =
 //
 void(entity client, float fragval) client_frag =
 {
+	if (mode_is_arena())
+		return;
+		
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (teamplay)
@@ -2659,7 +2668,6 @@ void(string cmd) SV_ParseClientCommand =
 		default:
 			if (found_in_warp_list(arg0))
 			{
-				//votables_request_change_level(arg0);
 				votables_request_set_gametype_mode_map(-1, -1, arg0);
 				return;
 			}

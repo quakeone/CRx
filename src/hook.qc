@@ -149,10 +149,11 @@ void() HookPull =
 	if (hookspeedpull < 600)
 		hookspeedpull = 850;
 
-	if (v <= 100)
-			vel = normalize(vel) * v * 10;  
-	if ( v > 100 )
-			vel = normalize(vel) * hookspeedpull;  
+	if ( v > 100 ) //R00k: we're hitting this 90% of the time
+		vel = normalize(vel) * hookspeedpull;
+	else
+		vel = normalize(vel) * v * 10;
+
 
 	self.owner.velocity = vel;
 	

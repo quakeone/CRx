@@ -454,10 +454,9 @@ void () clanring_init_world =
 	szmode = strings_get_mode(mode);
 	cprint2(szmode, " mode\n");
 
-	if (mode_is_arena())
+	if (mode_is_arena() == TRUE)
 	{
 		arena_precache();
-		utils_do_items(SUB_Remove);
 
 		if (clanring_playmode & CLANRING_CA_MODE)
 			arena_init_world();
@@ -781,6 +780,8 @@ void () clanring_init_think =
 void () clanring_show_mode =
 {
 	sprint2(self.owner, clanring_version, "\n");
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		sprint(self.owner, "capture the flag\n");
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (teamplay)
@@ -788,7 +789,11 @@ void () clanring_show_mode =
 	}
 	else
 	{
-		if (clanring_playmode & CLANRING_PRACTICE_MODE)
+		if (clanring_playmode & CLANRING_CA_MODE)
+			sprint(self.owner, "clan arena x\n");
+		else if (clanring_playmode & CLANRING_RA_MODE)
+			sprint(self.owner, "rocket arena\n");
+		else if (clanring_playmode & CLANRING_PRACTICE_MODE)
 			sprint(self.owner, "practice mode\n");
 		else
 			sprint(self.owner, "classic mode\n");

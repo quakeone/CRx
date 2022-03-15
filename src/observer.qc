@@ -595,8 +595,8 @@ void() observer_end =
 	// This is to prevent a condition where one player is another player's
 	// movetarget, which can confuse the auto module.
 	self.movetarget = world;
-
-	stats_reset_player();
+	if (!mode_is_arena())
+		stats_reset_player();
 	SetNewParms2();	
 	PutClientInServer();
 };

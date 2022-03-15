@@ -1342,7 +1342,7 @@ void(entity ghostent) match_restore_ghost =
 		pteam = pteam.next_team;
 	}
 
-	vote_init("õîðáõóå ôèå íáôãè", "", match_start_unpause_countdown);
+	vote_init("\bunpause the match\b", "", match_start_unpause_countdown);
 };
 
 //
@@ -1550,7 +1550,7 @@ void() match_request_unlock =
 	{
 		if (self.style & CLANRING_READY)
 		{
-			if (vote_init("áììï÷ îå÷ ðìáùåòó ôï êïéî", "", match_unlock))
+			if (vote_init("\ballow new players to join\b", "", match_unlock))
 				vote_yes();
 		}
 		else
@@ -1611,7 +1611,7 @@ void() match_request_lock =
 	{
 		if (self.style & CLANRING_READY)
 		{
-			if (vote_init("ìïãë ôèå íáôãè", "", match_lock))
+			if (vote_init("\block the match\b", "", match_lock))
 				vote_yes();
 		}
 		else
@@ -1788,7 +1788,7 @@ void() match_request_pause =
     // Do it right away if we're an administrator, otherwise vote
     if (self.style & CLANRING_ADMINISTRATOR)
         match_pause();
-    else if (vote_init("pause the match", (""), match_pause))
+    else if (vote_init("\bpause the match\b", (""), match_pause))
         vote_yes();
 };
 
@@ -1964,11 +1964,12 @@ void() match_request_unpause =
 		if (self.style & CLANRING_ADMINISTRATOR)
 			match_start_timer ();
 		else
-		if (vote_init("óôáòô ôèå ôéíåò", "", match_start_timer))
+		if (vote_init("\bstart the timer\b", "", match_start_timer))
 			vote_yes();
 
 		return;
 	}
+
 	if (!(clanring_state & CLANRING_MATCH_PAUSED))
 	{
 		sprint(self, "Match is not paused\n");
@@ -1979,7 +1980,7 @@ void() match_request_unpause =
 	if (self.style & CLANRING_ADMINISTRATOR)
 		match_start_unpause_countdown ();
 	else
-	if (vote_init("õîðáõóå ôèå íáôãè", "", match_start_unpause_countdown))
+	if (vote_init("\bunpause the match\b", "", match_start_unpause_countdown))
 		vote_yes();
 };
 
@@ -2037,6 +2038,7 @@ void() match_impulse =
 	{
 		switch (self.impulse)
 		{
+//TODO: arena_match_impulse();
 			case (124):
 			{
 				match_request_pause();

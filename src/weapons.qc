@@ -110,8 +110,10 @@ void() W_FireAxe =
 			WriteCoord (MSG_BROADCAST, org_y);
 			WriteCoord (MSG_BROADCAST, org_z);
 		}
-
-		T_Damage (trace_ent, self, self, 20);//still do the damage
+		if (clanring_playmode & CLANRING_CA_MODE)
+			T_Damage (trace_ent, self, self, 80);//CAx is x4 axe damage
+		else
+			T_Damage (trace_ent, self, self, 20);//still do the damage
 	}
 	else
 	{	// hit wall
@@ -655,6 +657,19 @@ void() W_FireLightning =
 		cells = self.ammo_cells;		
 	  	self.ammo_cells = 0;	  
 		W_SetCurrentAmmo ();
+
+		if (mode_is_arena())
+		{
+			T_RadiusDamage(self, self, cells, world, "discharge");
+			WriteByte  (MSG_BROADCAST, SVC_TEMPENTITY);
+			WriteByte  (MSG_BROADCAST, TE_TAREXPLOSION);
+			WriteCoord (MSG_BROADCAST, self.origin_x);
+			WriteCoord (MSG_BROADCAST, self.origin_y);
+			WriteCoord (MSG_BROADCAST, self.origin_z);
+			T_RadiusDamage (self, self, self, cells);
+			self.items = self.items - (self.items & IT_LIGHTNING);
+			return;
+		}
 		
 		if (clanring_playmode & CLANRING_NO_SPOOGE)
 			T_Damage (self, self, self, 35 * cells);

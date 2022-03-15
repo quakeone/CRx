@@ -24,6 +24,7 @@ teamplay.qc
 score.qc
 quaketv.qc
 observer.qc
+request.qc
 vote.qc
 match.qc
 votables.qc

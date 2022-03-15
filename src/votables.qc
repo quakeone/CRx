@@ -30,6 +30,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias w5 \"wait;wait;wait;wait;wait\"\n");
 	stuffcmd(self, "alias sethook impulse 202\n");
 	stuffcmd(self, "alias setrunes impulse 203\n");
+	stuffcmd(self, "alias force impulse 217\n");
 	// toggle faststarts	
 	stuffcmd(self, "alias faststart impulse 209\n");
 	stuffcmd(self, "alias autopause impulse 210\n");
@@ -194,7 +195,7 @@ void () votables_change_level =
 //
 //  Called when a player requests a new level.
 //
-void(optional string requestmap = "") votables_request_change_level =
+void() votables_request_change_level =
 {
 	local float level;
 	local string newmap = "";
@@ -213,13 +214,9 @@ void(optional string requestmap = "") votables_request_change_level =
 		return;
 	}
 
-	if (requestmap == "")
-	{
-		level = (self.warp_episode * 10) + (self.warp_map);//new r00k
-		newmap = warpmap[level].name;
-	} else {
-		newmap = requestmap;
-	}
+	level = (self.warp_episode * 10) + (self.warp_map);//new r00k
+	newmap = warpmap[level].name;
+
 	//clear warp_flags;
 	self.warp_episode=0;
 	self.warp_map=0;
@@ -334,8 +331,7 @@ void() votables_set_gametype_mode_map =
 		{
 			clanring_playmode = clanring_playmode - 
 				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_RA_MODE));
-			if (!(clanring_playmode & CLANRING_CA_MODE))
-				clanring_playmode = clanring_playmode | CLANRING_CA_MODE;
+			clanring_playmode = clanring_playmode | CLANRING_CA_MODE | CLANRING_NO_SPOOGE;
 			bprint("gametype set to Clan Arena X\n");
 
 			newmapname = "dm3";
@@ -344,8 +340,7 @@ void() votables_set_gametype_mode_map =
 		{
 			clanring_playmode = clanring_playmode - 
 				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_CA_MODE));
-			if (!(clanring_playmode & CLANRING_CA_MODE))
-				clanring_playmode = clanring_playmode | CLANRING_RA_MODE;
+			clanring_playmode = clanring_playmode | CLANRING_RA_MODE | CLANRING_NO_SPOOGE;				
 			bprint("gametype set to Rocket Arena\n");
 
 			//newmapname = "dm3";
@@ -837,6 +832,40 @@ void() votables_select_overtime =
 	sprint(self, "” ² Νιξυτεσ      ±° Νιξυτεσ\n");
 	sprint(self, "• ³ Νιξυτεσ     ™ Συδδεξ δεατθ\n");
 	self.use = votables_get_overtime;
+};
+
+void () arena_force_start =
+{
+	if ((boss.state == CA_MATCH_WAITING))
+	{
+		boss.forced = TRUE;
+		announce ("Match \bforced\b.");
+	}
+};
+
+void () votables_force_start =
+{
+	if (!(clanring_playmode & CLANRING_CA_MODE))
+		return;
+		
+	if (boss.state != CA_MATCH_WAITING || boss.allready == TRUE)
+		return;
+	
+	if (number_teams () < 2)
+	{
+		sprint(self, "Match requires at least \btwo teams\b to force start.\n");
+		return;
+	}
+	
+	if (self.style & CLANRING_ADMINISTRATOR)
+	{
+		arena_force_start ();
+	}
+	else
+	{
+		if (vote_init ("\bforce match start\b", "", arena_force_start))
+			vote_yes ();
+	}
 };
 
 //

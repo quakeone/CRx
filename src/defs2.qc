@@ -445,6 +445,8 @@ float COLOR_RED = 4;
 float COLOR_YELLOW = 12;
 float COLOR_GREEN = 3;
 
+float TEAM_SPECTATOR 	= 0;
+float TEAM_PRACTICE	= 16;
 float TEAM_BLUE = 14;
 float TEAM_RED = 5;
 float TEAM_YELLOW = 13;
@@ -455,7 +457,6 @@ float PF_DEAD = 2;
 float PF_READY = 3;
 float PF_PLAYING = 4;
 
-float TEAM_SPECTATOR = 0;
 
 float CA_MATCH_WAITING = 1;
 float CA_MATCH_ROUNDSTART = 2;
