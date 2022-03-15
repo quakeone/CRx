@@ -68,15 +68,6 @@ void () arena_init_world =
 	ca_mvp_entity		= world;
 };
 
-void () arena_force_start =
-{
-	if ((boss.state == CA_MATCH_WAITING))
-	{
-		boss.forced = TRUE;
-		announce ("Match \bforced\b.");
-	}
-};
-
 float () mode_is_arena
 {
     if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE))
@@ -1124,7 +1115,7 @@ void () Teamplay_Select_Team =
 		{
 			if ((clanring_request.classname == "cc_vote") && (clanring_request.owner == self))//FIXME: clanring_request doesnt have a dynamic classname; this will always be false.
 			{
-				vote_reject();
+				Request_Poll_Cleanup();
 				self.cc_queue_vote = 0;
 			}
 		}
