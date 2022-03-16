@@ -621,6 +621,19 @@ void() W_FireLightning =
 		self.ammo_cells = 0;
 		W_SetCurrentAmmo ();
 
+		if (mode_is_arena())
+		{
+			T_RadiusDamage(self, self, cells, world, "discharge");
+			WriteByte  (MSG_BROADCAST, SVC_TEMPENTITY);
+			WriteByte  (MSG_BROADCAST, TE_TAREXPLOSION);
+			WriteCoord (MSG_BROADCAST, self.origin_x);
+			WriteCoord (MSG_BROADCAST, self.origin_y);
+			WriteCoord (MSG_BROADCAST, self.origin_z);
+
+			self.items = self.items - (self.items & IT_LIGHTNING);
+			return;
+		}
+
 		// CLANRING_MOD - check for nospooge in practice mode
 		if ((clanring_playmode & CLANRING_PRACTICE_MODE) &&	(clanring_playmode & CLANRING_NO_SPOOGE))
 			T_Damage (self, self, self, 35 * cells);
@@ -667,6 +680,7 @@ void() W_FireLightning =
 			WriteCoord (MSG_BROADCAST, self.origin_y);
 			WriteCoord (MSG_BROADCAST, self.origin_z);
 			T_RadiusDamage(self, self, cells, world, "discharge"); // R00k
+
 			self.items = self.items - (self.items & IT_LIGHTNING);
 			return;
 		}

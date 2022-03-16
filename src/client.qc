@@ -2297,7 +2297,8 @@ void(entity targ, entity attacker) ClientObituary =
 						attacker.clanring_qdkill_x = attacker.clanring_qdkill_x + 1;
 
 					targ.mangle_z = targ.mangle_z + 1;//STATS
-					client_frag (attacker, 1);
+					if (!(clanring_playmode & CLANRING_CA_MODE))
+						client_frag (attacker, 1);
 					attacker.true_kills = (attacker.true_kills + 1);
 					deathstring2 = "";
 					rnum = attacker.weapon;
