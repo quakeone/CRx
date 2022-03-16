@@ -235,7 +235,7 @@ void (string s1, string s2, string s3, string s4, string s5, string s6) oprint6 
 	}
 };
 
-void (entity ent, float clientshirt, float clientpants) setcolour =
+void (entity ent, float clientshirt, float clientpants) setcolour =	//fixme
 {		
 	local float client;
 	

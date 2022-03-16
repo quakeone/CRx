@@ -119,15 +119,6 @@ void ()motd_print =
 	if (self.ca_player_flag == PF_PLAYING) //R00k: 6/12/2017 9:50AM (airshot practice)
 		return;
 
-	//R00k: is this used anymore??
-/*
-	if ((boss.state == CA_MATCH_WAITING) && (self.next_team != world))
-	{		
-		centerprint7 (self, motd_top1, motd_top2, motd_top3, motd_top4, motd_top5, motd_top6, motd_top7);
-		return;
-	}
-*/
-
 	if ((!(self.oflags & OBSERVER_WALK)) || (self.next_team != world))
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
@@ -145,12 +136,12 @@ void ()motd_ca_start =
 	if (self.style & CLANRING_MOTD || (!(self.style & CLANRING_CONNECTED)) || clanring_state & CLANRING_MATCH_PAUSED)
 		return;	
 	
-	motd_top1 = "\x80\x81\x81\x81\x81\x81 ClanArena X \x81\x81\x81\x81\x81\x82\n";
+	motd_top1 = "\x80\x81\x81\x81\x81\x81 ClanRing Mod \x81\x81\x81\x81\x81\x82\n";
 	motd_top7 = "\n\n\n\n";
 
 	if (clanring_playmode & CLANRING_CA_MODE)
 	{
-		motd_top2 = "\n\x85Competition\x85\n\n";
+		motd_top2 = "\n\x85Clan Arena\x85\n\n";
 		motd_top3 = "\nchoose a team\n\n";
 		motd_top4 = "\x13 blue   \n\x14 red    \n\x15 yellow \n\x16 green  \n\npress \x17 to uncommit from team\n";
 	}	
@@ -166,12 +157,12 @@ void ()motd_ra_start =
 	if (self.style & CLANRING_MOTD || (!(self.style & CLANRING_CONNECTED)) || clanring_state & CLANRING_MATCH_PAUSED)
 		return;	
 	
-	motd_top1 = "\x80\x81\x81\x81\x81\x81 Rocket Arena \x81\x81\x81\x81\x81\x82\n";
+	motd_top1 = "\x80\x81\x81\x81\x81\x81 ClanRing Mod \x81\x81\x81\x81\x81\x82\n";
 	motd_top7 = "\n\n\n\n";
 
 	if (clanring_playmode & CLANRING_RA_MODE)
 	{
-		motd_top2 = "\n\x85Competition\x85\n\n";
+		motd_top2 = "\n\x85Rocket Arena\x85\n\n";
 		motd_top3 = "\n1 to join\n\n";
 		motd_top4 = "\n2 to ????\n";
 	}	

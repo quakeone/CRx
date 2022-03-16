@@ -9,9 +9,8 @@ void () observer_check_demo_end;
 void () stats_team_stats;
 void () RemoveFromTeam;
 void (entity client) observer_disconnect_notify;
-void () vote_reject;
 void () RA_Select_Team;
-
+void() Request_Poll_Cleanup;
 float (string s1, string s2, void() accept) vote_init;
 entity ca_mvp_entity;
 float () W_BestWeapon;
@@ -28,6 +27,7 @@ void () arena_precache =
 	precache_sound ("ra/excellent.wav");		
 	precache_sound ("ra/welldone.wav");
 	precache_sound ("ra/gong.wav");	
+	precache_sound ("ambience/thunder1.wav");
 }
 
 void () arena_init_world =
@@ -62,10 +62,10 @@ void () arena_init_world =
     self = oself;	
 
 	boss.timetofight 	= FALSE;
-	boss.next_team 	= world;
-	boss.busy		= FALSE;
+	boss.next_team 		= world;
+	boss.busy			= FALSE;
 	boss.aborted 		= FALSE;
-	ca_mvp_entity	= world;
+	ca_mvp_entity		= world;
 };
 
 float () mode_is_arena
@@ -731,7 +731,7 @@ void () RemoveFromTeam =
 	//no players exist on this team, kill the team
 	if (number_teammates (self.next_team) == 0)
 	{
-		//pqc_erase_team(self.next_team.team2);
+		pqc_erase_team(self.next_team.team2);
 		arena_remove_team(self.next_team);
 	}
 
@@ -747,9 +747,9 @@ void () RemoveFromTeam =
 		setcolour (self, 0, 0);
 	}
 
-	self.ca_player_flag 	= PF_WAITING;
+	self.ca_player_flag = PF_WAITING;
 	self.movetarget 	= world;
-	self.frags 		= -99;
+	self.frags 			= -99;
 };
 
 void (float response) arena_observer_confirm_leave_response =
@@ -779,7 +779,7 @@ void () arena_delete_teams =
 		{
 			pteam = boss.next_team;
 			boss.next_team = pteam.next_team;
-			//pqc_erase_team(pteam.team2);//R00k v1.82
+			pqc_erase_team(pteam.team2);//R00k v1.82
 			remove (pteam);
 		}
 	}
@@ -844,7 +844,7 @@ void(float whichteam) Join_Team =
 
 			//announce2 ("creating the ", pteam.netname);
 			announce3 (self.netname, " has joined the ", pteam.netname);
-			//pqc_new_team (world,((pteam.team2) * 16) + (pteam.team2));
+			pqc_new_team (pteam.team2);
 		}
 		else
 		{
@@ -916,7 +916,7 @@ float (float n) join_team2 =
 		pteam.chain_gang 	= world;//init entity
 		pteam.next_team   	= boss.next_team;
 		boss.next_team    	= pteam;
-		//pqc_new_team (world,((pteam.team2) * 16) + (pteam.team2));
+		pqc_new_team (pteam.team2);
 	}
 
 	self.team2		= TEAM_SPECTATOR;//dont allow dead teammates to talk to playing teammates
@@ -1017,7 +1017,7 @@ void (float whichteam) Request_Join_Team =
 		return;
 	}
 
-	if (clanring_playmode & CLANRING_MODE_VOTE)
+	if (clanring_playmode & CLANRING_MODE_VOTE)//?
 	{
 		if ((boss.count < 8))// After team line-up / spawns take place!
 		{
@@ -1037,7 +1037,7 @@ void (float whichteam) Request_Join_Team =
 	{
 		if ((boss.count < 8))// After team line-up / spawns take place!
 		{
-			//		if (cc_queue_allowed (whichteam))
+			//		if (cc_queue_allowed (whichteam))//FIXME:
 			{
 				self.cc_queue = whichteam;
 				if (join_team2(whichteam) == TRUE)
@@ -1113,9 +1113,9 @@ void () Teamplay_Select_Team =
 		motd_ca_start();	//r00k
 		if (self.cc_queue_vote)
 		{
-			if ((clanring_request.classname == "cc_vote") && (clanring_request.owner == self))
+			if ((clanring_request.classname == "cc_vote") && (clanring_request.owner == self))//FIXME: clanring_request doesnt have a dynamic classname; this will always be false.
 			{
-				vote_reject();
+				Request_Poll_Cleanup();
 				self.cc_queue_vote = 0;
 			}
 		}
@@ -1378,8 +1378,8 @@ void () arena_match_end =
 
 	boss.busy = TRUE;
 
-	if (clanring_request.classname == "cc_vote")
-		vote_reject();
+	if (clanring_request.noise1 == "allow new players to join the match.")//gameover before a vote to join passed.
+		Request_Poll_Cleanup();
 
 	cc_queue_reset (); // Cancel Color-Change
 
@@ -1394,11 +1394,11 @@ void () arena_match_end =
 
 	sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
 
-	boss.round 		= 1;
-	boss.count 		= 10;
-	boss.wait 		= 0;
-	boss.timetofight 	= FALSE;
-	boss.state 		= CA_MATCH_CLEANUP;
+	boss.round 		 = 1;
+	boss.count 		 = 10;
+	boss.wait 		 = 0;
+	boss.timetofight = FALSE;
+	boss.state 		 = CA_MATCH_CLEANUP;
 
     gameover = FALSE;
 
@@ -1408,8 +1408,8 @@ void () arena_match_end =
 	localcmd("skill \"", temp, "\"\n");
 
 	utils_make_scheduled_event(reset_match, 1);
-//	pqc_match_time (world, 0, 0);
-//	pqc_match_reset();
+	pqc_match_time (0, 0);
+	pqc_match_reset();
 };
 
 //R00k v1.56
@@ -1530,7 +1530,7 @@ void() round_end =
 	if (wteam != world)//ugh lagouts cause all hell
 	{
 		wteam.wins = wteam.wins + 1;//up team rounds won
-		//pqc_team_frags(world, (wteam.team2), wteam.wins);
+		pqc_team_frags(wteam.team2, wteam.wins);
 	}
 
 	//BAM: Other teams' losses increases by 1.
@@ -1647,8 +1647,8 @@ void () arena_main_loop =
 		{
 			boss.count = (boss.count) - 1;
 
-			if (clanring_request.classname == "vote_force")
-				vote_reject();
+			if (clanring_request.noise1 == "\bforce match start\b")	//cancel Vote to force
+				Request_Poll_Cleanup();
 
 			if (boss.count > 5)
 			{
@@ -1734,8 +1734,8 @@ void () arena_main_loop =
 			if (boss.wait == 0)
 			{
 				// No need to force match now.
-				if (clanring_request.classname == "vote_force")
-				vote_reject ();
+				if (clanring_request.noise1 == "\bforce match start\b")
+				Request_Poll_Cleanup();
 
 				boss.wait = time + 5;
 				sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
@@ -1753,8 +1753,8 @@ void () arena_main_loop =
 				Practice_Object_Remove();
 				utils_do_items(SUB_Remove);
 				boss.state = CA_MATCH_ROUNDSTART;
-				//pqc_match_reset();
-				//find_pqc_teamscore_teams();
+				pqc_match_reset();
+				find_pqc_teamscore_teams();
 			}
 		}
 		else if (number_teams () < 2 || boss.allready == FALSE)

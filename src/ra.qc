@@ -1085,7 +1085,7 @@ void () RA_Select_Team =
 		{
 			if ((clanring_request.classname == "cc_vote") && (clanring_request.owner == self))
 			{
-				vote_reject();
+				Request_Poll_Cleanup();
 				self.cc_queue_vote = 0;
 			}
 		}

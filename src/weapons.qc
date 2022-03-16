@@ -679,6 +679,7 @@ void() W_FireLightning =
 			WriteCoord (MSG_BROADCAST, self.origin_x);
 			WriteCoord (MSG_BROADCAST, self.origin_y);
 			WriteCoord (MSG_BROADCAST, self.origin_z);
+			T_RadiusDamage(self, self, cells, world, "discharge"); // R00k
 
 			self.items = self.items - (self.items & IT_LIGHTNING);
 			return;

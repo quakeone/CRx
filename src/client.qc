@@ -1689,9 +1689,9 @@ void() PlayerPostThink =
 		}
 	}
 
-	if ((mode_is_arena()) && (clanring_state & CLANRING_MATCH_PAUSED)) 
-		return;
-
+//	if ((mode_is_arena()) && (clanring_state & CLANRING_MATCH_PAUSED)) 
+//		return;
+// Players will lag-out if this check is here...
 	if (IS_CA_OBSERVER(self))
 	{
 		observer_post_think();
@@ -1961,6 +1961,9 @@ void() ClientDisconnect =
 //
 void(entity client, float fragval) client_frag =
 {
+	if (mode_is_arena())
+		return;
+		
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (teamplay)
