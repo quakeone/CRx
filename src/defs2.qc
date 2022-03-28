@@ -80,6 +80,7 @@ float CLANRING_FRESH_SPAWNS         = 65536;//used?
 float CLANRING_AUTO_PAUSE    		= 131072;
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
+float CLANRING_CA_CC_VOTE			= 1048576;
 //float UNUSED			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
 float CLANRING_CA_MODE				= 4194304;
@@ -463,3 +464,4 @@ float CA_MATCH_ROUNDSTART = 2;
 float CA_MATCH_PLAYING = 3;
 float CA_MATCH_OVER = 4;
 float CA_MATCH_CLEANUP = 5;
+.float ca_deathcamtime;

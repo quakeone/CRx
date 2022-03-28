@@ -606,6 +606,8 @@ entity () SelectSpawnPoint =
 	
 	lastspawn = spot;
 
+//	if (((random() * (dm_num_spawns))) % 2)	//random telefrag chance? or if !(match.think != match_timer_think1)
+//	{
 	while (loop_count)
 	{
 		if (spot != world)
@@ -617,7 +619,7 @@ entity () SelectSpawnPoint =
 				thing = findradius (spot.origin, 128);
 				while (thing)
 				{
-					if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))
+					if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))//r00k: todo thing.health check ?
 					{
 						pcount = 1;
 						thing = world;
@@ -770,6 +772,11 @@ void() PutClientInServer =
 		spot = SelectSpawnPoint();
 	}
 
+	if (spot == world)
+	{
+		sprint(self, "Finding a better spawnpoint...\n");
+		spot = SelectSpawnPoint();
+	}
 	self.colormap 				= num_for_edict(self);//R00k: testing (2/23/2022)
 	self.trigger_field			= spot;
 	self.classname 				= "player";
@@ -802,6 +809,7 @@ void() PutClientInServer =
 	self.th_pain 			= player_pain;
 	self.th_die 			= PlayerDie;
 	self.deadflag 			= DEAD_NO;	
+
 	//self.angles 			= spot.angles;
 	//self.fixangle 		= TRUE;
 	angles_fixangle(spot.angles);
@@ -1044,16 +1052,20 @@ void() PlayerDeathThink =
 		if ((self.enemy.classname == "player") && (self.enemy != self))
 				self.movetarget = self.enemy;
 		
-		if (self.movetarget.ca_player_flag == PF_PLAYING)
+		if (time < self.ca_deathcamtime)
 		{
-			makevectors (self.v_angle);
-			traceline (self.origin, self.movetarget.origin, TRUE, self.movetarget);
-			if (trace_fraction == 1)
+			if (self.movetarget.ca_player_flag == PF_PLAYING)
 			{
-				angle = angles_bestaim (self.origin, self.movetarget.origin);
-				angles_fixangle (angle);
+				makevectors (self.v_angle);
+				traceline (self.origin, self.movetarget.origin, TRUE, self.movetarget);
+				if (trace_fraction == 1)
+				{
+					angle = angles_bestaim (self.origin, self.movetarget.origin);
+					angles_fixangle (angle);
+				}
 			}
 		}
+		return;
 	}
 	// wait for all buttons released
 	if (self.deadflag == DEAD_DEAD)
@@ -2297,8 +2309,7 @@ void(entity targ, entity attacker) ClientObituary =
 						attacker.clanring_qdkill_x = attacker.clanring_qdkill_x + 1;
 
 					targ.mangle_z = targ.mangle_z + 1;//STATS
-					if (!(clanring_playmode & CLANRING_CA_MODE))
-						client_frag (attacker, 1);
+					client_frag (attacker, 1);
 					attacker.true_kills = (attacker.true_kills + 1);
 					deathstring2 = "";
 					rnum = attacker.weapon;

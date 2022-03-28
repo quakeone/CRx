@@ -1285,6 +1285,8 @@ void(entity ghostent) match_restore_ghost =
 		self.fixangle = 1;
 		self.movetype = MOVETYPE_FLY;
 		self.finaldest_y = MOVETYPE_FLY;
+		self.view_ofs = '0 0 22';//r00k: testing... sometimes view is tilted on restore.
+
 		// check eyes
 		if (self.invisible_finished)
 			self.modelindex = modelindex_eyes;
@@ -1342,7 +1344,8 @@ void(entity ghostent) match_restore_ghost =
 		pteam = pteam.next_team;
 	}
 
-	vote_init("\bunpause the match\b", "", match_start_unpause_countdown);
+	if (vote_init("\bunpause the match\b", "", match_start_unpause_countdown))
+		vote_yes();
 };
 
 //

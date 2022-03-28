@@ -332,7 +332,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = clanring_playmode - 
 				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_RA_MODE));
 			clanring_playmode = clanring_playmode | CLANRING_CA_MODE | CLANRING_NO_SPOOGE;
-			bprint("gametype set to Clan Arena X\n");
+			bprint("gametype set to Clan Arena\n");
 
 			newmapname = "dm3";
 		}

@@ -11,7 +11,7 @@ void () RemoveFromTeam;
 void (entity client) observer_disconnect_notify;
 void () RA_Select_Team;
 void() Request_Poll_Cleanup;
-float (string s1, string s2, void() accept) vote_init;
+float (string captiona, string captionb, void() passfunc, optional string pollname = "") vote_init;
 entity ca_mvp_entity;
 float () W_BestWeapon;
 
@@ -681,7 +681,7 @@ void () im_dead_now_what =
 		stuffcmd(self,";color 0;\n");
 		dead_name();
 	}
-
+	self.ca_deathcamtime = time + 4;
 	self.ca_player_flag = PF_DEAD;
 };
 
@@ -867,6 +867,7 @@ void(float whichteam) Join_Team =
 
 	self.team2  	= whichteam;
 	self.next_team 	= pteam;
+	self.frags 		= 0;
 
 	add_player_to_stat_list(pteam,self);
 	add_player_to_chain(pteam,self);
@@ -1017,7 +1018,7 @@ void (float whichteam) Request_Join_Team =
 		return;
 	}
 
-	if (clanring_playmode & CLANRING_MODE_VOTE)//?
+	if (clanring_playmode & CLANRING_CA_CC_VOTE)//FIXME (22/03/12 10:55am)
 	{
 		if ((boss.count < 8))// After team line-up / spawns take place!
 		{
@@ -1037,7 +1038,7 @@ void (float whichteam) Request_Join_Team =
 	{
 		if ((boss.count < 8))// After team line-up / spawns take place!
 		{
-			//		if (cc_queue_allowed (whichteam))//FIXME:
+			//if (cc_queue_allowed (whichteam))
 			{
 				self.cc_queue = whichteam;
 				if (join_team2(whichteam) == TRUE)
@@ -1113,7 +1114,7 @@ void () Teamplay_Select_Team =
 		motd_ca_start();	//r00k
 		if (self.cc_queue_vote)
 		{
-			if ((clanring_request.classname == "cc_vote") && (clanring_request.owner == self))//FIXME: clanring_request doesnt have a dynamic classname; this will always be false.
+			if (/*(clanring_request.classname == "cc_vote") && */(clanring_request.owner == self))//FIXME: clanring_request doesnt have a dynamic classname; this will always be false.
 			{
 				Request_Poll_Cleanup();
 				self.cc_queue_vote = 0;
@@ -1130,6 +1131,7 @@ void () Teamplay_Select_Team =
 		{
 			if (self.next_team != world)
 			RemoveFromTeam ();
+			
 
 			sprint (self, "Cancelling \bColor-Change\b...\n");
 			self.cc_queue = 0;
@@ -1405,7 +1407,7 @@ void () arena_match_end =
 	boss.aborted = FALSE;
 
 	temp = ftos(boss.round);
-	localcmd("skill \"", temp, "\"\n");
+	localcmd("skill \"", temp, "\"\n");//this still used?
 
 	utils_make_scheduled_event(reset_match, 1);
 	pqc_match_time (0, 0);
@@ -1416,7 +1418,6 @@ void () arena_match_end =
 void() arena_refresh_player =
 {
 	updatename(self,self.netname);
-
 	self.ca_player_flag = PF_WAITING;
 	self.movetarget  = world;
 	self.model  = string_null;

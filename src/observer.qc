@@ -454,6 +454,7 @@ void () observer_start =
 		stuffcmd (self, ";color 0;\n");
 		self.team2 	= TEAM_SPECTATOR;//dont allow dead teammates to talk to playing teammates
 		self.team 	= ((self.team2) + 1);
+		self.deadflag = DEAD_NO;//R00k (testing)
 	}
 	self.takedamage = DAMAGE_NO;
 	self.solid = SOLID_NOT;

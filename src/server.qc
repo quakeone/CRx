@@ -790,9 +790,9 @@ void () clanring_show_mode =
 	else
 	{
 		if (clanring_playmode & CLANRING_CA_MODE)
-			sprint(self.owner, "clan arena x\n");
+			sprint(self.owner, "clan arena mode\n");
 		else if (clanring_playmode & CLANRING_RA_MODE)
-			sprint(self.owner, "rocket arena\n");
+			sprint(self.owner, "rocket arena mode\n");
 		else if (clanring_playmode & CLANRING_PRACTICE_MODE)
 			sprint(self.owner, "practice mode\n");
 		else
