@@ -1757,6 +1757,106 @@ void (float quakever) clanring_wingl_detect =
 		self.style = self.style | CLANRING_GLQUAKE;
 };
 
+//-----------------------------------------------------------------------------------
+/*
+void () Practice_Object_Remove =
+{
+	local entity e;
+	
+	e = find (world, classname, "practice_object");
+		
+	if (e != world)
+	{
+		remove (e);
+	}
+};
+
+//todo limit up to 15 objects and assign them to a team.
+float () practice_check =
+{
+	local entity e;
+	
+	e = find (world, classname, "practice_object");
+	
+	if (e != world && self == e.movetarget)
+	{
+		bprint ("Practice object \bremoved\b\n");
+		remove (e);
+		return TRUE;
+	}
+	else if (e != world && self != e.movetarget)
+	{
+		sprint (self, "Practice object already \bactive\b\n");
+		return TRUE;
+	}
+	
+	return FALSE;
+};
+
+void () Practice_Think =
+{
+	//if (self.health < 1) { respawn();	self.nextthink = time + (sys_ticrate * 216); return; }
+
+	local vector midorg;
+	
+	midorg = (self.origin - ((self.mins + self.maxs) * 0.5));
+	
+	if (pointcontents(midorg) == CONTENT_WATER)
+	{
+		self.velocity_z = 50;
+		self.avelocity = '10 -10 -10';
+	}
+	self.nextthink = time + (sys_ticrate * 2);//every other frame 
+}
+
+void () practice_spawn =
+{
+	local entity e;
+	
+	// If already active, remove it
+	if (practice_check ())
+		return;
+	
+	bprint ("Practice object \bspawned\n");
+	sprint (self, "-->  use practice-object to \bremove\b\n");
+
+	e 				= spawn();
+	e.solid 		= SOLID_SLIDEBOX;
+	e.movetype 		= MOVETYPE_TOSS;
+	e.takedamage 	= DAMAGE_AIM;
+	e.enemy			= self;
+	e.movetarget	= self;
+	e.classname 	= "practice_object";
+	e.health		= 100;
+	e.armortype 	= 0.8;
+	e.armorvalue	= 200;
+	e.flags        	= FL_CLIENT;
+	e.netname		= "Target Practice";
+	e.think 		= Practice_Think;
+	e.nextthink 	= time + sys_ticrate;
+	e.th_die    	= GibTarget;		
+	e.velocity 		= self.velocity;
+	e.velocity 		= aim(self, 10000);
+
+	setmodel (e, "progs/player.mdl");
+	
+	setsize (e, VEC_HULL_MIN, VEC_HULL_MAX);
+
+	setorigin(e, self.origin +'0 0 32');
+
+	e.angles_x	= self.angles_x;
+	e.angles_y	= self.angles_y;
+	e.frame		= 12;
+	
+//
+// shoot object from gun
+//
+	makevectors (self.v_angle);
+	e.velocity = e.velocity * 500;
+	sound (self, CHAN_WEAPON, "misc/r_tele4.wav", 1, ATTN_NORM);
+};
+*/
+//-----------------------------------------------------------------------------------
 void () TossAmmo;
 void () TossWeapon;
 void () TossRune;

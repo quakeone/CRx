@@ -494,12 +494,12 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		}
 		if (newtype == 2 && clanring_playmode & CLANRING_CA_MODE && newmode < 0 && newmap == "")
 		{
-			sprint(self, "Already in Clan Arena X mode\n");
+			sprint(self, "Already in Clan Arena mode\n");
 			return;
 		}
 		if (newtype == 3 && clanring_playmode & CLANRING_RA_MODE && newmode < 0 && newmap == "")
 		{
-			sprint(self, "Already in Rcoket Arena mode\n");
+			sprint(self, "Already in Rocket Arena mode\n");
 			return;
 		}
 	}
@@ -561,7 +561,7 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		}
 		else if (request_gametype == 2)
 		{
-			gametype_string = "Clan Arena X";
+			gametype_string = "Clan Arena";
 		}
 
 		if (request_mapname != "")

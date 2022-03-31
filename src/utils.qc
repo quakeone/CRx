@@ -1362,7 +1362,7 @@ void (float tm) pqc_erase_team =
 {	
 	if (self.csqc_enabled)
 	{
-		dimension_send = 1;	
+		msg_entity = self;
 		WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
 		WriteByte(MSG_MULTICAST , PQC_ERASE_TEAM);
 		WriteByte(MSG_MULTICAST, tm);

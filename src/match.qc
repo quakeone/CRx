@@ -618,6 +618,16 @@ void() match_reset_owner =
 };
 
 //
+// S P A W N S  R E M O V E  M O D E L
+//
+void() spawns_remove_model =
+{
+	self.model = "";
+	self.modelindex = 0;
+	self.mdl = "";
+}
+
+//
 //  B E G I N
 //
 //  Gib all players and start the match.
@@ -628,6 +638,11 @@ void() match_begin =
 
 	clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
 
+/*	// Remove the spawnpoints' visible models
+	utils_do_item(spawns_remove_model, "info_player_deathmatch");
+	utils_do_item(spawns_remove_model, "info_player_team1");
+	utils_do_item(spawns_remove_model, "info_player_team1");
+*/
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
 
@@ -676,6 +691,7 @@ void() match_begin =
 		dm_num_spawns = dm_num_spawns + clanring_num_starts;
 		utils_make_scheduled_event(match_remove_starts, 2);
 	}
+
 	score_resend_scoreboard();
 	// Initialize the score module
 	score_init();

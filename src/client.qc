@@ -889,21 +889,33 @@ potential spawning position for deathmatch games
 */
 void() info_player_deathmatch =
 {
-	dm_num_spawns = dm_num_spawns + 1.00;
-//	precache_model ("progs/s_light.spr");
-//	setmodel (self, "progs/s_light.spr");
+	dm_num_spawns = dm_num_spawns + 1.00;	
+/*	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		setmodel (self, "progs/player.mdl");
+		self.frame = 13;
+		self.alpha = 0.6;
+	}*/
 };
 
 void() info_player_team1 =
 {
-//	precache_model ("progs/s_light.spr");
-//	setmodel (self, "progs/s_light.spr");
+/*	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		setmodel (self, "progs/player.mdl");
+		self.frame = 13;
+		self.alpha = 0.6;
+	}*/
 };
 
 void() info_player_team2 =
 {
-//	precache_model ("progs/s_light.spr");
-//	setmodel (self, "progs/s_light.spr");
+/*	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		setmodel (self, "progs/player.mdl");
+		self.frame = 13;
+		self.alpha = 0.6;
+	}*/
 };
 /*QUAKED info_player_coop (1 0 1) (-16 -16 -24) (16 16 24)
 potential spawning position for coop games
