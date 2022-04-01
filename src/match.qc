@@ -618,6 +618,16 @@ void() match_reset_owner =
 };
 
 //
+// S P A W N S  R E M O V E  M O D E L
+//
+void() spawns_remove_model =
+{
+	self.model = string_null;
+	self.modelindex = 0;
+	self.model = string_null;
+}
+
+//
 //  B E G I N
 //
 //  Gib all players and start the match.
@@ -627,6 +637,11 @@ void() match_begin =
 	local string temp;
 
 	clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
+
+	// Remove the spawnpoints' visible models
+	utils_do_item(spawns_remove_model, "info_player_deathmatch");
+	utils_do_item(spawns_remove_model, "info_player_team1");
+	utils_do_item(spawns_remove_model, "info_player_team1");
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
@@ -676,6 +691,7 @@ void() match_begin =
 		dm_num_spawns = dm_num_spawns + clanring_num_starts;
 		utils_make_scheduled_event(match_remove_starts, 2);
 	}
+
 	score_resend_scoreboard();
 	// Initialize the score module
 	score_init();
@@ -1285,6 +1301,8 @@ void(entity ghostent) match_restore_ghost =
 		self.fixangle = 1;
 		self.movetype = MOVETYPE_FLY;
 		self.finaldest_y = MOVETYPE_FLY;
+		self.view_ofs = '0 0 22';//r00k: testing... sometimes view is tilted on restore.
+
 		// check eyes
 		if (self.invisible_finished)
 			self.modelindex = modelindex_eyes;
@@ -1342,7 +1360,8 @@ void(entity ghostent) match_restore_ghost =
 		pteam = pteam.next_team;
 	}
 
-	vote_init("\bunpause the match\b", "", match_start_unpause_countdown);
+	if (vote_init("\bunpause the match\b", "", match_start_unpause_countdown))
+		vote_yes();
 };
 
 //

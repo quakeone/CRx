@@ -332,7 +332,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = clanring_playmode - 
 				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_RA_MODE));
 			clanring_playmode = clanring_playmode | CLANRING_CA_MODE | CLANRING_NO_SPOOGE;
-			bprint("gametype set to Clan Arena X\n");
+			bprint("gametype set to Clan Arena\n");
 
 			newmapname = "dm3";
 		}
@@ -494,12 +494,12 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		}
 		if (newtype == 2 && clanring_playmode & CLANRING_CA_MODE && newmode < 0 && newmap == "")
 		{
-			sprint(self, "Already in Clan Arena X mode\n");
+			sprint(self, "Already in Clan Arena mode\n");
 			return;
 		}
 		if (newtype == 3 && clanring_playmode & CLANRING_RA_MODE && newmode < 0 && newmap == "")
 		{
-			sprint(self, "Already in Rcoket Arena mode\n");
+			sprint(self, "Already in Rocket Arena mode\n");
 			return;
 		}
 	}
@@ -561,7 +561,7 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		}
 		else if (request_gametype == 2)
 		{
-			gametype_string = "Clan Arena X";
+			gametype_string = "Clan Arena";
 		}
 
 		if (request_mapname != "")

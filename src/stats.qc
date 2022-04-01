@@ -453,7 +453,7 @@ void () stats_show_summary =
 void () stats_final_summary =
 {
 	local entity	player, pteam;
-//	local float 	wfrac, wtot, kfrac, ktot, tot_tot, tot_frac;
+	local float 	wfrac, wtot, kfrac, ktot, tot_tot, tot_frac;
 	local string 	t2 = "", teamname = "";
 	local float 	n;
 
@@ -470,86 +470,40 @@ void () stats_final_summary =
 		if ((player.style & CLANRING_CONNECTED) && (player.next_team != world))
 		{
 			//TODO:Fix stats
-			// teamname = stats_get_teamname (player.next_team.team2);
-			// bprint2 ( teamname, " \b|\b");			
-			// stats_bprint_int3 (player.true_kills);
-			// bprint ( "\b|\b");
-			// stats_bprint_int3 (player.stats_killed);//killed
-			// bprint ( "\b|\b");
-
-			// //Kill % stats
-			// kfrac = (player.frags);
-			// ktot = (kfrac + player.stats_killed);
-			// //Weapon % stats
-			// wfrac = player.stats_bul_frac + player.stats_nail_frac + player.stats_gl_frac + player.stats_rl_frac + player.stats_lg_frac;
-			// wtot  = player.stats_bul_tot + player.stats_nail_tot + player.stats_gl_tot + player.stats_rl_tot + player.stats_lg_tot;
-
-			// bprint ( " ");
-			// stats_bprint_percent3 (kfrac, ktot);
-			// bprint ( " \b|\b ");
-			// stats_bprint_percent3 (wfrac, wtot);
-			// bprint ( " \b|\b");
-			// utils_bprint_damage_gold(player.dmg_taken);
-			// bprint ( "\b|\b");
-			// utils_bprint_damage_gold(player.dmg_given);
-			// bprint ("\b|\b");							
-			// bprint3 (" ",player.netname, "\n");
+			teamname = player.next_team.netname;//stats_get_teamname (player.next_team.team2);
+			bprint2 ( teamname, " \b|\b");			
+			bprint(sprintf("%s", ftos(player.true_kills)));
+			bprint ( "\b|\b");
+			bprint(sprintf("%s", ftos(player.mangle_z)));//killed
+			bprint ( "\b|\b");
+			
+			//Kill % stats
+			kfrac = player.true_kills;
+			ktot = kfrac + player.mangle_z;
+			
+			//Weapon % stats
+			wtot = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x;
+			wfrac = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
+	
+			bprint ( " ");
+//FIXME			
+//			stats_bprint_percent3(kfrac, ktot);
+			bprint ( " \b|\b ");
+//			stats_bprint_percent3(wfrac, wtot);
+			bprint ( " \b|\b");
+//			utils_bprint_damage_gold(player.dmg_taken);
+			bprint ( "\b|\b");
+//			utils_bprint_damage_gold(player.dmg_given);
+			bprint ("\b|\b");							
+			bprint3 (" ",player.netname, "\n");
 		}
 		if (n > 16)
 			break;
 		player = find (player, classname, "player");
 	}
-/*
-	bprint ("\n\n");
-	bprint ( "bul \b-\b bullet \b\n");
-	bprint ( "nls \b-\b nail   \n");
-	bprint ( "rox \b-\b rocket \n");
-	bprint ( "gl  \b-\b grenade\n");
-	bprint ( "lg  \b-\b lightning gun \n");
-	bprint ( "dhit\b-\b rl/gl direct hits\n");
-*/
-	bprint ( "\b-----------------------------------------------------------\n");
-	bprint ( "  team   \b|\bbul\b|\bnls\b|\brox\b|\bgl \b|\blg \b|\bdhit \b|\btotal\b|\b     EFFICIENCY\n");
-	bprint ( "\b---------+---+---+---+---+---+-----+-----+-----------------\n");
-
-	n = 0;
-	player = find (world,classname, "player");
-
-	while (player != world)
-	{
-		n += 1;
-		if ((player.style & CLANRING_CONNECTED) && (player.next_team != world))
-		{			
-			//TODO:Fix stats
-			// teamname = stats_get_teamname (player.next_team.team2);
-			// bprint2 ( teamname, " \b|\b");			
-			// stats_bprint_percent3(player.stats_bul_frac, player.stats_bul_tot);
-			// bprint ( "\b|\b");
-			// stats_bprint_percent3(player.stats_nail_frac, player.stats_nail_tot);
-			// bprint ( "\b|\b");
-			// stats_bprint_percent3 (player.stats_rl_frac, player.stats_rl_tot); // rox
-			// bprint ( "\b|\b");
-			// stats_bprint_percent3(player.stats_gl_frac, player.stats_gl_tot); // grenades
-			// bprint ( "\b|\b");
-			// stats_bprint_percent3 (player.stats_lg_frac, player.stats_lg_tot); // lg
-			// bprint ( "\b|\b");
-			// utils_bprint_damage_gold(player.direct_hit);
-			// bprint ( "\b|\b");
-
-			// tot_frac = player.stats_bul_frac + player.stats_nail_frac + player.stats_gl_frac + player.stats_rl_frac + player.stats_lg_frac;
-			// tot_tot  = player.stats_bul_tot + player.stats_nail_tot + player.stats_gl_tot + player.stats_rl_tot + player.stats_lg_tot;
-
-			// bprint (" ");
-			// stats_bprint_percent3(tot_frac, tot_tot);
-			// bprint (" ");				
-			// bprint ("\b|\b");							
-			// bprint3 (" ",player.netname, "\n");
-		}
-		if (n >16)
-			break;
-		player = find (player, classname, "player");
-	}
 	
+	stats_show_efficiency();
+
 	bprint ("\n");
 	pteam = boss.next_team;
 	
@@ -570,6 +524,7 @@ void () stats_final_summary =
 	bprint ("\n");	
 	announce2((team_first_place.netname)," has won the match.");	
 	bprint ("\n");
+
 };
 
 //
