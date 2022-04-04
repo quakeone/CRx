@@ -305,7 +305,7 @@ void(float shotcount, vector dir, vector spread) FireBullets =
 	local vector direction;
 	local vector src;
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE) || (clanring_state & CLANRING_MATCH_STARTED))
+	if (stats_matter())
 		self.dest1_x = self.dest1_x + 4 * shotcount;// ELOHIM_MOD - stats
 
 	// CRMOD - count damage fired with quad    
@@ -343,8 +343,8 @@ void() W_FireShotgun =
 //	self.punchangle_x = -2;
 
 	// ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
-	self.currentammo = self.ammo_shells = self.ammo_shells - 1;
+	if (!(ammo_is_infinite()))
+		self.currentammo = self.ammo_shells = self.ammo_shells - 1;
 	makevectors(self.v_angle); // ELOHIM_MOD - added this
 	dir = aim (self, 100000);
 	FireBullets (6, dir, '0.04 0.04 0');
@@ -369,7 +369,7 @@ void() W_FireSuperShotgun =
 
 //	self.punchangle_x = -4;
     // ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_shells = self.ammo_shells - 2;
     // END_MOD
     makevectors(self.v_angle); // ELOHIM_MOD - added this
@@ -493,7 +493,7 @@ void() W_FireRocket =
 	local entity missile;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
 	// END_MOD
 	sound (self, CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM);
@@ -650,7 +650,7 @@ void() W_FireLightning =
 	//self.punchangle_x = -2;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
         self.currentammo = self.ammo_cells = self.ammo_cells - 1;
     // END_MOD
 
@@ -744,7 +744,7 @@ void() W_FireGrenade =
 	local	entity missile;
 
 	// ELOHIM_MOD - infinite ammo in practice mode unless safepractice is on
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;		
 	//else //allow no spooge in match mode
 	if (clanring_playmode & CLANRING_NO_SPOOGE)
@@ -789,6 +789,7 @@ void() W_FireGrenade =
 	setmodel (missile, "progs/grenade.mdl");
 	setsize (missile, '0 0 0', '0 0 0');		
 	setorigin (missile, self.origin);
+	self.stats_gl_tot = self.stats_gl_tot + 120; // stats
 };
 
 
@@ -846,7 +847,7 @@ void() W_FireSuperSpikes =
 	self.attack_finished = time + 0.2;
 	
 	// ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_nails = self.ammo_nails - 2;		
 	// END_MOD
 
@@ -911,7 +912,7 @@ void(float ox) W_FireSpikes =
 	self.attack_finished = time + 0.2;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_nails = self.ammo_nails - 1;
     // END_MOD
 
@@ -1639,7 +1640,7 @@ void() W_WeaponFrame =
 	if (self.deadflag)
 		return;
 	
-	if (((clanring_playmode & CLANRING_CA_MODE) && (boss.timetofight == FALSE)))
+	if (((mode_is_arena() == TRUE) && (boss.timetofight == FALSE)))
 		return;
 
 // check for attack

@@ -5,7 +5,8 @@
 //
 // All code by J.P. Grossman unless otherwise commented.
 //
-
+float () match_prewar;
+float () mode_is_arena;
 //(FIXME: replace with just centerprint or bprint)
 // Overloaded centerprints
 void (entity client, string s, ...) centerprint2 = #73; 
@@ -1554,3 +1555,32 @@ void ()pqc_ping_times =
 	WriteString(MSG_ALL, string_null);
 };
 
+float () mode_is_dmm4
+{
+	if ((clanring_playmode & CLANRING_1V1_MODE) || (clanring_playmode & CLANRING_AIR_MODE))
+		return TRUE;
+	return FALSE;
+}
+
+float () ammo_is_infinite =
+{
+	if ((clanring_playmode & CLANRING_PRACTICE_MODE) || (match_prewar()) || (mode_is_dmm4()))
+		return TRUE;
+	return FALSE;
+};
+
+float () items_are_ready =
+{
+	if ((clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED)) || (clanring_playmode & CLANRING_1V1_MODE && boss.state != CA_MATCH_PLAYING))
+		return FALSE;
+	return TRUE;
+};
+
+float () stats_matter =
+{
+	if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE) && (clanring_state & CLANRING_MATCH_STARTED))
+		return TRUE;
+	if ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING))
+		return TRUE;
+	return FALSE;
+};

@@ -85,6 +85,8 @@ float CLANRING_CA_CC_VOTE			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
 float CLANRING_CA_MODE				= 4194304;
 float CLANRING_RA_MODE				= 8388608;
+float CLANRING_1V1_MODE				=16777216;
+float CLANRING_AIR_MODE				=33554432;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
@@ -178,6 +180,8 @@ float timelimit;                    // this used to be local in CheckRules in Cl
 float fraglimit;                    // this used to be local in CheckRules in Client.qc        
 float intermission_running;         // moved here from Client.qc
 float intermission_exittime;        // moved here from Client.qc
+float highgibdist;					// airshot stat
+float highgibscore;					// airshot stat
 
 entity 	clanring_best_chase_target;		// calculated every second who is the best target to chase // CRMOD - auto
 entity 	clanring_current_chase_target;
@@ -228,8 +232,6 @@ void(string s1, string s2, string s3, string s4) cprint4;
 
 .float 	warp_episode;//chosen episode to warp
 .float 	warp_map;//chosen map to warp
-
-.float 	hook_out;
 
 //ctf variables from ZOID's 3wave
 float 	TEAM_CAPTURE_CAPTURE_BONUS    			    = 5;
@@ -283,6 +285,7 @@ float  	last_capture_team;
 
 //.float 	onteam;
 .float	true_kills;
+.float 	direct_hit;
 .float 	dmg_taken;
 .float 	dmg_given;
 .float	dmg_tally;
@@ -382,6 +385,8 @@ float	clanring_afk_check;
 float	clanring_afk_timeout;
 .float	afk_time;
 
+.float  stats_gl_frac;
+.float  stats_gl_tot;
 float	stats_timelimit;
 float	stats_matchtype;
 
@@ -398,6 +403,7 @@ servermap_t warpmap[200];
 
 string warpmenutop[11]; // Customizable map categories for the warp menu contents.
 
+string default_nextmap;
 
 //Arena
 entity boss;
@@ -410,6 +416,7 @@ entity boss;
 .float max_players;
 .float start_players;
 .float ca_player_flag;
+.float airborn_pos;
 
 .float busy;
 .float aborted;

@@ -128,7 +128,7 @@ void ()motd_print =
 	centerprint7 (self, motd_top1, motd_top2, motd_top3, motd_top4, motd_top5, motd_top6, motd_top7);
 };
 
-void ()motd_ca_start =
+void ()motd_arena_start =
 {
 	if (self.style & CLANRING_AFK_CLIENT)
 		return;//R00k v1.95 save some bandwidth...
@@ -144,28 +144,32 @@ void ()motd_ca_start =
 		motd_top2 = "\n\x85Clan Arena\x85\n\n";
 		motd_top3 = "\nchoose a team\n\n";
 		motd_top4 = "\x13 blue   \n\x14 red    \n\x15 yellow \n\x16 green  \n\npress \x17 to uncommit from team\n";
-	}	
-
-	self.style = self.style | CLANRING_MOTD;
-};
-
-void ()motd_ra_start =
-{
-	if (self.style & CLANRING_AFK_CLIENT)
-		return;//R00k v1.95 save some bandwidth...
-		
-	if (self.style & CLANRING_MOTD || (!(self.style & CLANRING_CONNECTED)) || clanring_state & CLANRING_MATCH_PAUSED)
-		return;	
-	
-	motd_top1 = "\x80\x81\x81\x81\x81\x81 ClanRing Mod \x81\x81\x81\x81\x81\x82\n";
-	motd_top7 = "\n\n\n\n";
-
-	if (clanring_playmode & CLANRING_RA_MODE)
+	}
+	else if (clanring_playmode & CLANRING_RA_MODE)
 	{
 		motd_top2 = "\n\x85Rocket Arena\x85\n\n";
 		motd_top3 = "\n1 to join\n\n";
-		motd_top4 = "\n2 to ????\n";
-	}	
+		motd_top4 = "\n2 to leave\n\n";
+	}
+	else if (boss.state == CA_MATCH_WAITING)
+	{
+		if (clanring_playmode & CLANRING_1V1_MODE)
+		{
+			motd_top2 = "\n\x851v1 Duel\x85\n\n";
+			motd_top3 = "\n1 to join\n\n";
+			motd_top4 = "\n2 to leave\n\n";
+		}
+		else if (clanring_playmode & CLANRING_AIR_MODE)
+		{
+			motd_top2 = "\n\x85Airshot Mode\x85\n\n";
+			motd_top3 = "You can only be damaged while in the air.\nThe higher off the ground, the more\ndamage you will take.\n";
+			motd_top4 = "\n1 to join\n\n\n2 to leave\n\n";
+		}
+		else
+			return;
+	}
+	else
+		return;
 
 	self.style = self.style | CLANRING_MOTD;
 };

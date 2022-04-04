@@ -55,6 +55,8 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias ctf cmd ctf\n");
 	stuffcmd(self, "alias ca cmd ca\n");
 	stuffcmd(self, "alias ra cmd ra\n");
+	stuffcmd(self, "alias 1v1 cmd 1v1\n");
+	stuffcmd(self, "alias airshot cmd airshot\n");
 	// number aliases
 	stuffcmd(self, "alias 0 impulse 230\n");
 	stuffcmd(self, "alias 1 impulse 231\n");
@@ -313,45 +315,101 @@ void() votables_set_gametype_mode_map =
 	{
 		if (request_gametype == 0)
 		{
-			clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_CAPTURE_THE_FLAG | CLANRING_CA_MODE | CLANRING_RA_MODE));
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_RA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_1V1_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIR_MODE);
 			bprint("gametype set to Deathmatch\n");
 
 			newmapname = "dm3";
 		}
 		else if (request_gametype == 1)
 		{
-			clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_CA_MODE | CLANRING_RA_MODE));
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_RA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_1V1_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIR_MODE);
 			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
-				clanring_playmode = clanring_playmode | CLANRING_CAPTURE_THE_FLAG;
+				clanring_playmode = (clanring_playmode | CLANRING_CAPTURE_THE_FLAG);
 			bprint("gametype set to Capture The Flag\n");
 
 			newmapname = "ctf1";
 		}
 		else if (request_gametype == 2)
 		{
-			clanring_playmode = clanring_playmode - 
-				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_RA_MODE));
-			clanring_playmode = clanring_playmode | CLANRING_CA_MODE | CLANRING_NO_SPOOGE;
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NORMAL_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_MATCH_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_PRACTICE_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_1V1_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_RA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIR_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE);
 			bprint("gametype set to Clan Arena\n");
 
 			newmapname = "dm3";
 		}
 		else if (request_gametype == 3)
 		{
-			clanring_playmode = clanring_playmode - 
-				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_CA_MODE));
-			clanring_playmode = clanring_playmode | CLANRING_RA_MODE | CLANRING_NO_SPOOGE;				
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NORMAL_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_MATCH_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_PRACTICE_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_1V1_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIR_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_RA_MODE);	
 			bprint("gametype set to Rocket Arena\n");
 
 			//newmapname = "dm3";
+		}
+		else if (request_gametype == 4)
+		{
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NORMAL_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_MATCH_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_PRACTICE_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_RA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIR_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_1V1_MODE);
+			cvar_set("timelimit", "0");
+			cvar_set("teamplay", "0");
+			cvar_set ("scratch2", "0");//overtime
+			bprint("gametype set to 1v1\n");
+
+			newmapname = "povdmm4";
+		}
+		else if (request_gametype == 5)
+		{
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NORMAL_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_MATCH_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_PRACTICE_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_RA_MODE);
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_1V1_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_AIR_MODE);
+			cvar_set("timelimit", "0");
+			cvar_set("teamplay", "0");
+			cvar_set ("scratch2", "0");//overtime
+			bprint("gametype set to airshot\n");
+
+			newmapname = "endif";
 		}
 		utils_set_cvar ("samelevel", clanring_playmode);
 	}
 	if (request_mode >= 0)
 	{
-		// Changing playmode from RA or CA, changes gametype to DM
-		clanring_playmode = clanring_playmode - 
-			(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CA_MODE | CLANRING_RA_MODE));
+		// Changing playmode from RA or CA, changes gametype to DM	
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NORMAL_MODE);
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_MATCH_MODE);
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_PRACTICE_MODE);
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CA_MODE);
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_RA_MODE);
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_1V1_MODE);
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIR_MODE);
 		
 		// Set the default timelimit if it was not set by options	
 		if (!(self.style & CLANRING_SETTING_OPTIONS) || (self.pos1_x != cvar ("timelimit")))
@@ -445,6 +503,8 @@ void() votables_set_gametype_mode_map =
 //		1	-	ctf
 //		2	-	ca
 //		3	-	ra
+//		4	-	1v1
+//		5	-	airshot
 //
 // newmode		(dm/ctf)
 //	   -1	-	no change
@@ -482,24 +542,37 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 	if (newtype >= 0)
 	{
 		//if request is only to change to the game type we are already in
-		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && newmode < 0 && newmap == "")
+		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) 
+			&& !(clanring_playmode & CLANRING_1V1_MODE) && !(clanring_playmode & CLANRING_CA_MODE) 
+			&& !(clanring_playmode & CLANRING_RA_MODE) && !(clanring_playmode & CLANRING_AIR_MODE) 
+			&& newmode < 0 && newmap == "")
 		{
 			sprint(self, "Already in DeathMatch mode\n");
 			return;
 		}
-		if (newtype == 1 && clanring_playmode & CLANRING_CAPTURE_THE_FLAG && newmode < 0 && newmap == "")
+		else if (newtype == 1 && clanring_playmode & CLANRING_CAPTURE_THE_FLAG && newmode < 0 && newmap == "")
 		{
 			sprint(self, "Already in Capture The Flag mode\n");
 			return;
 		}
-		if (newtype == 2 && clanring_playmode & CLANRING_CA_MODE && newmode < 0 && newmap == "")
+		else if (newtype == 2 && clanring_playmode & CLANRING_CA_MODE && newmode < 0 && newmap == "")
 		{
 			sprint(self, "Already in Clan Arena mode\n");
 			return;
 		}
-		if (newtype == 3 && clanring_playmode & CLANRING_RA_MODE && newmode < 0 && newmap == "")
+		else if (newtype == 3 && clanring_playmode & CLANRING_RA_MODE && newmode < 0 && newmap == "")
 		{
 			sprint(self, "Already in Rocket Arena mode\n");
+			return;
+		}
+		else if (newtype == 4 && clanring_playmode & CLANRING_1V1_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in 1v1 mode\n");
+			return;
+		}
+		else if (newtype == 5 && clanring_playmode & CLANRING_AIR_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in airshot mode\n");
 			return;
 		}
 	}
@@ -562,6 +635,18 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		else if (request_gametype == 2)
 		{
 			gametype_string = "Clan Arena";
+		}
+		else if (request_gametype == 3)
+		{
+			gametype_string = "Rocket Arena";
+		}
+		else if (request_gametype == 4)
+		{
+			gametype_string = "1v1";
+		}
+		else if (request_gametype == 5)
+		{
+			gametype_string = "Airshot";
 		}
 
 		if (request_mapname != "")
@@ -845,7 +930,7 @@ void () arena_force_start =
 
 void () votables_force_start =
 {
-	if (!(clanring_playmode & CLANRING_CA_MODE))
+	if (mode_is_arena() == FALSE)
 		return;
 		
 	if (boss.state != CA_MATCH_WAITING || boss.allready == TRUE)

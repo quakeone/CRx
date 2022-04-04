@@ -61,53 +61,53 @@ void () rocket_arena_init_world =
 float() ra_map =
 {		
 	if (mapname == "23ar-a")	return TRUE;
-	if (mapname == "2pyramid")  	return TRUE;
+	if (mapname == "2pyramid")  return TRUE;
 	if (mapname == "2towers")  	return TRUE;
-	if (mapname == "arenarg2")  	return TRUE;
-	if (mapname == "arenarg4")  	return TRUE;
-	if (mapname == "arenarg5")  	return TRUE;
-	if (mapname == "arenarg6")  	return TRUE;
-        if (mapname == "arenax")  	return TRUE;	
-        if (mapname == "arenazap")  	return TRUE;
-        if (mapname == "arendm1a")  	return TRUE;
-        if (mapname == "arenrg3a")  	return TRUE;
-        if (mapname == "arma4")  	return TRUE;
-        if (mapname == "barena1") 	return TRUE;	
-        if (mapname == "basarena")	return TRUE;
-        if (mapname == "bbarena2")	return TRUE;
-        if (mapname == "bunmoo3")	return TRUE;
-        if (mapname == "bunski")	return TRUE;
-        if (mapname == "chamber1")	return TRUE;
-        if (mapname == "crandome") 	return TRUE;
-        if (mapname == "dm2arena")  	return TRUE;
-        if (mapname == "dom2_1ra")  	return TRUE;
-        if (mapname == "egyptra")  	return TRUE;
-        if (mapname == "football")  	return TRUE;
-        if (mapname == "gear8")  	return TRUE;	
-        if (mapname == "gnurena")  	return TRUE;
-        if (mapname == "hill20")  	return TRUE;
-        if (mapname == "iarena2")  	return TRUE;
-        if (mapname == "id3")  		return TRUE;
-        if (mapname == "lowgrav")  	return TRUE;
-        if (mapname == "marena2")  	return TRUE;	
-        if (mapname == "marena3")  	return TRUE;	
-        if (mapname == "marena4")  	return TRUE;	
-        if (mapname == "mayan1")  	return TRUE;
-        if (mapname == "nilsrar3")  	return TRUE;
-        if (mapname == "pen2")  	return TRUE;
-        if (mapname == "pitarena")  	return TRUE;
-        if (mapname == "ptucket")  	return TRUE;
-        if (mapname == "ra_funkf")  	return TRUE;
-        if (mapname == "rarena3")  	return TRUE;
-        if (mapname == "rgarden")  	return TRUE;	
-        if (mapname == "soyarena")  	return TRUE;
-        if (mapname == "terrain2")  	return TRUE;
-        if (mapname == "uarena1")  	return TRUE;
-        if (mapname == "unholy")  	return TRUE;
-        if (mapname == "xarena3")  	return TRUE;
-        if (mapname == "yard1")  	return TRUE;
-	
-        return FALSE;
+	if (mapname == "arenarg2")  return TRUE;
+	if (mapname == "arenarg4")  return TRUE;
+	if (mapname == "arenarg5")  return TRUE;
+	if (mapname == "arenarg6")  return TRUE;
+	if (mapname == "arenax")  	return TRUE;	
+	if (mapname == "arenazap")  return TRUE;
+	if (mapname == "arendm1a")  return TRUE;
+	if (mapname == "arenrg3a")  return TRUE;
+	if (mapname == "arma4")  	return TRUE;
+	if (mapname == "barena1") 	return TRUE;	
+	if (mapname == "basarena")	return TRUE;
+	if (mapname == "bbarena2")	return TRUE;
+	if (mapname == "bunmoo3")	return TRUE;
+	if (mapname == "bunski")	return TRUE;
+	if (mapname == "chamber1")	return TRUE;
+	if (mapname == "crandome") 	return TRUE;
+	if (mapname == "dm2arena")  return TRUE;
+	if (mapname == "dom2_1ra")  return TRUE;
+	if (mapname == "egyptra")  	return TRUE;
+	if (mapname == "football")  return TRUE;
+	if (mapname == "gear8")  	return TRUE;	
+	if (mapname == "gnurena")  	return TRUE;
+	if (mapname == "hill20")  	return TRUE;
+	if (mapname == "iarena2")  	return TRUE;
+	if (mapname == "id3")  		return TRUE;
+	if (mapname == "lowgrav")  	return TRUE;
+	if (mapname == "marena2")  	return TRUE;	
+	if (mapname == "marena3")  	return TRUE;	
+	if (mapname == "marena4")  	return TRUE;	
+	if (mapname == "mayan1")  	return TRUE;
+	if (mapname == "nilsrar3")  return TRUE;
+	if (mapname == "pen2")  	return TRUE;
+	if (mapname == "pitarena")  return TRUE;
+	if (mapname == "ptucket")  	return TRUE;
+	if (mapname == "ra_funkf")  return TRUE;
+	if (mapname == "rarena3")  	return TRUE;
+	if (mapname == "rgarden")  	return TRUE;	
+	if (mapname == "soyarena")  return TRUE;
+	if (mapname == "terrain2")  return TRUE;
+	if (mapname == "uarena1")  	return TRUE;
+	if (mapname == "unholy")  	return TRUE;
+	if (mapname == "xarena3")  	return TRUE;
+	if (mapname == "yard1")  	return TRUE;
+
+	return FALSE;
 };
 
 //
@@ -1066,9 +1066,7 @@ void () RA_Select_Team =
 		return;
 	}
 
-	clear_name();
-	self.style = self.style - (self.style & CLANRING_AFK_CLIENT);
-	self.afk_time = time;
+	clear_afk_status(self);
 		
 	if (self.impulse == 1)
 	{

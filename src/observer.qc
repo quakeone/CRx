@@ -182,10 +182,7 @@ void () observer_walk_start =
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
 
-		if (clanring_playmode & CLANRING_CA_MODE)
-			motd_ca_start();
-		if (clanring_playmode & CLANRING_RA_MODE)
-			motd_ra_start();
+		motd_arena_start();
 	}
 };
 
@@ -1868,7 +1865,7 @@ void () observer_post_think =
 			}
 		}
 		else
-		if ((clanring_playmode & CLANRING_CA_MODE) && self.impulse >= 1 && self.impulse <= 5)
+		if ((mode_is_arena()) && self.impulse >= 1 && self.impulse <= 5)
 		{
 			if (boss.state != CA_MATCH_CLEANUP)
 			{

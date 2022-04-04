@@ -31,7 +31,6 @@
 //
 
 // Function declarations
-void() SUB_regen;
 void() match_timer_think2;
 void() match_enter_ghost_code;
 void() match_start_unpause_countdown;
@@ -68,6 +67,9 @@ void() match_init_world =
 
 float() match_prewar =
 {
+	if (mode_is_dmm4() && boss.state == CA_MATCH_WAITING)
+		return TRUE;
+
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//Fixed non matchmode unlimited ammo
 	
 		return FALSE;
@@ -2058,6 +2060,45 @@ void() match_impulse =
 		switch (self.impulse)
 		{
 //TODO: arena_match_impulse();
+			case (120):
+			{
+				//TODO: allow any mode to choose color and set team size to 1
+				if (clanring_playmode & CLANRING_CA_MODE)
+				{
+					if (self.team == 14)
+						self.impulse = 1;
+					else if (self.team == 5)
+						self.impulse = 2;
+					else if (self.team == 13)
+						self.impulse = 3;
+					else if (self.team == 3)
+						self.impulse = 4;
+					else
+					{
+						sprint(self, "Invalid pants color\n");
+						self.impulse = 0;
+						break;
+					}
+				}
+				else
+				{
+					self.impulse = 1;
+				}
+				Teamplay_Select_Team();
+
+				self.impulse = 0;
+				break;
+			}
+			case (121):
+			{
+				if (clanring_playmode & CLANRING_CA_MODE)
+					self.impulse = 5;
+				else
+					self.impulse = 2;
+				Teamplay_Select_Team();
+				self.impulse = 0;
+				break;
+			}
 			case (124):
 			{
 				match_request_pause();

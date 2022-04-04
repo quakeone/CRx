@@ -200,13 +200,78 @@ void(entity targ, entity attacker) Killed =
 	if (self.enemy.classname == "player")
 		targ.killed = TRUE;//R00k
 	
-	ClientObituary (self, attacker);
+	if (!(clanring_playmode & CLANRING_AIR_MODE))
+		ClientObituary (self, attacker);
 	
 	self.takedamage = DAMAGE_NO;
 	
 	self.touch = SUB_Null;
 	
-	self.th_die ();		
+	self.th_die ();
+
+	if (mode_is_dmm4() == TRUE)
+	{
+		if (clanring_playmode & CLANRING_AIR_MODE)
+		{
+			attacker.frags += 1;
+
+			if (targ.airborn_pos > 850)
+			{
+				bprint("\b[\bDEEPˆ‰SPACE…SHOT\b]\b\n");
+				sound (self, CHAN_VOICE, "demon/ddeath.wav", 1, ATTN_NORM);
+			}
+			else if (targ.airborn_pos > 650)
+			{
+				bprint("\b[\b…Moon…Shot…\b]\b\n");
+			}
+			else if (targ.airborn_pos > 450)
+			{
+				bprint("\b[\bMax Air Gib\b]\b\n");
+			}
+			else if (targ.airborn_pos > 250)
+			{
+				bprint("\b[\bBig Air Gib\b]\b\n");
+			}
+			else
+			{
+				bprint("[Mid Air Gib]\n");
+			}
+
+			if (targ.airborn_pos > highgibdist)
+			{
+					//cvar_set(" _config_com_baud", ftos(targ.airborn_pos));
+					//highgibdist = cvar("_config_com_baud");
+					highgibdist = targ.airborn_pos;
+				bprint(attacker.netname);
+				bprint(" set the new \bhighest gib\b\n");
+				sound (self, CHAN_VOICE, "misc/secret.wav", 1, ATTN_NORM);
+			}
+
+			if (boss.lip == 0 && boss.count <= 59)
+			{
+				if (attacker.super_damage_finished >= time)
+					sound (world, CHAN_ITEM, "misc/power.wav", 1, ATTN_NONE);
+
+				attacker.super_time = 1;
+				attacker.super_damage_finished = time + 3.5;
+
+				attacker.items = attacker.items | IT_QUAD;
+			}
+		}
+
+		attacker.next_team.wins += 1;
+		targ.next_team.losses += 1;
+		
+		pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
+
+		// if ((attacker != world) && (attacker.classname == "player") && (targ != attacker))
+		// {
+		// 	if (attacker.next_team.wins > team_first_place.wins)
+		// 	{
+		// 		team_first_place = attacker.next_team;
+		// 	}
+		// }
+	}
 
 	self = oself;
 
@@ -229,7 +294,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 {
 	local	vector	dir;
 	local 	entity 	oldself;
-	local 	float 	save, overkill, take, teamdamage;
+	local 	float 	save, overkill, take, teamdamage, old_damage = 0;
 	local 	string 	temp;//R00k moved here (combat.qc:509: error: Type mismatch on redeclaration of temp. string, should be __variant)
 
 	if (!targ.takedamage)
@@ -276,7 +341,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				{
 					if (attacker.weapon == IT_SHOTGUN || attacker.weapon == IT_SUPER_SHOTGUN)
 					{
-						if (!(clanring_playmode & CLANRING_MATCH_MODE) || (clanring_state & CLANRING_MATCH_STARTED))
+						if (stats_matter())
 						{
 							if (targ.classname != "button")					//R00k: dont count button damage in stats.
 								attacker.dest2_x = attacker.dest2_x + damage;
@@ -307,6 +372,11 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 					{
 						if (inflictor.classname == "spike")
 							attacker.dest2_y = attacker.dest2_y + damage;
+						else
+						{
+							if (inflictor.classname == "grenade")
+								attacker.stats_gl_frac = attacker.stats_gl_frac + damage;
+						}	
 					}
 				}
 			}
@@ -318,7 +388,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 					{
 						if (attacker.weapon == IT_SHOTGUN || attacker.weapon == IT_SUPER_SHOTGUN)
 						{
-							if (!(clanring_playmode & CLANRING_MATCH_MODE) || (clanring_state & CLANRING_MATCH_STARTED))
+							if (stats_matter())
 								attacker.clanring_badstats_z = attacker.clanring_badstats_z + damage;
 						}
 						else
@@ -411,7 +481,47 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	}
 
 	save = 0;
-	
+
+	if (clanring_playmode & CLANRING_AIR_MODE)
+	{	
+		targ.airborn_pos = 0;
+		if (targ.waterlevel < 2)
+		{		
+			old_damage = damage; // save back the original damage
+			damage = airshot_damage_z (targ, old_damage); // Modify damage to the target based on the distance they are from the ground; save the height in airborn_pos.
+			if (old_damage < 100) // Ignore splash damage caused by missing the target and hitting walls.
+				damage = 0;
+
+			if (targ.airborn_pos < 45) // This was 'if (targ.flags & FL_ONGROUND)'; take minimal damage when jumping over rockets, but still kick them up.
+			{
+				// if (targ.classname == "practice_object")
+				// 	targ.flags = targ.flags - (targ.flags & FL_ONGROUND);
+
+				dir = targ.origin - ((inflictor.absmin + inflictor.absmax) * 0.5);
+				dir = normalize (dir);
+				
+				targ.velocity = (targ.velocity + ((dir * old_damage) * 10));
+
+				if ((targ != attacker && attacker.classname == "player") && (inflictor.classname == "grenade" || inflictor.classname == "missile"))
+				{	
+					targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 6));
+				}
+				save = ceil(targ.armortype*old_damage);
+				if (save >= targ.armorvalue)
+				{
+					save = targ.armorvalue;
+					targ.armortype = 0;	// lost all armor
+					targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
+				}
+				
+				targ.armorvalue = targ.armorvalue - save;
+				return;
+			}
+		}
+	}
+	else if ((damage >= 100) && ((inflictor.classname == "missile") || (inflictor.classname == "grenade")))
+		attacker.direct_hit = attacker.direct_hit + 1;
+
 	if ((teamdamage)&&(!(match_prewar())))
 	{
 		if ((targ.deathtype != "drowning") || (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
@@ -424,7 +534,8 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				targ.armortype = 0;
 				targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
 			}
-			targ.armorvalue = targ.armorvalue - save;
+			if (!((mode_is_dmm4() == TRUE) && (targ.invincible_finished >= time)))
+				targ.armorvalue = targ.armorvalue - save;
 		}
 	}
 
@@ -463,6 +574,9 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		dir = targ.origin - (inflictor.absmin + inflictor.absmax) * 0.5;
 		dir = normalize(dir);
 		targ.velocity = targ.velocity + dir*damage*8;
+
+		if (clanring_playmode & CLANRING_AIR_MODE)
+			targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 8));
 	}
 
 	//no self or team damage in CA
@@ -506,14 +620,22 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	// END_MOD
 
 // check for godmode or invincibility
-	if (targ.invincible_finished >= time)
+	if ((clanring_playmode & CLANRING_AIR_MODE) && (attacker.super_damage_finished > time))
 	{
-		if (self.invincible_sound < time)
+		//quad ignores pent protection in airshot, but still play sound
+		sound (targ, CHAN_ITEM, "items/protect3.wav", 1, ATTN_NORM);
+	}
+	else
+	{
+		if (targ.invincible_finished >= time)
 		{
-			sound (targ, CHAN_ITEM, "items/protect3.wav", 1, ATTN_NORM);
-			self.invincible_sound = time + 2;
+			if (self.invincible_sound < time)
+			{
+				sound (targ, CHAN_ITEM, "items/protect3.wav", 1, ATTN_NORM);
+				self.invincible_sound = time + 2;
+			}
+			return;
 		}
-		return;
 	}
 
 // team play damage avoidance
@@ -541,7 +663,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		targ.dmg_taken = targ.dmg_taken + save + overkill;
 		attacker.dmg_given = attacker.dmg_given + save + overkill;
 
-		if (mode_is_arena())
+		if (clanring_playmode & CLANRING_CA_MODE)
 		{
 			attacker.dmg_given_round = (attacker.dmg_given_round + (save + overkill));
 			attacker.dmg_cache = (attacker.dmg_cache + (save + overkill));
@@ -553,6 +675,9 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			}
 		}
 	}
+
+	if (clanring_playmode & CLANRING_AIR_MODE)
+		take = damage;
 	
 	// do the damage
 	targ.health = targ.health - take;
@@ -597,6 +722,7 @@ void(entity inflictor, entity attacker, float damage, entity ignore, string dtyp
 	local 	vector 	org;
 	local	float	attacker_damaged = FALSE;
 	local	float	attacker_points = FALSE;
+	local	float	enemy_damaged = FALSE;
 
 	radius = damage + 40;
 	
@@ -631,6 +757,8 @@ void(entity inflictor, entity attacker, float damage, entity ignore, string dtyp
 
 						if (head != attacker)
 						{
+							if (head.classname == "player")
+								enemy_damaged = TRUE;
 							T_Damage (head, inflictor, attacker, points);
 						}
 						else
@@ -646,5 +774,31 @@ void(entity inflictor, entity attacker, float damage, entity ignore, string dtyp
 	}
 	
 	if (attacker_damaged)
+	{
+		if (clanring_playmode & CLANRING_CA_MODE)
+		{
+			//R00k(1.95): reduced rl/gl efficiency stats for rocketjumps
+			if ((inflictor.classname == "missile") && (inflictor.owner == attacker))
+			{				
+				if (!enemy_damaged)//only if the damage didnt effect anyone else...
+				{
+					if (attacker.dest_x >= 120)
+						attacker.dest_x = attacker.dest_x - 120;//R00k(8/30/2011 2:14PM)payback the damage incurred when shooting (not 100%)
+				}
+								
+			}				
+			else
+			{
+				if ((inflictor.classname == "grenade") && (inflictor.owner == attacker))
+				{
+					if (!enemy_damaged)
+					{
+						if (attacker.stats_gl_tot >= 120)
+						attacker.stats_gl_tot = attacker.stats_gl_tot - 120; // payback the damage incurred when shooting...
+					}
+				}				
+			}
+		}
 		T_Damage (attacker, inflictor, attacker, attacker_points);
+	}
 };
