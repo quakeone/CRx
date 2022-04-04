@@ -299,6 +299,17 @@ void() votables_phatten_player =
 	self.weaponframe = 0;
 };
 
+void() votables_clear_playmode_flags =
+{
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NORMAL_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_MATCH_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_PRACTICE_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CA_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_RA_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_DMM4_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIRSHOT_MODE);
+}
 //
 // V O T A B L E S  S E T  G A M E T Y P E  M O D E  M A P
 //
@@ -313,14 +324,23 @@ void() votables_set_gametype_mode_map =
 	{
 		if (request_gametype == 0)
 		{
+<<<<<<< Updated upstream
 			clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_CAPTURE_THE_FLAG | CLANRING_CA_MODE | CLANRING_RA_MODE));
+=======
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_MATCH_MODE);
+>>>>>>> Stashed changes
 			bprint("gametype set to Deathmatch\n");
 
 			newmapname = "dm3";
 		}
 		else if (request_gametype == 1)
 		{
+<<<<<<< Updated upstream
 			clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_CA_MODE | CLANRING_RA_MODE));
+=======
+			votables_clear_playmode_flags();
+>>>>>>> Stashed changes
 			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 				clanring_playmode = clanring_playmode | CLANRING_CAPTURE_THE_FLAG;
 			bprint("gametype set to Capture The Flag\n");
@@ -329,30 +349,73 @@ void() votables_set_gametype_mode_map =
 		}
 		else if (request_gametype == 2)
 		{
+<<<<<<< Updated upstream
 			clanring_playmode = clanring_playmode - 
 				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_RA_MODE));
 			clanring_playmode = clanring_playmode | CLANRING_CA_MODE | CLANRING_NO_SPOOGE;
+=======
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE);
+>>>>>>> Stashed changes
 			bprint("gametype set to Clan Arena\n");
 
 			newmapname = "dm3";
 		}
 		else if (request_gametype == 3)
 		{
+<<<<<<< Updated upstream
 			clanring_playmode = clanring_playmode - 
 				(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CAPTURE_THE_FLAG | CLANRING_CA_MODE));
 			clanring_playmode = clanring_playmode | CLANRING_RA_MODE | CLANRING_NO_SPOOGE;				
+=======
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_RA_MODE);	
+>>>>>>> Stashed changes
 			bprint("gametype set to Rocket Arena\n");
 
 			//newmapname = "dm3";
 		}
+<<<<<<< Updated upstream
+=======
+		else if (request_gametype == 4)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE | CLANRING_PRACTICE_MODE);
+			cvar_set("timelimit", "0");
+			cvar_set("teamplay", "0");
+			cvar_set("deathmatch", "4");
+			cvar_set ("scratch2", "0");//overtime
+			bprint("gametype set to DMM4\n");
+
+			newmapname = "povdmm4";
+		}
+		else if (request_gametype == 5)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_AIRSHOT_MODE | CLANRING_PRACTICE_MODE);
+			cvar_set("timelimit", "0");
+			cvar_set("teamplay", "0");
+			cvar_set("deathmatch", "4");
+			cvar_set ("scratch2", "0");//overtime
+			bprint("gametype set to airshot\n");
+
+			newmapname = "endif";
+		}
+>>>>>>> Stashed changes
 		utils_set_cvar ("samelevel", clanring_playmode);
 	}
 	if (request_mode >= 0)
 	{
+<<<<<<< Updated upstream
 		// Changing playmode from RA or CA, changes gametype to DM
 		clanring_playmode = clanring_playmode - 
 			(clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE | CLANRING_CA_MODE | CLANRING_RA_MODE));
 		
+=======
+		// Changing playmode from RA or CA, changes gametype to DM	
+		votables_clear_playmode_flags();
+				
+>>>>>>> Stashed changes
 		// Set the default timelimit if it was not set by options	
 		if (!(self.style & CLANRING_SETTING_OPTIONS) || (self.pos1_x != cvar ("timelimit")))
 		{
@@ -482,7 +545,14 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 	if (newtype >= 0)
 	{
 		//if request is only to change to the game type we are already in
+<<<<<<< Updated upstream
 		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && newmode < 0 && newmap == "")
+=======
+		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) 
+			&& !(clanring_playmode & CLANRING_DMM4_MODE) && !(clanring_playmode & CLANRING_CA_MODE) 
+			&& !(clanring_playmode & CLANRING_RA_MODE) && !(clanring_playmode & CLANRING_AIRSHOT_MODE) 
+			&& newmode < 0 && newmap == "")
+>>>>>>> Stashed changes
 		{
 			sprint(self, "Already in DeathMatch mode\n");
 			return;
@@ -502,6 +572,19 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 			sprint(self, "Already in Rocket Arena mode\n");
 			return;
 		}
+<<<<<<< Updated upstream
+=======
+		else if (newtype == 4 && clanring_playmode & CLANRING_DMM4_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in 1v1 mode\n");
+			return;
+		}
+		else if (newtype == 5 && clanring_playmode & CLANRING_AIRSHOT_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in airshot mode\n");
+			return;
+		}
+>>>>>>> Stashed changes
 	}
 
 	if (newmode >= 0)

@@ -265,7 +265,11 @@ void() health_touch =
 			other.items = other.items | IT_SUPERHEALTH;
 	
 			//Set this megahealth's respawn to default 125 seconds.
+<<<<<<< Updated upstream
 			if (deathmatch != 2)	// deathmatch 2 is silly old rules
+=======
+			if (deathmatch != 2 && deathmatch != 4)	// deathmatch 2 is silly old rules
+>>>>>>> Stashed changes
 			{
 				self.nextthink = time + self.healamount + 25;	// delay (5) + health + respawn wait (20)
 				self.think = SUB_regen;
@@ -386,7 +390,11 @@ void() armor_touch =
 		self.solid 			= SOLID_NOT;
 		self.model 			= string_null;
 
+<<<<<<< Updated upstream
 		if (deathmatch != 2)
+=======
+		if (deathmatch != 2 && deathmatch != 4)
+>>>>>>> Stashed changes
 			self.nextthink = time + 20;
 		
 		self.think= SUB_regen;
@@ -654,6 +662,7 @@ void() weapon_touch =
 			if (deathmatch == 1)
 			{
 				self.nextthink = time + 30;
+<<<<<<< Updated upstream
 			}
 			else
 			{
@@ -661,6 +670,8 @@ void() weapon_touch =
 				{
 					self.nextthink = time + 15;
 				}
+=======
+>>>>>>> Stashed changes
 			}
 			self.think = SUB_regen;
 		}
@@ -1066,7 +1077,11 @@ void() powerup_touch =
 	sprint(other,"\n");
 	stuffcmd(other, "bf\n");
 
+<<<<<<< Updated upstream
 	if (deathmatch != 2)	// R00k
+=======
+	if (deathmatch != 2 && deathmatch != 4)	// R00k
+>>>>>>> Stashed changes
 	{
 		self.mdl = self.model;
 		
@@ -1266,6 +1281,19 @@ void() BackpackTouch =
 	if (other.health <= 0)
 		return;
 
+<<<<<<< Updated upstream
+=======
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	{
+		//other.arenapacks += 1;
+		sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
+		// remove the backpack, change self to the player
+		remove(self);
+		self = other;
+		return;
+	}
+
+>>>>>>> Stashed changes
 	acount = 0;
 	sprint(other, "You get ");
 	if (self.items)

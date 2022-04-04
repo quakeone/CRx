@@ -701,6 +701,13 @@ void() PlayerDie =
 		DropBackpack ();
 		TeamCaptureDropFlagOfPlayer (self, 0);		
 	}
+<<<<<<< Updated upstream
+=======
+	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	{
+		DropBackpack ();
+	}
+>>>>>>> Stashed changes
 	
 	DropRune ();
 	
@@ -715,7 +722,11 @@ void() PlayerDie =
 	self.movetype = MOVETYPE_TOSS;
 	self.finaldest_y = MOVETYPE_TOSS;
 
+<<<<<<< Updated upstream
 	if ((self.health < -40) && !(clanring_playmode & CLANRING_NO_GIBS))
+=======
+	if (((self.health < -40) && !(clanring_playmode & CLANRING_NO_GIBS)) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+>>>>>>> Stashed changes
 	{
 		GibPlayer ();
 		PlayerDead ();

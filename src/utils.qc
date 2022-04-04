@@ -1554,3 +1554,26 @@ void ()pqc_ping_times =
 	WriteString(MSG_ALL, string_null);
 };
 
+<<<<<<< Updated upstream
+=======
+float () mode_is_dmm4
+{
+	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+		return TRUE;
+	return FALSE;
+}
+
+float () ammo_is_infinite =
+{
+	if ((clanring_playmode & CLANRING_PRACTICE_MODE) || (match_prewar()) || (mode_is_dmm4()))
+		return TRUE;
+	return FALSE;
+};
+
+float () items_are_ready =
+{
+	if ((clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED)) || (clanring_playmode & CLANRING_DMM4_MODE && boss.state != CA_MATCH_PLAYING))
+		return FALSE;
+	return TRUE;
+};
+>>>>>>> Stashed changes

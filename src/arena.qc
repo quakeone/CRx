@@ -34,8 +34,36 @@ void () arena_init_world =
 {
 	local entity oself;
 			
+<<<<<<< Updated upstream
 	boss 				= spawn ();
 	boss.max_rounds 	= 9;
+=======
+	boss = spawn ();
+	if (clanring_playmode & CLANRING_CA_MODE)
+	{
+		boss.max_rounds 	= 9;
+		boss.max_players 	= 8;//R00k: changed v1.52
+		boss.start_players	= 3;
+		boss.max_teams  	= 4;
+	}
+	else if (clanring_playmode & CLANRING_RA_MODE)
+	{
+		boss.max_rounds 	= 29;
+		boss.max_players 	= 1;
+		boss.start_players	= 2;
+		boss.max_teams  	= 16;
+	}
+	else
+	{
+		boss.max_rounds 	= 1;
+		boss.max_players 	= 1;
+		boss.start_players	= 2;
+		if (clanring_playmode & CLANRING_DMM4_MODE)
+			boss.max_teams  = 2;
+		else
+			boss.max_teams = 16;
+	}
+>>>>>>> Stashed changes
 	boss.round			= 1;
 	boss.count 			= 10;
 	boss.state 			= CA_MATCH_WAITING;
@@ -44,6 +72,7 @@ void () arena_init_world =
 	boss.health      	= 100;
 	boss.armorvalue  	= 200;
 	boss.armortype   	= 80.001;
+<<<<<<< Updated upstream
 	boss.ammo_shells 	= 100;
 	boss.ammo_nails  	= 100;
 	boss.ammo_rockets	= 50;
@@ -55,6 +84,36 @@ void () arena_init_world =
     boss.start_players	= 3;
     boss.max_teams  	= 4;
     //arena_ammobehavior	= 2;//deplete ammo default
+=======
+	if (mode_is_dmm4())
+	{
+		boss.health      	= 250;
+		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		{
+			boss.ammo_shells 	= 0;
+			boss.ammo_nails  	= 0;
+			boss.ammo_rockets	= 100;
+			boss.ammo_cells  	= 0;
+		}
+		else
+		{
+			boss.ammo_shells 	= 100;
+			boss.ammo_nails  	= 100;
+			boss.ammo_rockets	= 100;
+			boss.ammo_cells  	= 100;
+		}
+		boss.items = ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
+	}
+	else
+	{
+		boss.health      	= 100;
+		boss.ammo_shells 	= 100;
+		boss.ammo_nails  	= 100;
+		boss.ammo_rockets	= 50;
+		boss.ammo_cells  	= 30;
+		boss.items = ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
+	}
+>>>>>>> Stashed changes
     
     oself = self;
     self = boss;
@@ -70,7 +129,12 @@ void () arena_init_world =
 
 float () mode_is_arena
 {
+<<<<<<< Updated upstream
     if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE))
+=======
+    if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE) 
+		|| (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+>>>>>>> Stashed changes
         return TRUE;
     return FALSE;
 }
@@ -457,8 +521,30 @@ string () report_winning_team =
 
 	if ((team_first_place.wins > team_second_place.wins))
 	{
+<<<<<<< Updated upstream
 		team_score_number = (team_first_place.wins - team_second_place.wins);
 		team_winning_teamname = team_first_place.netname;
+=======
+		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		{
+			bprint2(team_first_place.netname, " wins the match.\n");
+			bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
+
+			if (team_first_place.wins > highgibscore)
+			{
+					//cvar_set("_config_com_port", ftos(team_first_place.wins));
+					//highgibscore = cvar("_config_com_port");
+					highgibscore = team_first_place.wins;
+				bprint(team_first_place.netname);
+				bprint(" set the new \bgib record\b!!");
+				sound (self, CHAN_VOICE, "misc/secret.wav", 1, ATTN_NORM);
+			}
+		}
+		else
+		{
+			team_score_number = (team_first_place.wins - team_second_place.wins);
+			team_winning_teamname = team_first_place.netname;
+>>>>>>> Stashed changes
 
 		tmp = ftos(team_score_number);
 		output = (sprintf("\x85The %s leads by ",team_winning_teamname));
@@ -474,7 +560,11 @@ string () report_winning_team =
 	}
 	else
 	{
+<<<<<<< Updated upstream
 		if ((number_teams () > 2) && ((team_first_place.wins == team_second_place.wins) && (team_first_place.wins > team_third_place.wins)) )
+=======
+		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+>>>>>>> Stashed changes
 		{
 			team_score_number = team_first_place.wins;
 			team_winning_teamname = team_first_place.netname;
@@ -1606,6 +1696,7 @@ void () arena_main_loop =
 	if (boss.state == CA_MATCH_PLAYING)
 	{
 		if (number_teams () > 1)
+<<<<<<< Updated upstream
 		{	
             if (number_teams_alive () < 2)
             {
@@ -1628,6 +1719,53 @@ void () arena_main_loop =
                     round_end();
                 }
             }
+=======
+		{
+			if (mode_is_dmm4() == TRUE)
+			{
+				arena_timer_think();
+				// if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+				// {
+				// 	if (number_teams_alive () < 2)// in airshot we are just waiting for respawn
+				// 	{				
+				// 		if (boss.wait == 0)
+				// 		{
+				// 			boss.wait = (time + 4);
+				// 			return;
+				// 		}
+
+				// 		if (time > boss.wait)
+				// 		{
+				// 			boss.wait = 0;
+				// 		}
+				// 	}
+				// }	
+			}	
+            else
+			{
+				if (number_teams_alive () < 2)
+            	{
+					if (boss.wait == 0)
+					{
+						boss.wait = (time + 4);//slight pause before end of round.
+						return;
+					}
+
+					if (time > boss.wait)
+					{
+						boss.wait = time + 99;//do round end and wait
+						if (number_teams_alive () == 0)
+						{
+							boss.round = (boss.round - 1);// repeat round
+							announce ("round is a \bdraw\b!");
+							utils_make_scheduled_event(reset_round,0.5);//fixed v.0.94b
+							return;
+						}
+						round_end();
+					}
+				}
+			}
+>>>>>>> Stashed changes
 		}
 		else
 		{
@@ -1787,4 +1925,415 @@ void () arena_main_loop =
 			}
 		}
 	}
+<<<<<<< Updated upstream
 };
+=======
+};
+
+//
+// 1v1 Mode ***************************************************************
+//
+
+void(float whichteam) Join_Queue =
+{
+	local entity pteam;
+
+	if ((boss.state == CA_MATCH_CLEANUP) || (boss.state == CA_MATCH_OVER))
+	{
+		sprint (self, "Try again in 5 seconds...\n");
+		return;
+	}
+
+	if (boss.state != CA_MATCH_WAITING)
+	{
+		sprint(self,"\bYou may not join at this time.\n");
+		return;
+	}
+
+	if (self.next_team != world)
+	{
+		sprint(self,"\bYou have already commited to a team.\n");
+		return;//already on a team
+	}
+
+	if (self.lip > time)//R00k: FIXed?
+	{
+		sprint(self,"\bYou may not join at this time.\n");
+		return;
+	}
+
+	if (mode_is_dmm4() == TRUE)
+	{
+		if (number_teams() < 1)
+			whichteam = 4;
+		else
+			whichteam = 13;
+	}
+
+	self.lip = time + 2; //R00k: two seconds between team choice will stop script spam
+
+	if (number_teams () < boss.max_teams)
+	{
+		pteam = spawn();
+
+		pteam.classname 	= "ca_team";
+		pteam.team2			= whichteam;
+		pteam.wins			= 0;
+		pteam.losses 		= 0;
+		pteam.armorvalue 	= 0;
+		pteam.health		= 0;
+		pteam.netname 		= self.netname;
+
+		pteam.next_player	= world;//init entity
+		pteam.chain_gang 	= world;//init entity
+
+		pteam.next_team   	= boss.next_team;
+		boss.next_team    	= pteam;
+
+		//announce2 ("creating the ", pteam.netname);
+		announce2 (self.netname, " has joined");
+		pqc_new_team (pteam.team2);
+	}
+	else
+	{
+		//sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
+		sprint (self, "The maximum amount of teams exists.\n");
+		return;
+	}
+
+	self.team2  	= whichteam;
+	self.next_team 	= pteam;
+
+	add_player_to_stat_list(pteam,self);
+	add_player_to_chain(pteam,self);
+
+	// tmp = ftos(self.team2);
+
+	// setcolour(self,self.team2,self.team2);
+
+	// stuffcmd(self,";color ");
+	// stuffcmd(self,tmp);
+	// stuffcmd(self,";\n");
+
+	motd_top5 = string_null;
+	motd_top6 = string_null;
+	stats_reset_player (); //BAM MOVED
+};
+
+// not being used?
+// void () RemoveFromQueue =
+// {
+// 	if (self.next_team == world)
+// 	return;
+
+// 	if (self.next_team == self)
+// 	return;
+
+// 	if (self.ca_player_flag == PF_PLAYING)
+// 	return;
+
+// 	if (!self.cc_queue)
+// 	bprint4 (self.netname, "\b has left\n");
+
+// 	remove_player_from_chain(self.next_team, self);
+// 	remove_player_from_stat_list(self.next_team, self);
+
+// 	pqc_erase_team(self.next_team.team2);
+
+// 	local entity plast = boss;
+// 	while (plast.next_team)
+// 	{
+// 		if (plast.next_team == self.next_team && plast.netname == self.netname)
+// 		{
+// 			plast.next_team = self.next_team.next_team;
+// 			break;
+// 		}
+// 		plast = plast.next_team;
+// 	}
+// 	remove (self.next_team);
+
+// 	//reset player
+// 	self.team2 	= TEAM_SPECTATOR;
+// 	self.team 	= ((self.team2) + 1);//v1.1b fixed
+// 	self.next_team 	= world;
+// 	self.weaponlevel = 0;
+
+// 	//This is fine dont change this!
+// 	if (self.style & CLANRING_CONNECTED)
+// 	{
+// 		setcolour (self, 0, 0);
+// 	}
+
+// 	self.ca_player_flag = PF_WAITING;
+// 	self.movetarget 	= world;
+// 	self.frags 			= -99;
+// };
+
+// not being used?
+// void () Teamplay_Join_Queue =
+// {
+// 	if (boss.busy == TRUE)
+// 	{
+// 		sprint(self,"Cleaning up match end. Re-join in 3 seconds.\n");		
+// 		return;
+// 	}
+
+// 	clear_afk_status(self);
+		
+// 	if (self.impulse == 1 && self.next_team == world)
+// 	{
+// 		if (boss.state == CA_MATCH_WAITING)
+// 			Join_Queue(self.team - 1);
+// 	}
+	
+// 	if (self.impulse == 2 && self.next_team != world)
+// 	{
+// 		if (self.cc_queue_vote)
+// 		{
+// 			if ((clanring_request.classname == "cc_vote") && (clanring_request.owner == self))
+// 			{
+// 				Request_Poll_Cleanup();
+// 				self.cc_queue_vote = 0;
+// 			}
+// 		}
+		
+// 		if (boss.state == CA_MATCH_WAITING)
+// 		{
+// 			if (self.next_team != world)
+// 				RemoveFromQueue ();
+// 		}
+		
+// 		if (self.cc_queue)
+// 		{
+// 			if (self.next_team != world)
+// 				RemoveFromQueue ();
+			
+// 			sprint (self, "Cancelling \bColor-Change\b...\n");
+// 			self.cc_queue = 0;
+// 			self.cc_queue_vote = 0;
+// 		}
+					
+// 		if (self.style & CLANRING_CONNECTED)
+// 		{		
+// 			stuffcmd(self,";color 0;\n");
+// 		}		
+// 	}
+	
+// 	self.impulse = 0;
+// };
+
+//
+//  S H O W  T I M E L I M I T
+//
+//  Set the console variable 'timelimit' to show relevant match
+//  information.
+//
+void() arena_show_timelimit =
+{
+	local string temp;
+
+	localcmd("timelimit \"");
+
+	if (boss.state != CA_MATCH_PLAYING)
+	{
+		if (boss.state == CA_MATCH_OVER)
+		{
+			localcmd("Final Score is ");
+			temp = ftos(team_first_place.wins);
+			if (team_first_place.wins < 0)
+				localcmd("<");
+			localcmd(temp);
+			if (team_first_place.wins < 0)
+				localcmd(">");
+			localcmd(" - ");
+			if (team_second_place != boss)
+			{
+				temp = ftos(team_second_place.wins);
+				if (team_second_place.wins < 0)
+					localcmd("<");
+				localcmd(temp);
+				if (team_second_place.wins < 0)
+					localcmd(">");
+			}
+			else
+				localcmd("???");
+			localcmd("\"\n");
+		}
+		else
+		{
+			temp = ftos(clanring_timelimit);
+			localcmd4(temp, " : Waiting for ", clanring_szteam, "s\"\n");
+		}
+	}
+	else
+	{
+		if (boss.state != CA_MATCH_PLAYING)
+		{
+			temp = ftos(clanring_timelimit);
+			localcmd2(temp, " : Match Starting\"\n");
+		}
+		else
+		{
+			if (boss.lip < 0)
+			{
+				localcmd("Sudden death\"\n");
+			}
+			else
+			{
+				temp = ftos(boss.lip);
+				localcmd2(temp, "\"\n");
+			}
+		}
+	}
+};
+
+void () arena_timer_think =
+{
+	local string temp;
+
+	boss.count -= 1;
+
+	if (boss.count < 0)
+	{
+		boss.count = 59;
+		boss.lip -= 1;
+	}
+
+	if (!(clanring_state & CLANRING_MATCH_PAUSED))
+		pqc_match_time(boss.lip, boss.count);
+
+	match_show_timelimit();
+
+//TODO:
+	// // control stats
+	// if (clanring_sentinel.movetarget)
+	// 	clanring_sentinel.movetarget.mangle_x += 1;
+
+	// clanring_sentinel.cnt += 1;
+
+	if (boss.lip)
+	{
+		if (boss.count)
+			return;
+
+		if (boss.lip > 1)
+		{
+			match_show_timelimit();
+		}
+		else
+		{
+			match_show_timelimit();
+			announce("Match ends in 1 minute");
+			if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+				sound (world, CHAN_ITEM, "ambience/thunder1.wav", 1, ATTN_NONE);
+		}
+	}
+	else
+	{
+		if (boss.count == 0)
+		{
+			boss.timetofight = FALSE;
+			stats_show_efficiency();
+			gameover = TRUE;
+			boss.state = CA_MATCH_OVER;
+			match_show_timelimit();
+			arena_match_end();
+		}
+		else if (boss.count == 30)
+		{
+			announce("Match ends in 30 seconds");
+			// if (clanring_overtime > 0)
+			// {
+			// 	temp = ftos(clanring_overtime);
+			// 	announce2(temp, " minute overtime in case of tie");
+			// }
+			// else if (clanring_overtime < 0)
+			// 	announce("Sudden death overtime in case of tie");
+		}
+		else
+		{
+			if (boss.count <= 10)
+			{
+				local string plural;
+				if (boss.count == 10)
+					announce("Match ends in T minus");
+				temp = ftos(boss.count);
+				plural = strings_szplural(boss.count);
+				announce4("  ", temp, " second", plural);
+			}
+		}
+	}
+};
+
+//
+//  A I R S H O T
+//
+float (entity targ, float damage) airshot_damage_z =
+{
+	local float		dist,rheight,rdamage;
+	local vector 	start, end;
+	local string	s;
+		
+	start 	= targ.origin;
+	end 	= start;
+	end_z 	= targ.origin_z - 2048;
+	
+	traceline (start, end, TRUE, targ);		
+	
+	dist = (targ.absmin_z - trace_endpos_z);
+
+	if (dist < 1)
+		dist = 0;
+		
+	targ.airborn_pos = dist;			
+
+	if (dist > 45) //player jump height is 45
+	{
+		rheight = rint(dist);
+		s = ftos(rheight);
+		bprint3("\b[\bheight: ",s,"\b]\b\n");
+		if (dist > 128)
+		{
+			damage = (damage + ((dist/128)*damage));
+		}
+		else
+		{
+			damage = (damage + ((dist/256)*damage));
+		}
+
+		if (damage < 100)
+		{
+			bprint("\b[\bsplash dmg\b]\b\n");
+		}
+		else
+		{
+			if (targ.health > damage)
+			{
+				rdamage = rint(damage);
+				s = ftos(rdamage);
+				bprint3("\b[\bdamage: ",s,"\b]\b\n");
+			}
+		}
+		return damage;
+	}
+
+	return 0;
+};
+vector (entity e) airshot_droptofloor =
+{
+	local vector start, end;
+		
+	start 	= e.origin;
+	end 	= e.origin;
+	end_z 	= e.origin_z - 2048;
+	
+	traceline (start, end, TRUE, world);	
+	
+	if (trace_fraction != 1)
+	{
+		return trace_endpos + '0 0 45';
+	}
+
+	return start;
+}
+>>>>>>> Stashed changes

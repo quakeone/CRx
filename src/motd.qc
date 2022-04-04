@@ -164,8 +164,32 @@ void ()motd_ra_start =
 	{
 		motd_top2 = "\n\x85Rocket Arena\x85\n\n";
 		motd_top3 = "\n1 to join\n\n";
+<<<<<<< Updated upstream
 		motd_top4 = "\n2 to ????\n";
 	}	
+=======
+		motd_top4 = "\n2 to leave\n\n";
+	}
+	else if (boss.state == CA_MATCH_WAITING)
+	{
+		if (clanring_playmode & CLANRING_DMM4_MODE)
+		{
+			motd_top2 = "\n\x851v1 Duel\x85\n\n";
+			motd_top3 = "\n1 to join\n\n";
+			motd_top4 = "\n2 to leave\n\n";
+		}
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		{
+			motd_top2 = "\n\x85Airshot Mode\x85\n\n";
+			motd_top3 = "You can only be damaged while in the air.\nThe higher off the ground, the more\ndamage you will take.\n";
+			motd_top4 = "\n1 to join\n\n\n2 to leave\n\n";
+		}
+		else
+			return;
+	}
+	else
+		return;
+>>>>>>> Stashed changes
 
 	self.style = self.style | CLANRING_MOTD;
 };

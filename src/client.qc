@@ -779,6 +779,11 @@ void() PutClientInServer =
 	}
 	self.colormap 				= num_for_edict(self);//R00k: testing (2/23/2022)
 	self.trigger_field			= spot;
+<<<<<<< Updated upstream
+=======
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		self.origin = self.oldorigin = airshot_droptofloor(spot);	
+>>>>>>> Stashed changes
 	self.classname 				= "player";
 	self.health 				= 100;
 	self.takedamage 			= DAMAGE_AIM;
@@ -1600,7 +1605,12 @@ void() CheckPowerups =
 			{
 				if (self.super_time == 1)
 				{
+<<<<<<< Updated upstream
 					sprint(self, "Quad Damage is wearing off\n");
+=======
+					if (!(clanring_playmode & CLANRING_AIRSHOT_MODE))
+						sprint(self, "Quad Damage is wearing off\n");
+>>>>>>> Stashed changes
 					//stuffcmd(self, "bf\n");
 					sound (self, CHAN_AUTO, "items/damage2.wav", 1, ATTN_NORM);
 					self.super_time = time + 1;
@@ -1704,7 +1714,11 @@ void() PlayerPostThink =
 					motd_top5 = self.netname;
 					motd_top6 = " \bis holding things up!\n";
 				}
+<<<<<<< Updated upstream
 				else
+=======
+				else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+>>>>>>> Stashed changes
 				{
 					motd_top5 = string_null;
 					motd_top6 = string_null;
@@ -1730,7 +1744,26 @@ void() PlayerPostThink =
 	}
 	else if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
 	{
+<<<<<<< Updated upstream
 		clanring_show_rules_prematch();
+=======
+		if (time >= self.delay)
+		{
+			self.delay = time + 0.1;
+			clanring_show_rules_prematch();
+		}
+	}
+	else if (clanring_playmode & CLANRING_DMM4_MODE)
+	{
+		if (boss.state == CA_MATCH_ROUNDSTART)
+		{
+			if (time >= self.delay)
+			{
+				self.delay = time + 0.1;
+				clanring_show_rules_prematch();
+			}
+		}
+>>>>>>> Stashed changes
 	}
 	else if ((clanring_state & CLANRING_MATCH_STARTED))
 	{

@@ -791,6 +791,13 @@ void () clanring_show_mode =
 	{
 		if (clanring_playmode & CLANRING_CA_MODE)
 			sprint(self.owner, "clan arena mode\n");
+<<<<<<< Updated upstream
+=======
+		else if (clanring_playmode & CLANRING_DMM4_MODE)
+			sprint(self.owner, "1v1 practice\n");
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+			sprint(self.owner, "airshot mode\n");
+>>>>>>> Stashed changes
 		else if (clanring_playmode & CLANRING_RA_MODE)
 			sprint(self.owner, "rocket arena mode\n");
 		else if (clanring_playmode & CLANRING_PRACTICE_MODE)
@@ -1478,7 +1485,19 @@ void () clanring_show_rules =
 {
 	local float temp;
 
+<<<<<<< Updated upstream
 	if (clanring_playmode & CLANRING_MATCH_MODE)
+=======
+	if (clanring_playmode & CLANRING_DMM4_MODE)
+		sprint(self, "é 1v1 match mode é\n");
+	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		sprint(self, "é  airshot mode  é\n");
+	else if (clanring_playmode & CLANRING_CA_MODE)
+		sprint(self, "éclan arena  modeé\n");
+	else if (clanring_playmode & CLANRING_RA_MODE)
+		sprint(self, "érocket arena modeé\n");
+	else if (clanring_playmode & CLANRING_MATCH_MODE)
+>>>>>>> Stashed changes
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 			sprint(self, "éCRCTF match modeé\n");
@@ -1606,7 +1625,19 @@ void () clanring_show_rules_prematch =
 
 	if (clanring_match_timer.count > 3)
 	{
+<<<<<<< Updated upstream
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+=======
+		if (clanring_playmode & CLANRING_DMM4_MODE)
+			s1 = "é 1v1 match mode é\n\n";
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+			s1 = "é  airshot mode  é\n\n";
+		else if (clanring_playmode & CLANRING_CA_MODE)
+			s1 = "éclan arena  modeé\n\n";
+		else if (clanring_playmode & CLANRING_RA_MODE)
+			s1 = "érocket arena modeé\n\n";
+		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+>>>>>>> Stashed changes
 			s1 = "écrctf match modeé\n\n";
 		else
 			s1 = "écrmod match modeé\n\n";
@@ -1624,7 +1655,14 @@ void () clanring_show_rules_prematch =
 		else
 			s3 = sprintf("%s%s\n", "\bfraglimit     ", ftos(temp));
 		
+<<<<<<< Updated upstream
 		temp = cvar("deathmatch");
+=======
+		if (clanring_playmode & CLANRING_DMM4_MODE)
+			temp = 4;
+		else
+			temp = cvar("deathmatch");
+>>>>>>> Stashed changes
 		if (temp == 1)
 			s4 = "\bweaponstay  \boff\n";
 		else if (temp == 3)

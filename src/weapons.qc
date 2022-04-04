@@ -344,7 +344,11 @@ void() W_FireShotgun =
 
 	// ELOHIM_MOD - infinite ammo in practice mode
 	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+<<<<<<< Updated upstream
 	self.currentammo = self.ammo_shells = self.ammo_shells - 1;
+=======
+		self.currentammo = self.ammo_shells = self.ammo_shells - 1;
+>>>>>>> Stashed changes
 	makevectors(self.v_angle); // ELOHIM_MOD - added this
 	dir = aim (self, 100000);
 	FireBullets (6, dir, '0.04 0.04 0');

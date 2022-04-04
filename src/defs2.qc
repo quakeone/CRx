@@ -76,7 +76,8 @@ float CLANRING_RUNES			    = 4096;
 float CLANRING_EXTENDED_OBITS    	= 8192;
 float CLANRING_CONSOLE_INITIALIZED  = 16384;
 float CLANRING_FAST_START    		= 32768;
-float CLANRING_FRESH_SPAWNS         = 65536;//used?
+float CLANRING_FRESH_SPAWNS         = 0;//65536;//used?
+float CLANRING_AIRSHOT_MODE			= 65536;
 float CLANRING_AUTO_PAUSE    		= 131072;
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
@@ -85,6 +86,11 @@ float CLANRING_CA_CC_VOTE			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
 float CLANRING_CA_MODE				= 4194304;
 float CLANRING_RA_MODE				= 8388608;
+<<<<<<< Updated upstream
+=======
+float CLANRING_DMM4_MODE			=16777216;
+//float CLANRING_AIRSHOT_MODE				=33554432;
+>>>>>>> Stashed changes
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
