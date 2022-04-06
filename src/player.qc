@@ -561,7 +561,7 @@ void() PlayerDead =
 		self.nextthink = (time + 5);
 		self.think = respawn;
 	}
-    else if (mode_is_dmm4())
+    else if (deathmatch == 4)
     {
 		if (!gameover)
 		{
@@ -709,10 +709,6 @@ void() PlayerDie =
 		DropBackpack ();
 		TeamCaptureDropFlagOfPlayer (self, 0);		
 	}
-	else if (clanring_playmode & CLANRING_AIR_MODE)
-	{
-		DropBackpack ();
-	}
 	
 	DropRune ();
 	
@@ -727,7 +723,7 @@ void() PlayerDie =
 	self.movetype = MOVETYPE_TOSS;
 	self.finaldest_y = MOVETYPE_TOSS;
 
-	if (((self.health < -40) && !(clanring_playmode & CLANRING_NO_GIBS)) || (clanring_playmode & CLANRING_AIR_MODE))
+	if (((self.health < -40) && !(clanring_playmode & CLANRING_NO_GIBS)) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		GibPlayer ();
 		PlayerDead ();

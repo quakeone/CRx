@@ -259,6 +259,8 @@ void () shortcuts_commands;
 void () arena_init_world;
 void () rocket_arena_init_world;
 void () arena_main_loop;
+void () dmm4_main_loop;
+//void () rocket_arena_main_loop;
 void () arena_precache;
 void () RemoveFromTeam;//R00k: ca mode
 //
@@ -469,9 +471,6 @@ void () clanring_init_world =
 		arena_precache();
 
 		arena_init_world();
-
-		// else if (clanring_playmode & CLANRING_RA_MODE)
-		// 	rocket_arena_init_world();
 	}
 
 	// schedule the config files for a bit later so that they don't
@@ -818,9 +817,9 @@ void () clanring_show_mode =
 	{
 		if (clanring_playmode & CLANRING_CA_MODE)
 			sprint(self.owner, "clan arena mode\n");
-		else if (clanring_playmode & CLANRING_1V1_MODE)
-			sprint(self.owner, "1v1 practice\n");
-		else if (clanring_playmode & CLANRING_AIR_MODE)
+		else if (clanring_playmode & CLANRING_DMM4_MODE)
+			sprint(self.owner, "1v1 duel\n");
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			sprint(self.owner, "airshot mode\n");
 		else if (clanring_playmode & CLANRING_RA_MODE)
 			sprint(self.owner, "rocket arena mode\n");
@@ -1509,9 +1508,9 @@ void () clanring_show_rules =
 {
 	local float temp;
 
-	if (clanring_playmode & CLANRING_1V1_MODE)
-		sprint(self, "Ž 1v1 match mode Ž\n");
-	else if (clanring_playmode & CLANRING_AIR_MODE)
+	if (clanring_playmode & CLANRING_DMM4_MODE)
+		sprint(self, "Ž 1v1 duel  mode Ž\n");
+	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		sprint(self, "Ž  airshot mode  Ž\n");
 	else if (clanring_playmode & CLANRING_CA_MODE)
 		sprint(self, "Žclan arena  modeŽ\n");
@@ -1655,9 +1654,9 @@ void () clanring_show_rules_prematch =
 
 	if (timervar > 3)
 	{
-		if (clanring_playmode & CLANRING_1V1_MODE)
-			s1 = "Ž 1v1 match mode Ž\n\n";
-		else if (clanring_playmode & CLANRING_AIR_MODE)
+		if (clanring_playmode & CLANRING_DMM4_MODE)
+			s1 = "Ž 1v1 duel  mode Ž\n\n";
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			s1 = "Ž  airshot mode  Ž\n\n";
 		else if (clanring_playmode & CLANRING_CA_MODE)
 			s1 = "Žclan arena  modeŽ\n\n";
@@ -1681,10 +1680,7 @@ void () clanring_show_rules_prematch =
 		else
 			s3 = sprintf("%s%s\n", "\bfraglimit     ", ftos(temp));
 		
-		if (clanring_playmode & CLANRING_1V1_MODE)
-			temp = 4;
-		else
-			temp = cvar("deathmatch");
+		temp = cvar("deathmatch");
 		if (temp == 1)
 			s4 = "\bweaponstay  \boff\n";
 		else if (temp == 3)
@@ -2278,7 +2274,14 @@ void () clanring_start_frame =
 				if (time >= clanring_rulescheck)
 				{
 					if (boss != world)
-						arena_main_loop();
+					{
+						if (clanring_playmode & CLANRING_CA_MODE)
+							arena_main_loop();
+						else if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
+							dmm4_main_loop();
+						// else if (clanring_playmode & CLANRING_RA_MODE)
+						// 	rocket_arena_main_loop();
+					}
 
 					clanring_rulescheck = (time + 1);
 				}

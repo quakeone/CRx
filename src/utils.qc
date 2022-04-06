@@ -721,6 +721,55 @@ void (float f) utils_print_damage_gold =
    	sprint(self, s);
 };
 
+void (float f) utils_bprint_damage_gold =
+{
+   	local float n;
+   	local float d;
+   	local float temp;
+   	local string s;
+
+   	n = rint(f);
+
+//-- f>10000
+   	d = floor(n / 10000);
+   	temp = floor(n / 10000);
+   	s = " ";
+   	if (d) s = strings_ftos_gold(d);
+        else if (f >= 10000)  s="’";
+	n = n - (d * 10000);
+  	bprint(s);
+
+//-- f>1000
+	d = floor(n / 1000);
+   	temp = floor(n / 1000);
+   	s = " ";
+   	if (d)  s = strings_ftos_gold(d);
+           else if (f >= 1000) s="’";
+     	n = n - (d * 1000);
+  	bprint(s);
+  	
+//-- f>100
+   	d = floor(n / 100);
+   	temp = floor(n / 100);
+   	s = " ";
+   	if (d)  s = strings_ftos_gold(d);
+           else if (f >= 100)  s="’";
+   	n = n - (d * 100);
+  	bprint(s);
+  	
+//-- f>10
+   	d = floor(n / 10);
+           s = " ";
+   	if (temp || d) 	s = strings_ftos_gold(d);
+   	else if (f >= 10) s="’";
+           n = n - (d * 10);     
+   	bprint(s);
+   	
+// < 10   	
+   	s = strings_ftos_gold(n);
+   	bprint(s);
+};
+
 void (float f) utils_cprint_damage =
 {
    	local float n;
@@ -1555,32 +1604,16 @@ void ()pqc_ping_times =
 	WriteString(MSG_ALL, string_null);
 };
 
-float () mode_is_dmm4
-{
-	if ((clanring_playmode & CLANRING_1V1_MODE) || (clanring_playmode & CLANRING_AIR_MODE))
-		return TRUE;
-	return FALSE;
-}
-
 float () ammo_is_infinite =
 {
-	if ((clanring_playmode & CLANRING_PRACTICE_MODE) || (match_prewar()) || (mode_is_dmm4()))
+	if ((clanring_playmode & CLANRING_PRACTICE_MODE) || (match_prewar()) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 		return TRUE;
 	return FALSE;
 };
 
 float () items_are_ready =
 {
-	if ((clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED)) || (clanring_playmode & CLANRING_1V1_MODE && boss.state != CA_MATCH_PLAYING))
+	if ((clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED)) || (clanring_playmode & CLANRING_DMM4_MODE && boss.state != CA_MATCH_PLAYING))
 		return FALSE;
 	return TRUE;
-};
-
-float () stats_matter =
-{
-	if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE) && (clanring_state & CLANRING_MATCH_STARTED))
-		return TRUE;
-	if ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING))
-		return TRUE;
-	return FALSE;
 };

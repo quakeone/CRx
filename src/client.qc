@@ -446,7 +446,7 @@ void() respawn =
 	
 	PutClientInServer ();
 
-	if (mode_is_dmm4())
+	if (clanring_playmode & CLANRING_DMM4_MODE)
 	{
 		self.invincible_finished 	= time + 2;
 		self.invincible_time 		= 1;
@@ -781,6 +781,12 @@ void() PutClientInServer =
 			//spot = SelectSpawnPoint ("info_teleport_destination");
 			spot = SelectRASpawnPoint ();
 		}
+		else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (self.rounddeaths > 0))
+		{
+			spot = SelectWipeoutSpawnPoint();
+			 if (spot == world)
+			 	spot = SelectSpawnPoint();
+		}
 		else
 		{
 		 	spot = SelectSpawnPoint();
@@ -798,16 +804,16 @@ void() PutClientInServer =
 	}
 	self.colormap 				= num_for_edict(self);//R00k: testing (2/23/2022)
 	self.trigger_field			= spot;
-	if (clanring_playmode & CLANRING_AIR_MODE)
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		self.origin = self.oldorigin = airshot_droptofloor(spot);	
 	self.classname 				= "player";
-	self.health 				= (mode_is_dmm4()) ? 250 : 100;
+	self.health 				= (clanring_playmode & CLANRING_DMM4_MODE) ? 250 : 100;
 	self.takedamage 			= DAMAGE_AIM;
 	self.solid 					= SOLID_SLIDEBOX;
 	self.movetype 				= MOVETYPE_WALK;
 	self.finaldest_y 			= MOVETYPE_WALK;
 	self.show_hostile 			= 0;
-	self.max_health 			= (mode_is_dmm4()) ? 300 : 100;
+	self.max_health 			= (clanring_playmode & CLANRING_DMM4_MODE) ? 250 : 100;
 	self.flags					= FL_CLIENT;	
 	self.air_finished			= time + 12;
 	self.dmg 					= 2;
@@ -1581,7 +1587,7 @@ void() CheckPowerups =
 			{
 				if (self.invincible_time == 1)
 				{
-					if (!mode_is_dmm4())
+					if (!(clanring_playmode & CLANRING_DMM4_MODE))
 						sprint(self, "Protection is almost burned out\n");
 					//stuffcmd(self, "bf\n");
 					sound (self, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NORM);
@@ -1625,8 +1631,7 @@ void() CheckPowerups =
 			{
 				if (self.super_time == 1)
 				{
-					if (!(clanring_playmode & CLANRING_AIR_MODE))
-						sprint(self, "Quad Damage is wearing off\n");
+					sprint(self, "Quad Damage is wearing off\n");
 					//stuffcmd(self, "bf\n");
 					sound (self, CHAN_AUTO, "items/damage2.wav", 1, ATTN_NORM);
 					self.super_time = time + 1;
@@ -1738,11 +1743,8 @@ void() PlayerPostThink =
 						motd_top6 = string_null;
 					}
 				}
-				else if (clanring_playmode & CLANRING_AIR_MODE)
+				else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 				{
-					motd_top5 = sprintf("\nGib Record: %s", ftos(highgibscore)); 
-					motd_top6 = sprintf("\nHighest Gib: %s", ftos(highgibdist));
-					
 					if (number_teams () > 1)
 						boss.allready = TRUE;
 					else
@@ -1775,7 +1777,7 @@ void() PlayerPostThink =
 			clanring_show_rules_prematch();
 		}
 	}
-	else if (clanring_playmode & CLANRING_1V1_MODE)
+	else if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		if (boss.state == CA_MATCH_ROUNDSTART)
 		{
@@ -1796,6 +1798,10 @@ void() PlayerPostThink =
 	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
 		TeamCapturePlayerUpdate();
+	}
+	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	{
+		WipeoutModePlayerUpdate();
 	}
 
 	if (self.impulse)
@@ -2721,7 +2727,7 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			votables_request_set_gametype_mode_map(-1, 2, "");
 			return;
-		case "1v1":
+		case "duel":
 			if (arg1 != "")
 			{
 				if (found_in_warp_list(arg1))	
@@ -2742,6 +2748,17 @@ void(string cmd) SV_ParseClientCommand =
 				return;
 			}
 			votables_request_set_gametype_mode_map(5, -1, "");
+			return;
+		case "wipeout":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(6, -1, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(6, -1, "");
 			return;
 		case "ca":
 			if (arg1 != "")

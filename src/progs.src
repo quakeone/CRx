@@ -18,7 +18,11 @@ angles.qc
 server.qc
 ctf.qc
 arena.qc
+ca.qc
+wipeout.qc
 ra.qc
+airshot.qc
+dmm4.qc
 stats.qc
 teamplay.qc
 score.qc

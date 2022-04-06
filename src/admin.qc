@@ -1295,8 +1295,8 @@ void() admin_impulse =
 		admin_dmset (-1);
 	else if (self.impulse == 208)
 		admin_choose_maxteams ();
-	else if (self.impulse == 209)
-		utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
+	// else if (self.impulse == 209) //removed for now
+	// 	utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
 	else if (self.impulse == 212)
 		admin_list_ghosts ();
 	else if (self.impulse == 213)

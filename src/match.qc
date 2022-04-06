@@ -67,9 +67,6 @@ void() match_init_world =
 
 float() match_prewar =
 {
-	if (mode_is_dmm4() && boss.state == CA_MATCH_WAITING)
-		return TRUE;
-
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//Fixed non matchmode unlimited ammo
 	
 		return FALSE;
@@ -1045,17 +1042,18 @@ void() match_start_timer =
 	clanring_state = clanring_state | CLANRING_TIMER_STARTED;
 	match_show_timelimit();
 
-	if (clanring_playmode & CLANRING_FAST_START)
-	{
+	// Let's GO!!!
+	// if (clanring_playmode & CLANRING_FAST_START)
+	// {
 		clanring_match_timer.dest 	= '5 11 0';
 		clanring_match_timer.count 	= 12;
-	}
-	else
-	{
-		clanring_match_timer.dest 	= '55 20 0';
-		clanring_match_timer.count 	= 59;
-		announce("Match begins in 1 minute");
-	}
+	// }
+	// else
+	// {
+	// 	clanring_match_timer.dest 	= '55 20 0';
+	// 	clanring_match_timer.count 	= 59;
+	// 	announce("Match begins in 1 minute");
+	// }
 
 	score_update_time();
 };

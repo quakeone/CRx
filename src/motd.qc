@@ -141,7 +141,10 @@ void ()motd_arena_start =
 
 	if (clanring_playmode & CLANRING_CA_MODE)
 	{
-		motd_top2 = "\n\x85Clan Arena\x85\n\n";
+		if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+			motd_top2 = "\n\x85Clan Arena (Wipeout)\x85\n\n";
+		else
+			motd_top2 = "\n\x85Clan Arena\x85\n\n";
 		motd_top3 = "\nchoose a team\n\n";
 		motd_top4 = "\x13 blue   \n\x14 red    \n\x15 yellow \n\x16 green  \n\npress \x17 to uncommit from team\n";
 	}
@@ -153,13 +156,13 @@ void ()motd_arena_start =
 	}
 	else if (boss.state == CA_MATCH_WAITING)
 	{
-		if (clanring_playmode & CLANRING_1V1_MODE)
+		if (clanring_playmode & CLANRING_DMM4_MODE)
 		{
 			motd_top2 = "\n\x851v1 Duel\x85\n\n";
 			motd_top3 = "\n1 to join\n\n";
 			motd_top4 = "\n2 to leave\n\n";
 		}
-		else if (clanring_playmode & CLANRING_AIR_MODE)
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		{
 			motd_top2 = "\n\x85Airshot Mode\x85\n\n";
 			motd_top3 = "You can only be damaged while in the air.\nThe higher off the ground, the more\ndamage you will take.\n";

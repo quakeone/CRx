@@ -1057,8 +1057,8 @@ void() console_server_flags =
 		cprint("CLANRING_EXTENDED_OBITS\n");
 	if (clanring_playmode & CLANRING_CONSOLE_INITIALIZED)
 		cprint("CLANRING_CONSOLE_INITIALIZED\n");
-	if (clanring_playmode & CLANRING_FAST_START)
-		cprint("CLANRING_FAST_START\n");
+	// if (clanring_playmode & CLANRING_FAST_START)
+	// 	cprint("CLANRING_FAST_START\n");
 	if (clanring_playmode & CLANRING_AUTO_PAUSE)
 		cprint("CLANRING_AUTO_PAUSE\n");
 
@@ -1554,8 +1554,8 @@ void() console_show_settings =
 	console_onoff(clanring_playmode & CLANRING_MODE_VOTE);
 	cprint("extended obituaries: ");
 	console_onoff(clanring_playmode & CLANRING_EXTENDED_OBITS);
-	cprint("fast match starts: ");
-	console_onoff(clanring_playmode & CLANRING_FAST_START);
+	// cprint("fast match starts: ");
+	// console_onoff(clanring_playmode & CLANRING_FAST_START);
 	cprint("fresh spawns: ");
 	console_onoff(clanring_playmode & CLANRING_FRESH_SPAWNS);
 	cprint("autopausing: ");
@@ -1782,14 +1782,14 @@ void(float command) console_command =
 		}
 		case 38:
 		{
-			if (!(clanring_playmode & CLANRING_FAST_START))
-				utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
+			// if (!(clanring_playmode & CLANRING_FAST_START))
+			// 	utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
 			break;
 		}
 		case 39: 
 		{
-			if (clanring_playmode & CLANRING_FAST_START)
-				utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
+			// if (clanring_playmode & CLANRING_FAST_START)
+			// 	utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
 			break;
 		}
 		case 40:

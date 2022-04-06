@@ -1,0 +1,88 @@
+void () airshot_init_world =
+{
+	local entity oself;
+			
+	boss = spawn ();
+    boss.max_rounds 	= 1;
+    boss.max_players 	= 1;
+    boss.start_players	= 2;
+    boss.max_teams      = 2;
+	boss.round			= 1;
+	boss.count 			= 10;
+	boss.state 			= CA_MATCH_WAITING;
+	boss.wait 			= 0;
+	boss.maprecycle		= 0;
+	boss.armorvalue  	= 200;
+	boss.armortype   	= 80.001;
+    boss.health      	= 100;
+    boss.ammo_shells 	= 0;
+    boss.ammo_nails  	= 0;
+    boss.ammo_rockets	= 100;
+    boss.ammo_cells  	= 0;
+    boss.items = (((IT_AXE | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_GRENADE_LAUNCHER);
+    
+    oself = self;
+    self = boss;
+    self.weapon = IT_ROCKET_LAUNCHER;// W_BestWeapon();
+    self = oself;	
+
+	boss.timetofight 	= FALSE;
+	boss.next_team 		= world;
+	boss.busy			= FALSE;
+	boss.aborted 		= FALSE;
+	ca_mvp_entity		= world;
+};
+
+float (entity targ, float damage) airshot_damage_z =
+{
+	local float		dist;
+	local vector 	start, end;
+	local string	s;
+		
+	start 	= targ.origin;
+	end 	= start;
+	end_z 	= targ.origin_z - 2048;
+	
+	traceline (start, end, TRUE, targ);		
+	
+	dist = (targ.absmin_z - trace_endpos_z);
+
+	if (dist < 1)
+		dist = 0;
+		
+    targ.airborn_pos = dist;            
+
+    if (dist > 45) //player jump height is 45
+    {
+        s = ftos(dist);
+        bprint3("\x90height: ",s,"\x91\n");
+        
+        if (dist > 128)
+        {
+            damage = (damage + ((dist/496)*damage));
+        }    
+        s = ftos(damage);
+        bprint3("\x90\bdamage\b: ",s,"\x91\n");
+        return rint (damage);
+    }
+
+	return 0;
+};
+
+vector (entity e) airshot_droptofloor =
+{
+	local vector start, end;
+		
+	start 	= e.origin;
+	end 	= e.origin;
+	end_z 	= e.origin_z - 2048;
+	
+	traceline (start, end, TRUE, world);	
+	
+	if (trace_fraction != 1)
+	{
+		return trace_endpos + '0 0 45';
+	}
+
+	return start;
+}

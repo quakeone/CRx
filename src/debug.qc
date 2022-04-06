@@ -79,8 +79,8 @@ void() debug_flags =
 		sprint(self, "CLANRING_EXTENDED_OBITS\n");
 	if (clanring_playmode & CLANRING_CONSOLE_INITIALIZED)
 		sprint(self, "CLANRING_CONSOLE_INITIALIZED\n");
-	if (clanring_playmode & CLANRING_FAST_START)
-		sprint(self, "CLANRING_FAST_START\n");
+	// if (clanring_playmode & CLANRING_FAST_START)
+	// 	sprint(self, "CLANRING_FAST_START\n");
 /*	if (clanring_playmode & CLANRING_FRESH_SPAWNS)
 		sprint(self, "CLANRING_FRESH_SPAWNS\n");
 */
@@ -494,8 +494,8 @@ void() debug_settings =
 	debug_onoff(clanring_playmode & CLANRING_MODE_VOTE);
 	sprint(self, "extended obituaries: ");
 	debug_onoff(clanring_playmode & CLANRING_EXTENDED_OBITS);
-	sprint(self, "fast match starts: ");
-	debug_onoff(clanring_playmode & CLANRING_FAST_START);
+	// sprint(self, "fast match starts: ");
+	// debug_onoff(clanring_playmode & CLANRING_FAST_START);
 /*	sprint(self, "fresh spawns: ");
 	debug_onoff ((clanring_playmode & CLANRING_FRESH_SPAWNS));
 */

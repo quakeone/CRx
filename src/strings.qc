@@ -698,6 +698,11 @@ string (float mode) strings_get_mode =
 		case 1: return "Practice";
 		case 2: return "Match";
 		case 3: return "CTF";
+		case 4:	return "CA";
+		case 5: return "RA";
+		case 6: return "Airshot";
+		case 7: return "DMM4";
+		case 8: return "Wipeout";		
 	}
 	return "";
 };
@@ -710,6 +715,11 @@ string (float mode) strings_get_mode_gold =
 		case 1: return "\bPractice";
 		case 2: return "\bMatch";
 		case 3: return "\bCTF";
+		case 4:	return "\bCA";
+		case 5: return "\bRA";
+		case 6: return "\bAirshot";
+		case 7: return "\bDMM4";
+		case 8: return "\bWipeout";
 	}
 	return "";
 };

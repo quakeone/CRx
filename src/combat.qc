@@ -200,7 +200,7 @@ void(entity targ, entity attacker) Killed =
 	if (self.enemy.classname == "player")
 		targ.killed = TRUE;//R00k
 	
-	if (!(clanring_playmode & CLANRING_AIR_MODE))
+	if (!(clanring_playmode & CLANRING_AIRSHOT_MODE))
 		ClientObituary (self, attacker);
 	
 	self.takedamage = DAMAGE_NO;
@@ -209,54 +209,11 @@ void(entity targ, entity attacker) Killed =
 	
 	self.th_die ();
 
-	if (mode_is_dmm4() == TRUE)
+	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
-		if (clanring_playmode & CLANRING_AIR_MODE)
+		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		{
 			attacker.frags += 1;
-
-			if (targ.airborn_pos > 850)
-			{
-				bprint("\b[\bDEEPˆ‰SPACE…SHOT\b]\b\n");
-				sound (self, CHAN_VOICE, "demon/ddeath.wav", 1, ATTN_NORM);
-			}
-			else if (targ.airborn_pos > 650)
-			{
-				bprint("\b[\b…Moon…Shot…\b]\b\n");
-			}
-			else if (targ.airborn_pos > 450)
-			{
-				bprint("\b[\bMax Air Gib\b]\b\n");
-			}
-			else if (targ.airborn_pos > 250)
-			{
-				bprint("\b[\bBig Air Gib\b]\b\n");
-			}
-			else
-			{
-				bprint("[Mid Air Gib]\n");
-			}
-
-			if (targ.airborn_pos > highgibdist)
-			{
-					//cvar_set(" _config_com_baud", ftos(targ.airborn_pos));
-					//highgibdist = cvar("_config_com_baud");
-					highgibdist = targ.airborn_pos;
-				bprint(attacker.netname);
-				bprint(" set the new \bhighest gib\b\n");
-				sound (self, CHAN_VOICE, "misc/secret.wav", 1, ATTN_NORM);
-			}
-
-			if (boss.lip == 0 && boss.count <= 59)
-			{
-				if (attacker.super_damage_finished >= time)
-					sound (world, CHAN_ITEM, "misc/power.wav", 1, ATTN_NONE);
-
-				attacker.super_time = 1;
-				attacker.super_damage_finished = time + 3.5;
-
-				attacker.items = attacker.items | IT_QUAD;
-			}
 		}
 
 		attacker.next_team.wins += 1;
@@ -341,13 +298,10 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				{
 					if (attacker.weapon == IT_SHOTGUN || attacker.weapon == IT_SUPER_SHOTGUN)
 					{
-						if (stats_matter())
-						{
-							if (targ.classname != "button")					//R00k: dont count button damage in stats.
-								attacker.dest2_x = attacker.dest2_x + damage;
-							else
-								attacker.dest1_x = attacker.dest1_x - damage;
-						}
+						if (targ.classname != "button")					//R00k: dont count button damage in stats.
+							attacker.dest2_x = attacker.dest2_x + damage;
+						else
+							attacker.dest1_x = attacker.dest1_x - damage;
 					}
 					else
 					{
@@ -388,8 +342,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 					{
 						if (attacker.weapon == IT_SHOTGUN || attacker.weapon == IT_SUPER_SHOTGUN)
 						{
-							if (stats_matter())
-								attacker.clanring_badstats_z = attacker.clanring_badstats_z + damage;
+							attacker.clanring_badstats_z = attacker.clanring_badstats_z + damage;
 						}
 						else
 						{
@@ -482,7 +435,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	save = 0;
 
-	if (clanring_playmode & CLANRING_AIR_MODE)
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{	
 		targ.airborn_pos = 0;
 		if (targ.waterlevel < 2)
@@ -506,15 +459,6 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				{	
 					targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 6));
 				}
-				save = ceil(targ.armortype*old_damage);
-				if (save >= targ.armorvalue)
-				{
-					save = targ.armorvalue;
-					targ.armortype = 0;	// lost all armor
-					targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
-				}
-				
-				targ.armorvalue = targ.armorvalue - save;
 				return;
 			}
 		}
@@ -534,7 +478,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				targ.armortype = 0;
 				targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
 			}
-			if (!((mode_is_dmm4() == TRUE) && (targ.invincible_finished >= time)))
+			if (!((clanring_playmode & CLANRING_DMM4_MODE) && (targ.invincible_finished >= time)))
 				targ.armorvalue = targ.armorvalue - save;
 		}
 	}
@@ -575,8 +519,16 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		dir = normalize(dir);
 		targ.velocity = targ.velocity + dir*damage*8;
 
-		if (clanring_playmode & CLANRING_AIR_MODE)
+		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 8));
+
+		if (clanring_playmode & CLANRING_AIRSHOT_MODE) //This is the hit when they are already off the ground, second hit...
+		{
+			if ((inflictor != world) && (targ.classname == "practice_object" || targ.movetype == MOVETYPE_WALK))
+			{
+				targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 8));
+			}
+		}
 	}
 
 	//no self or team damage in CA
@@ -620,7 +572,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	// END_MOD
 
 // check for godmode or invincibility
-	if ((clanring_playmode & CLANRING_AIR_MODE) && (attacker.super_damage_finished > time))
+	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) && (attacker.super_damage_finished > time))
 	{
 		//quad ignores pent protection in airshot, but still play sound
 		sound (targ, CHAN_ITEM, "items/protect3.wav", 1, ATTN_NORM);
@@ -676,7 +628,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		}
 	}
 
-	if (clanring_playmode & CLANRING_AIR_MODE)
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		take = damage;
 	
 	// do the damage

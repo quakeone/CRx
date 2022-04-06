@@ -305,8 +305,7 @@ void(float shotcount, vector dir, vector spread) FireBullets =
 	local vector direction;
 	local vector src;
 
-	if (stats_matter())
-		self.dest1_x = self.dest1_x + 4 * shotcount;// ELOHIM_MOD - stats
+	self.dest1_x = self.dest1_x + 4 * shotcount;// ELOHIM_MOD - stats
 
 	// CRMOD - count damage fired with quad    
 	if (self.super_damage_finished > time)			// CRMOD - stats
@@ -343,8 +342,8 @@ void() W_FireShotgun =
 //	self.punchangle_x = -2;
 
 	// ELOHIM_MOD - infinite ammo in practice mode
-	if (!(ammo_is_infinite()))
-		self.currentammo = self.ammo_shells = self.ammo_shells - 1;
+
+	self.currentammo = self.ammo_shells = self.ammo_shells - 1;
 	makevectors(self.v_angle); // ELOHIM_MOD - added this
 	dir = aim (self, 100000);
 	FireBullets (6, dir, '0.04 0.04 0');

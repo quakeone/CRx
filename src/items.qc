@@ -236,8 +236,7 @@ void() health_touch =
 		if (!T_Heal (other, self.healamount, H_ROTTEN))
 			donttake = 1;
 
-		if (stats_matter())// ELOHIM_MOD - teamstats
-			other.next_team.pos1_z = (other.next_team.pos1_z + 1);
+		other.next_team.pos1_z = (other.next_team.pos1_z + 1);
 	}
 	else
 	{
@@ -265,7 +264,7 @@ void() health_touch =
 			other.items = other.items | IT_SUPERHEALTH;
 	
 			//Set this megahealth's respawn to default 125 seconds.
-			if (deathmatch != 2 && !(mode_is_dmm4()))	// deathmatch 2 is silly old rules
+			if (deathmatch != 2 && deathmatch != 4)	// deathmatch 2 is silly old rules
 			{
 				self.nextthink = time + self.healamount + 25;	// delay (5) + health + respawn wait (20)
 				self.think = SUB_regen;
@@ -376,9 +375,7 @@ void() armor_touch =
 
 	if (!donttake)
 	{
-		if (stats_matter())
-			other.next_team.dest = (other.next_team.dest + v);
-
+		other.next_team.dest = (other.next_team.dest + v);
 
 		other.armortype 	= type;
 		other.armorvalue 	= value;
@@ -386,7 +383,7 @@ void() armor_touch =
 		self.solid 			= SOLID_NOT;
 		self.model 			= string_null;
 
-		if (deathmatch != 2 && !(mode_is_dmm4()))
+		if (deathmatch != 2 && deathmatch != 4)
 			self.nextthink = time + 20;
 		
 		self.think= SUB_regen;
@@ -555,16 +552,13 @@ void() weapon_touch =
 			if (self.weapon == IT_NAILGUN || self.weapon == IT_SUPER_NAILGUN)
 			{
 				other.ammo_nails = other.ammo_nails + 30;
-				if (stats_matter())
+				if (self.weapon == IT_NAILGUN)
 				{
-					if (self.weapon == IT_NAILGUN)
-					{
-						other.next_team.pos1_y = other.next_team.pos1_y + 1;
-					}
-					else
-					{
-						other.next_team.pos1_x = other.next_team.pos1_x + 1;
-					}
+					other.next_team.pos1_y = other.next_team.pos1_y + 1;
+				}
+				else
+				{
+					other.next_team.pos1_x = other.next_team.pos1_x + 1;
 				}
 			}
 			else
@@ -577,16 +571,13 @@ void() weapon_touch =
 					{
 						quaketv_obtained_rl(other);
 					}
-					if (stats_matter())
+					if (self.weapon == IT_ROCKET_LAUNCHER)
 					{
-						if (self.weapon == IT_ROCKET_LAUNCHER)
-						{
-							other.next_team.dest1_x = other.next_team.dest1_x + 1;
-						}
-						else
-						{
-							other.next_team.dest1_z = other.next_team.dest1_z + 1;
-						}
+						other.next_team.dest1_x = other.next_team.dest1_x + 1;
+					}
+					else
+					{
+						other.next_team.dest1_z = other.next_team.dest1_z + 1;
 					}
 				}
 				else
@@ -594,10 +585,7 @@ void() weapon_touch =
 					if (self.weapon == IT_LIGHTNING)
 					{
 						other.ammo_cells = other.ammo_cells + 15;
-						if (stats_matter())
-						{
-							other.next_team.dest1_y = other.next_team.dest1_y + 1;
-						}
+						other.next_team.dest1_y = other.next_team.dest1_y + 1;
 					}
 					else
 					{
@@ -651,20 +639,15 @@ void() weapon_touch =
 			self.model = string_null;
 			self.solid = SOLID_NOT;
 
-			if (!(mode_is_dmm4()))
+			if (deathmatch == 1)
 			{
-				if (deathmatch == 1)
-				{
-					self.nextthink = time + 30;
-				}
-				else
-				{
-					if (deathmatch == 4)
-					{
-						self.nextthink = time + 15;
-					}
-				}
+				self.nextthink = time + 30;
 			}
+			else if (deathmatch == 4)
+			{
+				self.nextthink = -1;//time + 15;
+			}
+
 			self.think = SUB_regen;
 		}
 	}
@@ -843,20 +826,15 @@ void() ammo_touch =
 		self.model = string_null;
 		self.solid = SOLID_NOT;
 
-		if (!(mode_is_dmm4()))
+		if (deathmatch == 3)
 		{
-			if (deathmatch == 3)
-			{
-				self.nextthink = time + 15;
-			}
-			else
-			{
-				if (deathmatch != 2)
-				{
-					self.nextthink = time + 30;
-				}
-			}
+			self.nextthink = time + 15;
 		}
+		else if (deathmatch == 1)
+		{
+			self.nextthink = time + 30;
+		}
+
 		self.think = SUB_regen;
 
 	}	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes
@@ -1071,7 +1049,7 @@ void() powerup_touch =
 	sprint(other,"\n");
 	stuffcmd(other, "bf\n");
 
-	if (deathmatch != 2 && !(mode_is_dmm4()))	// R00k
+	if (deathmatch != 2 && deathmatch != 4)	// R00k
 	{
 		self.mdl = self.model;
 		
@@ -1114,10 +1092,7 @@ void() powerup_touch =
 		other.effects = other.effects | EF_DIMLIGHT;	// 1998-07-23 Better performance in handling of powerups by Maddes
 		other.effects = other.effects | EF_RED;	
 
-		if (stats_matter())
-		{
-			other.next_team.dest2_y = other.next_team.dest2_y + 1;
-		}
+		other.next_team.dest2_y = other.next_team.dest2_y + 1;
 	}
 
 	if (self.items == IT_INVISIBILITY)
@@ -1133,10 +1108,8 @@ void() powerup_touch =
 		other.frame = 0;
 		//other.modelindex = modelindex_eyes;
 		// 1998-07-23 Better performance in handling of powerups by Maddes  end
-		if (stats_matter())
-		{
-			other.next_team.dest2_z = other.next_team.dest2_z + 1;
-		}
+
+		other.next_team.dest2_z = other.next_team.dest2_z + 1;
 	}
 
 	// 1998-12-24 Improved weapon and powerup touch functions by Maddes/Sméagol  start
@@ -1158,8 +1131,7 @@ void() powerup_touch =
 
 		// CRMOD - stats
 		other.clanring_qdwep_z = other.clanring_qdwep_z + 1;
-		if (stats_matter())
-			other.next_team.dest2_x = other.next_team.dest2_x + 1;
+		other.next_team.dest2_x = other.next_team.dest2_x + 1;
 	}
 	activator = other;
 	SUB_UseTargets();// fire all targets / killtargets
@@ -1271,7 +1243,7 @@ void() BackpackTouch =
 	if (other.health <= 0)
 		return;
 
-	if (clanring_playmode & CLANRING_AIR_MODE)
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
 		//other.arenapacks += 1;
 		sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
@@ -1292,7 +1264,7 @@ void() BackpackTouch =
 			sprint(other, self.netname);
 			if (self.items == IT_ROCKET_LAUNCHER)
 			{
-				if ((stats_matter()) && (other.team != self.owner.team))
+				if (other.team != self.owner.team)
 				{
 					quaketv_announce4(other.netname, " got ", self.owner.netname, "'s RL");
 					quaketv_sound ("misc/talk.wav");
@@ -1409,8 +1381,7 @@ void() DropBackpack =
 	{
 		item.netname = "Rocket Launcher";
 		// ELOHIM_MOD - quaketv code	
-		if (stats_matter())
-			self.next_team.mangle_z = self.next_team.mangle_z + 1; // stats
+		self.next_team.mangle_z = self.next_team.mangle_z + 1; // stats
 	}
 	else if (item.items == IT_LIGHTNING)
 			item.netname = "Thunderbolt";

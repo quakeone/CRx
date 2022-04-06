@@ -1457,6 +1457,7 @@ void () observer_update_display =
     local string w, armour, aval, healthammo, ammo;
 	local entity player;	// CRMOD cameras
 	local string score, pad, teamname;
+	local float rtime;
 
 	// compute score and pad
 	if (teamplay && (clanring_state & CLANRING_MATCH_STARTED))
@@ -1495,6 +1496,13 @@ void () observer_update_display =
 	{
 		clanring_show_rules_prematch();
 		return;
+	}
+
+	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING)
+			&& (boss.wait == 0) && (self.next_team != world))
+	{
+		rtime = floor(time - self.respawntime);
+		centerprint3(self, "\n\n\n\n\n\X90Respawn in: ", ftos(rtime), "\X91");
 	}
 
     if (!player)

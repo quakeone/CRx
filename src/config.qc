@@ -201,15 +201,15 @@ void(string command, string value) config_command =
 		case "faststarton":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (!(clanring_playmode & CLANRING_FAST_START))
-				utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
+			// if (!(clanring_playmode & CLANRING_FAST_START))
+			// 	utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
 			break;
 		}
 		case "faststartoff": 
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (clanring_playmode & CLANRING_FAST_START)
-				utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
+			// if (clanring_playmode & CLANRING_FAST_START)
+			// 	utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
 			break;
 		}
 		case "nopractice":
