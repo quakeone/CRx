@@ -211,15 +211,22 @@ void(entity targ, entity attacker) Killed =
 
 	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
-		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
+			targ.next_team.losses += 1;
+		if ((attacker != world) && (attacker.classname == "player") && (attacker.next_team != world))
 		{
-			attacker.frags += 1;
-		}
+			if (targ != attacker)
+			{
+				if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+				{
+					attacker.frags += 1;
+				}
 
-		attacker.next_team.wins += 1;
-		targ.next_team.losses += 1;
-		
-		pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
+				attacker.next_team.wins += 1;
+			}
+			
+			pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
+		}
 
 		// if ((attacker != world) && (attacker.classname == "player") && (targ != attacker))
 		// {
