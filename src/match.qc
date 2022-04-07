@@ -681,7 +681,7 @@ void() match_begin =
 	
 	// reset quad, pent counts
 	utils_do_item(match_reset_owner, "item_artifact_invulnerability");
-	utils_do_item(match_reset_owner, "item_super_damage");
+	utils_do_item(match_reset_owner, "item_artifact_super_damage");
 
 	// Temporarily turn the extra start points into spawn points if necessary
 	if (match_count_players() > dm_num_spawns)

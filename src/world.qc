@@ -212,6 +212,8 @@ void() worldspawn =
 	precache_sound ("items/damage3.wav");
 
 	precache_sound ("misc/power.wav");			//lightning for boss
+	precache_sound ("misc/secret.wav");
+	precache_sound ("demon/ddeath.wav");
 
 // player gib sounds
 	precache_sound ("player/gib.wav");			// player gib sound

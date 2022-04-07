@@ -1,3 +1,5 @@
+void() powerup_touch;
+
 float (float numdeaths) get_wipeout_respawn =
 {
 	switch (numdeaths)
@@ -17,18 +19,20 @@ float (float numdeaths) get_wipeout_respawn =
 
 float (entity team1) wipeout_teammates_left =
 {
-	local entity e, tmp;
-	local float n = 0;
+	local entity e, tmp, spot, item;
+	local float n = 0, ttl = 0, loop_count = 64;
+	local float	pcount;	
 
 	e = team1;
 
 	while (e.chain_gang)
 	{
+		ttl = ttl + 1;
         if (e.chain_gang.deadflag == DEAD_NO && (IS_CA_OBSERVER(e.chain_gang) == FALSE) && ((e.chain_gang.style & CLANRING_CONNECTED)))
 		{
 			n = n + 1;
 		}
-		else if ((e.chain_gang.deadflag != DEAD_NO) && (e.chain_gang.style & CLANRING_CONNECTED))
+		else if ((e.chain_gang.deadflag == DEAD_NO) && (e.chain_gang.ca_player_flag == PF_DEAD) && (e.chain_gang.style & CLANRING_CONNECTED) && (e.chain_gang.respawntime > 0))
 		{
 			if ((time >= e.chain_gang.respawntime) && (boss.wait == 0))
 			{
@@ -37,10 +41,63 @@ float (entity team1) wipeout_teammates_left =
 				observer_end ();
                 bprint2(self.netname, " has respawned\n");
 				self = tmp;
+
+				n = n + 1;
 			}
 		}
 		e = e.chain_gang;
 	}
+
+	if ((n == 1) && (ttl > 1) && (boss.wait == 0))
+	{
+		if (boss.quadtime == 0)
+		{
+			boss.quadtime = time + 5;
+		}
+		else if (time > boss.quadtime)
+		{
+			pcount = random() * (dm_num_spawns - 0.001);
+			pcount = floor(pcount);
+			spot = find(world, classname, "info_player_deathmatch");
+
+			if (spot != world)
+			{
+				while (pcount > 0)
+				{
+					spot = find(spot, classname, "info_player_deathmatch");
+
+					if (spot != world)
+						pcount = pcount - 1;
+				}
+				if (spot == world)
+					spot = find(spot, classname, "info_player_deathmatch");
+
+				item = spawn ();
+				item.origin = spot.origin;
+				item.velocity = '0 0 0';
+				item.noise = "items/damage.wav";
+				item.mdl = "progs/quaddama.mdl";
+				setmodel (item, item.mdl);
+				item.netname = "Quad Damage";
+				item.items = IT_QUAD;
+
+				setsize (item, '-16 -16 -24', '16 16 32');
+
+				item.count = item.cnt = 0;
+				item.owner = world;
+				item.height = 0;
+				item.flags = FL_ITEM;
+				item.solid = SOLID_TRIGGER;
+				item.movetype = MOVETYPE_TOSS;
+
+				item.touch = powerup_touch;
+				// item.nextthink = -1;
+				// item.think = SUB_Remove;
+			}
+			boss.quadtime = time + 999;
+		}
+	}
+
 	return n;
 };
 
@@ -76,7 +133,7 @@ void () wipeout_init_teamalive =
 	}
 };
 
-entity (entity e, float spawnradius) FindSpawnpointByOrigin =
+entity (entity e, float spawnradius) find_spawn_point =
 {
 	local entity head;
 	head = findradius (e.origin, spawnradius);					
@@ -124,7 +181,7 @@ entity () SelectWipeoutSpawnPoint =
 		while ((spawnradius < 1000) && !(localspawn))
 		{
 			spawnradius += 128;
-			localspawn = FindSpawnpointByOrigin(tmp, spawnradius);
+			localspawn = find_spawn_point(tmp, spawnradius);
 		}
 	}
 

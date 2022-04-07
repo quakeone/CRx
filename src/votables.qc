@@ -56,7 +56,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias wipeout cmd wipeout\n");
 	stuffcmd(self, "alias ca cmd ca\n");
 	stuffcmd(self, "alias ra cmd ra\n");
-	stuffcmd(self, "alias duel cmd duel\n");
+	stuffcmd(self, "alias dmm4 cmd dmm4\n");
 	stuffcmd(self, "alias airshot cmd airshot\n");
 	// number aliases
 	stuffcmd(self, "alias 0 impulse 230\n");
@@ -359,7 +359,7 @@ void() votables_set_gametype_mode_map =
 		{
 			votables_clear_playmode_flags();
 			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE);
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "1");
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena\n");
@@ -406,7 +406,7 @@ void() votables_set_gametype_mode_map =
 			votables_clear_playmode_flags();
 			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE | CLANRING_WIPEOUT_MODE);
 			//cvar_set("timelimit", "0");
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "1");
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena Wipeout\n");
@@ -665,6 +665,10 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		else if (request_gametype == 5)
 		{
 			gametype_string = "Airshot";
+		}
+		else if (request_gametype == 6)
+		{
+			gametype_string = "Wipeout";
 		}
 
 		if (request_mapname != "")

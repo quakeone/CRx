@@ -181,6 +181,7 @@ Killed
 void(entity targ, entity attacker) Killed =
 {
 	local entity oself;
+	local float rtime;
 
 	oself = self;
 	self = targ;
@@ -212,7 +213,10 @@ void(entity targ, entity attacker) Killed =
 	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
+		{
 			targ.next_team.losses += 1;
+			pqc_team_frags(targ.next_team.team2, targ.next_team.wins);
+		}
 		if ((attacker != world) && (attacker.classname == "player") && (attacker.next_team != world))
 		{
 			if (targ != attacker)
@@ -220,12 +224,53 @@ void(entity targ, entity attacker) Killed =
 				if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 				{
 					attacker.frags += 1;
+
+					if (targ.airborn_pos > 850)
+					{
+						bprint("\b[\bDEEPˆ‰SPACE\b]\b\n");
+						sound (self, CHAN_VOICE, "demon/ddeath.wav", 1, ATTN_NORM);
+					}
+					else if (targ.airborn_pos > 650)
+					{
+						bprint("\b[\b…Moon…Shot…\b]\b\n");
+					}
+					else if (targ.airborn_pos > 450)
+					{
+						bprint("\b[\bMax Air Gib\b]\b\n");
+					}
+					else if (targ.airborn_pos > 250)
+					{
+						bprint("\b[\bBig Air Gib\b]\b\n");
+					}
+					else
+					{
+						bprint("[Mid Air Gib]\n");
+					}
+
+					// if (targ.airborn_pos > highgibdist)
+					// {
+					// 	cvar_set("saved2", ftos(targ.airborn_pos));
+					// 	highgibdist = cvar("saved2");
+					// 	bprint(attacker.netname);
+					// 	bprint(" set the new \bhighest gib\b\n");
+					// 	sound (self, CHAN_VOICE, "misc/secret.wav", 1, ATTN_NORM);
+					// }
+
+					if (boss.lip < 1)
+					{
+						if (attacker.super_damage_finished >= time)
+							sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
+
+						attacker.super_time = 1;
+						attacker.super_damage_finished = time + 3.5;
+
+						attacker.items = attacker.items | IT_QUAD;
+					}
 				}
 
 				attacker.next_team.wins += 1;
+				pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
 			}
-			
-			pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
 		}
 
 		// if ((attacker != world) && (attacker.classname == "player") && (targ != attacker))
@@ -238,8 +283,16 @@ void(entity targ, entity attacker) Killed =
 	}
 
 	self = oself;
+	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	{
+		rtime = get_wipeout_respawn(targ.rounddeaths);
 
-	if (clanring_playmode & CLANRING_CA_MODE)
+		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
+		{
+			bprint(targ.netname, " will respawn in ", ftos(rtime), " seconds");
+		}
+	}
+	else if (clanring_playmode & CLANRING_CA_MODE)
 	{
 		CheckForLastTwoPlayers();
 	}
@@ -410,7 +463,8 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				}
 			}
 		}
-		else if ((clanring_playmode & CLANRING_CA_MODE) && (targ.team > 0)&&(targ.team == attacker.team))
+		
+		if ((clanring_playmode & CLANRING_CA_MODE) && (targ.team > 0)&&(targ.team == attacker.team))
 		{
 			teamdamage = FALSE;
 		}
@@ -451,6 +505,8 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			damage = airshot_damage_z (targ, old_damage); // Modify damage to the target based on the distance they are from the ground; save the height in airborn_pos.
 			if (old_damage < 100) // Ignore splash damage caused by missing the target and hitting walls.
 				damage = 0;
+			else if ((attacker.super_damage_finished <= time) || ((attacker.super_damage_finished > time) && (old_damage >= 400)))
+				attacker.direct_hit = attacker.direct_hit + 1;
 
 			if (targ.airborn_pos < 45) // This was 'if (targ.flags & FL_ONGROUND)'; take minimal damage when jumping over rockets, but still kick them up.
 			{
@@ -466,6 +522,15 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				{	
 					targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 6));
 				}
+				save = ceil(targ.armortype*old_damage);
+				if (save >= targ.armorvalue)
+				{
+					save = targ.armorvalue;
+					targ.armortype = 0;	// lost all armor
+					targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
+				}
+				
+				targ.armorvalue = targ.armorvalue - save;
 				return;
 			}
 		}
@@ -528,14 +593,6 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 8));
-
-		if (clanring_playmode & CLANRING_AIRSHOT_MODE) //This is the hit when they are already off the ground, second hit...
-		{
-			if ((inflictor != world) && (targ.classname == "practice_object" || targ.movetype == MOVETYPE_WALK))
-			{
-				targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 8));
-			}
-		}
 	}
 
 	//no self or team damage in CA

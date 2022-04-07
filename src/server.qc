@@ -1208,6 +1208,7 @@ void () clanring_put_client_in_server =
 			self.cc_queue	= 0;//R00k - test		
 			self.cc_queue_vote	= 0;//R00k - test
 			self.ca_player_flag 	= PF_PLAYING;
+			self.respawntime			= 0;
 		}
 
 		UnHookPlayer();
@@ -1512,6 +1513,8 @@ void () clanring_show_rules =
 		sprint(self, "é 1v1 duel  mode é\n");
 	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		sprint(self, "é  airshot mode  é\n");
+	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)	
+		sprint(self, "é wipeout modeé\n");
 	else if (clanring_playmode & CLANRING_CA_MODE)
 		sprint(self, "éclan arena  modeé\n");
 	else if (clanring_playmode & CLANRING_RA_MODE)
@@ -1655,9 +1658,11 @@ void () clanring_show_rules_prematch =
 	if (timervar > 3)
 	{
 		if (clanring_playmode & CLANRING_DMM4_MODE)
-			s1 = "é 1v1 duel  mode é\n\n";
+			s1 = "é   duel  mode   é\n\n";
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			s1 = "é  airshot mode  é\n\n";
+		else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+			s1 = "éclan arena wipeouté\n\n";
 		else if (clanring_playmode & CLANRING_CA_MODE)
 			s1 = "éclan arena  modeé\n\n";
 		else if (clanring_playmode & CLANRING_RA_MODE)

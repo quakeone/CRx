@@ -446,7 +446,7 @@ void() respawn =
 	
 	PutClientInServer ();
 
-	if (clanring_playmode & CLANRING_DMM4_MODE)
+	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		self.invincible_finished 	= time + 2;
 		self.invincible_time 		= 1;
@@ -514,15 +514,25 @@ void() ClientKill =
 		client_frag(self, -1);
 		self.mangle_x = self.mangle_x + 1;
 	}
-	else if (((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE))
-			&& (self.ca_player_flag == PF_PLAYING))
+	else if (mode_is_arena() && (self.ca_player_flag == PF_PLAYING))
 	{
-			im_dead_now_what();
-			GibPlayer();
-			self.nextthink = -1;
-			self.deadflag = DEAD_DEAD;
-			self.jump_flag = 0;
-			return;
+		client_frag(self, -1);
+		self.mangle_x = self.mangle_x + 1;
+
+		if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE))
+		{
+				im_dead_now_what();
+				GibPlayer();
+				self.nextthink = -1;
+				self.deadflag = DEAD_DEAD;
+				self.jump_flag = 0;
+				return;
+		}
+		else if (self.next_team != world)
+		{
+			self.next_team.losses += 1;
+			pqc_team_frags(self.next_team.team2, self.next_team.wins);
+		}
 	}
 	if (self.items & IT_ROCKET_LAUNCHER)
 	{
@@ -775,7 +785,7 @@ void() PutClientInServer =
 
 	if (mode_is_arena())
 	{
-		//TODO:
+		//TODO: ra for all maps?
 		if ((ra_map()) && ((self.ca_player_flag == PF_PLAYING)))
 		{
 			//spot = SelectSpawnPoint ("info_teleport_destination");
@@ -783,8 +793,9 @@ void() PutClientInServer =
 		}
 		else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (self.rounddeaths > 0))
 		{
-			spot = SelectWipeoutSpawnPoint();
-			 if (spot == world)
+			//TODO: spawn near team ?
+			// spot = SelectWipeoutSpawnPoint();
+			//  if (spot == world)
 			 	spot = SelectSpawnPoint();
 		}
 		else
@@ -807,13 +818,13 @@ void() PutClientInServer =
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		self.origin = self.oldorigin = airshot_droptofloor(spot);	
 	self.classname 				= "player";
-	self.health 				= (clanring_playmode & CLANRING_DMM4_MODE) ? 250 : 100;
+	self.health 				= 100;
 	self.takedamage 			= DAMAGE_AIM;
 	self.solid 					= SOLID_SLIDEBOX;
 	self.movetype 				= MOVETYPE_WALK;
 	self.finaldest_y 			= MOVETYPE_WALK;
 	self.show_hostile 			= 0;
-	self.max_health 			= (clanring_playmode & CLANRING_DMM4_MODE) ? 250 : 100;
+	self.max_health 			= 100;
 	self.flags					= FL_CLIENT;	
 	self.air_finished			= time + 12;
 	self.dmg 					= 2;
@@ -828,6 +839,12 @@ void() PutClientInServer =
 	self.waterlevel 			= 0;
 	self.velocity 				= '0 0 0';
 	
+	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+	{
+		self.health = 250;
+		self.max_health = 250;
+	}
+
 	W_SetCurrentAmmo ();
 
 	self.attack_finished 	= time;
@@ -1104,7 +1121,9 @@ void() PlayerDeathThink =
 				}
 			}
 		}
-		return;
+		if (!(clanring_playmode & CLANRING_WIPEOUT_MODE) || 
+			((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait > 0)))
+			return;
 	}
 	// wait for all buttons released
 	if (self.deadflag == DEAD_DEAD)
@@ -1587,7 +1606,7 @@ void() CheckPowerups =
 			{
 				if (self.invincible_time == 1)
 				{
-					if (!(clanring_playmode & CLANRING_DMM4_MODE))
+					if (!(clanring_playmode & CLANRING_DMM4_MODE) && !(clanring_playmode & CLANRING_AIRSHOT_MODE))
 						sprint(self, "Protection is almost burned out\n");
 					//stuffcmd(self, "bf\n");
 					sound (self, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NORM);
@@ -1631,7 +1650,8 @@ void() CheckPowerups =
 			{
 				if (self.super_time == 1)
 				{
-					sprint(self, "Quad Damage is wearing off\n");
+					if (!(clanring_playmode & CLANRING_AIRSHOT_MODE))
+						sprint(self, "Quad Damage is wearing off\n");
 					//stuffcmd(self, "bf\n");
 					sound (self, CHAN_AUTO, "items/damage2.wav", 1, ATTN_NORM);
 					self.super_time = time + 1;
@@ -2727,7 +2747,7 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			votables_request_set_gametype_mode_map(-1, 2, "");
 			return;
-		case "duel":
+		case "dmm4":
 			if (arg1 != "")
 			{
 				if (found_in_warp_list(arg1))	

@@ -561,7 +561,7 @@ void() PlayerDead =
 		self.nextthink = (time + 5);
 		self.think = respawn;
 	}
-    else if (deathmatch == 4)
+    else if ((deathmatch == 4) || ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait == 0)))
     {
 		if (!gameover)
 		{
@@ -691,6 +691,11 @@ void() PlayerDie =
 	if (mode_is_arena())
 	{
 		im_dead_now_what();
+
+		if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.items & IT_QUAD))
+		{
+			boss.quadtime = 0;
+		}
 	}
 
 	self.items 					= self.items - (self.items & (IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD| IT_SUPERHEALTH));	

@@ -31,6 +31,7 @@ float (float rounddeaths) get_wipeout_respawn;
 float () teams_not_wipedout;
 void () dmm4_report_winner;
 void () wipeout_init_teamalive;
+void () respawn;
 
 void () arena_precache =
 {
@@ -699,15 +700,15 @@ void () im_dead_now_what =
 		tmp = ftos(self.team2);
 		stuffcmd(self,";color ");
 		stuffcmd(self,tmp);
-		stuffcmd(self,";\n");
+		stuffcmd(self,",0;\n");
 		self.team2 = 0;
 		dead_name();
 	}
 
 	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 	{
-		self.rounddeaths += 1;
-		self.respawntime = get_wipeout_respawn(self.rounddeaths);
+		self.rounddeaths = (self.rounddeaths + 1);
+		self.respawntime = (time + get_wipeout_respawn(self.rounddeaths));
 	}
 
 	self.ca_deathcamtime = time + 4;
@@ -899,6 +900,8 @@ void(float whichteam) Join_Team =
 	self.team2  	= whichteam;
 	self.next_team 	= pteam;
 	self.frags 		= 0;
+	self.respawntime = 0;
+	self.rounddeaths = 0;
 
 	add_player_to_stat_list(pteam,self);
 	add_player_to_chain(pteam,self);
@@ -1378,7 +1381,6 @@ void () arena_start_unpause_countdown =
 };
 //-----------------------------------------------------------------------
 
-void() respawn;
 void() arena_reset_player =
 {
 	if (self.next_team != world)
@@ -1516,6 +1518,7 @@ void () arena_match_end =
 	boss.count 		 = 10;
 	boss.wait 		 = 0;
 	boss.timetofight = FALSE;
+	boss.quadtime = 0;
 	boss.state 		 = CA_MATCH_CLEANUP;
 
     gameover = FALSE;
@@ -1542,6 +1545,20 @@ void() arena_refresh_player =
 	self.think = respawn;
 	self.nextthink = (time + 0.05);
 	self.killed	 = FALSE;
+	self.respawntime = 0;
+	self.rounddeaths = 0;
+
+	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	{
+		self.items = self.items - (self.items & IT_QUAD);
+		self.super_damage_finished = 0;
+		self.super_time = 0;
+		if (!self.invincible_finished)
+		{
+			self.effects = self.effects - (self.effects & EF_DIMLIGHT);
+		}
+		self.effects = self.effects - (self.effects & EF_BLUE);
+	}
 };
 
 void() reset_round =
@@ -1549,12 +1566,13 @@ void() reset_round =
 	local string temp;
 
 	boss.timetofight = FALSE;
+	boss.quadtime = 0;
 	boss.wait   = 0;
 	boss.count  = 10;
 	boss.round  = boss.round + 1;
 	temp = ftos(boss.round);
 	localcmd("skill \"", temp, "\"\n");
-	
+
 	utils_do_arena_players(arena_refresh_player);
 
 	boss.state = CA_MATCH_ROUNDSTART;
@@ -1802,6 +1820,11 @@ void () arena_main_loop =
 					local string stmp;
 					stmp = (report_winning_team());
 					bprint2 (stmp, "\n");
+				}
+				else if (boss.count == 7)
+				{
+					if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+						utils_do_item(SUB_Remove, "item_artifact_super_damage");
 				}
 			}
 			else

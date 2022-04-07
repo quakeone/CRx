@@ -35,7 +35,7 @@ void () airshot_init_world =
 
 float (entity targ, float damage) airshot_damage_z =
 {
-	local float		dist;
+	local float		dist,rheight,rdamage;
 	local vector 	start, end;
 	local string	s;
 		
@@ -54,16 +54,32 @@ float (entity targ, float damage) airshot_damage_z =
 
     if (dist > 45) //player jump height is 45
     {
-        s = ftos(dist);
-        bprint3("\x90height: ",s,"\x91\n");
-        
-        if (dist > 128)
-        {
-            damage = (damage + ((dist/496)*damage));
-        }    
-        s = ftos(damage);
-        bprint3("\x90\bdamage\b: ",s,"\x91\n");
-        return rint (damage);
+		rheight = rint(dist);
+		s = ftos(rheight);
+		bprint3("\x90height: ",s,"\x91\n");
+		if (dist > 128)
+		{
+			damage = (damage + ((dist/128)*damage));
+		}
+		else
+		{
+			damage = (damage + ((dist/256)*damage));
+		}
+		
+		if (damage < 100)
+		{
+			bprint("\x90splash dmg\x91\n");
+		}
+		else
+		{
+			if (targ.health > damage)
+			{
+				rdamage = rint(damage);
+				s = ftos(rdamage);
+				bprint3("\x90\bdamage\b: ",s,"\x91\n");
+			}
+		}
+		return damage;
     }
 
 	return 0;

@@ -211,6 +211,7 @@ void() TeamCapturePlayerUpdate =
 	centerprint (self, res, s1, s2, s3, t, n);
 };
 
+float (entity e) IS_CA_OBSERVER;
 void () WipeoutModePlayerUpdate =
 {
 	local entity e;
@@ -220,7 +221,13 @@ void () WipeoutModePlayerUpdate =
 
 	if (!(clanring_playmode & CLANRING_WIPEOUT_MODE))
 		return;
-		
+
+	if (IS_CA_OBSERVER(self))
+		return;
+
+	if (boss.state != CA_MATCH_PLAYING)
+		return;
+
 	if ((self.statstate < 0))
 	{
 		return;
@@ -245,13 +252,13 @@ void () WipeoutModePlayerUpdate =
 
 	if (e)
 	{
-		s1 = sprintf("?%s %s?", strings_get_teamname3(e.team2), ftos(e.teamalive));
+		s1 = sprintf("%s %sŸ", strings_get_teamname3(e.team2), ftos(e.teamalive));
 		e = e.next_team;
 		if (e)
 		{
-			s2 = sprintf("?%s %s?", strings_get_teamname3(e.team2), ftos(e.teamalive));
+			s2 = sprintf("%s %sŸ", strings_get_teamname3(e.team2), ftos(e.teamalive));
 		}
 	}
 
-	centerprint4 (self, "\n\n\n\n\n", s1, "\n", s2);
+	centerprint4 (self, s1, "                                   \n", s2, "                                   ");
 };

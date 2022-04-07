@@ -401,6 +401,7 @@ if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 void () observer_start =
 {
 	//local float go_auto;
+	local string tmp="";
 
 	self.style = self.style | CLANRING_OBSERVER;
 
@@ -447,8 +448,19 @@ void () observer_start =
 	
 	if (mode_is_arena())
 	{
-		setcolour (self, 0, 0);
-		stuffcmd (self, ";color 0;\n");
+		if (self.next_team != world)
+		{
+			setcolour(self,self.team2,0);
+			tmp = ftos(self.team2);
+			stuffcmd(self,";color ");
+			stuffcmd(self,tmp);
+			stuffcmd(self,",0;\n");
+		}
+		else
+		{
+			setcolour (self, 0, 0);
+			stuffcmd (self, ";color 0;\n");
+		}
 		self.team2 	= TEAM_SPECTATOR;//dont allow dead teammates to talk to playing teammates
 		self.team 	= ((self.team2) + 1);
 		self.deadflag = DEAD_NO;//R00k (testing)
@@ -498,7 +510,8 @@ void () observer_start =
 	// reset display hold time	
 	self.lip = 0;
 	//setcolor (self, 0,0);
-	stuffcmd(self, ";color 0;\n");
+	if (mode_is_arena() == FALSE)
+		stuffcmd(self, ";color 0;\n");
 	self.height = 0;// fixed observer color cheat?
 
 	if (self.oflags & OBSERVER_FLY)
@@ -527,7 +540,7 @@ void () observer_start =
 	else
 		observer_walk_start();
 
-	if (mode_is_arena())
+	if ((mode_is_arena()) && !(clanring_playmode & CLANRING_WIPEOUT_MODE))
 	{
 		if (self.ca_player_flag == PF_DEAD)
 		{
@@ -1457,7 +1470,8 @@ void () observer_update_display =
     local string w, armour, aval, healthammo, ammo;
 	local entity player;	// CRMOD cameras
 	local string score, pad, teamname;
-	local float rtime;
+	local string respawn_string = "", pad_top = "";
+	local float rtime = 0;
 
 	// compute score and pad
 	if (teamplay && (clanring_state & CLANRING_MATCH_STARTED))
@@ -1501,14 +1515,17 @@ void () observer_update_display =
 	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING)
 			&& (boss.wait == 0) && (self.next_team != world))
 	{
-		rtime = floor(time - self.respawntime);
-		centerprint3(self, "\n\n\n\n\n\X90Respawn in: ", ftos(rtime), "\X91");
+		rtime = floor(self.respawntime - time);
+		respawn_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
 	}
 
     if (!player)
     {
 		if (clanring_state & CLANRING_MATCH_STARTED)
 			centerprint4(self, "\n\n\n\n\n\n\n\n\n\n\n\n               ", teamname, score, pad);
+		else if (respawn_string != "")
+			centerprint(self, respawn_string);
+
 //		else
 //			centerprint(self, " ");//R00k: dont spam this!
         return;
@@ -1522,8 +1539,12 @@ void () observer_update_display =
         healthammo = strings_get_health_ammo(player);
         ammo = ftos(player.currentammo);
     
-        centerprint7(self, "\n\n\n\n\n\n\n\n\n\n\n\n\n",
-            player.netname, w, armour, aval, healthammo, ammo);
+		if (respawn_string != "")
+			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n\n\n\n", respawn_string);
+		else
+			pad_top = "\n\n\n\n\n\n\n\n\n\n\n\n\n";
+
+		centerprint7(self, pad_top, player.netname, w, armour, aval, healthammo, ammo);
     }
     else
     {
@@ -1534,7 +1555,12 @@ void () observer_update_display =
 		else
 			othertarget = "";
 
-		centerprint7(self, "\n\n\n\n\n\n\n\n\n\n", othertarget, "                       \n\n",
+		if (respawn_string != "")
+			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n", respawn_string);
+		else
+			pad_top = "\n\n\n\n\n\n\n\n\n\n";
+
+		centerprint7(self, pad_top, othertarget, "                       \n\n",
 			player.netname, teamname, score, pad);
     }
 };

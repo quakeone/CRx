@@ -45,7 +45,10 @@ void() motd_think =
 	// remove the MOTD on fire or jump;	(R00k) or paused
 	if ((self.owner.button0) || (self.owner.button2) || (clanring_state & CLANRING_MATCH_PAUSED))
 	{
-		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		else if (!(clanring_playmode & CLANRING_CA_MODE))
+			centerprint(self.owner, "\btype \bready\b in console to join");
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
 		return;	
@@ -74,7 +77,10 @@ void() motd_think =
 	}
 	else
 	{
-		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		else if (!(clanring_playmode & CLANRING_CA_MODE))
+			centerprint(self.owner, "\btype \bready\b in console to join");
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
 	}

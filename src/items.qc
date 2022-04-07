@@ -1049,7 +1049,14 @@ void() powerup_touch =
 	sprint(other,"\n");
 	stuffcmd(other, "bf\n");
 
-	if (deathmatch != 2 && deathmatch != 4)	// R00k
+	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	{
+		if ((self.items == IT_QUAD) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0))
+			boss.quadtime = time + 35;
+		else
+			return;
+	}
+	else if (deathmatch != 2 && deathmatch != 4)	// R00k
 	{
 		self.mdl = self.model;
 		

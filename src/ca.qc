@@ -20,6 +20,7 @@ void () clan_arena_init_world =
     boss.ammo_rockets	= 50;
     boss.ammo_cells  	= 30;
     boss.items = ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
+    boss.quadtime = 0;
 
     oself = self;
     self = boss;
