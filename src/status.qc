@@ -217,7 +217,6 @@ void () WipeoutModePlayerUpdate =
 	local entity e;
 	local string s1="";
 	local string s2="";
-	local string res="";
 
 	if (!(clanring_playmode & CLANRING_WIPEOUT_MODE))
 		return;
@@ -245,8 +244,6 @@ void () WipeoutModePlayerUpdate =
 		return;
 
 	self.laststattime = (time + PLAYERSTATTIME);
-
-	res = TeamSetStatRes (self);
 
 	e = boss.next_team;
 

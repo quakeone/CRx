@@ -263,6 +263,7 @@ void () dmm4_main_loop;
 //void () rocket_arena_main_loop;
 void () arena_precache;
 void () RemoveFromTeam;//R00k: ca mode
+void () arena_client_disconnect;
 //
 // C L E A R   A F K   S T A T U S
 //
@@ -423,7 +424,7 @@ void () clanring_init_world =
 	else
 		cvar_set("sys_ticrate", ftos(clanring_tdm_ticrate));
 
-	if (clanring_playmode & CLANRING_MATCH_MODE)
+	if ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		clanring_timelimit = cvar("timelimit");
 		if (clanring_timelimit == 0)
@@ -1093,22 +1094,7 @@ void () clanring_client_disconnect =
 	}
 	else if (mode_is_arena())
 	{
-		RemoveFromTeam();//R00k
-		self.team2    		= TEAM_SPECTATOR;
-		self.frags          = 0;
-		//self.lagtimer    	= -30;
-		self.state          = 0;	
-		self.classname 		= string_null;
-		//self.myip			= string_null;
-		self.trueip			= string_null;
-		self.takedamage 	= DAMAGE_NO;
-		self.afk_time		= time;
-		self.cc_queue 		= 0;//R00k
-		self.cc_queue_vote	= 0;//R00k
-		self.ca_player_flag	= PF_WAITING;//v1.97
-		self.nextthink		= -1;
-		self.think			= SUB_Null;	
-		self.solid			= SOLID_NOT;
+		arena_client_disconnect();
 	}
 	else
 		clanring_remove_player_from_list();

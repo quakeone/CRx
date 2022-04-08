@@ -72,6 +72,26 @@ void () arena_init_world =
 	}
 };
 
+void () arena_client_disconnect =
+{
+	RemoveFromTeam();//R00k
+	self.team2    		= TEAM_SPECTATOR;
+	self.frags          = 0;
+	//self.lagtimer    	= -30;
+	self.state          = 0;	
+	self.classname 		= string_null;
+	//self.myip			= string_null;
+	self.trueip			= string_null;
+	self.takedamage 	= DAMAGE_NO;
+	self.afk_time		= time;
+	self.cc_queue 		= 0;//R00k
+	self.cc_queue_vote	= 0;//R00k
+	self.ca_player_flag	= PF_WAITING;//v1.97
+	self.nextthink		= -1;
+	self.think			= SUB_Null;	
+	self.solid			= SOLID_NOT;
+};
+
 float () mode_is_arena
 {
     if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE) 
@@ -1406,8 +1426,9 @@ void() arena_gib_player =
 		GibPlayer();
 		self.ca_player_flag = PF_DEAD;
 		self.deadflag = DEAD_DYING;
-		self.think = respawn;
-		self.nextthink = time + 1;
+		self.movetarget = world;
+		// self.think = respawn;
+		// self.nextthink = time + 5;
 	}
 }
 
@@ -1564,6 +1585,9 @@ void() arena_refresh_player =
 void() reset_round =
 {
 	local string temp;
+
+	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+		utils_do_item(votables_disable_item, "item_artifact_super_damage");
 
 	boss.timetofight = FALSE;
 	boss.quadtime = 0;
@@ -1821,17 +1845,12 @@ void () arena_main_loop =
 					stmp = (report_winning_team());
 					bprint2 (stmp, "\n");
 				}
-				else if (boss.count == 7)
-				{
-					if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-						utils_do_item(SUB_Remove, "item_artifact_super_damage");
-				}
 			}
 			else
 			{
 				if (boss.count == 0)
 				{
-					sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
+					//sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
 					//ctprint ("\bFIGHT!");
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
@@ -1839,7 +1858,8 @@ void () arena_main_loop =
 					if (boss.round == 1)
 						announce("The match has begun!");
 				}
-				else if (boss.count == 1)
+
+				if (boss.count == 1)
 				{
 					//ctprint ("1");
 					sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
@@ -1854,7 +1874,7 @@ void () arena_main_loop =
 					//ctprint("3");
 					sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
 				}
-				else if (boss.count == 5)
+				else if ((boss.count == 5) && (boss.round > 1))
 				{
 					announce("prepare to fight");					
 				}
@@ -1880,7 +1900,7 @@ void () arena_main_loop =
 
 			//sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
 			sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
-			announce("Match begins in \b10\b seconds.");
+			//announce("Match begins in \b10\b seconds.");
 			utils_do_players(reset_frags);
 		}
 		else if (number_teams () > 1 && boss.allready == TRUE)
@@ -1903,7 +1923,7 @@ void () arena_main_loop =
 				boss.wait 	= 0;
 				//sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
 				sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
-				announce("Match begins in \b10\b seconds.");
+				//announce("Match begins in \b10\b seconds.");
 				utils_do_players(reset_frags);
 				Practice_Object_Remove();
 				//TODO: needed?

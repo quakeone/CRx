@@ -274,7 +274,9 @@ void (entity ent, string c_name) updatename =
 	if (ent.style & CLANRING_CONNECTED)
 	{
 		client		= (ent.colormap - 1);
-		if ((client < 0) || (client > 16))
+		if (client > 15)
+			client = (client % 16);
+		else if (client < 1)
 			return;
 		msg_entity	= ent;
 		WriteByte	(MSG_ALL, SVC_UPDATENAME);

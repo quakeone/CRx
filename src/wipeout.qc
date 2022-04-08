@@ -17,9 +17,39 @@ float (float numdeaths) get_wipeout_respawn =
 	}
 }
 
+entity (float wnum) check_weapon_spot =
+{
+	local entity spot = world;
+	if (wnum == 11)
+	{
+		spot = find(spot, classname, "weapon_supershotgun");
+	}
+	else if (wnum == 10)
+	{
+		spot = find(spot, classname, "weapon_nailgun");
+	}
+	else if (wnum == 9)
+	{
+		spot = find(spot, classname, "weapon_supernailgun");
+	}
+	else if (wnum == 8)
+	{
+		spot = find(spot, classname, "weapon_grenadelauncher");
+	}
+	else if (wnum == 7)
+	{
+		spot = find(spot, classname, "weapon_rocketlauncher");
+	}
+	else
+	{
+		spot = find(spot, classname, "weapon_lightning");
+	}
+	return spot;
+};
+
 float (entity team1) wipeout_teammates_left =
 {
-	local entity e, tmp, spot, item;
+	local entity e, tmp, item, spot = world;
 	local float n = 0, ttl = 0, loop_count = 64;
 	local float	pcount;	
 
@@ -56,22 +86,30 @@ float (entity team1) wipeout_teammates_left =
 		}
 		else if (time > boss.quadtime)
 		{
-			pcount = random() * (dm_num_spawns - 0.001);
+			pcount = random() * (13 - 0.001);
 			pcount = floor(pcount);
-			spot = find(world, classname, "info_player_deathmatch");
-
-			if (spot != world)
+			if (pcount > 7)
 			{
+				spot = check_weapon_spot(pcount);
+			}
+
+			if (spot == world)
+			{
+				pcount = random() * (dm_num_spawns - 0.001);
+				pcount = floor(pcount);
+				spot = find(world, classname, "info_player_deathmatch");
 				while (pcount > 0)
 				{
 					spot = find(spot, classname, "info_player_deathmatch");
-
 					if (spot != world)
 						pcount = pcount - 1;
 				}
 				if (spot == world)
 					spot = find(spot, classname, "info_player_deathmatch");
+			}
 
+			if (spot != world)
+			{
 				item = spawn ();
 				item.origin = spot.origin;
 				item.velocity = '0 0 0';

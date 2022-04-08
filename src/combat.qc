@@ -285,10 +285,9 @@ void(entity targ, entity attacker) Killed =
 	self = oself;
 	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 	{
-		rtime = get_wipeout_respawn(targ.rounddeaths);
-
 		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
 		{
+			rtime = get_wipeout_respawn(targ.rounddeaths);
 			bprint(targ.netname, " will respawn in ", ftos(rtime), " seconds");
 		}
 	}

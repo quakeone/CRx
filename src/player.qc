@@ -561,7 +561,16 @@ void() PlayerDead =
 		self.nextthink = (time + 5);
 		self.think = respawn;
 	}
-    else if ((deathmatch == 4) || ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait == 0)))
+	else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait == 0))
+	{
+		if (!gameover)
+		{
+			self.movetarget = world;
+			self.nextthink = time + 2;
+			self.think = respawn;
+		}
+	}
+    else if (deathmatch == 4)
     {
 		if (!gameover)
 		{

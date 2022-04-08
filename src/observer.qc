@@ -554,7 +554,7 @@ void () observer_start =
 	// Check to see if anyone was observing this client
 	observer_disconnect_notify(self);	
 
-	if (!(self.style & CLANRING_MOTD))
+	if (!(self.style & CLANRING_MOTD) && !(mode_is_arena()))
 		utils_make_scheduled_event(observer_centerprint_join, 2);
 };
 
@@ -1316,6 +1316,12 @@ void () observer_confirm =
 void (float response) observer_confirm_leave_response =
 {
 	self.style = self.style - (self.style & CLANRING_CONFIRM_LEAVE);
+
+	if (mode_is_arena())
+	{
+		arena_client_disconnect();
+	}
+
 	if (response)
 		observer_start ();
 	else
@@ -1391,7 +1397,8 @@ void () observer_impulse =
 				// CRMOD END
 			}
 			
-            if ((clanring_playmode & CLANRING_MATCH_MODE) & (clanring_state & CLANRING_MATCH_STARTED))
+            if (((clanring_playmode & CLANRING_MATCH_MODE) & (clanring_state & CLANRING_MATCH_STARTED)) ||
+				((mode_is_arena()) && (boss.state != CA_MATCH_WAITING)))
                 observer_confirm();
             else
                 observer_start();
@@ -1506,7 +1513,8 @@ void () observer_update_display =
 	if ((player != world) && (player.classname == "clanring_camera"))
 		player = player.movetarget;
     
-	if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
+	if (((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED)) ||
+		((mode_is_arena()) && (boss.state == CA_MATCH_ROUNDSTART) && (boss.round == 1)))
 	{
 		clanring_show_rules_prematch();
 		return;

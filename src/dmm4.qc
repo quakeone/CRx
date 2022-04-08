@@ -365,8 +365,8 @@ void () arena_timer_think =
 		if (boss.count == 0)
 		{
 			utils_do_players(arena_gib_player);
-			boss.timetofight = FALSE;
 			gameover = TRUE;
+			boss.timetofight = FALSE;
 			boss.state = CA_MATCH_OVER;
 			match_show_timelimit();
 			arena_match_end();

@@ -1797,15 +1797,12 @@ void() PlayerPostThink =
 			clanring_show_rules_prematch();
 		}
 	}
-	else if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+	else if (mode_is_arena() && (boss.state == CA_MATCH_ROUNDSTART) && (boss.round == 1))
 	{
-		if (boss.state == CA_MATCH_ROUNDSTART)
+		if (time >= self.delay)
 		{
-			if (time >= self.delay)
-			{
-				self.delay = time + 0.1;
-				clanring_show_rules_prematch();
-			}
+			self.delay = time + 0.1;
+			clanring_show_rules_prematch();
 		}
 	}
 	else if ((clanring_state & CLANRING_MATCH_STARTED))

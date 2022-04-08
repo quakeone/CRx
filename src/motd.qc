@@ -47,7 +47,7 @@ void() motd_think =
 	{
 		if (clanring_playmode & CLANRING_MATCH_MODE)
 			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
-		else if (!(clanring_playmode & CLANRING_CA_MODE))
+		else if (!(mode_is_arena()))
 			centerprint(self.owner, "\btype \bready\b in console to join");
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
@@ -79,7 +79,7 @@ void() motd_think =
 	{
 		if (clanring_playmode & CLANRING_MATCH_MODE)
 			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
-		else if (!(clanring_playmode & CLANRING_CA_MODE))
+		else if (!(mode_is_arena()))
 			centerprint(self.owner, "\btype \bready\b in console to join");
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
