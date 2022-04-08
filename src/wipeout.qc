@@ -58,11 +58,11 @@ float (entity team1) wipeout_teammates_left =
 	while (e.chain_gang)
 	{
 		ttl = ttl + 1;
-        if (e.chain_gang.deadflag == DEAD_NO && (IS_CA_OBSERVER(e.chain_gang) == FALSE) && ((e.chain_gang.style & CLANRING_CONNECTED)))
+        if (e.chain_gang.ca_player_flag != PF_DEAD && (IS_CA_OBSERVER(e.chain_gang) == FALSE) && ((e.chain_gang.style & CLANRING_CONNECTED)))
 		{
 			n = n + 1;
 		}
-		else if ((e.chain_gang.deadflag == DEAD_NO) && (e.chain_gang.ca_player_flag == PF_DEAD) && (e.chain_gang.style & CLANRING_CONNECTED) && (e.chain_gang.respawntime > 0))
+		else if ((e.chain_gang.ca_player_flag == PF_DEAD) && (e.chain_gang.style & CLANRING_CONNECTED) && (e.chain_gang.respawntime > 0))
 		{
 			if ((time >= e.chain_gang.respawntime) && (boss.wait == 0))
 			{
@@ -181,6 +181,7 @@ entity (entity e, float spawnradius) find_spawn_point =
 		{
 			return head;
 		}
+		head = head.chain;
 	}
 	return world;
 };

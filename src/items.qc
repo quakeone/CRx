@@ -552,13 +552,16 @@ void() weapon_touch =
 			if (self.weapon == IT_NAILGUN || self.weapon == IT_SUPER_NAILGUN)
 			{
 				other.ammo_nails = other.ammo_nails + 30;
-				if (self.weapon == IT_NAILGUN)
+				if (other.next_team != world)
 				{
-					other.next_team.pos1_y = other.next_team.pos1_y + 1;
-				}
-				else
-				{
-					other.next_team.pos1_x = other.next_team.pos1_x + 1;
+					if (self.weapon == IT_NAILGUN)
+					{
+						other.next_team.pos1_y = other.next_team.pos1_y + 1;
+					}
+					else
+					{
+						other.next_team.pos1_x = other.next_team.pos1_x + 1;
+					}
 				}
 			}
 			else
@@ -571,13 +574,16 @@ void() weapon_touch =
 					{
 						quaketv_obtained_rl(other);
 					}
-					if (self.weapon == IT_ROCKET_LAUNCHER)
+					if (other.next_team != world)
 					{
-						other.next_team.dest1_x = other.next_team.dest1_x + 1;
-					}
-					else
-					{
-						other.next_team.dest1_z = other.next_team.dest1_z + 1;
+						if (self.weapon == IT_ROCKET_LAUNCHER)
+						{
+							other.next_team.dest1_x = other.next_team.dest1_x + 1;
+						}
+						else
+						{
+							other.next_team.dest1_z = other.next_team.dest1_z + 1;
+						}
 					}
 				}
 				else
@@ -585,7 +591,10 @@ void() weapon_touch =
 					if (self.weapon == IT_LIGHTNING)
 					{
 						other.ammo_cells = other.ammo_cells + 15;
-						other.next_team.dest1_y = other.next_team.dest1_y + 1;
+						if (other.next_team != world)
+						{
+							other.next_team.dest1_y = other.next_team.dest1_y + 1;
+						}
 					}
 					else
 					{
