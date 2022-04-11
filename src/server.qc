@@ -223,6 +223,7 @@ void () observer_impulse;
 void () observer_help;
 void () observer_find_teleport;
 void () observer_check_size;
+void (float response) arena_observer_confirm_leave_response;
 void (float response) observer_confirm_leave_response;
 void () match_show_timelimit;
 void () match_impulse;
@@ -255,7 +256,14 @@ void () stat_commands;
 void () misc_commands;
 void () modhelp_commands;
 void () shortcuts_commands;
-
+void () arena_init_world;
+void () rocket_arena_init_world;
+void () arena_main_loop;
+void () dmm4_main_loop;
+//void () rocket_arena_main_loop;
+void () arena_precache;
+void () RemoveFromTeam;//R00k: ca mode
+void () arena_client_disconnect;
 //
 // C L E A R   A F K   S T A T U S
 //
@@ -364,6 +372,13 @@ void () clanring_init_world =
 	hookspeedfire = 1200;
 	hookspeedpull = 850;
 
+	if (mode_is_arena())
+		default_nextmap = "dm3";
+	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		default_nextmap = "ctf1";
+	else
+		default_nextmap = "start";
+
 	// Set global variables
 	clanring_level 			= cvar("scratch1");
 	clanring_overtime 		= cvar("scratch2");
@@ -409,7 +424,7 @@ void () clanring_init_world =
 	else
 		cvar_set("sys_ticrate", ftos(clanring_tdm_ticrate));
 
-	if (clanring_playmode & CLANRING_MATCH_MODE)
+	if ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		clanring_timelimit = cvar("timelimit");
 		if (clanring_timelimit == 0)
@@ -447,6 +462,17 @@ void () clanring_init_world =
 	mode = options_get_mode();
 	szmode = strings_get_mode(mode);
 	cprint2(szmode, " mode\n");
+
+	dprint("init_world playmode: ");
+	dprint(ftos(clanring_playmode));
+	dprint("\n");
+
+	if (mode_is_arena() == TRUE)
+	{
+		arena_precache();
+
+		arena_init_world();
+	}
 
 	// schedule the config files for a bit later so that they don't
 	// get loaded twice on startup
@@ -543,6 +569,32 @@ void (float value) clanring_set_fraglimit =
 	}
 };
 
+void () clanring_set_warpaliases =
+{
+	local entity temp;
+	local float ep_index, index, n;
+
+	temp = self;
+	self = self.owner;
+
+	//send map warp aliases
+	for (ep_index = 1; ep_index < 10; ep_index += 1)
+	{
+		for (index = 1 ; index < 10 ; index += 1)
+		{
+			n = (ep_index * 10) + index;
+			if (warpmap[n].name != "")
+			{
+				stuffcmd(self, sprintf("alias %s cmd %s\n", warpmap[n].name, warpmap[n].name));
+			}
+		}
+	}
+
+	self = temp;
+	self.nextthink = time + 0.02;
+	self.think = votables_send_aliases;
+};
+
 //
 //  S E T  A L I A S E S
 //
@@ -552,7 +604,6 @@ void (float value) clanring_set_fraglimit =
 void () clanring_set_aliases =
 {
 	local entity temp;
-	local float ep_index, index, n;
 
 	temp = self;
 	self = self.owner;
@@ -641,9 +692,9 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias red \";color 4;w5;ready;\"\n");
 	stuffcmd(self, "alias blue \";color 13;w5;ready;\"\n");
 	stuffcmd(self, "alias help-stats impulse 179\n");
-	stuffcmd(self, "alias sm1 \"echo Smoothing ON ; cl_nolerp 1 ; alias smooth sm0\"\n");
-	stuffcmd(self, "alias sm0 \"echo Smoothing OFF ; cl_nolerp 0 ; alias smooth sm1\"\n");
-	stuffcmd(self, "alias smooth sm1\n");
+//	stuffcmd(self, "alias sm1 \"echo Smoothing ON ; cl_nolerp 1 ; alias smooth sm0\"\n");
+//	stuffcmd(self, "alias sm0 \"echo Smoothing OFF ; cl_nolerp 0 ; alias smooth sm1\"\n");
+//	stuffcmd(self, "alias smooth sm1\n");
 	stuffcmd(self, "alias init echo\n");                // CRMOD - So clients only see 'init' once
 	stuffcmd(self, "alias +hook impulse 98\n");
 	stuffcmd(self, "alias -hook impulse 97\n");
@@ -666,26 +717,13 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias misc impulse 185\n");
 	stuffcmd(self, "alias modhelp impulse 186\n");
 	stuffcmd(self, "alias shortcuts impulse 187\n");
-
-	//send map warp aliases
-	for (ep_index = 1; ep_index < 10; ep_index += 1)
-	{
-		for (index = 1 ; index < 10 ; index += 1)
-		{
-			n = (ep_index * 10) + index;
-			if (warpmap[n].name != "")
-			{
-				stuffcmd(self, sprintf("alias %s cmd %s\n", warpmap[n].name, warpmap[n].name));
-			}
-		}
-	}
 	
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
     // remove the temporary entity
 	self = temp;
 	self.nextthink = time + 0.02;
-	self.think = votables_send_aliases;
+	self.think = clanring_set_warpaliases;
 };
 
 //
@@ -696,8 +734,13 @@ void () clanring_pre_set_aliases =
 	//sprint(self.owner, "\bUse \b-zone 512 \bif quake crashes\n");
 	sprint(self.owner, "Type \bCOMMANDS\b for help\n");
 
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)			//R00k
-		sprint(self.owner, "Type \bRED\b or \bBLUE\b to join\n");
+	if (self.owner.style & CLANRING_OBSERVER)
+	{
+		if (clanring_playmode & CLANRING_PRACTICE_MODE)
+			sprint(self.owner, "Type \bREADY\b to join\n");
+		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)			//R00k
+			sprint(self.owner, "Type \bRED\b or \bBLUE\b to join\n");
+	}
 
 	self.think = clanring_set_aliases;
 	self.nextthink = time + 1;
@@ -764,6 +807,8 @@ void () clanring_init_think =
 void () clanring_show_mode =
 {
 	sprint2(self.owner, clanring_version, "\n");
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		sprint(self.owner, "capture the flag\n");
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (teamplay)
@@ -771,7 +816,15 @@ void () clanring_show_mode =
 	}
 	else
 	{
-		if (clanring_playmode & CLANRING_PRACTICE_MODE)
+		if (clanring_playmode & CLANRING_CA_MODE)
+			sprint(self.owner, "clan arena mode\n");
+		else if (clanring_playmode & CLANRING_DMM4_MODE)
+			sprint(self.owner, "1v1 duel\n");
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+			sprint(self.owner, "airshot mode\n");
+		else if (clanring_playmode & CLANRING_RA_MODE)
+			sprint(self.owner, "rocket arena mode\n");
+		else if (clanring_playmode & CLANRING_PRACTICE_MODE)
 			sprint(self.owner, "practice mode\n");
 		else
 			sprint(self.owner, "classic mode\n");
@@ -906,13 +959,27 @@ void () find_pqc_teamscore_teams =
 {
 	local entity e;
 	
-	e = clanring_sentinel.next_team;
-	
-	while (e)
+	if (clanring_playmode & CLANRING_CA_MODE)
+	{		
+		e = boss.next_team;
+
+		while (e)
+		{
+			pqc_new_team (e.team2);
+			pqc_team_frags(e.team2, e.wins);
+			e = e.next_team;
+		}
+	}
+	else
 	{
-		pqc_new_team (e.height);
-		pqc_team_frags(e.height, e.frags);
-		e = e.next_team;
+		e = clanring_sentinel.next_team;
+		
+		while (e)
+		{
+			pqc_new_team (e.height);
+			pqc_team_frags(e.height, e.frags);
+			e = e.next_team;
+		}
 	}
 };
 
@@ -980,6 +1047,17 @@ void () clanring_client_connect =
 	self.hack_timeout = 0;//Timer for bot scan
 		
     parm10 = parm10 - (parm10 & (CLANRING_READY | CLANRING_KICK_CONFIRM | CLANRING_MOTD | CLANRING_SETTING_OPTIONS | CLANRING_SCOREBOARD | CLANRING_CONFIRM_LEAVE));
+
+	if (mode_is_arena())
+	{
+		self.team2	     = TEAM_SPECTATOR;
+		self.next_team	     = world;
+		self.frags           = 0;
+		self.trigger_field   = world;
+		self.skin	     = 0;
+		self.afk_time 	     = time;
+		self.ca_player_flag     = PF_WAITING;
+	}
 };
 
 //
@@ -1013,6 +1091,10 @@ void () clanring_client_disconnect =
 	{
 		score_client_disconnect();
 		match_disconnect_notify(self);
+	}
+	else if (mode_is_arena())
+	{
+		arena_client_disconnect();
 	}
 	else
 		clanring_remove_player_from_list();
@@ -1075,6 +1157,11 @@ void () clanring_put_client_in_server =
 
 	utils_make_scheduled_event(clanring_bf_think, 0.1);
 
+	if ((mode_is_arena()) && ((self.ca_player_flag == PF_WAITING) || (self.ca_player_flag == PF_DEAD)) || ((boss.state == CA_MATCH_WAITING)))
+	{
+		observer_start();
+		return;
+	}
 	if ((self.style & CLANRING_OBSERVER) || (self.oflags & OBSERVER_QUAKETV) || ((clanring_playmode & CLANRING_MATCH_MODE) && !(self.style & CLANRING_READY)))
 	{
 		observer_start ();
@@ -1100,6 +1187,14 @@ void () clanring_put_client_in_server =
 		{	
 			if (self.team == RED)  self.skin = 1;				
 			if (self.team == BLUE) self.skin = 3;								
+		}
+
+		if (mode_is_arena())
+		{
+			self.cc_queue	= 0;//R00k - test		
+			self.cc_queue_vote	= 0;//R00k - test
+			self.ca_player_flag 	= PF_PLAYING;
+			self.respawntime			= 0;
 		}
 
 		UnHookPlayer();
@@ -1400,33 +1495,40 @@ void () clanring_show_rules =
 {
 	local float temp;
 
-	if (clanring_playmode & CLANRING_MATCH_MODE)
+	if (clanring_playmode & CLANRING_DMM4_MODE)
+		sprint(self, "Ž 1v1 duel  mode Ž\n");
+	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		sprint(self, "Ž  airshot mode  Ž\n");
+	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)	
+		sprint(self, "Ž wipeout modeŽ\n");
+	else if (clanring_playmode & CLANRING_CA_MODE)
+		sprint(self, "Žclan arena  modeŽ\n");
+	else if (clanring_playmode & CLANRING_RA_MODE)
+		sprint(self, "Žrocket arena modeŽ\n");
+	else if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 			sprint(self, "ŽCRCTF match modeŽ\n");
 		else
 			sprint(self, "ŽCRMod match modeŽ\n");
 	}
+	else if (clanring_playmode & CLANRING_PRACTICE_MODE)
+	{
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			sprint(self, "Žctf practice modeŽ\n");
+		else
+			sprint(self, "Žpractice modeŽ\n");
+	}
 	else
 	{
-		if (clanring_playmode & CLANRING_PRACTICE_MODE)
-		{
-			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-				sprint(self, "Žctf practice modeŽ\n");
-			else
-				sprint(self, "Žpractice modeŽ\n");
-		}
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			sprint(self, "ŽPublic CTF modeŽ\n");
 		else
 		{
-			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-				sprint(self, "ŽPublic CTF modeŽ\n");
+			if (teamplay)
+				sprint(self, "ŽPublic Team DeathMatch modeŽ\n");
 			else
-			{
-				if (teamplay)
-					sprint(self, "ŽPublic Team DeathMatch modeŽ\n");
-				else
-					sprint(self, "ŽFFA DeathMatch modeŽ\n");
-			}
+				sprint(self, "ŽFFA DeathMatch modeŽ\n");
 		}
 	}
 	temp = cvar("deathmatch");
@@ -1512,23 +1614,46 @@ void () clanring_show_rules =
 //
 void () clanring_show_rules_prematch =
 {
-	if (clanring_state & CLANRING_MATCH_STARTED || clanring_match_timer.count > 10 || clanring_match_timer.count < 1)
-	{
-		centerprint(self, "\n");
-		return;
-	}
-
-	local float temp;
+	local float temp, timervar;
 	local string s0 = "", s1 = "", s2 = "", s3 = "", s4 = "", s5 = "", s6 = "", s7 = "", s8 = "", s9 = "", s10 = "", s11 = "", s12 = "";
 
-	if (clanring_match_timer.count > 9)
-		s0 = sprintf("\bcountdown:   \b%s\n\n", strings_ftos_gold(clanring_match_timer.count));
-	else
-		s0 = sprintf("\bcountdown:    \b%s\n\n", strings_ftos_gold(clanring_match_timer.count));
-
-	if (clanring_match_timer.count > 3)
+	if (mode_is_arena())
 	{
-		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		if (boss.state != CA_MATCH_ROUNDSTART)
+		{
+			centerprint(self, "\n");
+			return;
+		}
+		timervar = boss.count;
+	}
+	else
+	{
+		if (clanring_state & CLANRING_MATCH_STARTED || clanring_match_timer.count > 10 || clanring_match_timer.count < 1)
+		{
+			centerprint(self, "\n");
+			return;
+		}
+		timervar = clanring_match_timer.count;
+	}
+
+	if (timervar > 9)
+		s0 = sprintf("\bcountdown:   \b%s\n\n", strings_ftos_gold(timervar));
+	else
+		s0 = sprintf("\bcountdown:    \b%s\n\n", strings_ftos_gold(timervar));
+
+	if (timervar > 3)
+	{
+		if (clanring_playmode & CLANRING_DMM4_MODE)
+			s1 = "Ž   duel  mode   Ž\n\n";
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+			s1 = "Ž  airshot mode  Ž\n\n";
+		else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+			s1 = "Žclan arena wipeoutŽ\n\n";
+		else if (clanring_playmode & CLANRING_CA_MODE)
+			s1 = "Žclan arena  modeŽ\n\n";
+		else if (clanring_playmode & CLANRING_RA_MODE)
+			s1 = "Žrocket arena modeŽ\n\n";
+		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 			s1 = "Žcrctf match modeŽ\n\n";
 		else
 			s1 = "Žcrmod match modeŽ\n\n";
@@ -1567,9 +1692,9 @@ void () clanring_show_rules_prematch =
 		else
 		{
 			if (clanring_overtime == 0)
-				s6 = "      \bovertime     \bdisabled\n";
+				s6 = "\bovertime    \boff\n";
 			else
-				s6 = "          \bovertime     \bsudden death\n";
+				s6 = "\bovertime     \bsd\n";
 		}
 
 		if (clanring_playmode & CLANRING_NO_QUAD)
@@ -1615,7 +1740,7 @@ void () clanring_show_rules_prematch =
 		cp3 = sprintf("%s%s%s%s", s9, s10, s11, s12);
 		centerprint(self, s0, s1, cp1, cp2, cp3);
 	}
-	else if (clanring_match_timer.count > 0)
+	else if (timervar > 0)
 	{
 		centerprint(self, s0, "\n\n\n\n\n\n\n\n\n\n\n\n\n");
 	}
@@ -1679,6 +1804,106 @@ void (float quakever) clanring_wingl_detect =
 		self.style = self.style | CLANRING_GLQUAKE;
 };
 
+//-----------------------------------------------------------------------------------
+/*
+void () Practice_Object_Remove =
+{
+	local entity e;
+	
+	e = find (world, classname, "practice_object");
+		
+	if (e != world)
+	{
+		remove (e);
+	}
+};
+
+//todo limit up to 15 objects and assign them to a team.
+float () practice_check =
+{
+	local entity e;
+	
+	e = find (world, classname, "practice_object");
+	
+	if (e != world && self == e.movetarget)
+	{
+		bprint ("Practice object \bremoved\b\n");
+		remove (e);
+		return TRUE;
+	}
+	else if (e != world && self != e.movetarget)
+	{
+		sprint (self, "Practice object already \bactive\b\n");
+		return TRUE;
+	}
+	
+	return FALSE;
+};
+
+void () Practice_Think =
+{
+	//if (self.health < 1) { respawn();	self.nextthink = time + (sys_ticrate * 216); return; }
+
+	local vector midorg;
+	
+	midorg = (self.origin - ((self.mins + self.maxs) * 0.5));
+	
+	if (pointcontents(midorg) == CONTENT_WATER)
+	{
+		self.velocity_z = 50;
+		self.avelocity = '10 -10 -10';
+	}
+	self.nextthink = time + (sys_ticrate * 2);//every other frame 
+}
+
+void () practice_spawn =
+{
+	local entity e;
+	
+	// If already active, remove it
+	if (practice_check ())
+		return;
+	
+	bprint ("Practice object \bspawned\n");
+	sprint (self, "-->  use practice-object to \bremove\b\n");
+
+	e 				= spawn();
+	e.solid 		= SOLID_SLIDEBOX;
+	e.movetype 		= MOVETYPE_TOSS;
+	e.takedamage 	= DAMAGE_AIM;
+	e.enemy			= self;
+	e.movetarget	= self;
+	e.classname 	= "practice_object";
+	e.health		= 100;
+	e.armortype 	= 0.8;
+	e.armorvalue	= 200;
+	e.flags        	= FL_CLIENT;
+	e.netname		= "Target Practice";
+	e.think 		= Practice_Think;
+	e.nextthink 	= time + sys_ticrate;
+	e.th_die    	= GibTarget;		
+	e.velocity 		= self.velocity;
+	e.velocity 		= aim(self, 10000);
+
+	setmodel (e, "progs/player.mdl");
+	
+	setsize (e, VEC_HULL_MIN, VEC_HULL_MAX);
+
+	setorigin(e, self.origin +'0 0 32');
+
+	e.angles_x	= self.angles_x;
+	e.angles_y	= self.angles_y;
+	e.frame		= 12;
+	
+//
+// shoot object from gun
+//
+	makevectors (self.v_angle);
+	e.velocity = e.velocity * 500;
+	sound (self, CHAN_WEAPON, "misc/r_tele4.wav", 1, ATTN_NORM);
+};
+*/
+//-----------------------------------------------------------------------------------
 void () TossAmmo;
 void () TossWeapon;
 void () TossRune;
@@ -1815,7 +2040,12 @@ void () clanring_impulse =
         else
         {
             if (self.style & CLANRING_CONFIRM_LEAVE)
-                observer_confirm_leave_response ((116 - self.impulse));
+			{
+				if (mode_is_arena())
+					arena_observer_confirm_leave_response((116 - self.impulse));
+				else
+                	observer_confirm_leave_response ((116 - self.impulse));
+			}
             else
                 vote_impulse ();
         }
@@ -2030,7 +2260,24 @@ void () clanring_start_frame =
 	{
 		if (sys_ready)
 		{
-			if (!(clanring_playmode & CLANRING_MATCH_MODE))
+			if (mode_is_arena())
+			{
+				if (time >= clanring_rulescheck)
+				{
+					if (boss != world)
+					{
+						if (clanring_playmode & CLANRING_CA_MODE)
+							arena_main_loop();
+						else if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
+							dmm4_main_loop();
+						// else if (clanring_playmode & CLANRING_RA_MODE)
+						// 	rocket_arena_main_loop();
+					}
+
+					clanring_rulescheck = (time + 1);
+				}
+			}
+			else if (!(clanring_playmode & CLANRING_MATCH_MODE))
 			{
 				if (timelimit)
 				{
@@ -2129,7 +2376,7 @@ void () clanring_start_frame =
 					clanring_lastcount = clanring_levelcount;
 				}
 														
-				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE))
+				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 				{
 					if (rint(timelimit - time) == 300)
 					{

@@ -79,8 +79,8 @@ void() debug_flags =
 		sprint(self, "CLANRING_EXTENDED_OBITS\n");
 	if (clanring_playmode & CLANRING_CONSOLE_INITIALIZED)
 		sprint(self, "CLANRING_CONSOLE_INITIALIZED\n");
-	if (clanring_playmode & CLANRING_FAST_START)
-		sprint(self, "CLANRING_FAST_START\n");
+	// if (clanring_playmode & CLANRING_FAST_START)
+	// 	sprint(self, "CLANRING_FAST_START\n");
 /*	if (clanring_playmode & CLANRING_FRESH_SPAWNS)
 		sprint(self, "CLANRING_FRESH_SPAWNS\n");
 */
@@ -258,8 +258,8 @@ void() debug_client_flags =
         sprint(self, "CLANRING_ADMINISTRATOR\n");
 /*   	if (self.movetarget.style & CRMOD_DETECTING_QSMACK)	// CRMOD was SMOOTH
 		sprint(self, "CRMOD_DETECTING_QSMACK\n");					// CRMOD was SMOOTH*/
-	if (self.movetarget.style & OBSERVER_POP_FORWARD)
-        sprint(self, "CLANRING_POP_FORWARD\n");
+	if (self.movetarget.oflags & OBSERVER_POP_FORWARD)
+        sprint(self, "OBSERVER_POP_FORWARD\n");
     if (self.movetarget.style & CLANRING_READY)
         sprint(self, "CLANRING_READY\n");
     if (self.movetarget.style & CLANRING_YES)
@@ -494,8 +494,8 @@ void() debug_settings =
 	debug_onoff(clanring_playmode & CLANRING_MODE_VOTE);
 	sprint(self, "extended obituaries: ");
 	debug_onoff(clanring_playmode & CLANRING_EXTENDED_OBITS);
-	sprint(self, "fast match starts: ");
-	debug_onoff(clanring_playmode & CLANRING_FAST_START);
+	// sprint(self, "fast match starts: ");
+	// debug_onoff(clanring_playmode & CLANRING_FAST_START);
 /*	sprint(self, "fresh spawns: ");
 	debug_onoff ((clanring_playmode & CLANRING_FRESH_SPAWNS));
 */

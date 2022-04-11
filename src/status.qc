@@ -80,7 +80,6 @@ string(entity who) TeamSetStatRes2 =
 	return "\n\n\n\n\n\n\n\n\n\n\n";
 };
 
-
 void() TeamCapturePlayerUpdate =
 {
 	local entity e;
@@ -210,4 +209,56 @@ void() TeamCapturePlayerUpdate =
 		}
 	}
 	centerprint (self, res, s1, s2, s3, t, n);
+};
+
+float (entity e) IS_CA_OBSERVER;
+void () WipeoutModePlayerUpdate =
+{
+	local entity e;
+	local string s1="";
+	local string s2="";
+//	local string res="";
+
+	if (!(clanring_playmode & CLANRING_WIPEOUT_MODE))
+		return;
+
+	if (IS_CA_OBSERVER(self))
+		return;
+
+	if (boss.state != CA_MATCH_PLAYING)
+		return;
+
+	if ((self.statstate < 0))
+	{
+		return;
+	}
+
+	if ((self.laststattime > time))
+	{
+		return;
+	}
+
+	if (self.style & CLANRING_MOTD)//r00k v3.21
+		return;
+
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		return;
+
+	self.laststattime = (time + PLAYERSTATTIME);
+
+//	res = TeamSetStatRes (self);
+
+	e = boss.next_team;
+
+	if (e)
+	{
+		s1 = sprintf("ù%s %sü", strings_get_teamname3(e.team2), ftos(e.teamalive));
+		e = e.next_team;
+		if (e)
+		{
+			s2 = sprintf("ù%s %sü", strings_get_teamname3(e.team2), ftos(e.teamalive));
+		}
+	}
+
+	centerprint4 (self, s1, "                                   \n", s2, "                                   ");
 };

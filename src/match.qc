@@ -31,7 +31,6 @@
 //
 
 // Function declarations
-void() SUB_regen;
 void() match_timer_think2;
 void() match_enter_ghost_code;
 void() match_start_unpause_countdown;
@@ -618,6 +617,16 @@ void() match_reset_owner =
 };
 
 //
+// S P A W N S  R E M O V E  M O D E L
+//
+void() spawns_remove_model =
+{
+	self.model = string_null;
+	self.modelindex = 0;
+	self.model = string_null;
+}
+
+//
 //  B E G I N
 //
 //  Gib all players and start the match.
@@ -627,6 +636,11 @@ void() match_begin =
 	local string temp;
 
 	clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
+
+	// Remove the spawnpoints' visible models
+	utils_do_item(spawns_remove_model, "info_player_deathmatch");
+	utils_do_item(spawns_remove_model, "info_player_team1");
+	utils_do_item(spawns_remove_model, "info_player_team1");
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
@@ -667,7 +681,7 @@ void() match_begin =
 	
 	// reset quad, pent counts
 	utils_do_item(match_reset_owner, "item_artifact_invulnerability");
-	utils_do_item(match_reset_owner, "item_super_damage");
+	utils_do_item(match_reset_owner, "item_artifact_super_damage");
 
 	// Temporarily turn the extra start points into spawn points if necessary
 	if (match_count_players() > dm_num_spawns)
@@ -676,6 +690,7 @@ void() match_begin =
 		dm_num_spawns = dm_num_spawns + clanring_num_starts;
 		utils_make_scheduled_event(match_remove_starts, 2);
 	}
+
 	score_resend_scoreboard();
 	// Initialize the score module
 	score_init();
@@ -1027,17 +1042,18 @@ void() match_start_timer =
 	clanring_state = clanring_state | CLANRING_TIMER_STARTED;
 	match_show_timelimit();
 
-	if (clanring_playmode & CLANRING_FAST_START)
-	{
+	// Let's GO!!!
+	// if (clanring_playmode & CLANRING_FAST_START)
+	// {
 		clanring_match_timer.dest 	= '5 11 0';
 		clanring_match_timer.count 	= 12;
-	}
-	else
-	{
-		clanring_match_timer.dest 	= '55 20 0';
-		clanring_match_timer.count 	= 59;
-		announce("Match begins in 1 minute");
-	}
+	// }
+	// else
+	// {
+	// 	clanring_match_timer.dest 	= '55 20 0';
+	// 	clanring_match_timer.count 	= 59;
+	// 	announce("Match begins in 1 minute");
+	// }
 
 	score_update_time();
 };
@@ -1285,6 +1301,8 @@ void(entity ghostent) match_restore_ghost =
 		self.fixangle = 1;
 		self.movetype = MOVETYPE_FLY;
 		self.finaldest_y = MOVETYPE_FLY;
+		self.view_ofs = '0 0 22';//r00k: testing... sometimes view is tilted on restore.
+
 		// check eyes
 		if (self.invisible_finished)
 			self.modelindex = modelindex_eyes;
@@ -1342,7 +1360,8 @@ void(entity ghostent) match_restore_ghost =
 		pteam = pteam.next_team;
 	}
 
-	vote_init("õîðáõóå ôèå íáôãè", "", match_start_unpause_countdown);
+	if (vote_init("\bunpause the match\b", "", match_start_unpause_countdown))
+		vote_yes();
 };
 
 //
@@ -1550,7 +1569,7 @@ void() match_request_unlock =
 	{
 		if (self.style & CLANRING_READY)
 		{
-			if (vote_init("áììï÷ îå÷ ðìáùåòó ôï êïéî", "", match_unlock))
+			if (vote_init("\ballow new players to join\b", "", match_unlock))
 				vote_yes();
 		}
 		else
@@ -1611,7 +1630,7 @@ void() match_request_lock =
 	{
 		if (self.style & CLANRING_READY)
 		{
-			if (vote_init("ìïãë ôèå íáôãè", "", match_lock))
+			if (vote_init("\block the match\b", "", match_lock))
 				vote_yes();
 		}
 		else
@@ -1729,7 +1748,7 @@ void() match_show_pause =
     }
     self = oldself;
 
-	clanring_match_timer.nextthink = time + 0.5;
+	clanring_match_timer.nextthink = time + 1.5;
 	clanring_match_timer.think = match_show_pause;
 };
 
@@ -1740,6 +1759,11 @@ void() match_show_pause =
 //
 void() match_pause =
 {
+	if (mode_is_arena())
+	{
+		arena_pause();
+		return;
+	}
 	if (!(clanring_state & CLANRING_MATCH_STARTED) || (clanring_state & CLANRING_MATCH_PAUSED))
 		return;
 
@@ -1767,10 +1791,13 @@ void() match_pause =
 //
 void() match_request_pause =
 {
-	if (!(clanring_state & CLANRING_MATCH_STARTED))
+	if (!(mode_is_arena()))
 	{
-		sprint(self, "No match in progress\n");
-		return;
+		if (!(clanring_state & CLANRING_MATCH_STARTED))
+		{
+			sprint(self, "No match in progress\n");
+			return;
+		}
 	}
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 	{
@@ -1780,7 +1807,7 @@ void() match_request_pause =
     // Do it right away if we're an administrator, otherwise vote
     if (self.style & CLANRING_ADMINISTRATOR)
         match_pause();
-    else if (vote_init("pause the match", (""), match_pause))
+    else if (vote_init("\bpause the match\b", (""), match_pause))
         vote_yes();
 };
 
@@ -1903,8 +1930,15 @@ void() match_unpause_countdown_think =
 //
 //  S T A R T  U N P A U S E  C O U N T D O W N
 //
+
 void() match_start_unpause_countdown =
 {
+	if (mode_is_arena())
+	{
+		arena_start_unpause_countdown();
+		return;
+	}
+
 	local entity countdown;
 
 	if (clanring_state & CLANRING_UNPAUSING)
@@ -1927,6 +1961,7 @@ void() match_request_unpause =
 	if (clanring_state & CLANRING_UNPAUSING)
 		return;
 
+	if (!(mode_is_arena()))
 	if (!(clanring_state & CLANRING_MATCH_STARTED))
 	{
 		if (clanring_state & CLANRING_TIMER_STARTED)
@@ -1948,11 +1983,12 @@ void() match_request_unpause =
 		if (self.style & CLANRING_ADMINISTRATOR)
 			match_start_timer ();
 		else
-		if (vote_init("óôáòô ôèå ôéíåò", "", match_start_timer))
+		if (vote_init("\bstart the timer\b", "", match_start_timer))
 			vote_yes();
 
 		return;
 	}
+
 	if (!(clanring_state & CLANRING_MATCH_PAUSED))
 	{
 		sprint(self, "Match is not paused\n");
@@ -1963,7 +1999,7 @@ void() match_request_unpause =
 	if (self.style & CLANRING_ADMINISTRATOR)
 		match_start_unpause_countdown ();
 	else
-	if (vote_init("õîðáõóå ôèå íáôãè", "", match_start_unpause_countdown))
+	if (vote_init("\bunpause the match\b", "", match_start_unpause_countdown))
 		vote_yes();
 };
 
@@ -2016,6 +2052,64 @@ void() match_impulse =
 
 	if (self.impulse == 129)
 		match_help ();
+
+	if (mode_is_arena())
+	{
+		switch (self.impulse)
+		{
+//TODO: arena_match_impulse();
+			case (120):
+			{
+				//TODO: allow any mode to choose color and set team size to 1
+				if (clanring_playmode & CLANRING_CA_MODE)
+				{
+					if (self.team == 14)
+						self.impulse = 1;
+					else if (self.team == 5)
+						self.impulse = 2;
+					else if (self.team == 13)
+						self.impulse = 3;
+					else if (self.team == 3)
+						self.impulse = 4;
+					else
+					{
+						sprint(self, "Invalid pants color\n");
+						self.impulse = 0;
+						break;
+					}
+				}
+				else
+				{
+					self.impulse = 1;
+				}
+				Teamplay_Select_Team();
+
+				self.impulse = 0;
+				break;
+			}
+			case (121):
+			{
+				if (clanring_playmode & CLANRING_CA_MODE)
+					self.impulse = 5;
+				else
+					self.impulse = 2;
+				Teamplay_Select_Team();
+				self.impulse = 0;
+				break;
+			}
+			case (124):
+			{
+				match_request_pause();
+				break;
+			}
+			case (125):
+			{
+				match_request_unpause();
+				break;
+			}
+		}
+		return;
+	}
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{

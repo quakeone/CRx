@@ -482,6 +482,16 @@ string (float num) strings_get_teamname_up_by =
 };
 
 //
+//  G E T  T E A M N A M E  U P  B Y
+//
+//  Return the "colour up by " string corresponding to a given team.
+//
+string (float num) strings_get_teamname_leads_by =
+{
+	return strpad(-20, strcat(strtrim(strings_get_teamname2(num)), " leads by "));
+};
+
+//
 //  G E T  M A P N A M E
 //
 //  Return the nth map name.
@@ -688,6 +698,11 @@ string (float mode) strings_get_mode =
 		case 1: return "Practice";
 		case 2: return "Match";
 		case 3: return "CTF";
+		case 4:	return "CA";
+		case 5: return "RA";
+		case 6: return "Airshot";
+		case 7: return "DMM4";
+		case 8: return "Wipeout";		
 	}
 	return "";
 };
@@ -700,6 +715,11 @@ string (float mode) strings_get_mode_gold =
 		case 1: return "\bPractice";
 		case 2: return "\bMatch";
 		case 3: return "\bCTF";
+		case 4:	return "\bCA";
+		case 5: return "\bRA";
+		case 6: return "\bAirshot";
+		case 7: return "\bDMM4";
+		case 8: return "\bWipeout";
 	}
 	return "";
 };

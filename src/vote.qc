@@ -15,7 +15,7 @@
 //
 // All code by J.P. Grossman unless otherwise commented.
 //
-
+/*
 // Function declarations
 void() vote_repeat;
 void() vote_accept;
@@ -114,7 +114,7 @@ void() vote_no =
 {	
 	clear_afk_status(self);	//R00k: (1/3/2022 12:55pm)
 
-	if (self.style & CLANRING_ADMINISTRATOR)
+	if ((self.style & CLANRING_ADMINISTRATOR) || (clanring_request.owner == self))//Admin or person who started the vote
 	{
 		// reject immediately
 		vote_reject ();
@@ -230,6 +230,9 @@ void() vote_reject =
 	remove(clanring_request);
 	clanring_request = world;
 };
+*/
+void () vote_yes = {Request_Poll_Vote(self, 1);}
+void () vote_no = {Request_Poll_Vote(self, 2);}
 
 //
 //  I M P U L S E

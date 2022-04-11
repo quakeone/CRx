@@ -17,8 +17,13 @@ void(float frac, float tot) stats_print_percent3;
 void() stats_reset_player =
 {
 	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = self.clanring_qdkill = self.clanring_qdwep = '0 0 0';
+	self.stats_gl_frac	= 0;
+	self.stats_gl_tot	= 0;
 	self.dmg_taken	= 0;
 	self.dmg_given	= 0;
+	self.dmg_given_round = 0;
+	self.dmg_cache = 0;
+	self.dmg_tally = 0;
 	self.clanring_did_damage = 0; // CRMOD moved here from put_client_in_server
 	self.fpickups = 0;
 	self.fcaptures = 0;
@@ -28,6 +33,7 @@ void() stats_reset_player =
 	self.fcfrags = 0;
 	self.captime = 1200;//default time = matchtime;
 	self.true_kills = 0;
+	self.direct_hit = 0;
 	self.killed = FALSE;
 };
 
@@ -197,6 +203,51 @@ void() stats_show_killstats =
 	sprint(self, "\n");
 };
 
+void (float f) stats_bprint_int3 =
+{
+	local float n;
+	local string s = "";
+
+	n = rint(f);
+	if (n < -99)
+		n = -99;
+	s = ftos(n);
+	s = strpad(-3, s);
+	bprint(s);
+};
+
+//
+//  B P R I N T  P E R C E N T 3
+//
+//  Helper function for stats_show_efficiency.  Prints the percentage
+//  100 * (frac / tot) as a 3 character integer, or N/A if tot = 0.
+//
+void (float frac, float tot) stats_bprint_percent3 =
+{
+	if (frac > tot)	//R00k
+	{
+		bprint ("100");
+	}
+	else
+	{
+		if (tot)
+		{
+			local float n;
+			local string temp = "";
+
+			n = floor(100 * frac / tot);
+			if (n < 10)
+				bprint(" ");
+			temp = ftos(n);
+			bprint(temp);
+			if (n < 100)
+				bprint("%");
+		}
+		else
+			bprint("N/A");
+	}
+};
+
 //
 //  P R I N T  P E R C E N T 3
 //
@@ -354,6 +405,34 @@ void() stats_show_fstats =
 	sprint(self,"\n");
 };
 
+void () stats_team_stats =
+{
+	local entity e;
+	local string t2;
+	
+	bprint ("\n");
+	e = boss.next_team;
+	
+	while (e != world)
+	{
+		t2 = strpad (8, e.netname);
+		bprint(t2);		
+		t2 = "";//testing (second team goes way off the screen)
+		bprint(" \bwon:\b ");				
+		t2 = ftos (e.wins);
+		bprint (t2);
+		t2 = "";//testing (second team goes way off the screen)
+		bprint(" \blost:\b ");
+		t2 = ftos (e.losses);
+		bprint (t2);		
+		t2 = "";//testing (second team goes way off the screen)
+		bprint("\n");
+		e = e.next_team;
+	}			
+	bprint ("\n");
+	remove(self);//kill temp ent that called this function.
+};
+
 //  S H O W  S U M M A R Y
 //
 //  Show kill and weapon efficiency for each player.
@@ -416,6 +495,106 @@ void () stats_show_summary =
 		player = player.next_player;
 	}
 	sprint(self, "\n");
+};
+
+
+void () stats_final_summary =
+{
+	local entity	player;
+	local float 	wfrac, wtot, kfrac, ktot, tot_tot, tot_frac;
+	local string 	t2 = "", teamname = "";
+	local float 	n;
+
+	bprint ("\b-----------------------------------------------------------\n");
+	bprint ("  team   \b|\bopp\b|\bdth\b|\bkill%\b|\bweap%\b|\bdmgTk\b|\bdmgGv\b|\b      player     \n");
+	bprint ("\b---------+---+---+-----+-----+-----+-----+-----------------\n");
+
+	n = 0;
+	player = find (world,classname, "player");
+	
+	while (player != world)
+	{
+		n = n + 1;
+		if ((player.style & CLANRING_CONNECTED) && (player.next_team != world))
+		{
+			teamname = strings_get_teamname3 (player.next_team.team2);
+			bprint2 ( teamname, " \b|\b");			
+			stats_bprint_int3 (player.true_kills);
+			bprint ( "\b|\b");
+			stats_bprint_int3 (player.mangle_z);//killed
+			bprint ( "\b|\b");
+
+			//Kill % stats
+			kfrac = (player.frags);
+			ktot = (kfrac + player.mangle_z);
+			//Weapon % stats
+			wtot = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x + player.stats_gl_tot;
+			wfrac = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y + player.stats_gl_frac;
+
+			bprint ( " ");
+			stats_bprint_percent3 (kfrac, ktot);
+			bprint ( " \b|\b ");
+			stats_bprint_percent3 (wfrac, wtot);
+			bprint ( " \b|\b");
+			utils_bprint_damage_gold(player.dmg_taken);
+			bprint ( "\b|\b");
+			utils_bprint_damage_gold(player.dmg_given);
+			bprint ("\b|\b");							
+			bprint3 (" ",player.netname, "\n");
+		}
+		if (n > 16)
+			break;
+		player = find (player, classname, "player");
+	}
+/*
+	bprint ("\n\n");
+	bprint ( "bul \b-\b bullet \b\n");
+	bprint ( "nls \b-\b nail   \n");
+	bprint ( "rox \b-\b rocket \n");
+	bprint ( "gl  \b-\b grenade\n");
+	bprint ( "lg  \b-\b lightning gun \n");
+	bprint ( "dhit\b-\b rl/gl direct hits\n");
+*/
+	bprint ( "\b-----------------------------------------------------------\n");
+	bprint ( "  team   \b|\bbul\b|\bnls\b|\brox\b|\bgl \b|\blg \b|\bdhit \b|\btotal\b|\b     EFFICIENCY\n");
+	bprint ( "\b---------+---+---+---+---+---+-----+-----+-----------------\n");
+
+	n = 0;
+	player = find (world,classname, "player");
+
+	while (player != world)
+	{
+		n += 1;
+		if ((player.style & CLANRING_CONNECTED) && (player.next_team != world))
+		{			
+			teamname = strings_get_teamname3 (player.next_team.team2);
+			bprint2 ( teamname, " \b|\b");			
+			stats_bprint_percent3(player.dest2_x, player.dest1_x);
+			bprint ( "\b|\b");
+			stats_bprint_percent3(player.dest2_y, player.dest1_y);
+			bprint ( "\b|\b");
+			stats_bprint_percent3 (player.dest_y, player.dest_x); // rox
+			bprint ( "\b|\b");
+			stats_bprint_percent3(player.stats_gl_frac, player.stats_gl_tot); // grenades
+			bprint ( "\b|\b");
+			stats_bprint_percent3 (player.dest2_z, player.dest1_z); // lg
+			bprint ( "\b|\b");
+			utils_bprint_damage_gold(player.direct_hit);
+			bprint ( "\b|\b");
+
+			tot_tot = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x + player.stats_gl_tot;
+			tot_frac = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y + player.stats_gl_frac;
+
+			bprint (" ");
+			stats_bprint_percent3(tot_frac, tot_tot);
+			bprint (" ");				
+			bprint ("\b|\b");							
+			bprint3 (" ",player.netname, "\n");
+		}
+		if (n >16)
+			break;
+		player = find (player, classname, "player");
+	}
 };
 
 //

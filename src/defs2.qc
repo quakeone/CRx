@@ -75,13 +75,19 @@ float CLANRING_NO_SPOOGE    		= 2048;
 float CLANRING_RUNES			    = 4096;
 float CLANRING_EXTENDED_OBITS    	= 8192;
 float CLANRING_CONSOLE_INITIALIZED  = 16384;
-float CLANRING_FAST_START    		= 32768;
-float CLANRING_FRESH_SPAWNS         = 65536;//used?
+float CLANRING_WIPEOUT_MODE			= 32768;
+//float CLANRING_FAST_START    		= 32768; //for now we don't need this  
+float CLANRING_FRESH_SPAWNS         = 0;//65536;//used?
+float CLANRING_AIRSHOT_MODE			= 65536;
 float CLANRING_AUTO_PAUSE    		= 131072;
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
+float CLANRING_CA_CC_VOTE			= 1048576;
 //float UNUSED			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
+float CLANRING_CA_MODE				= 4194304;
+float CLANRING_RA_MODE				= 8388608;
+float CLANRING_DMM4_MODE			= 16777216;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
@@ -109,6 +115,11 @@ float ADMIN_NORMAL_MODE    	= 0;
 float ADMIN_PRACTICE_MODE   = 1;
 float ADMIN_MATCH_MODE    	= 2;
 float ADMIN_CTF_MODE    	= 3;
+float ADMIN_CA_MODE    		= 4;
+float ADMIN_RA_MODE    		= 5;
+float ADMIN_AIRSHOT_MODE    = 6;
+float ADMIN_DMM4_MODE    	= 7;
+float ADMIN_WIPEOUT_MODE	= 8;
 
 // entity constants
 float CLANRING_MANUAL_SPAWN = 1;
@@ -175,6 +186,10 @@ float timelimit;                    // this used to be local in CheckRules in Cl
 float fraglimit;                    // this used to be local in CheckRules in Client.qc        
 float intermission_running;         // moved here from Client.qc
 float intermission_exittime;        // moved here from Client.qc
+.float rounddeaths;
+.float respawntime;
+.float teamalive;
+.float quadtime;
 
 entity 	clanring_best_chase_target;		// calculated every second who is the best target to chase // CRMOD - auto
 entity 	clanring_current_chase_target;
@@ -225,8 +240,6 @@ void(string s1, string s2, string s3, string s4) cprint4;
 
 .float 	warp_episode;//chosen episode to warp
 .float 	warp_map;//chosen map to warp
-
-.float 	hook_out;
 
 //ctf variables from ZOID's 3wave
 float 	TEAM_CAPTURE_CAPTURE_BONUS    			    = 5;
@@ -280,6 +293,7 @@ float  	last_capture_team;
 
 //.float 	onteam;
 .float	true_kills;
+.float 	direct_hit;
 .float 	dmg_taken;
 .float 	dmg_given;
 .float	dmg_tally;
@@ -379,6 +393,8 @@ float	clanring_afk_check;
 float	clanring_afk_timeout;
 .float	afk_time;
 
+.float  stats_gl_frac;
+.float  stats_gl_tot;
 float	stats_timelimit;
 float	stats_matchtype;
 
@@ -394,3 +410,73 @@ typedef struct
 servermap_t warpmap[200];
 
 string warpmenutop[11]; // Customizable map categories for the warp menu contents.
+
+string default_nextmap;
+
+//Arena
+entity boss;
+
+.float dmg_given;
+.float dmg_given_round;
+.float dmg_cache;
+.float round;
+.float max_rounds;
+.float max_players;
+.float start_players;
+.float ca_player_flag;
+.float airborn_pos;
+
+.float busy;
+.float aborted;
+.float forced;
+.float unpausing;
+.float allready;
+.float timetofight;
+.float maprecycle;
+.float weaponlevel;
+.float motd_delay;
+
+.entity chain_gang;
+
+.entity next_player;
+.entity next_team;
+.float team2;
+//.float killed;
+.float wins;
+.float losses;
+.vector old_velocity;	// for pause
+.float cc_queue;
+.float cc_queue_vote;
+
+entity team_first_place;
+entity team_second_place;
+entity team_third_place;
+entity ca_mvp_entity;
+
+float clanring_rulescheck;
+.float max_teams;
+
+float COLOR_BLUE = 13;
+float COLOR_RED = 4;
+float COLOR_YELLOW = 12;
+float COLOR_GREEN = 3;
+
+float TEAM_SPECTATOR 	= 0;
+float TEAM_PRACTICE	= 16;
+float TEAM_BLUE = 14;
+float TEAM_RED = 5;
+float TEAM_YELLOW = 13;
+float TEAM_GREEN = 4;
+
+float PF_WAITING = 1;
+float PF_DEAD = 2;
+float PF_READY = 3;
+float PF_PLAYING = 4;
+
+
+float CA_MATCH_WAITING = 1;
+float CA_MATCH_ROUNDSTART = 2;
+float CA_MATCH_PLAYING = 3;
+float CA_MATCH_OVER = 4;
+float CA_MATCH_CLEANUP = 5;
+.float ca_deathcamtime;

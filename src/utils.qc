@@ -5,7 +5,8 @@
 //
 // All code by J.P. Grossman unless otherwise commented.
 //
-
+float () match_prewar;
+float () mode_is_arena;
 //(FIXME: replace with just centerprint or bprint)
 // Overloaded centerprints
 void (entity client, string s, ...) centerprint2 = #73; 
@@ -235,22 +236,25 @@ void (string s1, string s2, string s3, string s4, string s5, string s6) oprint6 
 	}
 };
 
-void (entity ent, float clientshirt, float clientpants) setcolour =
+void (entity ent, float clientshirt, float clientpants) setcolour =	//fixme
 {		
 	local float client;
 	
 	if (ent.style & CLANRING_CONNECTED)
 	{
+
 		client = (ent.colormap - 1);	
-		if ((client <= 0)||(client >16))
+		if ((client < 0)||(client >16))
 		{
-			cprint("warning in setcolour: if ((client <= 0)||(client >16))\n");
+			cprint("warning in setcolour: if ((client < 0)||(client >16))\n");
 			return;
 		}
 		msg_entity = ent;
 		WriteByte(MSG_ALL, SVC_UPDATECOLORS);
 		WriteByte(MSG_ALL, client);
    		WriteByte(MSG_ALL, (clientshirt * 16 + clientpants));
+
+		//setcolors(ent, (clientshirt * 16 + clientpants));//builtin #401; /* Part of DP_SV_SETCOLOR
    	}
 };
 
@@ -270,7 +274,9 @@ void (entity ent, string c_name) updatename =
 	if (ent.style & CLANRING_CONNECTED)
 	{
 		client		= (ent.colormap - 1);
-		if ((client < 0) || (client > 16))
+		if (client > 15)
+			client = (client % 16);//are we just forcing this to the wrong player?
+		else if (client < 1)
 			return;
 		msg_entity	= ent;
 		WriteByte	(MSG_ALL, SVC_UPDATENAME);
@@ -283,6 +289,16 @@ void () clear_name =
 {			
 	if (self.style & CLANRING_CONNECTED)
 		updatename(self,self.netname);		
+};
+
+void (entity who) wait_name =
+{
+	local string text;
+
+	text = " \bwaiting\b";
+	who.name_ready = strpad(16, who.netname);
+	who.name_ready = strcat (who.name_ready, text);
+	updatename(who,who.name_ready);
 };
 
 void () ready_name =
@@ -707,6 +723,55 @@ void (float f) utils_print_damage_gold =
    	sprint(self, s);
 };
 
+void (float f) utils_bprint_damage_gold =
+{
+   	local float n;
+   	local float d;
+   	local float temp;
+   	local string s;
+
+   	n = rint(f);
+
+//-- f>10000
+   	d = floor(n / 10000);
+   	temp = floor(n / 10000);
+   	s = " ";
+   	if (d) s = strings_ftos_gold(d);
+        else if (f >= 10000)  s="’";
+	n = n - (d * 10000);
+  	bprint(s);
+
+//-- f>1000
+	d = floor(n / 1000);
+   	temp = floor(n / 1000);
+   	s = " ";
+   	if (d)  s = strings_ftos_gold(d);
+           else if (f >= 1000) s="’";
+     	n = n - (d * 1000);
+  	bprint(s);
+  	
+//-- f>100
+   	d = floor(n / 100);
+   	temp = floor(n / 100);
+   	s = " ";
+   	if (d)  s = strings_ftos_gold(d);
+           else if (f >= 100)  s="’";
+   	n = n - (d * 100);
+  	bprint(s);
+  	
+//-- f>10
+   	d = floor(n / 10);
+           s = " ";
+   	if (temp || d) 	s = strings_ftos_gold(d);
+   	else if (f >= 10) s="’";
+           n = n - (d * 10);     
+   	bprint(s);
+   	
+// < 10   	
+   	s = strings_ftos_gold(n);
+   	bprint(s);
+};
+
 void (float f) utils_cprint_damage =
 {
    	local float n;
@@ -1022,6 +1087,29 @@ void (void () dofunc) utils_do_flags =
 	utils_do_item(dofunc, "item_flag_team2");
 };
 
+void () reset_frags =
+{
+	if (self.next_team == world)
+		self.frags = -99;
+	else
+		self.frags = 0;
+};
+
+void (void () dofunc) utils_do_arena_players =
+{
+	local entity oldself;
+
+	oldself = self;
+	self = find(world, classname, "player");
+	while (self)
+	{
+		if ((self.style & CLANRING_CONNECTED) && (self.next_team))
+			dofunc ();
+		self = find(self, classname, "player");
+	}
+	self = oldself;
+};
+
 //
 //  D O  P L A Y E R S
 //
@@ -1236,22 +1324,22 @@ float (string cname) utils_illegal_name =
 	else return FALSE;
 };
 
-entity (float whichteam) find_team_entity =
-{
-	local entity e;
+// entity (float whichteam) find_team_entity =
+// {
+// 	local entity e;
 	
-	e = clanring_sentinel.next_team;
+// 	e = clanring_sentinel.next_team;
 
-	while (e)
-	{
-		if (e.height == whichteam)
-		{
-			return e;
-		}
-		e = e.next_team;
-	}
-	return world;
-};
+// 	while (e)
+// 	{
+// 		if (e.height == whichteam)
+// 		{
+// 			return e;
+// 		}
+// 		e = e.next_team;
+// 	}
+// 	return world;
+// };
 
 //Returns a random vector bewteen m1 and m2
 
@@ -1326,7 +1414,7 @@ void (float tm) pqc_erase_team =
 {	
 	if (self.csqc_enabled)
 	{
-		dimension_send = 1;	
+		msg_entity = self;
 		WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
 		WriteByte(MSG_MULTICAST , PQC_ERASE_TEAM);
 		WriteByte(MSG_MULTICAST, tm);
@@ -1518,3 +1606,16 @@ void ()pqc_ping_times =
 	WriteString(MSG_ALL, string_null);
 };
 
+float () ammo_is_infinite =
+{
+	if ((clanring_playmode & CLANRING_PRACTICE_MODE) || (match_prewar()) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+		return TRUE;
+	return FALSE;
+};
+
+float () items_are_ready =
+{
+	if ((clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED)) || (clanring_playmode & CLANRING_DMM4_MODE && boss.state != CA_MATCH_PLAYING))
+		return FALSE;
+	return TRUE;
+};

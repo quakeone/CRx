@@ -1260,6 +1260,8 @@ void() admin_impulse =
 		votables_select_timelimit();
 	else if (self.impulse == 216)
 		votables_select_overtime();
+	else if (self.impulse == 217)
+		votables_force_start();
 	else if (self.impulse == 221)
 		votables_request_set_quad();
 	else if (self.impulse == 222)
@@ -1293,14 +1295,22 @@ void() admin_impulse =
 		admin_dmset (-1);
 	else if (self.impulse == 208)
 		admin_choose_maxteams ();
-	else if (self.impulse == 209)
-		utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
+	// else if (self.impulse == 209) //removed for now
+	// 	utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
 	else if (self.impulse == 212)
 		admin_list_ghosts ();
 	else if (self.impulse == 213)
 		admin_start_kick ();
 	else if (self.impulse == 214)
-		match_end ();
+    {
+        if (mode_is_arena())
+        {
+            boss.aborted = TRUE;
+            arena_match_end();
+        }
+        else
+            match_end();
+    }
 	else if (self.impulse == 224)
 		utils_toggle_sflag (CLANRING_NO_SPOOGE, "Safe practice mode");
 	else if (self.impulse == 228)

@@ -63,6 +63,18 @@ float() crandom =
 	return 2*(random() - 0.5);
 };
 
+void () Practice_Object_Remove =
+{
+	local entity e;
+	
+	e = find (world, classname, "practice_object");
+		
+	if (e != world)
+	{
+		remove (e);
+	}
+};
+
 /*
 ================
 W_FireAxe
@@ -98,8 +110,10 @@ void() W_FireAxe =
 			WriteCoord (MSG_BROADCAST, org_y);
 			WriteCoord (MSG_BROADCAST, org_z);
 		}
-
-		T_Damage (trace_ent, self, self, 20);//still do the damage
+		if (clanring_playmode & CLANRING_CA_MODE)
+			T_Damage (trace_ent, self, self, 80);//CAx is x4 axe damage
+		else
+			T_Damage (trace_ent, self, self, 20);//still do the damage
 	}
 	else
 	{	// hit wall
@@ -291,8 +305,7 @@ void(float shotcount, vector dir, vector spread) FireBullets =
 	local vector direction;
 	local vector src;
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE) || (clanring_state & CLANRING_MATCH_STARTED))
-		self.dest1_x = self.dest1_x + 4 * shotcount;// ELOHIM_MOD - stats
+	self.dest1_x = self.dest1_x + 4 * shotcount;// ELOHIM_MOD - stats
 
 	// CRMOD - count damage fired with quad    
 	if (self.super_damage_finished > time)			// CRMOD - stats
@@ -329,7 +342,7 @@ void() W_FireShotgun =
 //	self.punchangle_x = -2;
 
 	// ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+
 	self.currentammo = self.ammo_shells = self.ammo_shells - 1;
 	makevectors(self.v_angle); // ELOHIM_MOD - added this
 	dir = aim (self, 100000);
@@ -355,7 +368,7 @@ void() W_FireSuperShotgun =
 
 //	self.punchangle_x = -4;
     // ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_shells = self.ammo_shells - 2;
     // END_MOD
     makevectors(self.v_angle); // ELOHIM_MOD - added this
@@ -479,7 +492,7 @@ void() W_FireRocket =
 	local entity missile;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
 	// END_MOD
 	sound (self, CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM);
@@ -581,6 +594,18 @@ void() W_FireLightning =
 	local	vector		org;
 	local	float		cells;
 
+	if (self.delayed_impulse)
+	{
+		self.impulse = self.delayed_impulse;
+
+		if ((self.impulse >= 1 && self.impulse <= 8))
+		{
+			self.delayed_impulse = 0;
+			W_ChangeWeapon ();
+			return;
+		}
+	}
+
 	if (self.ammo_cells < 1)
 	{
 		self.weapon = W_BestWeapon ();
@@ -594,6 +619,18 @@ void() W_FireLightning =
 		cells = self.ammo_cells;
 		self.ammo_cells = 0;
 		W_SetCurrentAmmo ();
+
+		if (mode_is_arena())
+		{
+			T_RadiusDamage(self, self, cells, world, "discharge");
+			WriteByte  (MSG_BROADCAST, SVC_TEMPENTITY);
+			WriteByte  (MSG_BROADCAST, TE_TAREXPLOSION);
+			WriteCoord (MSG_BROADCAST, self.origin_x);
+			WriteCoord (MSG_BROADCAST, self.origin_y);
+			WriteCoord (MSG_BROADCAST, self.origin_z);
+			self.items = self.items - (self.items & IT_LIGHTNING);
+			return;
+		}
 
 		// CLANRING_MOD - check for nospooge in practice mode
 		if ((clanring_playmode & CLANRING_PRACTICE_MODE) &&	(clanring_playmode & CLANRING_NO_SPOOGE))
@@ -612,7 +649,7 @@ void() W_FireLightning =
 	//self.punchangle_x = -2;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
         self.currentammo = self.ammo_cells = self.ammo_cells - 1;
     // END_MOD
 
@@ -631,6 +668,18 @@ void() W_FireLightning =
 		cells = self.ammo_cells;		
 	  	self.ammo_cells = 0;	  
 		W_SetCurrentAmmo ();
+
+		if (mode_is_arena())
+		{
+			T_RadiusDamage(self, self, cells, world, "discharge");
+			WriteByte  (MSG_BROADCAST, SVC_TEMPENTITY);
+			WriteByte  (MSG_BROADCAST, TE_TAREXPLOSION);
+			WriteCoord (MSG_BROADCAST, self.origin_x);
+			WriteCoord (MSG_BROADCAST, self.origin_y);
+			WriteCoord (MSG_BROADCAST, self.origin_z);
+			self.items = self.items - (self.items & IT_LIGHTNING);
+			return;
+		}
 		
 		if (clanring_playmode & CLANRING_NO_SPOOGE)
 			T_Damage (self, self, self, 35 * cells);
@@ -694,7 +743,7 @@ void() W_FireGrenade =
 	local	entity missile;
 
 	// ELOHIM_MOD - infinite ammo in practice mode unless safepractice is on
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;		
 	//else //allow no spooge in match mode
 	if (clanring_playmode & CLANRING_NO_SPOOGE)
@@ -739,6 +788,7 @@ void() W_FireGrenade =
 	setmodel (missile, "progs/grenade.mdl");
 	setsize (missile, '0 0 0', '0 0 0');		
 	setorigin (missile, self.origin);
+	self.stats_gl_tot = self.stats_gl_tot + 120; // stats
 };
 
 
@@ -780,11 +830,23 @@ void() W_FireSuperSpikes =
 	local vector	dir;
 //	local entity	old;
 
+	if (self.delayed_impulse)
+	{
+		self.impulse = self.delayed_impulse;
+
+		if ((self.impulse >= 1 && self.impulse <= 8))
+		{
+			self.delayed_impulse = 0;
+			W_ChangeWeapon ();
+			return;
+		}
+	}
+
 	sound (self, CHAN_WEAPON, "weapons/spike2.wav", 1, ATTN_NORM);
 	self.attack_finished = time + 0.2;
 	
 	// ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_nails = self.ammo_nails - 2;		
 	// END_MOD
 
@@ -818,6 +880,18 @@ void(float ox) W_FireSpikes =
 	local vector	dir;
 //	local entity	old;
 
+	if (self.delayed_impulse)
+	{
+		self.impulse = self.delayed_impulse;
+
+		if ((self.impulse >= 1 && self.impulse <= 8))
+		{
+			self.delayed_impulse = 0;
+			W_ChangeWeapon ();
+			return;
+		}
+	}
+
 	makevectors (self.v_angle);
 
 	if (self.ammo_nails >= 2 && self.weapon == IT_SUPER_NAILGUN)
@@ -837,7 +911,7 @@ void(float ox) W_FireSpikes =
 	self.attack_finished = time + 0.2;
 
     // ELOHIM_MOD - infinite ammo in practice mode
-	if ((!(clanring_playmode & CLANRING_PRACTICE_MODE)) && (!match_prewar()))
+	if (!(ammo_is_infinite()))
 		self.currentammo = self.ammo_nails = self.ammo_nails - 1;
     // END_MOD
 
@@ -1561,6 +1635,12 @@ void() W_WeaponFrame =
 		ImpulseCommands ();
 	}
 	// END_MOD
+
+	if (self.deadflag)
+		return;
+	
+	if (((mode_is_arena() == TRUE) && (boss.timetofight == FALSE)))
+		return;
 
 // check for attack
     // ELOHIM_MOD - don't fire unless ELOHIM_OK_TO_SHOOT is set

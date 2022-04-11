@@ -6,8 +6,16 @@
 //
 // All code by J.P. Grossman unless otherwise commented.
 //
+float (entity team1) number_teammates;
+entity (float whichteam) find_team_entity;
+
 string motd_top1;
 string motd_top2;
+string motd_top3;
+string motd_top4;
+string motd_top5;
+string motd_top6;
+string motd_top7;
 
 //
 //  I N I T  W O R L D
@@ -37,7 +45,10 @@ void() motd_think =
 	// remove the MOTD on fire or jump;	(R00k) or paused
 	if ((self.owner.button0) || (self.owner.button2) || (clanring_state & CLANRING_MATCH_PAUSED))
 	{
-		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		else if (!(mode_is_arena()))
+			centerprint(self.owner, "\btype \bready\b in console to join");
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
 		return;	
@@ -66,7 +77,10 @@ void() motd_think =
 	}
 	else
 	{
-		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		else if (!(mode_is_arena()))
+			centerprint(self.owner, "\btype \bready\b in console to join");
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
 	}
@@ -89,4 +103,82 @@ void() motd_create =
 	intro.count = 0;
 	intro.cnt = 0;
 	intro.lip = 0;
+};
+
+void () motd_end =
+{
+	self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
+	remove (self);
+};
+
+void ()motd_print =
+{	
+	if (self.style & CLANRING_AFK_CLIENT)
+		return;//R00k v1.95 save some bandwidth...
+
+	if ((!(self.style & CLANRING_CONNECTED)) || (clanring_state & CLANRING_MATCH_PAUSED))//this deters overflow buffer errors
+		return;
+		
+	if (intermission_running)
+		return;
+
+	if (self.ca_player_flag == PF_PLAYING) //R00k: 6/12/2017 9:50AM (airshot practice)
+		return;
+
+	if ((!(self.oflags & OBSERVER_WALK)) || (self.next_team != world))
+	{
+		self.style = self.style - (self.style & CLANRING_MOTD);
+		return;
+	}
+	
+	centerprint7 (self, motd_top1, motd_top2, motd_top3, motd_top4, motd_top5, motd_top6, motd_top7);
+};
+
+void ()motd_arena_start =
+{
+	if (self.style & CLANRING_AFK_CLIENT)
+		return;//R00k v1.95 save some bandwidth...
+		
+	if (self.style & CLANRING_MOTD || (!(self.style & CLANRING_CONNECTED)) || clanring_state & CLANRING_MATCH_PAUSED)
+		return;	
+	
+	motd_top1 = "\x80\x81\x81\x81\x81\x81 ClanRing Mod \x81\x81\x81\x81\x81\x82\n";
+	motd_top7 = "\n\n\n\n";
+
+	if (clanring_playmode & CLANRING_CA_MODE)
+	{
+		if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+			motd_top2 = "\n\x85Clan Arena (Wipeout)\x85\n\n";
+		else
+			motd_top2 = "\n\x85Clan Arena\x85\n\n";
+		motd_top3 = "\nchoose a team\n\n";
+		motd_top4 = "\x13 blue   \n\x14 red    \n\x15 yellow \n\x16 green  \n\npress \x17 to uncommit from team\n";
+	}
+	else if (clanring_playmode & CLANRING_RA_MODE)
+	{
+		motd_top2 = "\n\x85Rocket Arena\x85\n\n";
+		motd_top3 = "\n1 to join\n\n";
+		motd_top4 = "\n2 to leave\n\n";
+	}
+	else if (boss.state == CA_MATCH_WAITING)
+	{
+		if (clanring_playmode & CLANRING_DMM4_MODE)
+		{
+			motd_top2 = "\n\x851v1 Duel\x85\n\n";
+			motd_top3 = "\n1 to join\n\n";
+			motd_top4 = "\n2 to leave\n\n";
+		}
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		{
+			motd_top2 = "\n\x85Airshot Mode\x85\n\n";
+			motd_top3 = "You can only be damaged while in the air.\nThe higher off the ground, the more\ndamage you will take.\n";
+			motd_top4 = "\n1 to join\n\n\n2 to leave\n\n";
+		}
+		else
+			return;
+	}
+	else
+		return;
+
+	self.style = self.style | CLANRING_MOTD;
 };

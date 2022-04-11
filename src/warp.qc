@@ -4,8 +4,8 @@
 // Server supported maps menu used for voting changelevel
 //
 
-float (string s1, string s2, void() accept) vote_init;
-void(optional string requestmap) votables_request_change_level;
+float (string captiona, string captionb, void() passfunc, optional string pollname = "") vote_init;
+void() votables_request_change_level;
 void() client_select_warp;
 
 void() warp_menu_top =
