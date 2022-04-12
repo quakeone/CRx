@@ -416,11 +416,7 @@ void () observer_start =
 		match_disconnect_notify (self);
 		clear_name();//remove ready from scoreboard
 	}
-	else if (mode_is_arena())
-	{
-		arena_client_disconnect();
-	}
-	else
+	else if (!(mode_is_arena()))//todo can arena players go observer to exit the match?
 		clanring_remove_player_from_list ();
 
 	self.next_player = world;
@@ -730,7 +726,7 @@ entity () observer_find_team_target =
 
 	targ = find (world, classname, "player");
 
-	while ((!targ) || ((IS_CA_OBSERVER(targ)) || !(targ.style & CA_CONNECTED) || self.next_team.team2 != targ.next_team.team2))
+	while ((!targ) || ((IS_CA_OBSERVER(targ)) || !(targ.style & CLANRING_CONNECTED) || self.next_team.team2 != targ.next_team.team2))
 		targ = find (targ, classname, "player");
 
 	if (targ == world)
