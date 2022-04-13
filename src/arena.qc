@@ -1562,9 +1562,12 @@ void() arena_refresh_player =
 	self.movetarget  = world;
 	self.model  = string_null;
 	self.mdl = string_null;
-	self.deadflag = DEAD_DYING;
-	self.think = respawn;
-	self.nextthink = (time + 0.05);
+	if (!(IS_CA_OBSERVER(self)))//R00k: don't respawn players that died in the round and are observers.
+	{
+		self.deadflag = DEAD_DYING;
+		self.think = respawn;
+		self.nextthink = (time + 0.05);
+	}
 	self.killed	 = FALSE;
 	self.respawntime = 0;
 	self.rounddeaths = 0;

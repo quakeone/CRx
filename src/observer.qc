@@ -403,6 +403,8 @@ void () observer_start =
 	//local float go_auto;
 	local string tmp="";
 
+	if (self.style & CLANRING_OBSERVER) return;//R00k: testing obs cam shake (4/13/22)
+
 	self.style = self.style | CLANRING_OBSERVER;
 
   	// Notify the match module that this player has become an observer
@@ -514,40 +516,43 @@ void () observer_start =
 		stuffcmd(self, ";color 0;\n");
 	self.height = 0;// fixed observer color cheat?
 
-	if (self.oflags & OBSERVER_FLY)
-		observer_fly_start();
-	else
-	if (self.oflags & OBSERVER_CHASE)
-	{
-		if (self.oflags & OBSERVER_AUTO)
-			self.oflags = self.oflags | OBSERVER_GO_AUTO;
-		observer_chase_start();
-	}
-	else
-	if (self.oflags & OBSERVER_DEMO)
-	{
-		// This is necessary to prevent the other player's model from being drawn. Don't fucking ask me why!!!
-		self.nextthink = time + 0.1;
-		self.think = observer_demo_start;
-	}
-	else
-	if (self.oflags & OBSERVER_CAMERA)
-	{
-		if (self.oflags & OBSERVER_AUTO)
-			self.oflags = self.oflags | OBSERVER_GO_AUTO;
-		observer_camera_start();
-	}
-	else
-		observer_walk_start();
-
 	if ((mode_is_arena()) && !(clanring_playmode & CLANRING_WIPEOUT_MODE))
 	{
 		if (self.ca_player_flag == PF_DEAD)
 		{
-			observer_next_target();
+			//observer_next_target();
 			observer_demo_start();
 		}
 	}
+	else
+	{
+		if (self.oflags & OBSERVER_FLY)
+			observer_fly_start();
+		else
+		if (self.oflags & OBSERVER_CHASE)
+		{
+			if (self.oflags & OBSERVER_AUTO)
+				self.oflags = self.oflags | OBSERVER_GO_AUTO;
+			observer_chase_start();
+		}
+		else
+		if (self.oflags & OBSERVER_DEMO)
+		{
+			// This is necessary to prevent the other player's model from being drawn. Don't fucking ask me why!!!
+			self.nextthink = time + 0.1;
+			self.think = observer_demo_start;
+		}
+		else
+		if (self.oflags & OBSERVER_CAMERA)
+		{
+			if (self.oflags & OBSERVER_AUTO)
+				self.oflags = self.oflags | OBSERVER_GO_AUTO;
+			observer_camera_start();
+		}
+		else
+			observer_walk_start();
+	}
+
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 120\n");
 

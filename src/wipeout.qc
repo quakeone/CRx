@@ -110,7 +110,7 @@ float (entity team1) wipeout_teammates_left =
 
 			if (spot != world)
 			{
-				local quadent = world;
+				local entity quadent = world;
 				quadent = find(world, classname, "ca_quad_drop");
 				if (quadent)
 				{
