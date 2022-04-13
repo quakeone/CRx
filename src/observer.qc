@@ -412,16 +412,19 @@ void () observer_start =
 	// remove the player from the list before messing with next_player
 	//
 	// Must also come before self.items is reset to avoid messing up the RL count
-  	if (clanring_playmode & CLANRING_MATCH_MODE)
+	if (!(mode_is_arena()))
 	{
-		match_remove_player (self);// This needs to go first
-		match_disconnect_notify (self);
-		clear_name();//remove ready from scoreboard
-	}
-	else if (!(mode_is_arena()))//todo can arena players go observer to exit the match?
-		clanring_remove_player_from_list ();
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+		{
+			match_remove_player (self);// This needs to go first
+			match_disconnect_notify (self);
+			clear_name();//remove ready from scoreboard
+		}
+		else 
+			clanring_remove_player_from_list ();
 
-	self.next_player = world;
+		self.next_player = world;
+	}
 
 	DropRune ();
 	UnHookPlayer ();
@@ -518,9 +521,11 @@ void () observer_start =
 
 	if ((mode_is_arena()) && !(clanring_playmode & CLANRING_WIPEOUT_MODE))
 	{
+		observer_walk_start(); //show join menu
+
 		if (self.ca_player_flag == PF_DEAD)
 		{
-			//observer_next_target();
+			observer_next_target();
 			observer_demo_start();
 		}
 	}
