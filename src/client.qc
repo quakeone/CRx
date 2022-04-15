@@ -785,7 +785,7 @@ void() PutClientInServer =
 
 	if (mode_is_arena())
 	{
-		if (self.player_flag == PF_DEAD) //dont move origin if just died
+		if (((self.ca_player_flag == PF_WAITING) || (self.ca_player_flag == PF_DEAD)) || (boss.state == CA_MATCH_WAITING))
 		{
 			self.angles_x = 0;
 			self.angles_z = 0;

@@ -167,6 +167,7 @@ void () observer_walk_start =
 	self.finaldest_y = self.movetype = MOVETYPE_WALK;
 	self.flags = self.flags - (self.flags & FL_ONGROUND);
 	self.view_ofs = '0 0 22';
+
 //	droptofloor(0, 0);
 //R00k: removing this junk (3/04/2022)
 /*	if (self.style & CLANRING_FOUND_BINDINGS)// CRMOD - don't send sm0 if they don't have that alias
@@ -181,8 +182,7 @@ void () observer_walk_start =
 	if (mode_is_arena())
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
-
-		motd_arena_start();
+		motd_arena_start();		
 	}
 };
 
@@ -403,8 +403,6 @@ void () observer_start =
 	//local float go_auto;
 	local string tmp="";
 
-	if (self.style & CLANRING_OBSERVER) return;//R00k: testing obs cam shake (4/13/22)
-
 	self.style = self.style | CLANRING_OBSERVER;
 
   	// Notify the match module that this player has become an observer
@@ -468,7 +466,6 @@ void () observer_start =
 		}
 		self.team2 	= TEAM_SPECTATOR;//dont allow dead teammates to talk to playing teammates
 		self.team 	= ((self.team2) + 1);
-		//self.deadflag = DEAD_NO;//R00k: this is already set in PutClientInServer
 	}
 	self.takedamage = DAMAGE_NO;
 	self.solid = SOLID_NOT;
@@ -519,43 +516,39 @@ void () observer_start =
 		stuffcmd(self, ";color 0;\n");
 	self.height = 0;// fixed observer color cheat?
 
-	if ((mode_is_arena()) && !(clanring_playmode & CLANRING_WIPEOUT_MODE))
+	if (self.oflags & OBSERVER_FLY)
+		observer_fly_start();
+	else
+	if (self.oflags & OBSERVER_CHASE)
 	{
-		observer_walk_start(); //show join menu
-
-		if (self.ca_player_flag == PF_DEAD)
-		{
-			observer_next_target();
-			observer_demo_start();
-		}
+		if (self.oflags & OBSERVER_AUTO)
+			self.oflags = self.oflags | OBSERVER_GO_AUTO;
+		observer_chase_start();
 	}
 	else
+	if (self.oflags & OBSERVER_DEMO)
 	{
-		if (self.oflags & OBSERVER_FLY)
-			observer_fly_start();
-		else
-		if (self.oflags & OBSERVER_CHASE)
+		// This is necessary to prevent the other player's model from being drawn. Don't fucking ask me why!!!
+		self.nextthink = time + 0.1;
+		self.think = observer_demo_start;
+	}
+	else
+	if (self.oflags & OBSERVER_CAMERA)
+	{
+		if (self.oflags & OBSERVER_AUTO)
+			self.oflags = self.oflags | OBSERVER_GO_AUTO;
+		observer_camera_start();
+	}
+	else
+		observer_walk_start();
+
+	if (clanring_playmode & CLANRING_CA_MODE)
+	{
+		if (self.ca_player_flag == PF_DEAD)
 		{
-			if (self.oflags & OBSERVER_AUTO)
-				self.oflags = self.oflags | OBSERVER_GO_AUTO;
 			observer_chase_start();
+			self.ca_player_flag = PF_WAITING;
 		}
-		else
-		if (self.oflags & OBSERVER_DEMO)
-		{
-			// This is necessary to prevent the other player's model from being drawn. Don't fucking ask me why!!!
-			self.nextthink = time + 0.1;
-			self.think = observer_demo_start;
-		}
-		else
-		if (self.oflags & OBSERVER_CAMERA)
-		{
-			if (self.oflags & OBSERVER_AUTO)
-				self.oflags = self.oflags | OBSERVER_GO_AUTO;
-			observer_camera_start();
-		}
-		else
-			observer_walk_start();
 	}
 
 	if (self.style & CLANRING_HEADS_UP)
@@ -564,7 +557,7 @@ void () observer_start =
 	// Check to see if anyone was observing this client
 	observer_disconnect_notify(self);	
 
-	if (!(self.style & CLANRING_MOTD))
+	if ((!(self.style & CLANRING_MOTD))&&(!(mode_is_arena)))
 		utils_make_scheduled_event(observer_centerprint_join, 2);
 };
 
@@ -753,15 +746,15 @@ entity () observer_find_team_target =
 //
 void () observer_next_target =
 {
-	if (mode_is_arena() && boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
-	{
-		observer_walk_start ();
-		return;
-	}
+//	if (mode_is_arena() && boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
+//	{
+//		observer_walk_start ();
+//		return;
+//	}
 
     self.movetarget = observer_find_target(self.movetarget);
 
-	if (mode_is_arena() && (self.movetarget == world))
+	if /*(mode_is_arena() && */(self.movetarget == world)//)
 	{
 		observer_walk_start ();
 		return;
@@ -1662,11 +1655,11 @@ void () observer_update_status_bar =
 	{
 		self.weaponmodel = player.weaponmodel;
 		self.weaponframe = player.weaponframe;
-		if ((self.armorvalue != player.armorvalue) ||
+/*		if ((self.armorvalue != player.armorvalue) ||
 			(self.health > player.health + 3) ||
 			(self.health < player.health) ||
 			(self.items < player.items))
-			stuffcmd(self, "bf\n");
+			stuffcmd(self, "bf\n");*/
 	}
 	else
 		self.weaponmodel = string_null;
@@ -1844,6 +1837,43 @@ void () observer_pre_think =
 			}
 			self.clanring_cam_delay = time + 6;
 		}
+
+		if (clanring_playmode & CLANRING_CA_MODE)
+		{
+			if (self.oflags & (OBSERVER_CHASE | OBSERVER_DEMO))
+			{
+				if ((self.movetarget.ca_player_flag == PF_DEAD) || (IS_CA_OBSERVER(self.movetarget)))//Cam Target dies, drop to floor, slowly.
+				{
+					self.movetype = MOVETYPE_WALK;
+				}
+				else
+					self.movetype = MOVETYPE_FLY;
+			}
+			else
+			{
+				if (self.oflags & OBSERVER_CAMERA)
+				if ((IS_CA_OBSERVER(self.movetarget)))
+				{					
+					observer_next_target ();
+				}		
+			}
+			
+			//R00k: Ideally, I'd like to cam the best player per round. Keep switching to next player after cam target dies will
+			//ultimately be left with the winner of the round; starting with him as current cam target for the next round etc..		
+			if (boss.state != CA_MATCH_WAITING)
+			{
+				if (self.next_team == world)//Non-players; players cam their killer.
+				{			
+					if (IS_CA_OBSERVER(self.movetarget))//Happens when target dies, switch to new target
+					{
+						if (boss.state == CA_MATCH_PLAYING)//Dont switch between rounds.
+						{
+							observer_next_target();
+						}
+					}
+				}		 
+			}
+		}
     }
     else
     {
@@ -1867,7 +1897,8 @@ void () observer_pre_think =
         observer_check_teleport();
 
 		// check for player in sight every frame
-		observer_get_target();
+		if (!(mode_is_arena()))
+			observer_get_target(); //WTF is this used for?
     }
 };
 

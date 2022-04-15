@@ -1400,6 +1400,7 @@ void () arena_start_unpause_countdown =
 	announce ("Unpausing match...");
 };
 //-----------------------------------------------------------------------
+void () observer_clear_flags;
 
 void() arena_reset_player =
 {
@@ -1440,7 +1441,7 @@ void() arena_restart_player =
 	//spawn_tfog (self.origin);
 	self.deadflag = DEAD_DYING;
 	self.think = respawn;
-	self.nextthink = time + .1;
+	self.nextthink = time + 0.1;
 }
 
 void () execute_changelevel;
@@ -1562,12 +1563,9 @@ void() arena_refresh_player =
 	self.movetarget  = world;
 	self.model  = string_null;
 	self.mdl = string_null;
-	if (!(IS_CA_OBSERVER(self)))//R00k: don't respawn players that died in the round and are observers.
-	{
-		self.deadflag = DEAD_DYING;
-		self.think = respawn;
-		self.nextthink = (time + 0.05);
-	}
+	self.deadflag = DEAD_DYING;
+	self.think = respawn;
+	self.nextthink = (time + 0.05);
 	self.killed	 = FALSE;
 	self.respawntime = 0;
 	self.rounddeaths = 0;

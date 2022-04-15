@@ -1155,13 +1155,17 @@ void () clanring_put_client_in_server =
 	self.finaldest_y = MOVETYPE_WALK;
 	self.style = self.style | CLANRING_CONNECTED | CLANRING_AUTOID;//placed here before assigning to a team
 
-	utils_make_scheduled_event(clanring_bf_think, 0.1);
+	//utils_make_scheduled_event(clanring_bf_think, 0.1);
 
-	if ((mode_is_arena()) && ((self.ca_player_flag == PF_WAITING) || (self.ca_player_flag == PF_DEAD)) || ((boss.state == CA_MATCH_WAITING)))
+	if (mode_is_arena())
 	{
-		observer_start();
-		return;
+		if (((self.ca_player_flag == PF_WAITING) || (self.ca_player_flag == PF_DEAD)) || (boss.state == CA_MATCH_WAITING))
+		{
+			observer_start();
+			return;
+		}
 	}
+
 	if ((self.style & CLANRING_OBSERVER) || (self.oflags & OBSERVER_QUAKETV) || ((clanring_playmode & CLANRING_MATCH_MODE) && !(self.style & CLANRING_READY)))
 	{
 		observer_start ();
