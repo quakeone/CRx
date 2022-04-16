@@ -622,8 +622,7 @@ void() match_reset_owner =
 void() spawns_remove_model =
 {
 	self.model = string_null;
-	self.modelindex = 0;
-	self.model = string_null;
+	self.modelindex = 0;	
 }
 
 //
@@ -640,7 +639,7 @@ void() match_begin =
 	// Remove the spawnpoints' visible models
 	utils_do_item(spawns_remove_model, "info_player_deathmatch");
 	utils_do_item(spawns_remove_model, "info_player_team1");
-	utils_do_item(spawns_remove_model, "info_player_team1");
+	utils_do_item(spawns_remove_model, "info_player_team2");
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
