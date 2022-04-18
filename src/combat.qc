@@ -287,8 +287,12 @@ void(entity targ, entity attacker) Killed =
 	{
 		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
 		{
-			rtime = get_wipeout_respawn(targ.rounddeaths);
-			bprint(targ.netname, " will respawn in ", ftos(rtime), " seconds");
+			//TODO: might not be accurate
+			if (targ.next_team.teamalive > 1)
+			{
+				rtime = get_wipeout_respawn(targ.rounddeaths);
+				bprint4(targ.netname, " will respawn in ", ftos(rtime), " seconds\n");
+			}
 		}
 	}
 	else if (clanring_playmode & CLANRING_CA_MODE)
@@ -549,8 +553,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				targ.armortype = 0;
 				targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
 			}
-			if (!((clanring_playmode & CLANRING_DMM4_MODE) && (targ.invincible_finished >= time)))
-				targ.armorvalue = targ.armorvalue - save;
+			targ.armorvalue = targ.armorvalue - save;
 		}
 	}
 

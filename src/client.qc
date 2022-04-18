@@ -442,7 +442,11 @@ void() respawn =
 //	CreateDeadBody (self);//R00k new corpse routine.
 	SetNewParms2 ();
 
-	updatename(self, self.netname);	
+//TODO: remove testing
+	local string dbgmsg = sprintf("updatename: trying to update %s (client=%s)\n", self.netname, ftos(self.colormap));
+	dprint(dbgmsg);
+
+	updatename(self, self.netname);
 	
 	PutClientInServer ();
 
@@ -2025,6 +2029,12 @@ void() ClientDisconnect =
 		UnHookPlayer ();
 		self.hook2 = self.hook2 - (self.hook2 & HOOK_OUT);//TODO remove the off-hand newbie hook...
 	}
+
+	if (self.super_damage_finished > 0 && (clanring_playmode & CLANRING_WIPEOUT_MODE))
+	{
+		wipeout_drop_quad (self.super_damage_finished - time);
+	}
+
 	clanring_client_disconnect ();
 	set_suicide_frame ();
 

@@ -110,6 +110,21 @@ void() StartItem =
         }
     }
     // END_MOD
+	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	{
+		if (self.touch == weapon_touch)
+		{
+			self.effects = self.effects - (self.effects & self.effects);
+			self.model = string_null;
+			self.solid = SOLID_NOT;
+			self.nextthink = 9999999; // must be really big for quaketv
+		}
+		else
+		{
+			remove(self);
+		}
+		return;
+	}
 	else if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE))
 	{
 		remove(self);
@@ -235,8 +250,10 @@ void() health_touch =
 
 		if (!T_Heal (other, self.healamount, H_ROTTEN))
 			donttake = 1;
-
-		other.next_team.pos1_z = (other.next_team.pos1_z + 1);
+		if (other.next_team != world)
+		{
+			other.next_team.pos1_z = (other.next_team.pos1_z + 1);
+		}
 	}
 	else
 	{
@@ -375,7 +392,10 @@ void() armor_touch =
 
 	if (!donttake)
 	{
-		other.next_team.dest = (other.next_team.dest + v);
+		if (other.next_team != world)
+		{
+			other.next_team.dest = (other.next_team.dest + v);
+		}
 
 		other.armortype 	= type;
 		other.armorvalue 	= value;
@@ -1108,7 +1128,10 @@ void() powerup_touch =
 		other.effects = other.effects | EF_DIMLIGHT;	// 1998-07-23 Better performance in handling of powerups by Maddes
 		other.effects = other.effects | EF_RED;	
 
-		other.next_team.dest2_y = other.next_team.dest2_y + 1;
+		if (other.next_team != world)
+		{
+			other.next_team.dest2_y = other.next_team.dest2_y + 1;
+		}
 	}
 
 	if (self.items == IT_INVISIBILITY)
@@ -1125,7 +1148,10 @@ void() powerup_touch =
 		//other.modelindex = modelindex_eyes;
 		// 1998-07-23 Better performance in handling of powerups by Maddes  end
 
-		other.next_team.dest2_z = other.next_team.dest2_z + 1;
+		if (other.next_team != world)
+		{
+			other.next_team.dest2_z = other.next_team.dest2_z + 1;
+		}
 	}
 
 	// 1998-12-24 Improved weapon and powerup touch functions by Maddes/Sméagol  start
@@ -1147,7 +1173,10 @@ void() powerup_touch =
 
 		// CRMOD - stats
 		other.clanring_qdwep_z = other.clanring_qdwep_z + 1;
-		other.next_team.dest2_x = other.next_team.dest2_x + 1;
+		if (other.next_team != world)
+		{
+			other.next_team.dest2_x = other.next_team.dest2_x + 1;
+		}
 	}
 	activator = other;
 	SUB_UseTargets();// fire all targets / killtargets
@@ -1285,7 +1314,10 @@ void() BackpackTouch =
 					quaketv_announce4(other.netname, " got ", self.owner.netname, "'s RL");
 					quaketv_sound ("misc/talk.wav");
 					self.owner.clanring_badstats_x = self.owner.clanring_badstats_x + 1;
-					other.next_team.mangle_y = other.next_team.mangle_y + 1;
+					if (other.next_team != world)
+					{
+						other.next_team.mangle_y = other.next_team.mangle_y + 1;
+					}
 				}
 				quaketv_obtained_rl (other);// ELOHIM_MOD - keep track of rocket launchers
 			}
@@ -1396,8 +1428,11 @@ void() DropBackpack =
 	else if (item.items == IT_ROCKET_LAUNCHER)
 	{
 		item.netname = "Rocket Launcher";
-		// ELOHIM_MOD - quaketv code	
-		self.next_team.mangle_z = self.next_team.mangle_z + 1; // stats
+		// ELOHIM_MOD - quaketv code
+		if (other.next_team != world)
+		{
+			self.next_team.mangle_z = self.next_team.mangle_z + 1; // stats
+		}
 	}
 	else if (item.items == IT_LIGHTNING)
 			item.netname = "Thunderbolt";

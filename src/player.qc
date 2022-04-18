@@ -704,6 +704,9 @@ void() PlayerDie =
 		if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.items & IT_QUAD))
 		{
 			boss.quadtime = 0;
+
+			if (self.super_damage_finished > time)
+				wipeout_drop_quad (self.super_damage_finished - time);
 		}
 	}
 

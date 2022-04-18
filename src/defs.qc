@@ -736,8 +736,8 @@ float(entity targ, entity inflictor, string dtype) CanDamage;	// 1998-10-04 Hit 
 //
 // triggers.qc
 //
-.float hurt_together_time;
-.float hurt_nextthink;
+// .float hurt_together_time;
+// .float hurt_nextthink;
 // hurt_touch fix end
 
 float   modelindex_eyes, modelindex_player; // ELOHIM_MOD - moved from client.qc
