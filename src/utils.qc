@@ -236,17 +236,16 @@ void (string s1, string s2, string s3, string s4, string s5, string s6) oprint6 
 	}
 };
 
-void (entity ent, float clientshirt, float clientpants) setcolour =	//fixme
+void (entity ent, float clientshirt, float clientpants) setcolour =
 {		
 	local float client;
-	
+
 	if (ent.style & CLANRING_CONNECTED)
 	{
-
-		client = (ent.colormap - 1);	
-		if ((client < 0)||(client >16))
+		client = (ent.colormap - 1);
+		if ((client > 16)||(client < 0))
 		{
-			cprint("warning in setcolour: if ((client < 0)||(client >16))\n");
+			cprint("ERROR: setcolour: invalid client slot\n"); //output to console for debugging.
 			return;
 		}
 		msg_entity = ent;
@@ -271,13 +270,16 @@ void (string status) updatenameoverload =
 void (entity ent, string c_name) updatename =
 {
 	local float client;
+
 	if (ent.style & CLANRING_CONNECTED)
 	{
-		client		= (ent.colormap - 1);
-		if (client > 15)
-			client = (client % 16);
-		else if (client < 1)
+		client = (ent.colormap - 1);
+
+		if ((client > 16)||(client < 0))
+		{
+			cprint("ERROR: updatename: invalid client slot\n"); //output to console for debugging.
 			return;
+		}
 		msg_entity	= ent;
 		WriteByte	(MSG_ALL, SVC_UPDATENAME);
 		WriteByte	(MSG_ALL, client);

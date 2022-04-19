@@ -442,11 +442,7 @@ void() respawn =
 //	CreateDeadBody (self);//R00k new corpse routine.
 	SetNewParms2 ();
 
-//TODO: remove testing
-	local string dbgmsg = sprintf("updatename: trying to update %s (client=%s)\n", self.netname, ftos(self.colormap));
-	dprint(dbgmsg);
-
-	updatename(self, self.netname);
+	updatename(self, self.netname);	
 	
 	PutClientInServer ();
 
@@ -470,10 +466,9 @@ void() ClientKill =
 	if (IS_CA_OBSERVER(self))
 		return;
 
-	if (mode_is_arena())	//This is here to fix a chance when someone suicides at the end of the game, and respawns back into the arena as a ghost player.
+	if (mode_is_arena())	//R00k: What's the point?
 	{		
-		if (boss.state != CA_MATCH_PLAYING)
-			return;
+		return;
 	}
 
 	if (gameover)
@@ -518,26 +513,7 @@ void() ClientKill =
 		client_frag(self, -1);
 		self.mangle_x = self.mangle_x + 1;
 	}
-	else if (mode_is_arena() && (self.ca_player_flag == PF_PLAYING))
-	{
-		client_frag(self, -1);
-		self.mangle_x = self.mangle_x + 1;
 
-		if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE))
-		{
-				im_dead_now_what();
-				GibPlayer();
-				self.nextthink = -1;
-				self.deadflag = DEAD_DEAD;
-				self.jump_flag = 0;
-				return;
-		}
-		else if (self.next_team != world)
-		{
-			self.next_team.losses += 1;
-			pqc_team_frags(self.next_team.team2, self.next_team.wins);
-		}
-	}
 	if (self.items & IT_ROCKET_LAUNCHER)
 	{
 		quaketv_lost_rl (self);
@@ -789,7 +765,7 @@ void() PutClientInServer =
 
 	if (mode_is_arena())
 	{
-		if (((self.ca_player_flag == PF_WAITING) || (self.ca_player_flag == PF_DEAD)) || (boss.state == CA_MATCH_WAITING))
+		if (self.ca_player_flag == PF_DEAD)	//R00k: don't respawn just yet, as they will be put in observer mode automatically and pick up a movetarget then...
 		{
 			self.angles_x = 0;
 			self.angles_z = 0;
@@ -824,7 +800,6 @@ void() PutClientInServer =
 		spot = SelectSpawnPoint();
 	}
 	
-	self.colormap 				= num_for_edict(self);//R00k: testing (2/23/2022)
 	self.trigger_field			= spot;
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		self.origin = self.oldorigin = airshot_droptofloor(spot);	

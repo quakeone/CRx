@@ -342,7 +342,7 @@ void() W_FireShotgun =
 //	self.punchangle_x = -2;
 
 	// ELOHIM_MOD - infinite ammo in practice mode
-
+	if (!(ammo_is_infinite()))
 	self.currentammo = self.ammo_shells = self.ammo_shells - 1;
 	makevectors(self.v_angle); // ELOHIM_MOD - added this
 	dir = aim (self, 100000);

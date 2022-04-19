@@ -1400,22 +1400,28 @@ void () arena_start_unpause_countdown =
 	announce ("Unpausing match...");
 };
 //-----------------------------------------------------------------------
-
+//Match is over so reset player
 void() arena_reset_player =
 {
 	if (self.next_team != world)
 	remove_player_from_chain(self.next_team,self);
 
 	updatename(self,self.netname);
-	self.weaponlevel = 0;
-	self.next_team 	 = world;
-	self.ca_player_flag = PF_WAITING;
-	self.movetarget  = world;
-	self.model 	 = string_null;
-	self.mdl	 = string_null;
-	self.deadflag 	 = DEAD_DYING;
-	self.think 	 = respawn;
-	self.nextthink 	 = (time + 1);
+	self.weaponlevel 	= 0;
+	self.next_team 	 	= world;
+
+	//R00K: Only respawn players that hadn't died
+	if (self.ca_player_flag == PF_PLAYING)
+	{
+		self.ca_player_flag = PF_WAITING;
+		self.deadflag 	 	= DEAD_DYING;
+		self.think 	 		= respawn;
+		self.nextthink 	 	= (time + sys_ticrate);
+	}
+
+	self.movetarget  	= world;
+	self.model 	 		= string_null;
+	self.mdl	 		= string_null;
 };
 
 void() arena_gib_player =
@@ -1555,16 +1561,21 @@ void () arena_match_end =
 };
 
 //R00k v1.56
+//Called at end of rounds...
 void() arena_refresh_player =
 {
 	updatename(self,self.netname);
-	self.ca_player_flag = PF_WAITING;
-	self.movetarget  = world;
+
+	//R00K: Only respawn players that hadn't died
+	if (self.ca_player_flag == PF_PLAYING)
+	{
+		self.ca_player_flag = PF_WAITING;
+		self.deadflag 	 	= DEAD_DYING;
+		self.think 	 		= respawn;
+		self.nextthink 	 	= (time + sys_ticrate);
+	}
 	self.model  = string_null;
 	self.mdl = string_null;
-	self.deadflag = DEAD_DYING;
-	self.think = respawn;
-	self.nextthink = (time + 0.05);
 	self.killed	 = FALSE;
 	self.respawntime = 0;
 	self.rounddeaths = 0;

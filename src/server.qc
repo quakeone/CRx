@@ -1050,13 +1050,14 @@ void () clanring_client_connect =
 
 	if (mode_is_arena())
 	{
-		self.team2	     = TEAM_SPECTATOR;
-		self.next_team	     = world;
-		self.frags           = 0;
-		self.trigger_field   = world;
-		self.skin	     = 0;
-		self.afk_time 	     = time;
-		self.ca_player_flag     = PF_WAITING;
+		self.style 			= self.style | CLANRING_MOTD;//show new motd for changed gametypes.
+		self.team2	     	= TEAM_SPECTATOR;
+		self.next_team	    = world;
+		self.frags          = 0;
+		self.trigger_field  = world;
+		self.skin	     	= 0;
+		self.afk_time 	    = time;
+		self.ca_player_flag	= PF_WAITING;
 	}
 };
 

@@ -546,38 +546,41 @@ void(entity ent) CreateDeadBody =
 	new.nextthink 	= time + 20;
 };
 
-//void() dead_name;
+void() dead_name;
 
 void() PlayerDead =
 {
 	self.nextthink 	= -1;
 	self.deadflag 	= DEAD_DEAD;// allow respawn after a certain time
 	self.jump_flag = 0; // CLANRING_MOD - fix "falling after discharge" bug
-	//if (clanring_playmode & CLANRING_ARENA_MODE) //TODO: enable for Clan Arena mode.
-	//dead_name();//R00k v3.51
 
-	if ((clanring_playmode & CLANRING_MATCH_MODE))
+	if (clanring_playmode & CLANRING_CA_MODE)
+		dead_name();//R00k v3.51
+
+	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		self.nextthink = (time + 5);
 		self.think = respawn;
 	}
-	else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait == 0))
+	else if (mode_is_arena())
 	{
-		if (!gameover)
+		self.think = respawn;
+		if (deathmatch == 4)
 		{
-			self.movetarget = world;
-			self.nextthink = time + 2;
-			self.think = respawn;
+			if (!gameover)			
+			{
+				if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait == 0))
+				{
+					self.movetarget = world;
+					self.nextthink = time + 2;
+				}
+				else
+					self.nextthink = time + 1;
+			}
+			// else ??
 		}
+		else self.nextthink = time + 3; //default for ca mode.
 	}
-    else if (deathmatch == 4)
-    {
-		if (!gameover)
-		{
-			self.nextthink = time + 1;
-			self.think = respawn;
-		}
-    }
 	else
 	{
 		if (!gameover)
