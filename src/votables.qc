@@ -342,7 +342,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
 
-			newmapname = "dm3";
+			//newmapname = "dm3";
 		}
 		else if (request_gametype == 1)
 		{
@@ -355,7 +355,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Capture The Flag\n");
 
-			newmapname = "ctf1";
+			//newmapname = "ctf1";
 		}
 		else if (request_gametype == 2)
 		{
@@ -366,7 +366,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena\n");
 
-			newmapname = "dm3";
+			//newmapname = "dm3"; //R00k: disabled this for testing on a single map, for now.
 		}
 		else if (request_gametype == 3)
 		{
@@ -413,7 +413,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena Wipeout\n");
 
-			newmapname = "dm3";
+			//newmapname = "dm3";
 		}
 
 		utils_set_cvar ("samelevel", clanring_playmode);

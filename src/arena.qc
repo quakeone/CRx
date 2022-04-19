@@ -1440,7 +1440,7 @@ void() arena_restart_player =
 	//spawn_tfog (self.origin);
 	self.deadflag = DEAD_DYING;
 	self.think = respawn;
-	self.nextthink = time + .1;
+	self.nextthink = time + 0.1;
 }
 
 void () execute_changelevel;

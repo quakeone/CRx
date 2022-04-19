@@ -167,6 +167,7 @@ void () observer_walk_start =
 	self.finaldest_y = self.movetype = MOVETYPE_WALK;
 	self.flags = self.flags - (self.flags & FL_ONGROUND);
 	self.view_ofs = '0 0 22';
+
 //	droptofloor(0, 0);
 //R00k: removing this junk (3/04/2022)
 /*	if (self.style & CLANRING_FOUND_BINDINGS)// CRMOD - don't send sm0 if they don't have that alias
@@ -181,7 +182,6 @@ void () observer_walk_start =
 	if (mode_is_arena())
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
-
 		motd_arena_start();
 	}
 };
@@ -410,16 +410,19 @@ void () observer_start =
 	// remove the player from the list before messing with next_player
 	//
 	// Must also come before self.items is reset to avoid messing up the RL count
-  	if (clanring_playmode & CLANRING_MATCH_MODE)
+  	if (!(mode_is_arena()))
 	{
-		match_remove_player (self);// This needs to go first
-		match_disconnect_notify (self);
-		clear_name();//remove ready from scoreboard
-	}
-	else
-		clanring_remove_player_from_list ();
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+		{
+			match_remove_player (self);// This needs to go first
+			match_disconnect_notify (self);
+			clear_name();//remove ready from scoreboard
+		}
+		else 
+			clanring_remove_player_from_list ();
 
-	self.next_player = world;
+		self.next_player = world;
+	}
 
 	DropRune ();
 	UnHookPlayer ();
@@ -463,7 +466,6 @@ void () observer_start =
 		}
 		self.team2 	= TEAM_SPECTATOR;//dont allow dead teammates to talk to playing teammates
 		self.team 	= ((self.team2) + 1);
-		self.deadflag = DEAD_NO;//R00k (testing)
 	}
 	self.takedamage = DAMAGE_NO;
 	self.solid = SOLID_NOT;
@@ -540,12 +542,12 @@ void () observer_start =
 	else
 		observer_walk_start();
 
-	if ((mode_is_arena()) && !(clanring_playmode & CLANRING_WIPEOUT_MODE))
+	if (clanring_playmode & CLANRING_CA_MODE)
 	{
 		if (self.ca_player_flag == PF_DEAD)
 		{
-			observer_next_target();
-			observer_demo_start();
+			observer_chase_start();
+			self.ca_player_flag = PF_WAITING;
 		}
 	}
 	if (self.style & CLANRING_HEADS_UP)
@@ -554,7 +556,7 @@ void () observer_start =
 	// Check to see if anyone was observing this client
 	observer_disconnect_notify(self);	
 
-	if (!(self.style & CLANRING_MOTD) && !(mode_is_arena()))
+	if ((!(self.style & CLANRING_MOTD)) && (!(mode_is_arena())))
 		utils_make_scheduled_event(observer_centerprint_join, 2);
 };
 
@@ -716,21 +718,42 @@ entity (entity e) observer_find_target =
 };
 
 //
+//  F I N D  T E A M T A R G E T
+//
+//  Returns the next teammate to watch
+//
+entity () observer_find_team_target =
+{
+	local entity targ;
+
+	targ = find (world, classname, "player");
+
+	while ((!targ) || ((IS_CA_OBSERVER(targ)) || !(targ.style & CLANRING_CONNECTED) || self.next_team.team2 != targ.next_team.team2))
+		targ = find (targ, classname, "player");
+
+	if (targ == world)
+	{
+		targ = observer_find_target(world);//Find the winner of the match if opponent
+	}
+	return targ;
+};
+
+//
 //  N E X T  T A R G E T
 //
 //  Get the next target to watch.
 //
 void () observer_next_target =
 {
-	if (mode_is_arena() && boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
-	{
-		observer_walk_start ();
-		return;
-	}
+	// if (mode_is_arena() && boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
+	// {
+	// 	observer_walk_start ();
+	// 	return;
+	// }
 
     self.movetarget = observer_find_target(self.movetarget);
 
-	if (mode_is_arena() && (self.movetarget == world))
+	if /*(mode_is_arena() && */(self.movetarget == world)//)
 	{
 		observer_walk_start ();
 		return;
@@ -1637,11 +1660,11 @@ void () observer_update_status_bar =
 	{
 		self.weaponmodel = player.weaponmodel;
 		self.weaponframe = player.weaponframe;
-		if ((self.armorvalue != player.armorvalue) ||
+/*		if ((self.armorvalue != player.armorvalue) ||
 			(self.health > player.health + 3) ||
 			(self.health < player.health) ||
 			(self.items < player.items))
-			stuffcmd(self, "bf\n");
+			stuffcmd(self, "bf\n");*/
 	}
 	else
 		self.weaponmodel = string_null;
@@ -1819,6 +1842,42 @@ void () observer_pre_think =
 			}
 			self.clanring_cam_delay = time + 6;
 		}
+		if (clanring_playmode & CLANRING_CA_MODE)
+		{
+			if (self.oflags & (OBSERVER_CHASE | OBSERVER_DEMO))
+			{
+				if ((self.movetarget.ca_player_flag == PF_DEAD) || (IS_CA_OBSERVER(self.movetarget)))//Cam Target dies, drop to floor, slowly.
+				{
+					self.movetype = MOVETYPE_WALK;
+				}
+				else
+					self.movetype = MOVETYPE_FLY;
+			}
+			else
+			{
+				if (self.oflags & OBSERVER_CAMERA)
+				if ((IS_CA_OBSERVER(self.movetarget)))
+				{					
+					observer_next_target ();
+				}		
+			}
+
+			//R00k: Ideally, I'd like to cam the best player per round. Keep switching to next player after cam target dies will
+			//ultimately be left with the winner of the round; starting with him as current cam target for the next round etc..		
+			if (boss.state != CA_MATCH_WAITING)
+			{
+				if (self.next_team == world)//Non-players; players cam their killer.
+				{			
+					if (IS_CA_OBSERVER(self.movetarget))//Happens when target dies, switch to new target
+					{
+						if (boss.state == CA_MATCH_PLAYING)//Dont switch between rounds.
+						{
+							observer_next_target();
+						}
+					}
+				}		 
+			}
+		}
     }
     else
     {
@@ -1842,7 +1901,8 @@ void () observer_pre_think =
         observer_check_teleport();
 
 		// check for player in sight every frame
-		observer_get_target();
+		if (!(mode_is_arena()))
+			observer_get_target(); //WTF is this used for?
     }
 };
 

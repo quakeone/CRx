@@ -770,7 +770,7 @@ called each time a player is spawned
 */
 void() PutClientInServer =
 {
-	local entity spot;
+	local entity spot = world;
 			
 	DecodeLevelParms ();	
 	
@@ -789,26 +789,32 @@ void() PutClientInServer =
 
 	if (mode_is_arena())
 	{
-		//TODO: ra for all maps?
-		if ((ra_map()) && ((self.ca_player_flag == PF_PLAYING)))
+		if (((self.ca_player_flag == PF_WAITING) || (self.ca_player_flag == PF_DEAD)) || (boss.state == CA_MATCH_WAITING))
 		{
-			//spot = SelectSpawnPoint ("info_teleport_destination");
-			spot = SelectRASpawnPoint ();
-		}
-		else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (self.rounddeaths > 0))
-		{
-			//TODO: spawn near team ?
-			// spot = SelectWipeoutSpawnPoint();
-			//  if (spot == world)
-			 	spot = SelectSpawnPoint();
+			self.angles_x = 0;
+			self.angles_z = 0;
 		}
 		else
 		{
-		 	spot = SelectSpawnPoint();
+			if ((ra_map()) && ((self.ca_player_flag == PF_PLAYING)))
+			{
+				spot = find(spot, classname, "info_teleport_destination");
+			}
+	/*		else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (self.rounddeaths > 0))
+			{
+			//TODO: spawn near team ?
+			// spot = SelectWipeoutSpawnPoint();
+			//  if (spot == world)
+					spot = SelectSpawnPoint();
+			}*/
+			else
+			{
+				spot = SelectSpawnPoint();
+			}
 		}
 	}
 	else
-	{	
+	{    
 		spot = SelectSpawnPoint();
 	}
 
@@ -817,6 +823,7 @@ void() PutClientInServer =
 		sprint(self, "Finding a better spawnpoint...\n");
 		spot = SelectSpawnPoint();
 	}
+	
 	self.colormap 				= num_for_edict(self);//R00k: testing (2/23/2022)
 	self.trigger_field			= spot;
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
