@@ -750,6 +750,8 @@ void() PutClientInServer =
 			
 	DecodeLevelParms ();	
 	
+	updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
+	
 	//in classic mode auto join on connect
 	if (teamplay)
 	{
