@@ -1346,11 +1346,15 @@ void () clanring_commands =
 void () modes_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " \bdm\b\n");
+		sprint(self, " \bairshot\b\n");
+		sprint(self, " \bca\b\n");
 		sprint(self, " \bctf\b\n");
-		sprint(self, " \bpractice\b\n");
-		sprint(self, " \bffa\b\n");
+		sprint(self, " \bdm\b\n");
+		sprint(self, " \bdmm4\b\n");
 		sprint(self, " \bmatch\b\n");
+		sprint(self, " \bnormal\b\n");
+		sprint(self, " \bpractice\b\n");
+		sprint(self, " \bwipeout\b\n");
 		sprint(self, "\n");
 };
 
