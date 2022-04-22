@@ -1420,14 +1420,34 @@ void (float tm) pqc_erase_team =
 		WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
 		WriteByte(MSG_MULTICAST , PQC_ERASE_TEAM);
 		WriteByte(MSG_MULTICAST, tm);
-		multicast('0 0 0', MULTICAST_ALL);
+		multicast('0 0 0', MULTICAST_ALL_R);
 	}
 	else
 	{
 		WriteByte (MSG_ALL, SVC_STUFFCMD);
-		WriteByte (MSG_ALL, 1);
+		WriteByte (MSG_ALL, MOD_PROQUAKE);
 		WriteByte (MSG_ALL, PQC_ERASE_TEAM);
 		WriteByte (MSG_ALL, 16 + tm);
+		WriteString (MSG_ALL, string_null);
+	}
+};
+
+void (float c) pqc_new_team =
+{	
+	if (self.csqc_enabled)
+	{
+		WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
+		WriteByte(MSG_MULTICAST , PQC_NEW_TEAM);
+		WriteByte(MSG_MULTICAST, c);
+		multicast('0 0 0', MULTICAST_ALL_R);
+	}
+	else
+	{
+		WriteByte (MSG_ALL, SVC_STUFFCMD);
+		WriteByte (MSG_ALL, MOD_PROQUAKE);
+		WriteByte (MSG_ALL, PQC_NEW_TEAM);
+		WriteByte (MSG_ALL, 16 + c & 15); // pants
+		WriteByte (MSG_ALL, 16 + c / 16); // shirt
 		WriteString (MSG_ALL, string_null);
 	}
 };
@@ -1457,7 +1477,7 @@ void (float tm, float tf) pqc_team_frags =
 				msg_entity = self;
 				
 				WriteByte (MSG_ONE, SVC_STUFFCMD);
-				WriteByte (MSG_ONE, 1);
+				WriteByte (MSG_ONE, MOD_PROQUAKE);
 				WriteByte (MSG_ONE, PQC_TEAM_FRAGS);
 				WriteByte (MSG_ONE, 16 + tm);	// team
 				WriteShortPQ (MSG_ONE, tf);	// frags
@@ -1467,42 +1487,6 @@ void (float tm, float tf) pqc_team_frags =
         self = find(self, classname, "player");
     }
     self = oldself;
-};
-
-void (float c) pqc_new_team =
-{	
-	local float msg_type;
-	local entity oldself;
-
-    oldself = self;
-    self = find(world, classname, "player");
-    while (self)
-    {
-        if (self.style & CLANRING_CONNECTED)
-        {
-			if (self.csqc_enabled)
-			{
-				msg_entity = self;
-				WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
-				WriteByte(MSG_MULTICAST, PQC_NEW_TEAM);
-				WriteByte(MSG_MULTICAST, c); // pants
-				multicast('0 0 0', MULTICAST_ONE_R);
-			}
-			else
-			{
-				msg_entity = self;
-				msg_type = MSG_ONE;
-				WriteByte(msg_type, SVC_STUFFCMD);
-				WriteByte(msg_type, MOD_PROQUAKE);
-				WriteByte(msg_type, PQC_NEW_TEAM);
-				WriteByte(msg_type, 16 + c & 15); // pants
-				WriteByte(msg_type, 16 + c / 16); // shirt
-				WriteString(msg_type, string_null);
-			}
-		}	
-		self = find(self, classname, "player");
-	}
-	self = oldself;
 };
 
 void(float m, float s)pqc_match_time =
