@@ -169,27 +169,42 @@ void (vector vspot) do_drop_health =
 float (entity team1) wipeout_teammates_left =
 {
 	local entity e, tmp, spot = world;
-	local float prnd, n = 0, ttl = 0, loop_count = 64;
+	local float prnd, lowtime = 0, n = 0, ttl = 0, loop_count = 64;
 
 	e = team1;
 	while (e.chain_gang)
 	{
-		ttl = ttl + 1;
-        if (e.chain_gang.ca_player_flag != PF_DEAD && (IS_CA_OBSERVER(e.chain_gang) == FALSE) && ((e.chain_gang.style & CLANRING_CONNECTED)))
+		if ((e.chain_gang.style & CLANRING_CONNECTED))
 		{
-			n = n + 1;
-		}
-		else if ((e.chain_gang.ca_player_flag == PF_DEAD) && (e.chain_gang.style & CLANRING_CONNECTED) && (e.chain_gang.respawntime > 0))
-		{
-			if ((time >= e.chain_gang.respawntime) && (boss.wait == 0))
+			ttl = ttl + 1;
+			if ((e.chain_gang.ca_player_flag == PF_PLAYING) && (e.chain_gang.respawntime == 0))
 			{
-				tmp = self;
-				self = e.chain_gang;
-				observer_end ();
-                bprint2(self.netname, " has respawned\n");
-				self = tmp;
-
 				n = n + 1;
+			}
+			else
+			{
+				if ((e.chain_gang.respawntime > 0) && (time >= e.chain_gang.respawntime) && (boss.wait == 0))
+				{
+					tmp = self;
+					self = e.chain_gang;
+					self.movetarget = world;
+					observer_end ();
+					bprint2(self.netname, " has respawned\n");
+					self = tmp;
+
+					n = n + 1;
+				}
+				else
+				{
+					if (lowtime == 0)
+					{
+						lowtime = e.chain_gang.respawntime;
+					}
+					else if (e.chain_gang.respawntime < lowtime)
+					{
+						lowtime = e.chain_gang.respawntime;
+					}
+				}
 			}
 		}
 		e = e.chain_gang;
@@ -217,6 +232,8 @@ float (entity team1) wipeout_teammates_left =
 		}
 	}
 
+	team1.nextspawn = lowtime;
+	team1.teamtotal = ttl;
 	return n;
 };
 
@@ -236,27 +253,24 @@ float () teams_not_wipedout =
 		e = e.next_team;
 	}
 
-	if (time > boss.quadtime)
+	prnd = random() * (200 - 0.001);
+	prnd = floor(prnd);
+	if ((prnd == 50) || (prnd == 100) || (prnd == 150))
 	{
-		prnd = random() * (200 - 0.001);
-		prnd = floor(prnd);
-		if ((prnd == 50) || (prnd == 100) || (prnd == 150))
+		spot = find_drop_spot();
+		if (spot != world)
 		{
-			spot = find_drop_spot();
-			if (spot != world)
-			{
-				if (prnd == 100)
-					do_drop_health(spot.origin);
-				else
-					do_drop_pack(spot.origin);
-			}
+			if (prnd == 100)
+				do_drop_health(spot.origin);
+			else
+				do_drop_pack(spot.origin);
 		}
 	}
 
 	return tn;
 };
 
-void () wipeout_init_teamalive =
+void () wipeout_init_teams =
 {
 	local entity e;
 
@@ -265,6 +279,8 @@ void () wipeout_init_teamalive =
 	while (e)
 	{
 		e.teamalive = number_teammates(e);
+		e.teamtotal = e.teamalive;
+		e.nextspawn = 0;
 		e = e.next_team;
 	}
 };

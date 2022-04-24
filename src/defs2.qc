@@ -189,6 +189,7 @@ float intermission_exittime;        // moved here from Client.qc
 .float rounddeaths;
 .float respawntime;
 .float teamalive;
+.float teamtotal;
 .float quadtime;
 
 entity 	clanring_best_chase_target;		// calculated every second who is the best target to chase // CRMOD - auto
@@ -455,6 +456,7 @@ float clanring_rulescheck;
 float ra_wins;
 entity ra_lastspawn;
 float tele_num_spawns;
+.float nextspawn;
 
 float COLOR_BLUE = 13;
 float COLOR_RED = 4;

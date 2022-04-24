@@ -287,7 +287,7 @@ void(entity targ, entity attacker) Killed =
 	{
 		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
 		{
-			//TODO: might not be accurate
+			//TODO: too many messages?
 			if (targ.next_team.teamalive > 1)
 			{
 				rtime = get_wipeout_respawn(targ.rounddeaths);

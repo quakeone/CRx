@@ -371,9 +371,9 @@ void() ra_join_queue =
 	self.lip = time + 2; //R00k: two seconds between team choice will stop script spam
 
 	//try current pants color, otherwise next available
-	if (self.height > 0)
+	if (self.team > 1)
 	{
-		whichteam = find_this_team_color(self.height);
+		whichteam = find_this_team_color(self.team - 1);
 	}
 	if (whichteam == 0)
 	{

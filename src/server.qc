@@ -1203,8 +1203,8 @@ void () clanring_put_client_in_server =
 		{
 			self.cc_queue	= 0;//R00k - test		
 			self.cc_queue_vote	= 0;//R00k - test
-			self.ca_player_flag 	= PF_PLAYING;
-			self.respawntime			= 0;
+			self.ca_player_flag = PF_PLAYING;
+			self.respawntime = 0;
 		}
 
 		UnHookPlayer();

@@ -461,11 +461,25 @@ string (float num) strings_get_teamname4 =
 	{
 		"Bro",	"LBl",
 		"Grn",	"Red",
-		"Oli",	"Gld",
+		"Olv",	"Gld",
 		"Fle",	"Lav",
 		"Pur",	"Bei",
-		"Aqu ",	"Yel",
+		"Aqu",	"Yel",
 		"Blu"
+	};
+	return tab[num-1];
+};
+string (float num) strings_get_teamname4_red =
+{
+	const string tab[] = 
+	{
+		"\bBro\b",	"\bLBl\b",
+		"\bGrn\b",	"\bRed\b",
+		"\bOlv\b",	"\bGld\b",
+		"\bFle\b",	"\bLav\b",
+		"\bPur\b",	"\bBei\b",
+		"\bAqu\b",	"\bYel\b",
+		"\bBlu\b"
 	};
 	return tab[num-1];
 };

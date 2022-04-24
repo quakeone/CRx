@@ -211,6 +211,47 @@ void() TeamCapturePlayerUpdate =
 	centerprint (self, res, s1, s2, s3, t, n);
 };
 
+string (float nexttime) get_nextspawn_string =
+{
+	if ((boss.wait != 0) || (nexttime <= 0))
+	{
+		return "   ";
+	}
+
+	local float timeleft;
+	timeleft = ceil(nexttime - time);
+
+	if (timeleft > 9)
+	{
+		return sprintf(" %s", ftos(timeleft));
+	}
+	else if (timeleft >= 0)
+	{
+		return sprintf("  %s", ftos(timeleft));
+	}
+	else
+	{
+		return "   ";
+	}
+};
+
+string (entity e) wipeout_get_teamstatus =
+{
+	local string tname="", talive="";
+
+	if (e.team2 == self.team2)
+		tname = strings_get_teamname4(e.team2);
+	else
+		tname = strings_get_teamname4_red(e.team2);
+
+	if (e.teamalive == e.teamtotal)
+		talive = ftos(e.teamalive);
+	else
+		talive = strings_ftos_gold(e.teamalive);
+
+	return sprintf("ù%s %s%sü                                \n", tname, talive, get_nextspawn_string(e.nextspawn));
+};
+
 float (entity e) IS_CA_OBSERVER;
 void () WipeoutModePlayerUpdate =
 {
@@ -243,19 +284,19 @@ void () WipeoutModePlayerUpdate =
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
 
-	self.laststattime = (time + PLAYERSTATTIME);
+	self.laststattime = (time + .2);
 
 	e = boss.next_team;
 
 	if (e)
 	{
-		s1 = sprintf("ù%s %sü", strings_get_teamname4(e.team2), ftos(e.teamalive));
+		s1 = wipeout_get_teamstatus(e);
 		e = e.next_team;
 		if (e)
 		{
-			s2 = sprintf("ù%s %sü", strings_get_teamname4(e.team2), ftos(e.teamalive));
+			s2 = wipeout_get_teamstatus(e);
 		}
 	}
 
-	centerprint5 (self, " alive                                         \n", s1, "                                   \n", s2, "                                   ");
+	centerprint5 (self, "team alive                                         \n", s1, s2);
 };

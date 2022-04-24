@@ -25,7 +25,7 @@ void () rocket_arena_init_world;
 float (float rounddeaths) get_wipeout_respawn;
 float () teams_not_wipedout;
 void () dmm4_report_winner;
-void () wipeout_init_teamalive;
+void () wipeout_init_teams;
 void () respawn;
 void (entity pteam) ra_leave_next_queue;
 void (entity pteam) ra_join_next_queue;
@@ -1468,9 +1468,9 @@ void() arena_gib_player =
 		self.oflags = self.oflags - (self.oflags & OBSERVER_DEMO);
 		self.oflags = self.oflags - (self.oflags & OBSERVER_CAMERA);
 		self.movetarget = world;
-		
+
 		self.think = respawn;
-		self.nextthink = time + 5;
+		self.nextthink = time + 3;
 	}
 }
 
@@ -1928,7 +1928,7 @@ void () arena_main_loop =
 					respawn_teams ();
 
 					if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-						wipeout_init_teamalive();
+						wipeout_init_teams();
 
 					bprint ("\bround: [");
 					if (boss.round <= boss.max_rounds)

@@ -1546,7 +1546,7 @@ void () observer_update_display =
 	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING)
 			&& (boss.wait == 0) && (self.next_team != world))
 	{
-		rtime = floor(self.respawntime - time);
+		rtime = ceil(self.respawntime - time);
 		respawn_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
 	}
 	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)
