@@ -3,18 +3,13 @@ void () observer_end;
 void () stats_final_summary;
 void () stats_reset_player;
 void () observer_walk_start;
-//void () observer_chase_start;
 void () vote_yes;
 void () observer_check_demo_end;
 void () stats_team_stats;
 void () RemoveFromTeam;
-//void () RemoveFromQueue;
-void (entity client) observer_disconnect_notify;
-void () RA_Select_Team;
-//void () Teamplay_Join_Queue;
+void () ra_select_team;
 void() Request_Poll_Cleanup;
 float (string captiona, string captionb, void() passfunc, optional string pollname = "") vote_init;
-entity ca_mvp_entity;
 float () W_BestWeapon;
 void () score_update_time;
 void () SUB_regen;
@@ -32,6 +27,8 @@ float () teams_not_wipedout;
 void () dmm4_report_winner;
 void () wipeout_init_teamalive;
 void () respawn;
+void (entity pteam) ra_leave_next_queue;
+void (entity pteam) ra_join_next_queue;
 
 void () arena_precache =
 {
@@ -74,6 +71,9 @@ void () arena_init_world =
 
 void () arena_client_disconnect =
 {
+	if ((clanring_playmode & CLANRING_RA_MODE) && (self.next_team != world))
+		ra_leave_next_queue(self.next_team);
+
 	RemoveFromTeam();//R00k
 	self.team2    		= TEAM_SPECTATOR;
 	self.frags          = 0;
@@ -482,8 +482,8 @@ void () arena_set_winning_team =
 string () report_winning_team =
 {
 	local float	team_score_number,tnum;
-	local string 	tmp;
-	local string	team_winning_teamname,output = "";
+	local string 	tmp="";
+	local string	team_winning_teamname="", team_winning_teamname2="", output = "";
 
 	if (boss.round == 1) return string_null; //Match just started we know...
 
@@ -492,13 +492,23 @@ string () report_winning_team =
 	if ((team_first_place.wins > team_second_place.wins))
 	{
 		team_score_number = (team_first_place.wins - team_second_place.wins);
-		team_winning_teamname = team_first_place.netname;
+
+		if (clanring_playmode & CLANRING_RA_MODE)
+		{
+			if (team_first_place.chain_gang != world)
+				team_winning_teamname = team_first_place.chain_gang.netname;
+		}
+		else
+			team_winning_teamname = sprintf("The %s", team_first_place.netname);
 
 		tmp = ftos(team_score_number);
-		output = (sprintf("\x85The %s leads by ",team_winning_teamname));
+		output = (sprintf("\x85%s leads by ",team_winning_teamname));
 		output = (strcat(output,tmp));
 
-		tnum = (ceil(boss.max_rounds / 2));
+		if (clanring_playmode & CLANRING_RA_MODE)
+			tnum = ra_wins;
+		else
+			tnum = (ceil(boss.max_rounds / 2));
 		team_score_number = (tnum - team_first_place.wins);
 		tmp = ftos(team_score_number);
 
@@ -511,17 +521,34 @@ string () report_winning_team =
 		if ((number_teams () > 2) && ((team_first_place.wins == team_second_place.wins) && (team_first_place.wins > team_third_place.wins)) )
 		{
 			team_score_number = team_first_place.wins;
-			team_winning_teamname = team_first_place.netname;
+
+			if (clanring_playmode & CLANRING_RA_MODE)
+			{
+				if (team_first_place.chain_gang != world)
+					team_winning_teamname = team_first_place.chain_gang.netname;
+				if (team_second_place.chain_gang != world)
+					team_winning_teamname2 = team_second_place.chain_gang.netname;
+				output = ("\x85");
+			}
+			else
+			{
+				team_winning_teamname = team_first_place.netname;
+				team_winning_teamname2 = team_second_place.netname;
+				output = ("\x85The ");
+			}
+
 			tmp = ftos(team_score_number);
 
-			output = ("\x85The ");
-			output = (strcat(output,team_first_place.netname));
+			output = (strcat(output,team_winning_teamname));
 			output = (strcat(output," and "));
-			output = (strcat(output,team_second_place.netname));
+			output = (strcat(output,team_winning_teamname2));
 			output = (strcat(output," are tied at "));
 			output = (strcat(output,tmp));
 
-			tnum 	= (ceil(boss.max_rounds / 2));
+			if (clanring_playmode & CLANRING_RA_MODE)
+				tnum = ra_wins;
+			else
+				tnum 	= (ceil(boss.max_rounds / 2));
 			team_score_number = (tnum - team_first_place.wins);
 			tmp 	= ftos(team_score_number);
 			output 	= (strcat(output," need "));
@@ -535,7 +562,10 @@ string () report_winning_team =
 			tmp = ftos(team_score_number);
 			output = (strcat("Teams \btied\b at ",tmp));
 
-			tnum = (ceil(boss.max_rounds / 2));
+			if (clanring_playmode & CLANRING_RA_MODE)
+				tnum = ra_wins;
+			else
+				tnum = (ceil(boss.max_rounds / 2));
 			team_score_number = (tnum - team_first_place.wins);
 			tmp = ftos(team_score_number);
 			output = (strcat(output," need "));
@@ -1122,7 +1152,7 @@ void () Teamplay_Select_Team =
 {
 	if (clanring_playmode & CLANRING_RA_MODE)
 	{
-		RA_Select_Team();
+		ra_select_team();
 		return;
 	}
 
@@ -1239,7 +1269,7 @@ void () arena_pause_item =
 	}
 
 	self.nextthink = (self.nextthink + 1000000);
-	self.old_velocity = self.velocity;
+	self.clanring_old_velocity = self.velocity;
 	self.velocity = '0 0 0';
 
 	if ((self.classname == "grenade"))
@@ -1252,11 +1282,11 @@ void () arena_pause_player =
 {
 	if ((IS_CA_OBSERVER(self)) || self.deadflag)
 	{
-		self.old_velocity = '0 0 0';
+		self.clanring_old_velocity = '0 0 0';
 		return;
 	}
 	self.movetype		= MOVETYPE_FLY;
-	self.old_velocity 	= self.velocity;
+	self.clanring_old_velocity 	= self.velocity;
 	self.velocity 		= '0 0 0';
 
 	if ((self.nextthink == CONTENT_EMPTY))
@@ -1288,7 +1318,7 @@ void () arena_unpause_item =
 		return;
 	}
 	self.nextthink = ((self.nextthink - 1000000) + clanring_match_pause_time);
-	self.velocity = self.old_velocity;
+	self.velocity = self.clanring_old_velocity;
 	if ((self.classname == "grenade"))
 	{
 		self.movetype = MOVETYPE_BOUNCE;
@@ -1305,7 +1335,7 @@ void () arena_unpause_player =
 		return;
 	}
 	self.movetype = MOVETYPE_WALK;
-	self.velocity = self.old_velocity;
+	self.velocity = self.clanring_old_velocity;
 	if ((self.nextthink == CONTENT_EMPTY))
 	{
 		return;
@@ -1430,11 +1460,17 @@ void() arena_gib_player =
 	{
 		self.health = -99;
 		GibPlayer();
-		self.ca_player_flag = PF_DEAD;
-		self.deadflag = DEAD_DYING;
+		self.ca_player_flag = 0;
+		self.deadflag = DEAD_NO;
+
+		self.oflags = self.oflags - (self.oflags & OBSERVER_FLY);
+		self.oflags = self.oflags - (self.oflags & OBSERVER_CHASE);
+		self.oflags = self.oflags - (self.oflags & OBSERVER_DEMO);
+		self.oflags = self.oflags - (self.oflags & OBSERVER_CAMERA);
 		self.movetarget = world;
-		// self.think = respawn;
-		// self.nextthink = time + 5;
+		
+		self.think = respawn;
+		self.nextthink = time + 5;
 	}
 }
 
@@ -1524,7 +1560,14 @@ void () arena_match_end =
 			}	
 
 			bprint ("\n");	
-			announce2((team_first_place.netname)," has won the match.");	
+
+			if (clanring_playmode & CLANRING_RA_MODE)
+			{
+				if (team_first_place.chain_gang != world)
+					announce2((team_first_place.chain_gang.netname)," has won the match.");	
+			}
+			else
+				announce2((team_first_place.netname)," has won the match.");	
 			bprint ("\n");
 		}
 
@@ -1697,54 +1740,100 @@ void() round_end =
 		current_player = find(current_player, classname, "player");
 	}
 
-	if (wteam != world)//ugh lagouts cause all hell
+	if (clanring_playmode & CLANRING_RA_MODE)
 	{
-		wteam.wins = wteam.wins + 1;//up team rounds won
-		pqc_team_frags(wteam.team2, wteam.wins);
+		if (wteam != world)//ugh lagouts cause all hell
+		{
+			wteam.wins = wteam.wins + 1;//up team rounds won
+			pqc_team_frags(wteam.team2, wteam.wins);
+
+			bprint ("\n");
+			if (wteam.chain_gang != world)
+			announce2((wteam.chain_gang.netname)," has won the round.");
+		}
+
+		//find team with dead player and put them back in the queue
+		lteam = boss.next_team;
+		while (lteam != world)
+		{
+			if (lteam != wteam)
+			{
+				current_player = lteam.chain_gang;
+				if ((current_player != world) && (current_player.ca_player_flag == PF_DEAD))
+				{
+					lteam.losses = lteam.losses + 1;
+					current_player.ca_player_flag = PF_WAITING;
+					ra_join_next_queue(lteam);
+					break;
+				}
+			}
+			lteam = lteam.next_team;
+		}
+
+		if (wteam.wins >= ra_wins)
+		{
+			team_first_place = wteam;
+			gameover = TRUE;
+			arena_match_end();
+			return;
+		}
+
+		if (wteam != world)
+		{
+			announce_winner(wteam.armorvalue,wteam.health);
+		}
 	}
-
-	//BAM: Other teams' losses increases by 1.
-	lteam = boss.next_team;
-	while (lteam != world)
+	else
 	{
-		if (lteam != wteam)
-		lteam.losses = lteam.losses + 1;
+		if (wteam != world)//ugh lagouts cause all hell
+		{
+			wteam.wins = wteam.wins + 1;//up team rounds won
+			pqc_team_frags(wteam.team2, wteam.wins);
 
-		lteam = lteam.next_team;
-	}
+			bprint ("\n");
+			announce2((wteam.netname)," has won the round.");
+		}
 
-	bprint ("\n");
-	announce2((wteam.netname)," has won the round.");
+		//BAM: Other teams' losses increases by 1.
+		lteam = boss.next_team;
+		while (lteam != world)
+		{
+			if (lteam != wteam)
+			lteam.losses = lteam.losses + 1;
 
-	report_mvp_round();
+			lteam = lteam.next_team;
+		}
 
-    if (wteam.wins >= (ceil(boss.max_rounds / 2)))// wins > 50% of rounds wins the match
-    {
-        team_first_place = wteam;
-        gameover = TRUE;
-        arena_match_end();
-        return;
-    }
+		report_mvp_round();
 
-    if (boss.round >= boss.max_rounds)
-    {
-        find_team_place();
-        if (team_first_place.wins > team_second_place.wins)//Keep playing until there is a winner!
-        {
-            gameover = TRUE;
-            arena_match_end();
-            return;
-        }
-    }
+		if (wteam.wins >= (ceil(boss.max_rounds / 2)))// wins > 50% of rounds wins the match
+		{
+			team_first_place = wteam;
+			gameover = TRUE;
+			arena_match_end();
+			return;
+		}
 
-	if (wteam != world)//ugh lagouts cause all hell
-	{
-		wteam.armorvalue 	= (wteam.armorvalue / number_teammates_alive (wteam));
-		wteam.health 	= (wteam.health / number_teammates_alive (wteam));
-		announce_winner(wteam.armorvalue,wteam.health);
+		if (boss.round >= boss.max_rounds)
+		{
+			find_team_place();
+			if (team_first_place.wins > team_second_place.wins)//Keep playing until there is a winner!
+			{
+				gameover = TRUE;
+				arena_match_end();
+				return;
+			}
+		}
 
-		wteam.armorvalue 	= 0;//this is not required; it's a local entity.
-		wteam.health 	= 0;//this is not required; it's a local entity.
+		if (wteam != world)//ugh lagouts cause all hell
+		{
+			wteam.armorvalue 	= (wteam.armorvalue / number_teammates_alive (wteam));
+			wteam.health 	= (wteam.health / number_teammates_alive (wteam));
+			announce_winner(wteam.armorvalue,wteam.health);
+
+			wteam.armorvalue 	= 0;//this is not required; it's a local entity.
+			wteam.health 	= 0;//this is not required; it's a local entity.
+		}
 	}
 	utils_make_scheduled_event(reset_round, 0.5);
 };
@@ -1861,7 +1950,7 @@ void () arena_main_loop =
 			{
 				if (boss.count == 0)
 				{
-					//sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
+					sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
 					//ctprint ("\bFIGHT!");
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;

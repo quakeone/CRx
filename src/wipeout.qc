@@ -102,6 +102,7 @@ void (vector vspot) do_drop_quad =
 	item.touch = powerup_touch;
 	item.nextthink = time + 30;
 	item.think = SUB_Remove;
+	sound (item, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);
 };
 
 void() BackpackTouch;
@@ -140,6 +141,7 @@ void (vector vspot) do_drop_pack =
 	item.touch = BackpackTouch;
 	item.nextthink = time + 60;
 	item.think = SUB_Remove;
+	sound (item, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);
 };
 
 //void() health_touch;
@@ -153,14 +155,15 @@ void (vector vspot) do_drop_health =
 	// item.flags = FL_ITEM;
 	// item.solid = SOLID_TRIGGER;
 	// item.movetype = MOVETYPE_TOSS;
-	// setmodel(self, "maps/b_bh100.bsp");
-	// setsize (self, '0 0 0', '32 32 56');
+	// setmodel(item, "maps/b_bh100.bsp");
+	// setsize (item, '0 0 0', '32 32 56');
 	// item.noise = "items/r_item2.wav";
 	// item.healamount = 100;
 	// item.healtype = 2;
 	// item.touch = health_touch;
 	// item.nextthink = time + 20;
 	// item.think = SUB_Remove;
+	// sound (item, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);
 };
 
 float (entity team1) wipeout_teammates_left =

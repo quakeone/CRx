@@ -450,7 +450,25 @@ string (float num) strings_get_teamname3 =
 	};
 	return tab[num-1];
 };
-
+//
+//  G E T  T E A M N A M E 4
+//
+//  For when 3 characters is what we need.. Believe it.
+//
+string (float num) strings_get_teamname4 =
+{
+	const string tab[] = 
+	{
+		"Bro",	"LBl",
+		"Grn",	"Red",
+		"Oli",	"Gld",
+		"Fle",	"Lav",
+		"Pur",	"Bei",
+		"Aqu ",	"Yel",
+		"Blu"
+	};
+	return tab[num-1];
+};
 //
 //  G E T  C O L O U R
 //

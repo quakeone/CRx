@@ -249,13 +249,13 @@ void () WipeoutModePlayerUpdate =
 
 	if (e)
 	{
-		s1 = sprintf("ù%s %sü", strings_get_teamname3(e.team2), ftos(e.teamalive));
+		s1 = sprintf("ù%s %sü", strings_get_teamname4(e.team2), ftos(e.teamalive));
 		e = e.next_team;
 		if (e)
 		{
-			s2 = sprintf("ù%s %sü", strings_get_teamname3(e.team2), ftos(e.teamalive));
+			s2 = sprintf("ù%s %sü", strings_get_teamname4(e.team2), ftos(e.teamalive));
 		}
 	}
 
-	centerprint4 (self, s1, "                                   \n", s2, "                                   ");
+	centerprint5 (self, " alive                                         \n", s1, "                                   \n", s2, "                                   ");
 };

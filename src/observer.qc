@@ -1549,10 +1549,18 @@ void () observer_update_display =
 		rtime = floor(self.respawntime - time);
 		respawn_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
 	}
+	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)
+			&& (boss.wait == 0) && (self.next_team != world))
+	{
+		if (self.next_team.next_queue == world)
+		{
+			respawn_string = "You are NEXT in line";
+		}
+	}
 
     if (!player)
     {
-		if (clanring_state & CLANRING_MATCH_STARTED)
+		if ((clanring_state & CLANRING_MATCH_STARTED) || ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING)))
 			centerprint4(self, "\n\n\n\n\n\n\n\n\n\n\n\n               ", teamname, score, pad);
 		else if (respawn_string != "")
 			centerprint(self, respawn_string);

@@ -163,6 +163,7 @@ void() worldspawn =
 	runespawn  	= world;
 	team1_lastspawn = world;
 	team2_lastspawn = world;
+	ra_lastspawn = world;
 
 //	InternalInit();
 //	InitSearchHunk();

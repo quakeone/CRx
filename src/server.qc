@@ -260,7 +260,7 @@ void () arena_init_world;
 void () rocket_arena_init_world;
 void () arena_main_loop;
 void () dmm4_main_loop;
-//void () rocket_arena_main_loop;
+void () rocket_arena_main_loop;
 void () arena_precache;
 void () RemoveFromTeam;//R00k: ca mode
 void () arena_client_disconnect;
@@ -591,7 +591,7 @@ void () clanring_set_warpaliases =
 	}
 
 	self = temp;
-	self.nextthink = time + 0.02;
+	self.nextthink = time + 0.2;
 	self.think = votables_send_aliases;
 };
 
@@ -1165,7 +1165,13 @@ void () clanring_put_client_in_server =
 			observer_start();
 			return;
 		}
+		if ((clanring_playmode & CLANRING_RA_MODE) && (self.ca_player_flag != PF_READY) && (self.ca_player_flag != PF_PLAYING))
+		{
+			observer_start();
+			return;
+		}
 	}
+
 	if ((self.style & CLANRING_OBSERVER) || (self.oflags & OBSERVER_QUAKETV) || ((clanring_playmode & CLANRING_MATCH_MODE) && !(self.style & CLANRING_READY)))
 	{
 		observer_start ();
@@ -1652,7 +1658,7 @@ void () clanring_show_rules_prematch =
 	if (timervar > 3)
 	{
 		if (clanring_playmode & CLANRING_DMM4_MODE)
-			s1 = "Ž   duel  mode   Ž\n\n";
+			s1 = "Ž  d u e l mode  Ž\n\n";
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			s1 = "Ž  airshot mode  Ž\n\n";
 		else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
@@ -1666,11 +1672,16 @@ void () clanring_show_rules_prematch =
 		else
 			s1 = "Žcrmod match modeŽ\n\n";
 
-		temp = clanring_timelimit;	
+		if (!(clanring_playmode & CLANRING_CA_MODE) && !(clanring_playmode & CLANRING_RA_MODE))
+		{
+			temp = clanring_timelimit;
+		}
+		else { temp = 0; }
 		if (temp > 9)
 			s2 = sprintf("%s%s\n", "\btimelimit    ", ftos(temp));
 		else
 			s2 = sprintf("%s%s\n", "\btimelimit     ", ftos(temp));
+
 		temp = cvar("fraglimit");
 		if (temp > 99)
 			s3 = sprintf("%s%s\n", "\bfraglimit   ", ftos(temp));	
@@ -2278,8 +2289,8 @@ void () clanring_start_frame =
 							arena_main_loop();
 						else if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
 							dmm4_main_loop();
-						// else if (clanring_playmode & CLANRING_RA_MODE)
-						// 	rocket_arena_main_loop();
+						else if (clanring_playmode & CLANRING_RA_MODE)
+							rocket_arena_main_loop();
 					}
 
 					clanring_rulescheck = (time + 1);

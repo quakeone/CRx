@@ -377,7 +377,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Rocket Arena\n");
 
-			//newmapname = "dm3";
+			newmapname = ra_get_next_map();
 		}
 		else if (request_gametype == 4)
 		{

@@ -774,9 +774,10 @@ void() PutClientInServer =
 		}
 		else
 		{
-			if ((ra_map()) && ((self.ca_player_flag == PF_PLAYING)))
+			if ((ra_map()) && ((self.ca_player_flag == PF_READY) || (self.ca_player_flag == PF_PLAYING)))
 			{
-				spot = find(spot, classname, "info_teleport_destination");
+				//spot = find(spot, classname, "info_teleport_destination");
+				spot = SelectRASpawnPoint();
 			}
 	/*		else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (self.rounddeaths > 0))
 			{
@@ -1053,7 +1054,10 @@ void() NextLevel =
 		}
 	}
 
-	nextmap = o.map;
+	if (clanring_playmode & CLANRING_RA_MODE)
+		nextmap = ra_get_next_map();
+	else
+		nextmap = o.map;
 	gameover = TRUE;
 
     // check to see if there is a user-specified level sequence
@@ -2307,84 +2311,88 @@ void(entity targ, entity attacker) ClientObituary =
 				}
 				else
 				{
-					if (((targ.flag_carrier) && (targ.team != attacker.team)))
+					//ctf match mode kill bonuses
+					if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_MATCH_MODE))
 					{
-						attacker.last_fragged_carrier = time;
-						if (((targ.flag_since + TEAM_CAPTURE_CARRIER_FLAG_SINCE_TIMEOUT) > time))
+						if (((targ.flag_carrier) && (targ.team != attacker.team)))
 						{
-							attacker.fcfrags = (attacker.fcfrags + 1);
-						}
-						else
-						{
-							attacker.fcfrags = (attacker.fcfrags + 1);
-							// what you get for fragging enemy flag carrier
-							client_frag (attacker, TEAM_CAPTURE_FRAG_CARRIER_BONUS);
-						}
-					}
-					flag_radius = 0;
-					flag_carrier_radius = 0;
-
-					if (attacker.team == RED) s = ("\bRED\b");
-					else
-					if (attacker.team == BLUE) s = ("\bBLUE\b");
-
-					if ((((targ.last_hurt_carrier + TEAM_CAPTURE_CARRIER_DANGER_PROTECT_TIMEOUT) > time) && !(attacker.flag_carrier)))
-					{
-						client_frag (attacker, TEAM_CAPTURE_CARRIER_DANGER_PROTECT_BONUS);
-						// bonus for fraggin someone who has recently hurt your flag carrier
-						flag_carrier_radius = 1;
-						announce4(attacker.netname," defends ",s,"'s flag carrier against an agressive enemy");
-						attacker.fcdefenses = attacker.fcdefenses + 1;
-					}
-					
-					if (!(attacker.flag_carrier))// speed
-					{
-						head = findradius (attacker.origin, TEAM_CAPTURE_ATTACKER_PROTECT_RADIUS);					
-						while (head)
-						{
-							if (head.classname == "player")
+							attacker.last_fragged_carrier = time;
+							if (((targ.flag_since + TEAM_CAPTURE_CARRIER_FLAG_SINCE_TIMEOUT) > time))
 							{
-								if ( ( ( ((head.team == attacker.team) && (head.flag_carrier)) && (head != attacker) ) && !flag_carrier_radius) )
-								{
-									client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
-									flag_carrier_radius = 1;
-									announce4(attacker.netname," defends ",s,"'s flag carrier");
-									attacker.fcdefenses = (attacker.fcdefenses + 1);
-								}
+								attacker.fcfrags = (attacker.fcfrags + 1);
 							}
-							if (((head.classname == "item_flag_team1") || (head.classname == "item_flag_team2")))
+							else
 							{
-								if ((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))))
+								attacker.fcfrags = (attacker.fcfrags + 1);
+								// what you get for fragging enemy flag carrier
+								client_frag (attacker, TEAM_CAPTURE_FRAG_CARRIER_BONUS);
+							}
+						}
+						flag_radius = 0;
+						flag_carrier_radius = 0;
+
+						if (attacker.team == RED) s = ("\bRED\b");
+						else
+						if (attacker.team == BLUE) s = ("\bBLUE\b");
+
+						if ((((targ.last_hurt_carrier + TEAM_CAPTURE_CARRIER_DANGER_PROTECT_TIMEOUT) > time) && !(attacker.flag_carrier)))
+						{
+							client_frag (attacker, TEAM_CAPTURE_CARRIER_DANGER_PROTECT_BONUS);
+							// bonus for fraggin someone who has recently hurt your flag carrier
+							flag_carrier_radius = 1;
+							announce4(attacker.netname," defends ",s,"'s flag carrier against an agressive enemy");
+							attacker.fcdefenses = attacker.fcdefenses + 1;
+						}
+						
+						if (!(attacker.flag_carrier))// speed
+						{
+							head = findradius (attacker.origin, TEAM_CAPTURE_ATTACKER_PROTECT_RADIUS);					
+							while (head)
+							{
+								if (head.classname == "player")
+								{
+									if ( ( ( ((head.team == attacker.team) && (head.flag_carrier)) && (head != attacker) ) && !flag_carrier_radius) )
+									{
+										client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
+										flag_carrier_radius = 1;
+										announce4(attacker.netname," defends ",s,"'s flag carrier");
+										attacker.fcdefenses = (attacker.fcdefenses + 1);
+									}
+								}
+								if (((head.classname == "item_flag_team1") || (head.classname == "item_flag_team2")))
+								{
+									if ((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))))
+									{
+										client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
+										flag_radius = 1;
+										announce4(attacker.netname," defends the ",s," flag");
+										attacker.fdefenses = (attacker.fdefenses + 1);
+									}
+								}
+								head = head.chain;
+							}
+							head = findradius (targ.origin, TEAM_CAPTURE_TARGET_PROTECT_RADIUS);
+							while (head)
+							{
+								if ((head.classname == "player"))
+								{
+									if ( ( ( (head.team == attacker.team) && (head.flag_carrier) && (head != attacker)) && !flag_carrier_radius) )
+									{
+										client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
+										flag_carrier_radius = 1;
+										announce4(attacker.netname," defends ",s,"'s flag carrier");
+										attacker.fcdefenses = (attacker.fcdefenses + 1);
+									}
+								}
+								if (((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))) && !flag_radius))
 								{
 									client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
 									flag_radius = 1;
 									announce4(attacker.netname," defends the ",s," flag");
 									attacker.fdefenses = (attacker.fdefenses + 1);
 								}
+								head = head.chain;
 							}
-							head = head.chain;
-						}
-						head = findradius (targ.origin, TEAM_CAPTURE_TARGET_PROTECT_RADIUS);
-						while (head)
-						{
-							if ((head.classname == "player"))
-							{
-								if ( ( ( (head.team == attacker.team) && (head.flag_carrier) && (head != attacker)) && !flag_carrier_radius) )
-								{
-									client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
-									flag_carrier_radius = 1;
-									announce4(attacker.netname," defends ",s,"'s flag carrier");
-									attacker.fcdefenses = (attacker.fcdefenses + 1);
-								}
-							}
-							if (((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))) && !flag_radius))
-							{
-								client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
-								flag_radius = 1;
-								announce4(attacker.netname," defends the ",s," flag");
-								attacker.fdefenses = (attacker.fdefenses + 1);
-							}
-							head = head.chain;
 						}
 					}
 					
@@ -2798,6 +2806,12 @@ void(string cmd) SV_ParseClientCommand =
 			break;
 		case "midair":
 			votables_request_set_gametype_mode_map(-1, -1, "midair"); //TODO: REMOVE FOR TESTING
+			break;
+		case "povdmm4":
+			votables_request_set_gametype_mode_map(-1, -1, "povdmm4"); //TODO: REMOVE FOR TESTING
+			break;
+		case "endif":
+			votables_request_set_gametype_mode_map(-1, -1, "endif"); //TODO: REMOVE FOR TESTING
 			break;
 		default:
 			if (found_in_warp_list(arg0))

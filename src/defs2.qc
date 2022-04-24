@@ -437,14 +437,11 @@ entity boss;
 .float motd_delay;
 
 .entity chain_gang;
+.entity next_queue;
 
-.entity next_player;
-.entity next_team;
 .float team2;
-//.float killed;
 .float wins;
 .float losses;
-.vector old_velocity;	// for pause
 .float cc_queue;
 .float cc_queue_vote;
 
@@ -455,6 +452,9 @@ entity ca_mvp_entity;
 
 float clanring_rulescheck;
 .float max_teams;
+float ra_wins;
+entity ra_lastspawn;
+float tele_num_spawns;
 
 float COLOR_BLUE = 13;
 float COLOR_RED = 4;
@@ -472,7 +472,6 @@ float PF_WAITING = 1;
 float PF_DEAD = 2;
 float PF_READY = 3;
 float PF_PLAYING = 4;
-
 
 float CA_MATCH_WAITING = 1;
 float CA_MATCH_ROUNDSTART = 2;

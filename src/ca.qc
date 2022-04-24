@@ -1,7 +1,5 @@
 void () clan_arena_init_world =
 {
-	local entity oself;
-			
 	boss = spawn ();
     boss.max_rounds 	= 9;
     boss.max_players 	= 8;//R00k: changed v1.52
@@ -21,11 +19,7 @@ void () clan_arena_init_world =
     boss.ammo_cells  	= 30;
     boss.items = ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
     boss.quadtime = 0;
-
-    oself = self;
-    self = boss;
-    self.weapon = IT_ROCKET_LAUNCHER;// W_BestWeapon();
-    self = oself;	
+    boss.weapon = IT_ROCKET_LAUNCHER;// W_BestWeapon();
 
 	boss.timetofight 	= FALSE;
 	boss.next_team 		= world;
