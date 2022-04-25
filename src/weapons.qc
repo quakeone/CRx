@@ -546,45 +546,29 @@ LIGHTNING
 LightningDamage
 =================
 */
+//R00k: simplified this function to just do the middle traceline, as it was the only one that EVER worked.
+//The original code had bad maths for two additional tracelines; originally meant to have three 'logical' bolts thus making the beam wider.
+//But, since the code was bugged the two outer bolts went in obscure angles while the center bolt was the only one that was true to the aim.
+//Fixing the math, and considering the player's view angles (up/down too), would only result in a fatter bolt and would cause more damage as well.
+//So since, for the past 25+ years only the middle traceline worked, why buff it?
 void(vector p1, vector p2, entity from, float damage) LightningDamage =
 {
-	local entity		e1, e2;
-	local vector		f;
-	
-	f = p2 - p1;
-	f = normalize (f);//LG bug fix 
-	f_x = 0 - f_y;
-	f_y = f_x;
-	f_z = 0;
-	f = f*16;
-
-	e1 = e2 = world;
-
 	traceline (p1, p2, FALSE, self);
+
 	if (trace_ent.takedamage)
 	{
-		particle (trace_endpos, '0 0 100', 225, damage*4);
-		T_Damage (trace_ent, from, from, damage);
-/*		if (self.classname == "player")
+		if (trace_ent.classname != "player")
 		{
-			if (other.classname == "player") // this will never happen because 'other' doesnt apply here,(should be trace_ent). But then it would make the target fly up when hitting them, which never EVER worked, and is stupid if it did!
-				trace_ent.velocity_z = trace_ent.velocity_z + 400;
-		}*/
-	}
-	e1 = trace_ent;
-
-	traceline (p1 + f, p2 + f, FALSE, self);
-	if (trace_ent != e1 && trace_ent.takedamage)
-	{
-		particle (trace_endpos, '0 0 100', 225, damage*4);
-		T_Damage (trace_ent, from, from, damage);
-	}
-	e2 = trace_ent;
-
-	traceline (p1 - f, p2 - f, FALSE, self);
-	if (trace_ent != e1 && trace_ent != e2 && trace_ent.takedamage)
-	{
-		particle (trace_endpos, '0 0 100', 225, damage*4);
+			WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
+			WriteByte(MSG_BROADCAST, TE_GUNSHOT);
+			WriteCoord (MSG_BROADCAST, trace_endpos_x);
+			WriteCoord (MSG_BROADCAST, trace_endpos_y);
+			WriteCoord (MSG_BROADCAST, trace_endpos_z);
+		}
+		else
+		{
+			particle (trace_endpos, '0 0 100', 225, damage*4);
+		}
 		T_Damage (trace_ent, from, from, damage);
 	}
 };

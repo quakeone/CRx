@@ -544,12 +544,13 @@ void () observer_start =
 
 	if (clanring_playmode & CLANRING_CA_MODE)
 	{
-		if (self.ca_player_flag == PF_DEAD)
+		if (((self.ca_player_flag == PF_DEAD)||(self.ca_player_flag == PF_WAITING))&&(boss.state == CA_MATCH_PLAYING))//
 		{
+			observer_next_target();
 			observer_chase_start();
-			self.ca_player_flag = PF_WAITING;
 		}
 	}
+
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 120\n");
 
@@ -1850,41 +1851,18 @@ void () observer_pre_think =
 			}
 			self.clanring_cam_delay = time + 6;
 		}
+
 		if (clanring_playmode & CLANRING_CA_MODE)
 		{
-			if (self.oflags & (OBSERVER_CHASE | OBSERVER_DEMO))
+			if ((self.movetarget.ca_player_flag == PF_DEAD) || (IS_CA_OBSERVER(self.movetarget)))
 			{
-				if ((self.movetarget.ca_player_flag == PF_DEAD) || (IS_CA_OBSERVER(self.movetarget)))//Cam Target dies, drop to floor, slowly.
-				{
-					self.movetype = MOVETYPE_WALK;
-				}
-				else
-					self.movetype = MOVETYPE_FLY;
-			}
-			else
-			{
-				if (self.oflags & OBSERVER_CAMERA)
-				if ((IS_CA_OBSERVER(self.movetarget)))
-				{					
+				if (boss.state == CA_MATCH_PLAYING)//Dont switch between rounds.
 					observer_next_target ();
-				}		
+				else
+					observer_walk_start();
 			}
-
-			//R00k: Ideally, I'd like to cam the best player per round. Keep switching to next player after cam target dies will
-			//ultimately be left with the winner of the round; starting with him as current cam target for the next round etc..		
-			if (boss.state != CA_MATCH_WAITING)
-			{
-				if (self.next_team == world)//Non-players; players cam their killer.
-				{			
-					if (IS_CA_OBSERVER(self.movetarget))//Happens when target dies, switch to new target
-					{
-						if (boss.state == CA_MATCH_PLAYING)//Dont switch between rounds.
-						{
-							observer_next_target();
-						}
-					}
-				}		 
-			}
+			if (self.movetarget == world)
+				observer_walk_start();
 		}
     }
     else

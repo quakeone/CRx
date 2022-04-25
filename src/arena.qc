@@ -1926,6 +1926,7 @@ void () arena_main_loop =
 				else if (boss.count == 8)
 				{
 					respawn_teams ();
+					//refresh_observers();//TODO: force observers into chasemode/eyecam+
 
 					if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 						wipeout_init_teams();

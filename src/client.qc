@@ -774,29 +774,21 @@ void() PutClientInServer =
 
 	if (mode_is_arena())
 	{
-		if (self.ca_player_flag == PF_DEAD)	//R00k: don't respawn just yet, as they will be put in observer mode automatically and pick up a movetarget then...
+		if ((ra_map()) && ((self.ca_player_flag == PF_READY) || (self.ca_player_flag == PF_PLAYING)))
 		{
-			self.angles_x = 0;
-			self.angles_z = 0;
+			//spot = find(spot, classname, "info_teleport_destination");
+			spot = SelectRASpawnPoint();
 		}
+/*		else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (self.rounddeaths > 0))
+		{
+		//TODO: spawn near team ?
+		// spot = SelectWipeoutSpawnPoint();
+		//  if (spot == world)
+				spot = SelectSpawnPoint();
+		}*/
 		else
 		{
-			if ((ra_map()) && ((self.ca_player_flag == PF_READY) || (self.ca_player_flag == PF_PLAYING)))
-			{
-				//spot = find(spot, classname, "info_teleport_destination");
-				spot = SelectRASpawnPoint();
-			}
-	/*		else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (self.rounddeaths > 0))
-			{
-			//TODO: spawn near team ?
-			// spot = SelectWipeoutSpawnPoint();
-			//  if (spot == world)
-					spot = SelectSpawnPoint();
-			}*/
-			else
-			{
-				spot = SelectSpawnPoint();
-			}
+			spot = SelectSpawnPoint();
 		}
 	}
 	else
