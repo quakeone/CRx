@@ -1894,7 +1894,11 @@ void () observer_pre_think =
 
 	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0))
 	{
-		if (self.respawntime > 0) //needed?
+		if (self.next_team.teamalive < 1)
+		{
+			self.respawntime = 0;
+		}
+		else if (self.respawntime > 0) //needed?
 		{
 			if (time >= self.respawntime)
 			{

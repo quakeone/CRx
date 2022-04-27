@@ -258,6 +258,8 @@ void () WipeoutModePlayerUpdate =
 	local entity e;
 	local string s1="";
 	local string s2="";
+	local string s3="";
+	local string s4="";
 
 	if (!(clanring_playmode & CLANRING_WIPEOUT_MODE))
 		return;
@@ -295,8 +297,18 @@ void () WipeoutModePlayerUpdate =
 		if (e)
 		{
 			s2 = wipeout_get_teamstatus(e);
+			e = e.next_team;
+			if (e)
+			{
+				s3 = wipeout_get_teamstatus(e);
+				e = e.next_team;
+				if (e)
+				{
+					s4 = wipeout_get_teamstatus(e);
+				}
+			}
 		}
 	}
 
-	centerprint5 (self, "team alive                                         \n", s1, s2);
+	centerprint5 (self, "team alive                                         \n", s1, s2, s3, s4);
 };

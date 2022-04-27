@@ -1375,15 +1375,15 @@ void() PlayerPreThink =
 						setcolour(self, self.team2, self.team2);
 					}
 				}
-			}		
-			
-			if (boss.timetofight == TRUE)
-			{
-				if ((self.ca_player_flag == PF_PLAYING) && (self.style & CLANRING_CONNECTED))//v1.97 fix lagouts.
+
+				if (boss.timetofight == TRUE)
 				{
-					self.takedamage = DAMAGE_AIM;		
+					if ((self.ca_player_flag == PF_PLAYING) && (self.style & CLANRING_CONNECTED))//v1.97 fix lagouts.
+					{
+						self.takedamage = DAMAGE_AIM;		
+					}
 				}
-			}
+			}		
 		}
 
 		if (self.style & CLANRING_MOTD && self.motd_delay < time)
