@@ -546,20 +546,40 @@ void(entity ent) CreateDeadBody =
 	new.nextthink 	= time + 20;
 };
 
-//void() dead_name;
+void() dead_name;
 
 void() PlayerDead =
 {
 	self.nextthink 	= -1;
 	self.deadflag 	= DEAD_DEAD;// allow respawn after a certain time
 	self.jump_flag = 0; // CLANRING_MOD - fix "falling after discharge" bug
-	//if (clanring_playmode & CLANRING_ARENA_MODE) //TODO: enable for Clan Arena mode.
-	//dead_name();//R00k v3.51
 
-	if ((clanring_playmode & CLANRING_MATCH_MODE))
+	if (clanring_playmode & CLANRING_CA_MODE)
+		dead_name();//R00k v3.51
+
+	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		self.nextthink = (time + 5);
 		self.think = respawn;
+	}
+	else if (mode_is_arena())
+	{
+		self.think = respawn;
+		if (deathmatch == 4)
+		{
+			if (!gameover)			
+			{
+				if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait == 0))
+				{
+					self.movetarget = world;
+					self.nextthink = time + 2;
+				}
+				else
+					self.nextthink = time + 1;
+			}
+			// else ??
+		}
+		else self.nextthink = time + 3; //default for ca mode.
 	}
 	else
 	{
@@ -680,6 +700,19 @@ void() PlayerDie =
 {
 	local float i;
 
+	if (mode_is_arena())
+	{
+		im_dead_now_what();
+
+		if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.items & IT_QUAD))
+		{
+			boss.quadtime = 0;
+
+			if (self.super_damage_finished > time)
+				wipeout_drop_quad (self.super_damage_finished - time);
+		}
+	}
+
 	self.items 					= self.items - (self.items & (IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD| IT_SUPERHEALTH));	
 	self.invisible_finished 	= 0;
 	self.invincible_finished 	= 0;
@@ -691,7 +724,7 @@ void() PlayerDie =
 	if (self.items & IT_ROCKET_LAUNCHER)
 		quaketv_lost_rl (self);
 
-	if (deathmatch && !(clanring_playmode & CLANRING_PRACTICE_MODE))
+	if (deathmatch && !(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
 	{
 		DropBackpack ();
 		TeamCaptureDropFlagOfPlayer (self, 0);		
@@ -710,7 +743,7 @@ void() PlayerDie =
 	self.movetype = MOVETYPE_TOSS;
 	self.finaldest_y = MOVETYPE_TOSS;
 
-	if ((self.health < -40) && !(clanring_playmode & CLANRING_NO_GIBS))
+	if (((self.health < -40) && !(clanring_playmode & CLANRING_NO_GIBS)) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		GibPlayer ();
 		PlayerDead ();

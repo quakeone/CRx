@@ -26,7 +26,6 @@
 
 void() player_pain;
 void() PlayerDead;
-void() GibPlayer;
 void(entity client, float fragval) client_frag;
 void(entity client) clear_afk_status;
 
@@ -108,29 +107,36 @@ void() SetNewParms =
 	}
 	else
 	{
-		if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
+		if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_TIMER_STARTED)))	//testing prewar fix
 		{
-			parm1 = IT_SHOTGUN | IT_AXE;
-			parm2 = 100;
-			parm3 = 0;
-			parm4 = 25;
-			parm5 = 0;
-			parm6 = 0;
-			parm7 = 0;
-			parm8 = IT_SHOTGUN;
-			parm9 = 0;
+			SetPracticeParms ();
 		}
 		else
 		{
-			parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
-			parm2 = 100;
-			parm3 = 50;
-			parm4 = 25;
-			parm5 = 0;
-			parm6 = 0;
-			parm7 = 0;
-			parm8 = IT_SHOTGUN;
-			parm9 = 30;
+			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
+			{
+				parm1 = IT_SHOTGUN | IT_AXE;
+				parm2 = 100;
+				parm3 = 0;
+				parm4 = 25;
+				parm5 = 0;
+				parm6 = 0;
+				parm7 = 0;
+				parm8 = IT_SHOTGUN;
+				parm9 = 0;
+			}
+			else
+			{
+				parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
+				parm2 = 100;
+				parm3 = 50;
+				parm4 = 25;
+				parm5 = 0;
+				parm6 = 0;
+				parm7 = 0;
+				parm8 = IT_SHOTGUN;
+				parm9 = 30;
+			}
 		}
 	}
  
@@ -150,6 +156,18 @@ void() SetNewParms2 =
  	if (clanring_playmode & CLANRING_PRACTICE_MODE)
 	{
 		SetPracticeParms ();
+	}
+	else if (mode_is_arena())
+	{
+		parm1 = boss.items;
+		parm2 = boss.health;
+		parm3 = boss.armorvalue;
+		parm4 = boss.ammo_shells;
+		parm5 = boss.ammo_nails;
+		parm6 = boss.ammo_rockets;
+		parm7 = boss.ammo_cells;
+		parm8 = boss.weapon;
+		parm9 = boss.armortype;
 	}
 	else
 	{
@@ -266,6 +284,8 @@ entity () FindIntermission =
 
 void() GotoNextMap =
 {
+	if (nextmap == "")
+		nextmap = default_nextmap;
 	/*if ((cvar ("samelevel") & 1))
 	{
 
@@ -432,6 +452,14 @@ void() respawn =
 	updatename(self, self.netname);	
 	
 	PutClientInServer ();
+
+	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+	{
+		self.invincible_finished 	= time + 2;
+		self.invincible_time 		= 1;
+		self.effects = self.effects | EF_DIMLIGHT;
+		self.effects = self.effects | EF_RED;
+	}
 };
 /*
 ============
@@ -442,6 +470,14 @@ Player entered the suicide command
 */
 void() ClientKill =
 {
+	if (IS_CA_OBSERVER(self))
+		return;
+
+	if (mode_is_arena())	//R00k: What's the point?
+	{		
+		return;
+	}
+
 	if (gameover)
 		return;
 
@@ -461,7 +497,10 @@ void() ClientKill =
 	announce2(self.netname, " suicides");
 	set_suicide_frame ();
 	DropRune();
-	DropBackpack();
+	if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
+	{
+		DropBackpack();
+	}
 	TeamCaptureDropFlagOfPlayer (self, 1);
 	UnHookPlayer();
 	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));//added for server mod hook
@@ -481,6 +520,7 @@ void() ClientKill =
 		client_frag(self, -1);
 		self.mangle_x = self.mangle_x + 1;
 	}
+
 	if (self.items & IT_ROCKET_LAUNCHER)
 	{
 		quaketv_lost_rl (self);
@@ -582,6 +622,8 @@ entity () SelectSpawnPoint =
 	
 	lastspawn = spot;
 
+//	if (((random() * (dm_num_spawns))) % 2)	//random telefrag chance? or if !(match.think != match_timer_think1)
+//	{
 	while (loop_count)
 	{
 		if (spot != world)
@@ -593,7 +635,7 @@ entity () SelectSpawnPoint =
 				thing = findradius (spot.origin, 128);
 				while (thing)
 				{
-					if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))
+					if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))//r00k: todo thing.health check ?
 					{
 						pcount = 1;
 						thing = world;
@@ -711,9 +753,11 @@ called each time a player is spawned
 */
 void() PutClientInServer =
 {
-	local entity spot;
+	local entity spot = world;
 			
 	DecodeLevelParms ();	
+	
+	updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
 	
 	//in classic mode auto join on connect
 	if (teamplay)
@@ -727,10 +771,40 @@ void() PutClientInServer =
 			}	
 		}
 	}
-	
-	spot = SelectSpawnPoint();
 
+	if (mode_is_arena())
+	{
+		if ((ra_map()) && ((self.ca_player_flag == PF_READY) || (self.ca_player_flag == PF_PLAYING)))
+		{
+			//spot = find(spot, classname, "info_teleport_destination");
+			spot = SelectRASpawnPoint();
+		}
+/*		else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (self.rounddeaths > 0))
+		{
+		//TODO: spawn near team ?
+		// spot = SelectWipeoutSpawnPoint();
+		//  if (spot == world)
+				spot = SelectSpawnPoint();
+		}*/
+		else
+		{
+			spot = SelectSpawnPoint();
+		}
+	}
+	else
+	{    
+		spot = SelectSpawnPoint();
+	}
+
+	if (spot == world)
+	{
+		sprint(self, "Finding a better spawnpoint...\n");
+		spot = SelectSpawnPoint();
+	}
+	
 	self.trigger_field			= spot;
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		self.origin = self.oldorigin = airshot_droptofloor(spot);	
 	self.classname 				= "player";
 	self.health 				= 100;
 	self.takedamage 			= DAMAGE_AIM;
@@ -753,6 +827,12 @@ void() PutClientInServer =
 	self.waterlevel 			= 0;
 	self.velocity 				= '0 0 0';
 	
+	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+	{
+		self.health = 250;
+		self.max_health = 250;
+	}
+
 	W_SetCurrentAmmo ();
 
 	self.attack_finished 	= time;
@@ -761,6 +841,7 @@ void() PutClientInServer =
 	self.th_pain 			= player_pain;
 	self.th_die 			= PlayerDie;
 	self.deadflag 			= DEAD_NO;	
+
 	//self.angles 			= spot.angles;
 	//self.fixangle 		= TRUE;
 	angles_fixangle(spot.angles);
@@ -840,21 +921,33 @@ potential spawning position for deathmatch games
 */
 void() info_player_deathmatch =
 {
-	dm_num_spawns = dm_num_spawns + 1.00;
-//	precache_model ("progs/s_light.spr");
-//	setmodel (self, "progs/s_light.spr");
+	dm_num_spawns = dm_num_spawns + 1.00;	
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		setmodel (self, "progs/player.mdl");
+		self.frame = 13;
+		self.alpha = 0.6;
+	}
 };
 
 void() info_player_team1 =
 {
-//	precache_model ("progs/s_light.spr");
-//	setmodel (self, "progs/s_light.spr");
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		setmodel (self, "progs/player.mdl");
+		self.frame = 13;
+		self.alpha = 0.6;
+	}
 };
 
 void() info_player_team2 =
 {
-//	precache_model ("progs/s_light.spr");
-//	setmodel (self, "progs/s_light.spr");
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		setmodel (self, "progs/player.mdl");
+		self.frame = 13;
+		self.alpha = 0.6;
+	}
 };
 /*QUAKED info_player_coop (1 0 1) (-16 -16 -24) (16 16 24)
 potential spawning position for coop games
@@ -960,7 +1053,10 @@ void() NextLevel =
 		}
 	}
 
-	nextmap = o.map;
+	if (clanring_playmode & CLANRING_RA_MODE)
+		nextmap = ra_get_next_map();
+	else
+		nextmap = o.map;
 	gameover = TRUE;
 
     // check to see if there is a user-specified level sequence
@@ -995,6 +1091,31 @@ void() PlayerDeathThink =
 			self.velocity = forward * normalize(self.velocity);
 	}
 
+	if (mode_is_arena())
+	{
+		local vector angle = '0 0 0';
+
+		//R00k 1.55 look at enemy when dead
+		if ((self.enemy.classname == "player") && (self.enemy != self))
+				self.movetarget = self.enemy;
+		
+		if (time < self.ca_deathcamtime)
+		{
+			if (self.movetarget.ca_player_flag == PF_PLAYING)
+			{
+				makevectors (self.v_angle);
+				traceline (self.origin, self.movetarget.origin, TRUE, self.movetarget);
+				if (trace_fraction == 1)
+				{
+					angle = angles_bestaim (self.origin, self.movetarget.origin);
+					angles_fixangle (angle);
+				}
+			}
+		}
+		if (!(clanring_playmode & CLANRING_WIPEOUT_MODE) || 
+			((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait > 0)))
+			return;
+	}
 	// wait for all buttons released
 	if (self.deadflag == DEAD_DEAD)
 	{
@@ -1122,6 +1243,13 @@ void() WaterMove =
 			self.pain_finished = time + 1;
 		}
 	}
+	else if (mode_is_arena())
+	{
+		if ((boss.state == CA_MATCH_ROUNDSTART) && (self.waterlevel == 3))
+		{				
+				self.air_finished = time + 12;	//R00k: This resets the air_finished if you went and hid in water before round starts.
+		}
+	}
 
 	if (self.watertype == CONTENT_LAVA)
 	{	// do damage
@@ -1219,7 +1347,55 @@ void() PlayerPreThink =
 		}
 		return;		// intermission or finale
 	}
-	if (self.height != self.team - 1)
+	if (mode_is_arena())
+	{
+		if (clanring_playmode & CLANRING_CA_MODE)
+		{
+			if (self.style & CLANRING_CONNECTED)
+			{
+				if (self.team != (self.team2 + 1))
+				{		
+					if (self.next_team == world)
+					{
+						if (self.team == 14)
+							self.impulse = 1;
+						else if (self.team == 5)
+							self.impulse = 2;
+						else if (self.team == 13)
+							self.impulse = 3;
+						else if (self.team == 3)
+							self.impulse = 4;
+						
+						Teamplay_Select_Team();
+						self.impulse = 0;
+					}	
+					//R00k -- this forces team colors
+					if ((!self.cc_queue))
+					{	
+						setcolour(self, self.team2, self.team2);
+					}
+				}
+
+				if (boss.timetofight == TRUE)
+				{
+					if ((self.ca_player_flag == PF_PLAYING) && (self.style & CLANRING_CONNECTED))//v1.97 fix lagouts.
+					{
+						self.takedamage = DAMAGE_AIM;		
+					}
+				}
+			}		
+		}
+
+		if (self.style & CLANRING_MOTD && self.motd_delay < time)
+		{
+			if (self.plag == FALSE)
+			{
+				motd_print ();
+			}
+			self.motd_delay = time + 1.5;
+		}
+	}
+	else if (self.height != self.team - 1)
 		match_verify_team ();
 
 	if (self.movetype != self.finaldest_y) // dork used admin 0 noclip or fly (R00k: CL_PRIVILEGED was removed is this still needed?)
@@ -1421,7 +1597,8 @@ void() CheckPowerups =
 			{
 				if (self.invincible_time == 1)
 				{
-					sprint(self, "Protection is almost burned out\n");
+					if (!(clanring_playmode & CLANRING_DMM4_MODE) && !(clanring_playmode & CLANRING_AIRSHOT_MODE))
+						sprint(self, "Protection is almost burned out\n");
 					//stuffcmd(self, "bf\n");
 					sound (self, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NORM);
 					self.invincible_time = time + 1;
@@ -1464,7 +1641,8 @@ void() CheckPowerups =
 			{
 				if (self.super_time == 1)
 				{
-					sprint(self, "Quad Damage is wearing off\n");
+					if (!(clanring_playmode & CLANRING_AIRSHOT_MODE))
+						sprint(self, "Quad Damage is wearing off\n");
 					//stuffcmd(self, "bf\n");
 					sound (self, CHAN_AUTO, "items/damage2.wav", 1, ATTN_NORM);
 					self.super_time = time + 1;
@@ -1555,6 +1733,47 @@ void() PlayerPostThink =
 	// - redirect impulses in [20, 250]
 	// - changed gameover test from (self.view_ofs == '0 0 0') to (gameover)
 
+	if (mode_is_arena())
+	{
+		if ((boss.state == CA_MATCH_WAITING))
+		{
+			if ((self.next_team == world) && (!(self.style & CLANRING_AFK_CLIENT)))	//not on a team, and not afk...
+			{
+				if (clanring_playmode & CLANRING_CA_MODE)
+				{
+					boss.allready = FALSE;
+					
+					if (number_teams () > 1)
+					{
+						motd_top5 = self.netname;
+						motd_top6 = " \bis holding things up!\n";
+					}
+					else
+					{
+						motd_top5 = string_null;
+						motd_top6 = string_null;
+					}
+				}
+				else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+				{
+					if (number_teams () > 1)
+						boss.allready = TRUE;
+					else
+						boss.allready = FALSE;
+				}
+			}
+		}
+	}
+
+//	if ((mode_is_arena()) && (clanring_state & CLANRING_MATCH_PAUSED)) 
+//		return;
+// Players will lag-out if this check is here...
+	if (IS_CA_OBSERVER(self))
+	{
+		observer_post_think();
+		return;
+	}
+	else
 	if (self.style & CLANRING_OBSERVER)
 	{		
 		self.effects = 0;
@@ -1563,7 +1782,19 @@ void() PlayerPostThink =
 	}
 	else if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
 	{
-		clanring_show_rules_prematch();
+		if (time >= self.delay)
+		{
+			self.delay = time + 0.1;
+			clanring_show_rules_prematch();
+		}
+	}
+	else if (mode_is_arena() && (boss.state == CA_MATCH_ROUNDSTART) && (boss.round == 1))
+	{
+		if (time >= self.delay)
+		{
+			self.delay = time + 0.1;
+			clanring_show_rules_prematch();
+		}
 	}
 	else if ((clanring_state & CLANRING_MATCH_STARTED))
 	{
@@ -1575,6 +1806,10 @@ void() PlayerPostThink =
 	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
 		TeamCapturePlayerUpdate();
+	}
+	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	{
+		WipeoutModePlayerUpdate();
 	}
 
 	if (self.impulse)
@@ -1774,10 +2009,19 @@ void() ClientDisconnect =
 	if (!(self.style & CLANRING_OBSERVER))
 	{
 		DropRune();
-		DropBackpack ();
+		if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
+		{
+			DropBackpack ();
+		}
 		UnHookPlayer ();
 		self.hook2 = self.hook2 - (self.hook2 & HOOK_OUT);//TODO remove the off-hand newbie hook...
 	}
+
+	if (self.super_damage_finished > 0 && (clanring_playmode & CLANRING_WIPEOUT_MODE))
+	{
+		wipeout_drop_quad (self.super_damage_finished - time);
+	}
+
 	clanring_client_disconnect ();
 	set_suicide_frame ();
 
@@ -1815,6 +2059,9 @@ void() ClientDisconnect =
 //
 void(entity client, float fragval) client_frag =
 {
+	if (clanring_playmode & CLANRING_CA_MODE)
+		return;
+		
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (teamplay)
@@ -2063,84 +2310,88 @@ void(entity targ, entity attacker) ClientObituary =
 				}
 				else
 				{
-					if (((targ.flag_carrier) && (targ.team != attacker.team)))
+					//ctf match mode kill bonuses
+					if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_MATCH_MODE))
 					{
-						attacker.last_fragged_carrier = time;
-						if (((targ.flag_since + TEAM_CAPTURE_CARRIER_FLAG_SINCE_TIMEOUT) > time))
+						if (((targ.flag_carrier) && (targ.team != attacker.team)))
 						{
-							attacker.fcfrags = (attacker.fcfrags + 1);
-						}
-						else
-						{
-							attacker.fcfrags = (attacker.fcfrags + 1);
-							// what you get for fragging enemy flag carrier
-							client_frag (attacker, TEAM_CAPTURE_FRAG_CARRIER_BONUS);
-						}
-					}
-					flag_radius = 0;
-					flag_carrier_radius = 0;
-
-					if (attacker.team == RED) s = ("\bRED\b");
-					else
-					if (attacker.team == BLUE) s = ("\bBLUE\b");
-
-					if ((((targ.last_hurt_carrier + TEAM_CAPTURE_CARRIER_DANGER_PROTECT_TIMEOUT) > time) && !(attacker.flag_carrier)))
-					{
-						client_frag (attacker, TEAM_CAPTURE_CARRIER_DANGER_PROTECT_BONUS);
-						// bonus for fraggin someone who has recently hurt your flag carrier
-						flag_carrier_radius = 1;
-						announce4(attacker.netname," defends ",s,"'s flag carrier against an agressive enemy");
-						attacker.fcdefenses = attacker.fcdefenses + 1;
-					}
-					
-					if (!(attacker.flag_carrier))// speed
-					{
-						head = findradius (attacker.origin, TEAM_CAPTURE_ATTACKER_PROTECT_RADIUS);					
-						while (head)
-						{
-							if (head.classname == "player")
+							attacker.last_fragged_carrier = time;
+							if (((targ.flag_since + TEAM_CAPTURE_CARRIER_FLAG_SINCE_TIMEOUT) > time))
 							{
-								if ( ( ( ((head.team == attacker.team) && (head.flag_carrier)) && (head != attacker) ) && !flag_carrier_radius) )
-								{
-									client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
-									flag_carrier_radius = 1;
-									announce4(attacker.netname," defends ",s,"'s flag carrier");
-									attacker.fcdefenses = (attacker.fcdefenses + 1);
-								}
+								attacker.fcfrags = (attacker.fcfrags + 1);
 							}
-							if (((head.classname == "item_flag_team1") || (head.classname == "item_flag_team2")))
+							else
 							{
-								if ((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))))
+								attacker.fcfrags = (attacker.fcfrags + 1);
+								// what you get for fragging enemy flag carrier
+								client_frag (attacker, TEAM_CAPTURE_FRAG_CARRIER_BONUS);
+							}
+						}
+						flag_radius = 0;
+						flag_carrier_radius = 0;
+
+						if (attacker.team == RED) s = ("\bRED\b");
+						else
+						if (attacker.team == BLUE) s = ("\bBLUE\b");
+
+						if ((((targ.last_hurt_carrier + TEAM_CAPTURE_CARRIER_DANGER_PROTECT_TIMEOUT) > time) && !(attacker.flag_carrier)))
+						{
+							client_frag (attacker, TEAM_CAPTURE_CARRIER_DANGER_PROTECT_BONUS);
+							// bonus for fraggin someone who has recently hurt your flag carrier
+							flag_carrier_radius = 1;
+							announce4(attacker.netname," defends ",s,"'s flag carrier against an agressive enemy");
+							attacker.fcdefenses = attacker.fcdefenses + 1;
+						}
+						
+						if (!(attacker.flag_carrier))// speed
+						{
+							head = findradius (attacker.origin, TEAM_CAPTURE_ATTACKER_PROTECT_RADIUS);					
+							while (head)
+							{
+								if (head.classname == "player")
+								{
+									if ( ( ( ((head.team == attacker.team) && (head.flag_carrier)) && (head != attacker) ) && !flag_carrier_radius) )
+									{
+										client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
+										flag_carrier_radius = 1;
+										announce4(attacker.netname," defends ",s,"'s flag carrier");
+										attacker.fcdefenses = (attacker.fcdefenses + 1);
+									}
+								}
+								if (((head.classname == "item_flag_team1") || (head.classname == "item_flag_team2")))
+								{
+									if ((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))))
+									{
+										client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
+										flag_radius = 1;
+										announce4(attacker.netname," defends the ",s," flag");
+										attacker.fdefenses = (attacker.fdefenses + 1);
+									}
+								}
+								head = head.chain;
+							}
+							head = findradius (targ.origin, TEAM_CAPTURE_TARGET_PROTECT_RADIUS);
+							while (head)
+							{
+								if ((head.classname == "player"))
+								{
+									if ( ( ( (head.team == attacker.team) && (head.flag_carrier) && (head != attacker)) && !flag_carrier_radius) )
+									{
+										client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
+										flag_carrier_radius = 1;
+										announce4(attacker.netname," defends ",s,"'s flag carrier");
+										attacker.fcdefenses = (attacker.fcdefenses + 1);
+									}
+								}
+								if (((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))) && !flag_radius))
 								{
 									client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
 									flag_radius = 1;
 									announce4(attacker.netname," defends the ",s," flag");
 									attacker.fdefenses = (attacker.fdefenses + 1);
 								}
+								head = head.chain;
 							}
-							head = head.chain;
-						}
-						head = findradius (targ.origin, TEAM_CAPTURE_TARGET_PROTECT_RADIUS);
-						while (head)
-						{
-							if ((head.classname == "player"))
-							{
-								if ( ( ( (head.team == attacker.team) && (head.flag_carrier) && (head != attacker)) && !flag_carrier_radius) )
-								{
-									client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
-									flag_carrier_radius = 1;
-									announce4(attacker.netname," defends ",s,"'s flag carrier");
-									attacker.fcdefenses = (attacker.fcdefenses + 1);
-								}
-							}
-							if (((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))) && !flag_radius))
-							{
-								client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
-								flag_radius = 1;
-								announce4(attacker.netname," defends the ",s," flag");
-								attacker.fdefenses = (attacker.fdefenses + 1);
-							}
-							head = head.chain;
 						}
 					}
 					
@@ -2494,10 +2745,76 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			votables_request_set_gametype_mode_map(-1, 2, "");
 			return;
+		case "dmm4":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(4, -1, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(4, -1, "");
+			return;
+		case "airshot":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(5, -1, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(5, -1, "");
+			return;
+		case "wipeout":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(6, -1, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(6, -1, "");
+			return;
+		case "ca":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(2, -1, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(2, -1, "");
+			return;
+		case "ra":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))	
+					votables_request_set_gametype_mode_map(3, -1, arg1);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(3, -1, "");
+			return;
+		case "amphi":
+			votables_request_set_gametype_mode_map(-1, -1, "amphi"); //TODO: REMOVE FOR TESTING
+			break;
+		case "midair":
+			votables_request_set_gametype_mode_map(-1, -1, "midair"); //TODO: REMOVE FOR TESTING
+			break;
+		case "povdmm4":
+			votables_request_set_gametype_mode_map(-1, -1, "povdmm4"); //TODO: REMOVE FOR TESTING
+			break;
+		case "endif":
+			votables_request_set_gametype_mode_map(-1, -1, "endif"); //TODO: REMOVE FOR TESTING
+			break;
 		default:
 			if (found_in_warp_list(arg0))
 			{
-				//votables_request_change_level(arg0);
 				votables_request_set_gametype_mode_map(-1, -1, arg0);
 				return;
 			}

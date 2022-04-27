@@ -97,9 +97,7 @@ void(vector v) angles_fixangle =
 	if (v_z >= 0)	
 		self.v_angle_z = self.angles_z = (v_z + 0.0625);
 	else
-		self.v_angle_z = self.angles_z = (v_z - 0.0625);
-
-	
+		self.v_angle_z = self.angles_z = (v_z - 0.0625);	
 	
 	self.fixangle = TRUE;//forces client's angle to the above, using svc_setangle.
 };

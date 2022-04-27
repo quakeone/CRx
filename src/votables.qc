@@ -30,6 +30,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias w5 \"wait;wait;wait;wait;wait\"\n");
 	stuffcmd(self, "alias sethook impulse 202\n");
 	stuffcmd(self, "alias setrunes impulse 203\n");
+	stuffcmd(self, "alias force impulse 217\n");
 	// toggle faststarts	
 	stuffcmd(self, "alias faststart impulse 209\n");
 	stuffcmd(self, "alias autopause impulse 210\n");
@@ -52,6 +53,11 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias match cmd match\n");
 	stuffcmd(self, "alias dm cmd dm\n");
 	stuffcmd(self, "alias ctf cmd ctf\n");
+	stuffcmd(self, "alias wipeout cmd wipeout\n");
+	stuffcmd(self, "alias ca cmd ca\n");
+	stuffcmd(self, "alias ra cmd ra\n");
+	stuffcmd(self, "alias dmm4 cmd dmm4\n");
+	stuffcmd(self, "alias airshot cmd airshot\n");
 	// number aliases
 	stuffcmd(self, "alias 0 impulse 230\n");
 	stuffcmd(self, "alias 1 impulse 231\n");
@@ -70,7 +76,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias 14 impulse 244\n");
 	stuffcmd(self, "alias 15 impulse 245\n");
 	// send this LAST to make sure that client received all impulses
-	stuffcmd(self, "alias clanring_ignorethis \"impulse 180 ; sm0\"\n");
+	stuffcmd(self, "alias clanring_ignorethis \"impulse 180;\"\n");
 	self = temp;
 	remove(self);
 };
@@ -192,7 +198,7 @@ void () votables_change_level =
 //
 //  Called when a player requests a new level.
 //
-void(optional string requestmap = "") votables_request_change_level =
+void() votables_request_change_level =
 {
 	local float level;
 	local string newmap = "";
@@ -211,13 +217,9 @@ void(optional string requestmap = "") votables_request_change_level =
 		return;
 	}
 
-	if (requestmap == "")
-	{
-		level = (self.warp_episode * 10) + (self.warp_map);//new r00k
-		newmap = warpmap[level].name;
-	} else {
-		newmap = requestmap;
-	}
+	level = (self.warp_episode * 10) + (self.warp_map);//new r00k
+	newmap = warpmap[level].name;
+
 	//clear warp_flags;
 	self.warp_episode=0;
 	self.warp_map=0;
@@ -225,8 +227,6 @@ void(optional string requestmap = "") votables_request_change_level =
 	if (newmap == "")
 	{
 		sprint(self, "Invalid level\n");
-		self.warp_episode=0;
-		self.warp_map=0;
 		return;
 	}
 
@@ -234,8 +234,6 @@ void(optional string requestmap = "") votables_request_change_level =
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
 		request_mapname = newmap;
-		self.warp_episode=0;
-		self.warp_map=0;
 		votables_change_level();
 	}
 	else
@@ -304,6 +302,24 @@ void() votables_phatten_player =
 	self.weaponframe = 0;
 };
 
+void() votables_clear_arena_playmode_flags =
+{
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CA_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_RA_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_DMM4_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIRSHOT_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_WIPEOUT_MODE);
+}
+
+void() votables_clear_playmode_flags =
+{
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NORMAL_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_MATCH_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_PRACTICE_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+	votables_clear_arena_playmode_flags();
+}
+
 //
 // V O T A B L E S  S E T  G A M E T Y P E  M O D E  M A P
 //
@@ -319,23 +335,96 @@ void() votables_set_gametype_mode_map =
 		if (request_gametype == 0)
 		{
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			cvar_set("timelimit", "0");
+			votables_clear_arena_playmode_flags();
+			cvar_set("teamplay", "2");
+			if (deathmatch == 4)
+				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
 
-			newmapname = "dm3";
+			//newmapname = "dm3";
 		}
-		else
+		else if (request_gametype == 1)
 		{
+			votables_clear_arena_playmode_flags();
 			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
-				clanring_playmode = clanring_playmode | CLANRING_CAPTURE_THE_FLAG;
+				clanring_playmode = (clanring_playmode | CLANRING_CAPTURE_THE_FLAG);
+			cvar_set("timelimit", "0");
+			cvar_set("teamplay", "1");
+			if (deathmatch == 4)
+				cvar_set("deathmatch", "1");
 			bprint("gametype set to Capture The Flag\n");
 
-			newmapname = "ctf1";
+			//newmapname = "ctf1";
 		}
+		else if (request_gametype == 2)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE);
+			cvar_set("teamplay", "1");
+			if (deathmatch == 4)
+				cvar_set("deathmatch", "1");
+			bprint("gametype set to Clan Arena\n");
+
+			//newmapname = "dm3"; //R00k: disabled this for testing on a single map, for now.
+		}
+		else if (request_gametype == 3)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_RA_MODE);
+			cvar_set("teamplay", "0");
+			if (deathmatch == 4)
+				cvar_set("deathmatch", "1");
+			bprint("gametype set to Rocket Arena\n");
+
+			newmapname = ra_get_next_map();
+		}
+		else if (request_gametype == 4)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE);
+			cvar_set("timelimit", "3");
+			cvar_set("teamplay", "0");
+			cvar_set("deathmatch", "4");
+			cvar_set ("scratch2", "0");//overtime
+			bprint("gametype set to dmm4\n");
+
+			newmapname = "povdmm4";
+		}
+		else if (request_gametype == 5)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_AIRSHOT_MODE);
+			cvar_set("timelimit", "3");
+			cvar_set("teamplay", "0");
+			cvar_set("deathmatch", "4");
+			cvar_set ("scratch2", "0");//overtime
+			bprint("gametype set to Airshot\n");
+
+			newmapname = "endif";
+		}
+		else if (request_gametype == 6)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE | CLANRING_WIPEOUT_MODE);
+			//cvar_set("timelimit", "0");
+			cvar_set("teamplay", "1");
+			if (deathmatch == 4)
+				cvar_set("deathmatch", "1");
+			bprint("gametype set to Clan Arena Wipeout\n");
+
+			//newmapname = "dm3";
+		}
+
 		utils_set_cvar ("samelevel", clanring_playmode);
 	}
 	if (request_mode >= 0)
 	{
-		clanring_playmode = clanring_playmode - (clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE));
+		// don't remove CTF in case we just set it above
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NORMAL_MODE);
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_MATCH_MODE);
+		clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_PRACTICE_MODE);
+		votables_clear_arena_playmode_flags();
 		
 		// Set the default timelimit if it was not set by options	
 		if (!(self.style & CLANRING_SETTING_OPTIONS) || (self.pos1_x != cvar ("timelimit")))
@@ -427,8 +516,12 @@ void() votables_set_gametype_mode_map =
 //     -1	-	no change
 //		0	-	dm
 //		1	-	ctf
+//		2	-	ca
+//		3	-	ra
+//		4	-	1v1
+//		5	-	airshot
 //
-// newmode
+// newmode		(dm/ctf)
 //	   -1	-	no change
 //      0   -   normal
 //      1   -   practice
@@ -464,14 +557,42 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 	if (newtype >= 0)
 	{
 		//if request is only to change to the game type we are already in
-		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && newmode < 0 && newmap == "")
+		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) 
+			&& !(clanring_playmode & CLANRING_DMM4_MODE) && !(clanring_playmode & CLANRING_CA_MODE) 
+			&& !(clanring_playmode & CLANRING_RA_MODE) && !(clanring_playmode & CLANRING_AIRSHOT_MODE) 
+			&& newmode < 0 && newmap == "")
 		{
 			sprint(self, "Already in DeathMatch mode\n");
 			return;
 		}
-		if (newtype == 1 && clanring_playmode & CLANRING_CAPTURE_THE_FLAG && newmode < 0 && newmap == "")
+		else if (newtype == 1 && clanring_playmode & CLANRING_CAPTURE_THE_FLAG && newmode < 0 && newmap == "")
 		{
 			sprint(self, "Already in Capture The Flag mode\n");
+			return;
+		}
+		else if (newtype == 2 && clanring_playmode & CLANRING_CA_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in Clan Arena mode\n");
+			return;
+		}
+		else if (newtype == 3 && clanring_playmode & CLANRING_RA_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in Rocket Arena mode\n");
+			return;
+		}
+		else if (newtype == 4 && clanring_playmode & CLANRING_DMM4_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in 1v1 mode\n");
+			return;
+		}
+		else if (newtype == 5 && clanring_playmode & CLANRING_AIRSHOT_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in airshot mode\n");
+			return;
+		}
+		else if (newtype == 6 && clanring_playmode & CLANRING_WIPEOUT_MODE && newmode < 0 && newmap == "")
+		{
+			sprint(self, "Already in wipeout mode\n");
 			return;
 		}
 	}
@@ -530,7 +651,27 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 		else if (request_gametype == 1)
 		{
 			gametype_string = "Capture The Flag";
-		}				
+		}
+		else if (request_gametype == 2)
+		{
+			gametype_string = "Clan Arena";
+		}
+		else if (request_gametype == 3)
+		{
+			gametype_string = "Rocket Arena";
+		}
+		else if (request_gametype == 4)
+		{
+			gametype_string = "Duel";
+		}
+		else if (request_gametype == 5)
+		{
+			gametype_string = "Airshot";
+		}
+		else if (request_gametype == 6)
+		{
+			gametype_string = "Wipeout";
+		}
 
 		if (request_mapname != "")
 		{
@@ -800,6 +941,40 @@ void() votables_select_overtime =
 	sprint(self, "”Ÿ ² Íéîõôåó     ˜Ÿ ±° Íéîõôåó\n");
 	sprint(self, "•Ÿ ³ Íéîõôåó     ™Ÿ Óõääåî äåáôè\n");
 	self.use = votables_get_overtime;
+};
+
+void () arena_force_start =
+{
+	if ((boss.state == CA_MATCH_WAITING))
+	{
+		boss.forced = TRUE;
+		announce ("Match \bforced\b.");
+	}
+};
+
+void () votables_force_start =
+{
+	if (mode_is_arena() == FALSE)
+		return;
+		
+	if (boss.state != CA_MATCH_WAITING || boss.allready == TRUE)
+		return;
+	
+	if (number_teams () < 2)
+	{
+		sprint(self, "Match requires at least \btwo teams\b to force start.\n");
+		return;
+	}
+	
+	if (self.style & CLANRING_ADMINISTRATOR)
+	{
+		arena_force_start ();
+	}
+	else
+	{
+		if (vote_init ("\bforce match start\b", "", arena_force_start))
+			vote_yes ();
+	}
 };
 
 //
@@ -1228,7 +1403,7 @@ void() votables_request_set_runes =
 //
 void() votables_set_faststarts =
 {
-	utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
+	//utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
 };
 
 //
@@ -1238,26 +1413,27 @@ void() votables_set_faststarts =
 //
 void() votables_request_set_faststarts =
 {
-	local string newstate;
+	sprint(self, "there is only fast start\n");
+	// local string newstate;
 
-	if ((self.style & CLANRING_ADMINISTRATOR))
-	{
-		votables_set_faststarts ();
-	}
-	else
-	{
-		if ((clanring_playmode & CLANRING_FAST_START))
-		{
-			newstate = "\bdisable\b";
-		}
-		else
-		{
-			newstate = "\benable\b";
-		}
-		if (vote_init(newstate, " fast match starts", votables_set_faststarts))
-		{
-			vote_yes();
-		}
-	}
+	// if ((self.style & CLANRING_ADMINISTRATOR))
+	// {
+	// 	votables_set_faststarts ();
+	// }
+	// else
+	// {
+	// 	if ((clanring_playmode & CLANRING_FAST_START))
+	// 	{
+	// 		newstate = "\bdisable\b";
+	// 	}
+	// 	else
+	// 	{
+	// 		newstate = "\benable\b";
+	// 	}
+	// 	if (vote_init(newstate, " fast match starts", votables_set_faststarts))
+	// 	{
+	// 		vote_yes();
+	// 	}
+	// }
 };
 

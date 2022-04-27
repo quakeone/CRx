@@ -461,6 +461,7 @@ This is the destination marker for a teleporter.  It should have a "targetname" 
 void() info_teleport_destination =
 {
 // this does nothing, just serves as a target spot
+	tele_num_spawns += 1;
 	self.mangle = self.angles;
 	self.angles = '0 0 0';
 	self.model = "";

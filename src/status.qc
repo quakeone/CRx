@@ -80,7 +80,6 @@ string(entity who) TeamSetStatRes2 =
 	return "\n\n\n\n\n\n\n\n\n\n\n";
 };
 
-
 void() TeamCapturePlayerUpdate =
 {
 	local entity e;
@@ -210,4 +209,106 @@ void() TeamCapturePlayerUpdate =
 		}
 	}
 	centerprint (self, res, s1, s2, s3, t, n);
+};
+
+string (float nexttime) get_nextspawn_string =
+{
+	if ((boss.wait != 0) || (nexttime <= 0))
+	{
+		return "   ";
+	}
+
+	local float timeleft;
+	timeleft = ceil(nexttime - time);
+
+	if (timeleft > 9)
+	{
+		return sprintf(" %s", ftos(timeleft));
+	}
+	else if (timeleft >= 0)
+	{
+		return sprintf("  %s", ftos(timeleft));
+	}
+	else
+	{
+		return "   ";
+	}
+};
+
+string (entity e) wipeout_get_teamstatus =
+{
+	local string tname="", talive="";
+
+	if (e.team2 == self.team2)
+		tname = strings_get_teamname4(e.team2);
+	else
+		tname = strings_get_teamname4_red(e.team2);
+
+	if (e.teamalive == e.teamtotal)
+		talive = ftos(e.teamalive);
+	else
+		talive = strings_ftos_gold(e.teamalive);
+
+	return sprintf("ù%s %s%sü                                \n", tname, talive, get_nextspawn_string(e.nextspawn));
+};
+
+float (entity e) IS_CA_OBSERVER;
+void () WipeoutModePlayerUpdate =
+{
+	local entity e;
+	local string s1="";
+	local string s2="";
+	local string s3="";
+	local string s4="";
+
+	if (!(clanring_playmode & CLANRING_WIPEOUT_MODE))
+		return;
+
+	if (IS_CA_OBSERVER(self))
+		return;
+
+	if (boss.state != CA_MATCH_PLAYING)
+		return;
+
+	if ((self.statstate < 0))
+	{
+		return;
+	}
+
+	if ((self.laststattime > time))
+	{
+		return;
+	}
+
+	if (self.style & CLANRING_MOTD)//r00k v3.21
+		return;
+
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		return;
+
+	self.laststattime = (time + .2);
+
+	e = boss.next_team;
+
+	if (e)
+	{
+		s1 = wipeout_get_teamstatus(e);
+		e = e.next_team;
+		if (e)
+		{
+			s2 = wipeout_get_teamstatus(e);
+			e = e.next_team;
+			if (e)
+			{
+				s3 = wipeout_get_teamstatus(e);
+				e = e.next_team;
+				if (e)
+				{
+					s4 = wipeout_get_teamstatus(e);
+				}
+			}
+		}
+	}
+
+	centerprint5 (self, "team alive                                         \n", s1, s2, s3, s4);
 };

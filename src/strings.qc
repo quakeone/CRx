@@ -450,7 +450,39 @@ string (float num) strings_get_teamname3 =
 	};
 	return tab[num-1];
 };
-
+//
+//  G E T  T E A M N A M E 4
+//
+//  For when 3 characters is what we need.. Believe it.
+//
+string (float num) strings_get_teamname4 =
+{
+	const string tab[] = 
+	{
+		"Bro",	"LBl",
+		"Grn",	"Red",
+		"Olv",	"Gld",
+		"Fle",	"Lav",
+		"Pur",	"Bei",
+		"Aqu",	"Yel",
+		"Blu"
+	};
+	return tab[num-1];
+};
+string (float num) strings_get_teamname4_red =
+{
+	const string tab[] = 
+	{
+		"\bBro\b",	"\bLBl\b",
+		"\bGrn\b",	"\bRed\b",
+		"\bOlv\b",	"\bGld\b",
+		"\bFle\b",	"\bLav\b",
+		"\bPur\b",	"\bBei\b",
+		"\bAqu\b",	"\bYel\b",
+		"\bBlu\b"
+	};
+	return tab[num-1];
+};
 //
 //  G E T  C O L O U R
 //
@@ -479,6 +511,16 @@ string (float num) strings_get_colour =
 string (float num) strings_get_teamname_up_by =
 {
 	return strpad(-20, strcat(strtrim(strings_get_teamname2(num)), " up by "));
+};
+
+//
+//  G E T  T E A M N A M E  U P  B Y
+//
+//  Return the "colour up by " string corresponding to a given team.
+//
+string (float num) strings_get_teamname_leads_by =
+{
+	return strpad(-20, strcat(strtrim(strings_get_teamname2(num)), " leads by "));
 };
 
 //
@@ -688,6 +730,11 @@ string (float mode) strings_get_mode =
 		case 1: return "Practice";
 		case 2: return "Match";
 		case 3: return "CTF";
+		case 4:	return "CA";
+		case 5: return "RA";
+		case 6: return "Airshot";
+		case 7: return "DMM4";
+		case 8: return "Wipeout";		
 	}
 	return "";
 };
@@ -700,6 +747,11 @@ string (float mode) strings_get_mode_gold =
 		case 1: return "\bPractice";
 		case 2: return "\bMatch";
 		case 3: return "\bCTF";
+		case 4:	return "\bCA";
+		case 5: return "\bRA";
+		case 6: return "\bAirshot";
+		case 7: return "\bDMM4";
+		case 8: return "\bWipeout";
 	}
 	return "";
 };

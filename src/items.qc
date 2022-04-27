@@ -110,6 +110,26 @@ void() StartItem =
         }
     }
     // END_MOD
+	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	{
+		if (self.touch == weapon_touch)
+		{
+			self.effects = self.effects - (self.effects & self.effects);
+			self.model = string_null;
+			self.solid = SOLID_NOT;
+			self.nextthink = 9999999; // must be really big for quaketv
+		}
+		else
+		{
+			remove(self);
+		}
+		return;
+	}
+	else if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE))
+	{
+		remove(self);
+		return;
+	}
 
 	self.nextthink = time + 0.2;	// items start after other solids
 	self.think = PlaceItem;
@@ -214,7 +234,7 @@ void() health_touch =
 //	local string 	s;
 
 // ELOHIM_MOD
-	if (((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED)))
+	if (!(items_are_ready()))
 		return;
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
@@ -230,9 +250,10 @@ void() health_touch =
 
 		if (!T_Heal (other, self.healamount, H_ROTTEN))
 			donttake = 1;
-
-		if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))// ELOHIM_MOD - teamstats
+		if (other.next_team != world)
+		{
 			other.next_team.pos1_z = (other.next_team.pos1_z + 1);
+		}
 	}
 	else
 	{
@@ -260,7 +281,7 @@ void() health_touch =
 			other.items = other.items | IT_SUPERHEALTH;
 	
 			//Set this megahealth's respawn to default 125 seconds.
-			if (deathmatch != 2)	// deathmatch 2 is silly old rules
+			if (deathmatch != 2 && deathmatch != 4)	// deathmatch 2 is silly old rules
 			{
 				self.nextthink = time + self.healamount + 25;	// delay (5) + health + respawn wait (20)
 				self.think = SUB_regen;
@@ -331,7 +352,7 @@ void() armor_touch =
 	local float		donttake = 0;	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes
 
     // ELOHIM_MOD
-	if ( (clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_state & CLANRING_MATCH_STARTED)) )
+	if (!(items_are_ready()))
 		return;
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
@@ -371,9 +392,10 @@ void() armor_touch =
 
 	if (!donttake)
 	{
-		if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))
+		if (other.next_team != world)
+		{
 			other.next_team.dest = (other.next_team.dest + v);
-
+		}
 
 		other.armortype 	= type;
 		other.armorvalue 	= value;
@@ -381,7 +403,7 @@ void() armor_touch =
 		self.solid 			= SOLID_NOT;
 		self.model 			= string_null;
 
-		if (deathmatch != 2)
+		if (deathmatch != 2 && deathmatch != 4)
 			self.nextthink = time + 20;
 		
 		self.think= SUB_regen;
@@ -513,7 +535,7 @@ void() weapon_touch =
 	local float	leave;
 	local float	donttake;
 
-	if (clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED))
+	if (!(items_are_ready()))
 		return;
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
@@ -550,7 +572,7 @@ void() weapon_touch =
 			if (self.weapon == IT_NAILGUN || self.weapon == IT_SUPER_NAILGUN)
 			{
 				other.ammo_nails = other.ammo_nails + 30;
-				if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))
+				if (other.next_team != world)
 				{
 					if (self.weapon == IT_NAILGUN)
 					{
@@ -572,7 +594,7 @@ void() weapon_touch =
 					{
 						quaketv_obtained_rl(other);
 					}
-					if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))
+					if (other.next_team != world)
 					{
 						if (self.weapon == IT_ROCKET_LAUNCHER)
 						{
@@ -589,7 +611,7 @@ void() weapon_touch =
 					if (self.weapon == IT_LIGHTNING)
 					{
 						other.ammo_cells = other.ammo_cells + 15;
-						if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))
+						if (other.next_team != world)
 						{
 							other.next_team.dest1_y = other.next_team.dest1_y + 1;
 						}
@@ -650,13 +672,11 @@ void() weapon_touch =
 			{
 				self.nextthink = time + 30;
 			}
-			else
+			else if (deathmatch == 4)
 			{
-				if (deathmatch == 4)
-				{
-					self.nextthink = time + 15;
-				}
+				self.nextthink = -1;//time + 15;
 			}
+
 			self.think = SUB_regen;
 		}
 	}
@@ -752,7 +772,7 @@ void() ammo_touch =
 	local float	donttake;	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes
 
     // CLANRING_MOD
-    if (clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED))
+    if (!(items_are_ready()))
         return;
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
@@ -839,12 +859,9 @@ void() ammo_touch =
 		{
 			self.nextthink = time + 15;
 		}
-		else
+		else if (deathmatch == 1)
 		{
-			if (deathmatch != 2)
-			{
-				self.nextthink = time + 30;
-			}
+			self.nextthink = time + 30;
 		}
 
 		self.think = SUB_regen;
@@ -1044,7 +1061,7 @@ POWERUPS
 void() powerup_touch =
 {
     // CLANRING_MOD
-    if (clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED))
+    if (!(items_are_ready()))
         return;
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
@@ -1061,7 +1078,14 @@ void() powerup_touch =
 	sprint(other,"\n");
 	stuffcmd(other, "bf\n");
 
-	if (deathmatch != 2)	// R00k
+	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	{
+		if ((self.items == IT_QUAD) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0))
+			boss.quadtime = time + 35;
+		else
+			return;
+	}
+	else if (deathmatch != 2 && deathmatch != 4)	// R00k
 	{
 		self.mdl = self.model;
 		
@@ -1104,7 +1128,7 @@ void() powerup_touch =
 		other.effects = other.effects | EF_DIMLIGHT;	// 1998-07-23 Better performance in handling of powerups by Maddes
 		other.effects = other.effects | EF_RED;	
 
-		if (teamplay && clanring_playmode & CLANRING_MATCH_MODE)
+		if (other.next_team != world)
 		{
 			other.next_team.dest2_y = other.next_team.dest2_y + 1;
 		}
@@ -1123,7 +1147,8 @@ void() powerup_touch =
 		other.frame = 0;
 		//other.modelindex = modelindex_eyes;
 		// 1998-07-23 Better performance in handling of powerups by Maddes  end
-		if (teamplay && clanring_playmode & CLANRING_MATCH_MODE)
+
+		if (other.next_team != world)
 		{
 			other.next_team.dest2_z = other.next_team.dest2_z + 1;
 		}
@@ -1148,8 +1173,10 @@ void() powerup_touch =
 
 		// CRMOD - stats
 		other.clanring_qdwep_z = other.clanring_qdwep_z + 1;
-		if (teamplay && clanring_playmode & CLANRING_MATCH_MODE)
+		if (other.next_team != world)
+		{
 			other.next_team.dest2_x = other.next_team.dest2_x + 1;
+		}
 	}
 	activator = other;
 	SUB_UseTargets();// fire all targets / killtargets
@@ -1261,6 +1288,16 @@ void() BackpackTouch =
 	if (other.health <= 0)
 		return;
 
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	{
+		//other.arenapacks += 1;
+		sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
+		// remove the backpack, change self to the player
+		remove(self);
+		self = other;
+		return;
+	}
+
 	acount = 0;
 	sprint(other, "You get ");
 	if (self.items)
@@ -1272,12 +1309,15 @@ void() BackpackTouch =
 			sprint(other, self.netname);
 			if (self.items == IT_ROCKET_LAUNCHER)
 			{
-				if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE) && (other.team != self.owner.team))
+				if (other.team != self.owner.team)
 				{
 					quaketv_announce4(other.netname, " got ", self.owner.netname, "'s RL");
 					quaketv_sound ("misc/talk.wav");
 					self.owner.clanring_badstats_x = self.owner.clanring_badstats_x + 1;
-					other.next_team.mangle_y = other.next_team.mangle_y + 1;
+					if (other.next_team != world)
+					{
+						other.next_team.mangle_y = other.next_team.mangle_y + 1;
+					}
 				}
 				quaketv_obtained_rl (other);// ELOHIM_MOD - keep track of rocket launchers
 			}
@@ -1388,9 +1428,11 @@ void() DropBackpack =
 	else if (item.items == IT_ROCKET_LAUNCHER)
 	{
 		item.netname = "Rocket Launcher";
-		// ELOHIM_MOD - quaketv code	
-		if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))
+		// ELOHIM_MOD - quaketv code
+		if (other.next_team != world)
+		{
 			self.next_team.mangle_z = self.next_team.mangle_z + 1; // stats
+		}
 	}
 	else if (item.items == IT_LIGHTNING)
 			item.netname = "Thunderbolt";
@@ -1424,7 +1466,7 @@ void() Team_weapon_touch =
 	local float	new, best;
 	local entity	stemp;
 	
-	if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+	if (!(items_are_ready()))
 		return;
 	
 	if (pointcontents(self.origin) == CONTENT_LAVA)
