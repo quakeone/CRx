@@ -50,28 +50,32 @@ void () arena_main_loop =
 	{
 		if (number_teams () > 1)
 		{
-			local float round_is_over = FALSE, spawn_quad = FALSE, spawn_item = FALSE;
+			local float round_is_over = FALSE, spawn_quad = FALSE;
+			local float team_alive = 0;
 			local entity e;
 
 			if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 			{
 				e = boss.next_team;
-				while ((e != world) && (round_is_over == FALSE))
+				while (e != world)
 				{
-					if (e.teamalive == 0)
-						round_is_over = TRUE;
-					else if (e.teamalive == 1 && e.teamtotal > 1)
-						spawn_quad = TRUE;
-					else
-						spawn_item = TRUE;
+					if (e.teamalive > 0)
+					{
+						team_alive += 1;
+
+						if (e.teamalive == 1 && e.teamtotal > 1)
+							spawn_quad = TRUE;
+					}
 					e = e.next_team;
 				}
 
-				if (round_is_over == FALSE)
+				if (team_alive < 2)
+					round_is_over = TRUE;
+				else
 				{
 					if (spawn_quad == TRUE)
 						wipeout_try_spawn_quad();
-					else if (spawn_item == TRUE)
+					else
 						wipeout_try_spawn_item();
 				}
 			}

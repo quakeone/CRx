@@ -747,6 +747,7 @@ void (entity pteam) spawn_next_player =
 void () im_dead_now_what =
 {
 	local string tmp = "";
+	local entity e;
 
 	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
 		return;
@@ -769,11 +770,16 @@ void () im_dead_now_what =
 			self.next_team.teamalive -= 1;
 			if (self.next_team.teamalive < 1)
 			{
-				//initiate slight pause if round should end
-				if (boss.wait == 0)
+				//TODO: show this?
+				tmp = strings_get_teamname(self.team2);
+				bprint3 ("The ", tmp, " has been \bwiped out\b\n")
+
+				e = self.next_team.chain_gang;
+				while (e)
 				{
-					boss.wait = (time + 4);
-					return;
+					if (e.style & CLANRING_CONNECTED)
+						e.respawntime = 0;
+					e = e.chain_gang;
 				}
 			}
 			else
