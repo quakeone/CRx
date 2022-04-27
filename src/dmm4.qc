@@ -113,7 +113,7 @@ void () dmm4_main_loop =
 			{
 				if (boss.count == 9)
 				{
-					match_ready_players ();
+					arena_ready_players ();
 				}
 				else if (boss.count == 8)
 				{

@@ -1,6 +1,6 @@
 void() powerup_touch;
 
-float (float numdeaths) get_wipeout_respawn =
+float (float numdeaths) wipeout_get_respawn =
 {
 	switch (numdeaths)
 	{
@@ -51,7 +51,7 @@ entity (float wnum) check_weapon_spot =
 	return spot;
 };
 
-entity () find_drop_spot =
+entity () find_item_spawn_spot =
 {
 	local entity spot = world;
 	local float	pcount;
@@ -80,7 +80,7 @@ entity () find_drop_spot =
 	return spot;
 };
 
-void (vector vspot) do_drop_quad =
+void (vector vspot) do_spawn_quad =
 {
 	local entity item;
 	item = spawn ();
@@ -106,7 +106,7 @@ void (vector vspot) do_drop_quad =
 };
 
 void() BackpackTouch;
-void (vector vspot) do_drop_pack =
+void (vector vspot) do_spawn_pack =
 {
 	local float rammo = 0;
 	local entity item;
@@ -145,7 +145,7 @@ void (vector vspot) do_drop_pack =
 };
 
 //void() health_touch;
-void (vector vspot) do_drop_health =
+void (vector vspot) do_spawn_health =
 {
 	// local entity item;
 	// item = spawn();
@@ -166,108 +166,49 @@ void (vector vspot) do_drop_health =
 	// sound (item, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);
 };
 
-float (entity team1) wipeout_teammates_left =
+void () wipeout_try_spawn_item =
 {
-	local entity e, tmp, spot = world;
-	local float prnd, lowtime = 0, n = 0, ttl = 0, loop_count = 64;
+	local float prnd;
+	local entity spot;
 
-	e = team1;
-	while (e.chain_gang)
-	{
-		if ((e.chain_gang.style & CLANRING_CONNECTED))
-		{
-			ttl = ttl + 1;
-			if ((e.chain_gang.ca_player_flag == PF_PLAYING) && (e.chain_gang.respawntime == 0))
-			{
-				n = n + 1;
-			}
-			else
-			{
-				if ((e.chain_gang.respawntime > 0) && (time >= e.chain_gang.respawntime) && (boss.wait == 0))
-				{
-					tmp = self;
-					self = e.chain_gang;
-					self.movetarget = world;
-					observer_end ();
-					bprint2(self.netname, " has respawned\n");
-					self = tmp;
-
-					n = n + 1;
-				}
-				else
-				{
-					if (lowtime == 0)
-					{
-						lowtime = e.chain_gang.respawntime;
-					}
-					else if (e.chain_gang.respawntime < lowtime)
-					{
-						lowtime = e.chain_gang.respawntime;
-					}
-				}
-			}
-		}
-		e = e.chain_gang;
-	}
-
-	if ((n == 1) && (ttl > 1) && (boss.wait == 0))
-	{
-		if (boss.quadtime == 0)
-		{
-			boss.quadtime = time + 5;
-		}
-		else if (time > boss.quadtime)
-		{
-			prnd = random() * (2 - 0.001);
-			prnd = floor(prnd);
-			if (prnd)
-			{
-				spot = find_drop_spot();
-				if (spot != world)
-				{
-					do_drop_quad(spot.origin);
-					boss.quadtime = time + 999;
-				}
-			}
-		}
-	}
-
-	team1.nextspawn = lowtime;
-	team1.teamtotal = ttl;
-	return n;
-};
-
-float () teams_not_wipedout =
-{
-	local float	prnd, tn = 0, n = 0;
-	local entity e, spot;
-
-	e = boss.next_team;
-
-	while (e)
-	{
-		n = wipeout_teammates_left(e);
-		if (n)
-			tn = tn + 1;
-		e.teamalive = n;
-		e = e.next_team;
-	}
-
-	prnd = random() * (200 - 0.001);
+	prnd = random() * (90 - 0.001);
 	prnd = floor(prnd);
-	if ((prnd == 50) || (prnd == 100) || (prnd == 150))
+	if ((prnd == 15) || (prnd == 30) || (prnd == 45))
 	{
-		spot = find_drop_spot();
+		spot = find_item_spawn_spot();
 		if (spot != world)
 		{
-			if (prnd == 100)
-				do_drop_health(spot.origin);
+			if (prnd == 30)
+				do_spawn_health(spot.origin);
 			else
-				do_drop_pack(spot.origin);
+				do_spawn_pack(spot.origin);
 		}
 	}
+};
 
-	return tn;
+void () wipeout_try_spawn_quad =
+{
+	local float prnd;
+	local entity spot;
+
+	if (time > boss.quadtime)
+	{
+		prnd = random() * (5 - 0.001);
+		prnd = floor(prnd);
+		if (prnd == 3)
+		{
+			spot = find_item_spawn_spot();
+			if (spot != world)
+			{
+				do_spawn_quad(spot.origin);
+				boss.quadtime = time + 999;
+			}
+		}
+		else
+		{
+			wipeout_try_spawn_item();
+		}
+	}
 };
 
 void () wipeout_init_teams =
@@ -285,64 +226,64 @@ void () wipeout_init_teams =
 	}
 };
 
-entity (entity e, float spawnradius) find_spawn_point =
-{
-	local entity head;
-	head = findradius (e.origin, spawnradius);					
-	while (head)
-	{
-		if (head.classname == "info_player_deathmatch")
-		{
-			return head;
-		}
-		head = head.chain;
-	}
-	return world;
-};
+// entity (entity e, float spawnradius) find_player_spawn_spot =
+// {
+// 	local entity head;
+// 	head = findradius (e.origin, spawnradius);					
+// 	while (head)
+// 	{
+// 		if (head.classname == "info_player_deathmatch")
+// 		{
+// 			return head;
+// 		}
+// 		head = head.chain;
+// 	}
+// 	return world;
+// };
 
-entity () SelectWipeoutSpawnPoint =
-{
-	local entity e, tmp = world, localspawn = world;
-	local float spawnradius = 0;
+// entity () SelectWipeoutSpawnPoint =
+// {
+// 	local entity e, tmp = world, localspawn = world;
+// 	local float spawnradius = 0;
 
-	if (self.next_team == world)
-		return world;
+// 	if (self.next_team == world)
+// 		return world;
 
-	e = boss.next_team;
+// 	e = boss.next_team;
 
-	while (e)
-	{
-		if (e.team2 == self.next_team.team2)
-		{
-			while (e.chain_gang)
-			{
-				if (e.chain_gang.deadflag == DEAD_NO && (IS_CA_OBSERVER(e.chain_gang) == FALSE) && ((e.chain_gang.style & CLANRING_CONNECTED)))
-				{
-					tmp = e.chain_gang;
-					break;
-				}
-				e = e.chain_gang;
-			}
-		}
-		if (tmp)
-			break;
-		e = e.next_team;
-	}
+// 	while (e)
+// 	{
+// 		if (e.team2 == self.next_team.team2)
+// 		{
+// 			while (e.chain_gang)
+// 			{
+// 				if (e.chain_gang.deadflag == DEAD_NO && (IS_CA_OBSERVER(e.chain_gang) == FALSE) && ((e.chain_gang.style & CLANRING_CONNECTED)))
+// 				{
+// 					tmp = e.chain_gang;
+// 					break;
+// 				}
+// 				e = e.chain_gang;
+// 			}
+// 		}
+// 		if (tmp)
+// 			break;
+// 		e = e.next_team;
+// 	}
 
-	if (tmp)
-	{
-		while ((spawnradius < 1000) && !(localspawn))
-		{
-			spawnradius += 128;
-			localspawn = find_spawn_point(tmp, spawnradius);
-		}
-	}
+// 	if (tmp)
+// 	{
+// 		while ((spawnradius < 1000) && !(localspawn))
+// 		{
+// 			spawnradius += 128;
+// 			localspawn = find_player_spawn_spot(tmp, spawnradius);
+// 		}
+// 	}
 
-	if (localspawn)
-		return localspawn;
+// 	if (localspawn)
+// 		return localspawn;
 
-	return world;
-};
+// 	return world;
+// };
 
 void () powerup_denied =
 {

@@ -22,10 +22,11 @@ void () clan_arena_init_world;
 void () airshot_init_world;
 void () dmm4_init_world;
 void () rocket_arena_init_world;
-float (float rounddeaths) get_wipeout_respawn;
-float () teams_not_wipedout;
+float (float rounddeaths) wipeout_get_respawn;
 void () dmm4_report_winner;
 void () wipeout_init_teams;
+void () wipeout_try_spawn_quad;
+void () wipeout_try_spawn_item;
 void () respawn;
 void (entity pteam) ra_leave_next_queue;
 void (entity pteam) ra_join_next_queue;
@@ -73,6 +74,12 @@ void () arena_client_disconnect =
 {
 	if ((clanring_playmode & CLANRING_RA_MODE) && (self.next_team != world))
 		ra_leave_next_queue(self.next_team);
+
+	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world))
+	{
+		self.next_team.teamalive -= 1;
+		self.next_team.teamtotal -= 1;
+	}
 
 	RemoveFromTeam();//R00k
 	self.team2    		= TEAM_SPECTATOR;
@@ -576,7 +583,7 @@ string () report_winning_team =
 	return output;
 };
 
-void () match_ready_players =
+void () arena_ready_players =
 {
 	local entity pteam, player;
 
@@ -753,16 +760,34 @@ void () im_dead_now_what =
 		stuffcmd(self,",0;\n");
 		self.team2 = 0;
 		dead_name();
-	}
 
-	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-	{
-		self.rounddeaths = (self.rounddeaths + 1);
-		self.respawntime = (time + get_wipeout_respawn(self.rounddeaths));
-	}
+		self.ca_deathcamtime = time + 4;
+		self.ca_player_flag = PF_DEAD;
 
-	self.ca_deathcamtime = time + 4;
-	self.ca_player_flag = PF_DEAD;
+		if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world))
+		{
+			self.next_team.teamalive -= 1;
+			if (self.next_team.teamalive < 1)
+			{
+				//initiate slight pause if round should end
+				if (boss.wait == 0)
+				{
+					boss.wait = (time + 4);
+					return;
+				}
+			}
+			else
+			{
+				//set player's respawn and update team nextspawn for huds
+				self.rounddeaths = (self.rounddeaths + 1);
+				self.respawntime = (time + wipeout_get_respawn(self.rounddeaths));
+				if ((self.next_team.nextspawn == 0) || (self.next_team.nextspawn > self.respawntime))
+				{
+					self.next_team.nextspawn = self.respawntime;
+				}
+			}
+		}
+	}
 };
 
 void (entity pteam) arena_remove_team =
@@ -1836,233 +1861,6 @@ void() round_end =
 		}
 	}
 	utils_make_scheduled_event(reset_round, 0.5);
-};
-
-void () Practice_Object_Remove;
-
-void () arena_main_loop =
-{
-	if ((clanring_state & CLANRING_MATCH_PAUSED) && (!boss.unpausing))
-	{
-		if (time > boss.lip)
-		{
-			WriteByte (MSG_ALL, SVC_CENTERPRINT);
-			WriteString (MSG_ALL, "\n\X90PAUSED\X91\n");
-			boss.lip = time + 1.5;
-		}
-		return;
-	}
-
-	if ((boss.busy) || (gameover))
-		return;
-
-	if (boss.state == CA_MATCH_PLAYING)
-	{
-		if (number_teams () > 1)
-		{
-			local float round_is_over = 0;
-
-			if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-			{
-				if (teams_not_wipedout() < 2)
-					round_is_over = TRUE;
-			}
-			else 
-			{
-				if (number_teams_alive () < 2)
-					round_is_over = TRUE;
-			}
-
-			if (round_is_over)
-			{
-				if (boss.wait == 0)
-				{
-					boss.wait = (time + 4);//slight pause before end of round.
-					return;
-				}
-
-				if (time > boss.wait)
-				{
-					boss.wait = time + 99;//do round end and wait
-					if (number_teams_alive () == 0)
-					{
-						boss.round = (boss.round - 1);// repeat round
-						announce ("round is a \bdraw\b!");
-						utils_make_scheduled_event(reset_round,0.5);//fixed v.0.94b
-						return;
-					}
-					round_end();
-				}
-			}
-		}
-		else
-		{
-			gameover = TRUE;
-			boss.aborted = TRUE;
-			boss.state = CA_MATCH_OVER;
-			arena_match_end ();
-		}
-	}
-	else if ((boss.state == CA_MATCH_ROUNDSTART))
-	{
-		local string temp;
-
-		motd_top5 = string_null;
-		motd_top6 = string_null;
-
-		if (number_teams () > 1)
-		{
-			boss.count = (boss.count) - 1;
-
-			if (clanring_request.noise1 == "\bforce match start\b")	//cancel Vote to force
-				Request_Poll_Cleanup();
-
-			if (boss.count > 5)
-			{
-				if (boss.count == 9)
-				{
-					match_ready_players ();
-				}
-				else if (boss.count == 8)
-				{
-					respawn_teams ();
-					//refresh_observers();//TODO: force observers into chasemode/eyecam+
-
-					if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-						wipeout_init_teams();
-
-					bprint ("\bround: [");
-					if (boss.round <= boss.max_rounds)
-					{
-						temp = ftos (boss.round);
-						bprint(temp);
-						temp = ftos (boss.max_rounds);
-						bprint3 (" \bof \b",temp,"\b]\n");
-					}
-					else
-						bprint ("Overtime\b]\n");
-
-					local string stmp;
-					stmp = (report_winning_team());
-					bprint2 (stmp, "\n");
-				}
-			}
-			else
-			{
-				if (boss.count == 0)
-				{
-					sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
-					//ctprint ("\bFIGHT!");
-					utils_do_arena_players(arena_fight_and_shoot);
-					boss.timetofight = TRUE;
-					boss.state = CA_MATCH_PLAYING;
-					if (boss.round == 1)
-						announce("The match has begun!");
-				}
-
-				if (boss.count == 1)
-				{
-					//ctprint ("1");
-					sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
-				}
-				else if (boss.count == 2)
-				{
-					//ctprint ("2");
-					sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
-				}
-				else if (boss.count == 3)
-				{
-					//ctprint("3");
-					sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
-				}
-				else if ((boss.count == 5) && (boss.round > 1))
-				{
-					announce("prepare to fight");					
-				}
-			}
-		}
-		else
-		{
-			gameover = TRUE;
-			boss.aborted = TRUE;
-			boss.state = CA_MATCH_OVER;
-			arena_match_end();
-		}
-	}
-	else if ((boss.state == CA_MATCH_WAITING))
-	{
-		if (boss.forced)
-		{
-			boss.forced 	= FALSE;
-			boss.timetofight 	= FALSE;
-			boss.count	= 10;
-			boss.wait 	= 0;
-			boss.state 	= CA_MATCH_ROUNDSTART;
-
-			//sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
-			sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
-			//announce("Match begins in \b10\b seconds.");
-			utils_do_players(reset_frags);
-		}
-		else if (number_teams () > 1 && boss.allready == TRUE)
-		{
-			if (boss.wait == 0)
-			{
-				// No need to force match now.
-				if (clanring_request.noise1 == "\bforce match start\b")
-				Request_Poll_Cleanup();
-
-				boss.wait = time + 5;
-				sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
-				announce("Match begins in \b15\b seconds.");//boss.wait (5) + countdowntimer (10) = 15 seconds...
-			}
-
-			if (time >= boss.wait)
-			{
-				boss.timetofight	= FALSE;
-				boss.count 	= 10;
-				boss.wait 	= 0;
-				//sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
-				sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
-				//announce("Match begins in \b10\b seconds.");
-				utils_do_players(reset_frags);
-				Practice_Object_Remove();
-				//TODO: needed?
-				//utils_do_items(SUB_Remove);
-				boss.state = CA_MATCH_ROUNDSTART;
-				pqc_match_reset();
-				find_pqc_teamscore_teams();
-			}
-		}
-		else if (number_teams () < 2 || boss.allready == FALSE)
-		{
-			if (boss.wait)
-			{
-				announce ("\bResetting \brally\b timer.");
-				sound (world, CHAN_VOICE, "doors/drclos4.wav", 1, ATTN_NONE);
-
-				if (number_teams () >= 2)
-				bprint("Use \bforce\b to start the match.\n");
-			}
-			boss.wait = 0;
-		}
-		boss.allready = TRUE;
-	}
-	else
-	{
-		if (boss.state == CA_MATCH_CLEANUP)
-		{
-			if (boss.wait == 0)
-			{
-				boss.wait = time + 3;
-			}
-			if (time > boss.wait)
-			{
-				boss.wait = 0;
-				boss.state = CA_MATCH_WAITING;
-			}
-		}
-	}
 };
 
 //

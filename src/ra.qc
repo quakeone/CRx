@@ -553,6 +553,10 @@ float () ra_next_player_ready =
 			{
 				player.ca_player_flag = PF_READY;
 				enough_players = 1;
+				if (boss.round != 1)
+				{
+					bprint2 (player.netname, " is the next challenger\n");
+				}
 			}
 			player = player.chain_gang;
 		}

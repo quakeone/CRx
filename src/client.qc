@@ -1352,7 +1352,7 @@ void() PlayerPreThink =
 		if (clanring_playmode & CLANRING_CA_MODE)
 		{
 			if (self.style & CLANRING_CONNECTED)
-			{	
+			{
 				if (self.team != (self.team2 + 1))
 				{		
 					if (self.next_team == world)
@@ -1374,14 +1374,14 @@ void() PlayerPreThink =
 					{	
 						setcolour(self, self.team2, self.team2);
 					}
-				}			
-				
-				if (boss.timetofight == TRUE)
+				}
+			}		
+			
+			if (boss.timetofight == TRUE)
+			{
+				if ((self.ca_player_flag == PF_PLAYING) && (self.style & CLANRING_CONNECTED))//v1.97 fix lagouts.
 				{
-					if ((self.ca_player_flag == PF_PLAYING) && (self.style & CLANRING_CONNECTED))//v1.97 fix lagouts.
-					{
-						self.takedamage = DAMAGE_AIM;		
-					}
+					self.takedamage = DAMAGE_AIM;		
 				}
 			}
 		}
@@ -1427,7 +1427,7 @@ void() PlayerPreThink =
 		clear_afk_status(self);
 	}
 
-	if (self.style & CLANRING_OBSERVER || (mode_is_arena() && IS_CA_OBSERVER(self)))
+	if (self.style & CLANRING_OBSERVER)
 	{
 		observer_pre_think ();
 		return;

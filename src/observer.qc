@@ -1549,6 +1549,7 @@ void () observer_update_display =
 	{
 		rtime = ceil(self.respawntime - time);
 		respawn_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
+		self.delay = time + 0.25; //update display a little quicker while waiting to spawn
 	}
 	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)
 			&& (boss.wait == 0) && (self.next_team != world))
@@ -1890,6 +1891,31 @@ void () observer_pre_think =
 		if (!(mode_is_arena()))
 			observer_get_target(); //WTF is this used for?
     }
+
+	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0))
+	{
+		if (self.respawntime > 0) //needed?
+		{
+			if (time >= self.respawntime)
+			{
+				observer_end ();
+				bprint2(self.netname, " has respawned\n");
+				self.next_team.teamalive += 1;
+				if (self.next_team.teamalive >= self.next_team.teamtotal)
+				{
+					self.next_team.nextspawn = 0;
+				}
+				return;
+			}
+			else
+			{
+				if ((self.next_team.nextspawn == 0) || (self.next_team.nextspawn > self.respawntime))
+				{
+					self.next_team.nextspawn = self.respawntime;
+				}
+			}
+		}
+	}
 };
 
 //

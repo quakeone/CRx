@@ -816,10 +816,12 @@ void () clanring_show_mode =
 	}
 	else
 	{
-		if (clanring_playmode & CLANRING_CA_MODE)
+		if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+			sprint(self.owner, "clan arena wipeout mode\n");
+		else if (clanring_playmode & CLANRING_CA_MODE)
 			sprint(self.owner, "clan arena mode\n");
 		else if (clanring_playmode & CLANRING_DMM4_MODE)
-			sprint(self.owner, "1v1 duel\n");
+			sprint(self.owner, "dmm4 duel mode\n");
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			sprint(self.owner, "airshot mode\n");
 		else if (clanring_playmode & CLANRING_RA_MODE)

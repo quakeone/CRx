@@ -290,7 +290,7 @@ void(entity targ, entity attacker) Killed =
 			//TODO: too many messages?
 			if (targ.next_team.teamalive > 1)
 			{
-				rtime = get_wipeout_respawn(targ.rounddeaths);
+				rtime = wipeout_get_respawn(targ.rounddeaths);
 				bprint4(targ.netname, " will respawn in ", ftos(rtime), " seconds\n");
 			}
 		}
