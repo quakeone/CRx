@@ -2311,7 +2311,7 @@ void(entity targ, entity attacker) ClientObituary =
 				else
 				{
 					//ctf match mode kill bonuses
-					if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_MATCH_MODE))
+					if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (!(clanring_playmode & CLANRING_PRACTICE_MODE)))
 					{
 						if (((targ.flag_carrier) && (targ.team != attacker.team)))
 						{
