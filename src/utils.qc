@@ -236,6 +236,13 @@ void (string s1, string s2, string s3, string s4, string s5, string s6) oprint6 
 	}
 };
 
+float () mode_clan_arena =
+{
+	if ((clanring_playmode & CLANRING_CA_MODE) && (!(clanring_playmode & CLANRING_WIPEOUT_MODE)))
+		return TRUE;
+	return FALSE;
+}
+
 void (entity ent, float clientshirt, float clientpants) setcolour =
 {		
 	local float client;
