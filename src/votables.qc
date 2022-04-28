@@ -628,8 +628,11 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 	}
 
 	//clear warp_flags;
-	self.warp_episode=0;
-	self.warp_map=0;
+	if (self != world)	//R00k: Commands issued from server console (self = world); Vote will pass, and these variables will be cleared anyways. (avoid assignment to world entity crash) 
+	{
+		self.warp_episode=0;
+		self.warp_map=0;
+	}
 	request_gametype = newtype;
 	request_mode = newmode;
 	request_mapname = newmap;
