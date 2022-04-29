@@ -107,36 +107,29 @@ void() SetNewParms =
 	}
 	else
 	{
-		if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_TIMER_STARTED)))	//testing prewar fix
+		if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))	//Deathmatch
 		{
-			SetPracticeParms ();
+			parm1 = IT_SHOTGUN | IT_AXE;
+			parm2 = 100;
+			parm3 = 0;
+			parm4 = 25;
+			parm5 = 0;
+			parm6 = 0;
+			parm7 = 0;
+			parm8 = IT_SHOTGUN;
+			parm9 = 0;
 		}
 		else
 		{
-			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
-			{
-				parm1 = IT_SHOTGUN | IT_AXE;
-				parm2 = 100;
-				parm3 = 0;
-				parm4 = 25;
-				parm5 = 0;
-				parm6 = 0;
-				parm7 = 0;
-				parm8 = IT_SHOTGUN;
-				parm9 = 0;
-			}
-			else
-			{
-				parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
-				parm2 = 100;
-				parm3 = 50;
-				parm4 = 25;
-				parm5 = 0;
-				parm6 = 0;
-				parm7 = 0;
-				parm8 = IT_SHOTGUN;
-				parm9 = 30;
-			}
+			parm1 = IT_SHOTGUN | IT_AXE | IT_HOOK | IT_ARMOR1;	//Capture the Flag
+			parm2 = 100;
+			parm3 = 50;
+			parm4 = 25;
+			parm5 = 0;
+			parm6 = 0;
+			parm7 = 0;
+			parm8 = IT_SHOTGUN;
+			parm9 = 30;
 		}
 	}
  
@@ -171,7 +164,7 @@ void() SetNewParms2 =
 	}
 	else
 	{
-		if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_TIMER_STARTED)))	//R00k: prewar! (or whatever we call it) aka BOSHMODeA
+		if ((clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_state & CLANRING_MATCH_STARTED)))	//R00k: prewar! (or whatever we call it) aka BOSHMODeA
 		{
 			SetPracticeParms ();
 		}
