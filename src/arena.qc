@@ -44,6 +44,10 @@ void () arena_precache =
 	precache_sound ("ra/welldone.wav");
 	precache_sound ("ra/gong.wav");	
 	precache_sound ("ambience/thunder1.wav");
+	precache_sound ("ra/itembk3.wav");
+	//precache_sound ("ra/stilltry.wav");
+	//precache_sound ("ra/pathetic.wav");
+	precache_sound ("ra/lastone.wav");
 }
 
 void () arena_init_world =
@@ -770,9 +774,9 @@ void () im_dead_now_what =
 			self.next_team.teamalive -= 1;
 			if (self.next_team.teamalive < 1)
 			{
-				//TODO: show this?
-				tmp = strings_get_teamname(self.team2);
-				bprint3 ("The ", tmp, " has been \bwiped out\b\n")
+				tmp = strings_get_teamname(self.next_team.team2);
+				bprint3 ("The ", tmp, " has been \bwiped out\b\n");
+				sound (world, CHAN_VOICE, "ra/laugh.wav", 1, ATTN_NONE);
 
 				e = self.next_team.chain_gang;
 				while (e)
@@ -784,6 +788,11 @@ void () im_dead_now_what =
 			}
 			else
 			{
+				if (self.next_team.teamalive == 1)
+				{
+					sound(world, CHAN_AUTO, "ra/lastone.wav", 1, ATTN_NONE);
+				}
+
 				//set player's respawn and update team nextspawn for huds
 				self.rounddeaths = (self.rounddeaths + 1);
 				self.respawntime = (time + wipeout_get_respawn(self.rounddeaths));
@@ -961,7 +970,7 @@ void(float whichteam) Join_Team =
 		}
 		else
 		{
-			//sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
+			sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
 			sprint (self, "The maximum amount of teams exists.\n");
 			return;
 		}
@@ -970,7 +979,7 @@ void(float whichteam) Join_Team =
 	{
 		if (number_teammates (pteam) == boss.max_players)
 		{
-			//sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
+			sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
 			sprint (self, "That team is \bfull\b.\n");
 			return;
 		}
@@ -1485,26 +1494,6 @@ void() arena_reset_player =
 	self.mdl	 		= string_null;
 };
 
-void() arena_gib_player =
-{
-	if (!(IS_CA_OBSERVER(self)) && (self.next_team != world))
-	{
-		self.health = -99;
-		GibPlayer();
-		self.ca_player_flag = 0;
-		self.deadflag = DEAD_NO;
-
-		self.oflags = self.oflags - (self.oflags & OBSERVER_FLY);
-		self.oflags = self.oflags - (self.oflags & OBSERVER_CHASE);
-		self.oflags = self.oflags - (self.oflags & OBSERVER_DEMO);
-		self.oflags = self.oflags - (self.oflags & OBSERVER_CAMERA);
-		self.movetarget = world;
-
-		self.think = respawn;
-		self.nextthink = time + 3;
-	}
-}
-
 void() arena_restart_player =
 {
 	clear_name();
@@ -1555,6 +1544,12 @@ void () report_mvp_game =
 	smvp = ftos(mvp);
 	announce4(name," was the \bmatch\b MVP with ",smvp," points of damage given.");
 };
+
+// void() do_sound_sweep =
+// {
+// 	sound(world, CHAN_AUTO, "ra/pathetic.wav", 1, ATTN_NONE);
+// 	remove(self);
+// };
 
 void () arena_match_end =
 {
@@ -1614,6 +1609,11 @@ void () arena_match_end =
 	bprint ("The match is over\n");//required for Qrack cl_autodemo 2
 
 	sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+
+	// if ((boss.round == 5) && (team_first_place != world) && (team_first_place.wins == 5))
+	// {
+	// 	utils_make_scheduled_event(do_sound_sweep, 2);
+	// }
 
 	boss.round 		 = 1;
 	boss.count 		 = 10;
@@ -1935,7 +1935,7 @@ void(float whichteam) Join_Queue =
 	}
 	else
 	{
-		//sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
+		sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
 		sprint (self, "The maximum amount of teams exists.\n");
 		return;
 	}

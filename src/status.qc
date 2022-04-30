@@ -246,6 +246,8 @@ string (entity e) wipeout_get_teamstatus =
 
 	if (e.teamalive == e.teamtotal)
 		talive = ftos(e.teamalive);
+	else if (e.teamalive <= 1)
+		talive = "\b1\b";
 	else
 		talive = strings_ftos_gold(e.teamalive);
 

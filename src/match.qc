@@ -71,7 +71,7 @@ float() match_prewar =
 	
 		return FALSE;
 
-	if ((clanring_playmode & CLANRING_MATCH_MODE)&&((clanring_state & CLANRING_TIMER_STARTED)))
+	if ((clanring_playmode & CLANRING_MATCH_MODE)&&((clanring_state & CLANRING_MATCH_STARTED)))
 		return FALSE;
 	else
 		return TRUE;
@@ -648,6 +648,7 @@ void() match_begin =
 
 	announce("The match has begun!");//Moved up here for autodemo
 
+	utils_do_projectiles(SUB_Remove);
 	utils_do_players(match_gib_player);//3.19k : placed before rune remove
 
 	if (clanring_playmode & CLANRING_RUNES)

@@ -157,6 +157,14 @@ void () arena_main_loop =
 					local string stmp;
 					stmp = (report_winning_team());
 					bprint2 (stmp, "\n");
+
+					// if ((boss.round == 5) && (team_first_place != world))
+					// {
+					// 	if (team_first_place.wins == 4)
+					// 	{
+					// 		sound(world, CHAN_AUTO, "ra/stilltry.wav", 1, ATTN_NONE);
+					// 	}
+					// }
 				}
 			}
 			else
