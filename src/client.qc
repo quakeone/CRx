@@ -445,14 +445,6 @@ void() respawn =
 	updatename(self, self.netname);	
 	
 	PutClientInServer ();
-
-	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
-	{
-		self.invincible_finished 	= time + 2;
-		self.invincible_time 		= 1;
-		self.effects = self.effects | EF_DIMLIGHT;
-		self.effects = self.effects | EF_RED;
-	}
 };
 /*
 ============
@@ -822,8 +814,16 @@ void() PutClientInServer =
 	
 	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
-		self.health = 250;
-		self.max_health = 250;
+		if ((self.ca_player_flag == PF_PLAYING) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0))
+		{
+			self.health = 250;
+			self.max_health = 250;
+
+			self.invincible_finished 	= time + 2;
+			self.invincible_time 		= 1;
+			self.effects = self.effects | EF_DIMLIGHT;
+			self.effects = self.effects | EF_RED;
+		}
 	}
 
 	W_SetCurrentAmmo ();

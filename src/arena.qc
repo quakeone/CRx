@@ -44,6 +44,8 @@ void () arena_precache =
 	precache_sound ("ra/welldone.wav");
 	precache_sound ("ra/gong.wav");	
 	precache_sound ("ambience/thunder1.wav");
+	precache_sound ("ra/itembk3.wav");
+	precache_sound ("ra/lastone.wav");
 }
 
 void () arena_init_world =
@@ -783,6 +785,11 @@ void () im_dead_now_what =
 			}
 			else
 			{
+				if (self.next_team.teamalive == 1)
+				{
+					sound(world, CHAN_AUTO, "ra/lastone.wav", 1, ATTN_NONE);
+				}
+
 				//set player's respawn and update team nextspawn for huds
 				self.rounddeaths = (self.rounddeaths + 1);
 				self.respawntime = (time + wipeout_get_respawn(self.rounddeaths));
@@ -960,7 +967,7 @@ void(float whichteam) Join_Team =
 		}
 		else
 		{
-			//sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
+			sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
 			sprint (self, "The maximum amount of teams exists.\n");
 			return;
 		}
@@ -969,7 +976,7 @@ void(float whichteam) Join_Team =
 	{
 		if (number_teammates (pteam) == boss.max_players)
 		{
-			//sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
+			sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
 			sprint (self, "That team is \bfull\b.\n");
 			return;
 		}
@@ -1484,26 +1491,6 @@ void() arena_reset_player =
 	self.mdl	 		= string_null;
 };
 
-void() arena_gib_player =
-{
-	if (!(IS_CA_OBSERVER(self)) && (self.next_team != world))
-	{
-		self.health = -99;
-		GibPlayer();
-		self.ca_player_flag = 0;
-		self.deadflag = DEAD_NO;
-
-		self.oflags = self.oflags - (self.oflags & OBSERVER_FLY);
-		self.oflags = self.oflags - (self.oflags & OBSERVER_CHASE);
-		self.oflags = self.oflags - (self.oflags & OBSERVER_DEMO);
-		self.oflags = self.oflags - (self.oflags & OBSERVER_CAMERA);
-		self.movetarget = world;
-
-		self.think = respawn;
-		self.nextthink = time + 3;
-	}
-}
-
 void() arena_restart_player =
 {
 	clear_name();
@@ -1934,7 +1921,7 @@ void(float whichteam) Join_Queue =
 	}
 	else
 	{
-		//sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
+		sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
 		sprint (self, "The maximum amount of teams exists.\n");
 		return;
 	}
