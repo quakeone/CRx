@@ -570,7 +570,7 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 			sprint(self, "Already in Capture The Flag mode\n");
 			return;
 		}
-		else if (newtype == 2 && clanring_playmode & CLANRING_CA_MODE && newmode < 0 && newmap == "")
+		else if (newtype == 2 && (mode_clan_arena()) && newmode < 0 && newmap == "")
 		{
 			sprint(self, "Already in Clan Arena mode\n");
 			return;
@@ -628,8 +628,11 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 	}
 
 	//clear warp_flags;
-	self.warp_episode=0;
-	self.warp_map=0;
+	if (self != world)
+	{
+		self.warp_episode=0;
+		self.warp_map=0;
+	}
 	request_gametype = newtype;
 	request_mode = newmode;
 	request_mapname = newmap;

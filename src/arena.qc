@@ -773,6 +773,7 @@ void () im_dead_now_what =
 			if (self.next_team.teamalive < 1)
 			{
 				bprint3 ("The ", self.next_team.netname, " has been \bwiped out\b\n");
+				sound (world, CHAN_VOICE, "ra/laugh.wav", 1, ATTN_NONE); //R00k, this might be annoying?
 
 				e = self.next_team.chain_gang;
 				while (e)
