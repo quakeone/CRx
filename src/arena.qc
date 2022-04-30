@@ -45,8 +45,6 @@ void () arena_precache =
 	precache_sound ("ra/gong.wav");	
 	precache_sound ("ambience/thunder1.wav");
 	precache_sound ("ra/itembk3.wav");
-	//precache_sound ("ra/stilltry.wav");
-	//precache_sound ("ra/pathetic.wav");
 	precache_sound ("ra/lastone.wav");
 }
 
@@ -774,9 +772,7 @@ void () im_dead_now_what =
 			self.next_team.teamalive -= 1;
 			if (self.next_team.teamalive < 1)
 			{
-				tmp = strings_get_teamname(self.next_team.team2);
-				bprint3 ("The ", tmp, " has been \bwiped out\b\n");
-				sound (world, CHAN_VOICE, "ra/laugh.wav", 1, ATTN_NONE);
+				bprint3 ("The ", self.next_team.netname, " has been \bwiped out\b\n");
 
 				e = self.next_team.chain_gang;
 				while (e)
@@ -1545,12 +1541,6 @@ void () report_mvp_game =
 	announce4(name," was the \bmatch\b MVP with ",smvp," points of damage given.");
 };
 
-// void() do_sound_sweep =
-// {
-// 	sound(world, CHAN_AUTO, "ra/pathetic.wav", 1, ATTN_NONE);
-// 	remove(self);
-// };
-
 void () arena_match_end =
 {
 	local string temp, t2="";//, mc;
@@ -1609,11 +1599,6 @@ void () arena_match_end =
 	bprint ("The match is over\n");//required for Qrack cl_autodemo 2
 
 	sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
-
-	// if ((boss.round == 5) && (team_first_place != world) && (team_first_place.wins == 5))
-	// {
-	// 	utils_make_scheduled_event(do_sound_sweep, 2);
-	// }
 
 	boss.round 		 = 1;
 	boss.count 		 = 10;
