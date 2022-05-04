@@ -1006,7 +1006,7 @@ void () clanring_client_connect =
 		// Get rid of the new client flag
 		parm10	= parm10 - (parm10 & CLANRING_NEW_CLIENT);
 		// Set default observer flags
-		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_WALK | OBSERVER_COMMENTARY;
+		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_DEMO | OBSERVER_COMMENTARY;
 
 		parm13 = 0;
 		
