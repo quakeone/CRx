@@ -578,11 +578,11 @@ void () clanring_set_warpaliases =
 	self = self.owner;
 
 	//send map warp aliases
-	for (ep_index = 1; ep_index < 10; ep_index += 1)
+	for (ep_index = 1; ep_index < 16; ep_index += 1)
 	{
-		for (index = 1 ; index < 10 ; index += 1)
+		for (index = 1 ; index < 16 ; index += 1)
 		{
-			n = (ep_index * 10) + index;
+			n = (ep_index * 15) + index;
 			if (warpmap[n].name != "")
 			{
 				stuffcmd(self, sprintf("alias %s cmd %s\n", warpmap[n].name, warpmap[n].name));

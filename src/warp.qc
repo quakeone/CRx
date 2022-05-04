@@ -14,9 +14,13 @@ void() warp_menu_top =
 	local string number;
 	
 	sprint(self,"Ÿ\n");
-	for (index = 0 ; index < 9 ; index += 1)
+	for (index = 0 ; index < 15 ; index += 1)
 	{
-		number = strings_ftos_gold(index+1);
+		if (index > 8)
+			number = strings_ftos_gold(index+1);
+		else
+			number = sprintf("%s ", strings_ftos_gold(index+1));
+		
 		if (warpmenutop[index] != "")
 		{
 			sprint(self,(sprintf(" %s %s\n", number, warpmenutop[index])));
@@ -35,10 +39,13 @@ void() warp_show_map_menu =
 	local string number, name;
 	
 	sprint(self,"Ÿ\n");
-	for (index = 1 ; index < 10 ; index += 1)
+	for (index = 1 ; index < 16 ; index += 1)
 	{
-		n = (self.warp_episode * 10) + index;
-		number = strings_ftos_gold(index);
+		n = (self.warp_episode * 15) + index;
+		if (index > 9)
+			number = strings_ftos_gold(index);
+		else
+			number = sprintf("%s ", strings_ftos_gold(index));
 		if (warpmap[n].name != "")
 		{
 			name = strconv(0,2,2,warpmap[n].name);

@@ -1369,11 +1369,11 @@ vector (vector m1, vector m2) Rvec =
 float(string maparg) found_in_warp_list =
 {
 	local float ep_index, index, n, mapfound = FALSE;
-	for (ep_index = 1; ep_index < 10; ep_index += 1)
+	for (ep_index = 1; ep_index < 16; ep_index += 1)
 	{
-		for (index = 1 ; index < 10 ; index += 1)
+		for (index = 1 ; index < 16 ; index += 1)
 		{
-			n = (ep_index * 10) + index;
+			n = (ep_index * 15) + index;
 			if (warpmap[n].name != "" && warpmap[n].name == maparg)
 			{
 				mapfound = TRUE;
