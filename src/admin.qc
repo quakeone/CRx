@@ -1262,6 +1262,8 @@ void() admin_impulse =
 		votables_select_overtime();
 	else if (self.impulse == 217)
 		votables_force_start();
+	else if (self.impulse == 218)
+		votables_request_set_weaponstay();
 	else if (self.impulse == 221)
 		votables_request_set_quad();
 	else if (self.impulse == 222)

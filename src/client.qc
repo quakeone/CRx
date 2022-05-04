@@ -2793,18 +2793,6 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			votables_request_set_gametype_mode_map(3, -1, "");
 			return;
-		case "amphi":
-			votables_request_set_gametype_mode_map(-1, -1, "amphi"); //TODO: REMOVE FOR TESTING
-			break;
-		case "midair":
-			votables_request_set_gametype_mode_map(-1, -1, "midair"); //TODO: REMOVE FOR TESTING
-			break;
-		case "povdmm4":
-			votables_request_set_gametype_mode_map(-1, -1, "povdmm4"); //TODO: REMOVE FOR TESTING
-			break;
-		case "endif":
-			votables_request_set_gametype_mode_map(-1, -1, "endif"); //TODO: REMOVE FOR TESTING
-			break;
 		default:
 			if (found_in_warp_list(arg0))
 			{
