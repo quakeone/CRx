@@ -13,6 +13,7 @@ float request_overtime;		// Used for requesting a new overtime
 float request_gibs;         // Used to set gib level
 float request_mode;         // Used to request a new mode
 float request_gametype;		// Used to request a new game type
+float request_weaponstay;   // Used to request weaponstay
 
 void() UnHookPlayer;
 
@@ -30,6 +31,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias w5 \"wait;wait;wait;wait;wait\"\n");
 	stuffcmd(self, "alias sethook impulse 202\n");
 	stuffcmd(self, "alias setrunes impulse 203\n");
+	stuffcmd(self, "alias weaponstay impulse 218\n");
 	stuffcmd(self, "alias force impulse 217\n");
 	// toggle faststarts	
 	stuffcmd(self, "alias faststart impulse 209\n");
@@ -217,7 +219,7 @@ void() votables_request_change_level =
 		return;
 	}
 
-	level = (self.warp_episode * 10) + (self.warp_map);//new r00k
+	level = (self.warp_episode * 15) + (self.warp_map);//new r00k
 	newmap = warpmap[level].name;
 
 	//clear warp_flags;
@@ -342,7 +344,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
 
-			//newmapname = "dm3";
+			newmapname = "dm3";
 		}
 		else if (request_gametype == 1)
 		{
@@ -355,7 +357,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Capture The Flag\n");
 
-			//newmapname = "ctf1";
+			newmapname = "ctf1";
 		}
 		else if (request_gametype == 2)
 		{
@@ -366,7 +368,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena\n");
 
-			//newmapname = "dm3"; //R00k: disabled this for testing on a single map, for now.
+			newmapname = "dm3";
 		}
 		else if (request_gametype == 3)
 		{
@@ -413,7 +415,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena Wipeout\n");
 
-			//newmapname = "dm3";
+			newmapname = "dm3";
 		}
 
 		utils_set_cvar ("samelevel", clanring_playmode);
@@ -723,6 +725,56 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 
 		if (vote_init(vote_title_string, vote_string, votables_set_gametype_mode_map))
 		{
+			vote_yes();
+		}
+	}
+};
+
+void() votables_set_weaponstay =
+{
+	if (request_weaponstay)
+	{
+		cvar_set("deathmatch", "3");
+		deathmatch = 3;
+		utils_do_weapons(SUB_regen);
+		bprint("Deathmatch set to \3\n");
+	}
+	else
+	{
+		cvar_set("deathmatch", "1");
+		deathmatch = 1;
+		bprint("Deathmatch set to \1\n");
+	}
+};
+
+void () votables_request_set_weaponstay =
+{
+	local string temp;
+	local float newweaponstay;
+
+	if (match_in_progress())
+	{
+		sprint(self, "Cannot change deathmatch mode while match is in progress.\n");
+		return;
+	}
+
+	if (cvar("deathmatch") == 3)
+		newweaponstay = 0;
+	else
+		newweaponstay = 1;
+
+    // Do it right away if we're an administrator, otherwise vote
+	if (self.style & CLANRING_ADMINISTRATOR)
+	{
+		request_weaponstay = newweaponstay;
+		votables_set_weaponstay ();
+	}
+	else
+	{
+		temp = (newweaponstay) ? "\bon\b" : "\boff\b";
+		if (vote_init("change weaponstay to ", temp, votables_set_weaponstay))
+		{
+			request_weaponstay = newweaponstay;
 			vote_yes();
 		}
 	}

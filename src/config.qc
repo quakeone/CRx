@@ -471,7 +471,7 @@ void () exec_warp_main_menu =
 		return;
 	}
 
-	while ((line = fgets(f)) && (i < 12))
+	while ((line = fgets(f)) && (i < 15))
 	{
 		float argc = tokenize(line);
 		if (!argc)
@@ -488,7 +488,7 @@ void() exec_warp_cfg =
 {
 	filestream f = fopen("configs/warp.cfg", FILE_READ);
 	string line = "", mapfile = "";
-	float menunum = 1, level = 0, mapnum = 0;//Ya, 0 - 10 are reserved. warpmap[11] == e1m1. (menu1, map1)
+	float menunum = 1, level = 0, mapnum = 0;//Ya, 0 - 15 are reserved. warpmap[16] == e1m1. (menu1, map1)
 	
 	if (f < 0)
 	{
@@ -504,7 +504,7 @@ void() exec_warp_cfg =
 		mapfile = argv(0);
 		
 		if (mapfile == "//" || mapfile == "#" ) continue;	// Skip comments
-		if ((mapfile == "****") || (level > 9))
+		if ((mapfile == "****") || (level > 15))
 		{
 			menunum += 1;
 			level = 0;
@@ -512,7 +512,7 @@ void() exec_warp_cfg =
 		}
 
 		level += 1;
-		mapnum = (menunum * 10) + level;
+		mapnum = (menunum * 15) + level;
 
 		warpmap[mapnum].name = strzone(mapfile);
 		warpmap[mapnum].title = strzone(fgets(f));

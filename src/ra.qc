@@ -458,7 +458,7 @@ void () ra_leave_queue =
 	if (self.next_team == self)
 	return;
 
-	bprint4 (self.netname, "\b has left the queue\n");
+	bprint2 (self.netname, "\b has left the queue\n");
 
 	remove_player_from_chain(self.next_team, self);
 	remove_player_from_stat_list(self.next_team, self);

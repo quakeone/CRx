@@ -1073,6 +1073,21 @@ void (void () dofunc) utils_do_items =
 };
 
 //
+//  D O  W E A P O N S
+//
+//  Do the same thing to all respawnable weapons.
+//
+void (void () dofunc) utils_do_weapons =
+{
+    utils_do_item(dofunc, "weapon_nailgun");
+    utils_do_item(dofunc, "weapon_supernailgun");
+    utils_do_item(dofunc, "weapon_supershotgun");
+    utils_do_item(dofunc, "weapon_rocketlauncher");
+    utils_do_item(dofunc, "weapon_grenadelauncher");
+    utils_do_item(dofunc, "weapon_lightning");
+};
+
+//
 //  D O  P R O J E C T I L E S
 //
 //  Do the same thing to all rockets, grenades and nails.
@@ -1369,11 +1384,11 @@ vector (vector m1, vector m2) Rvec =
 float(string maparg) found_in_warp_list =
 {
 	local float ep_index, index, n, mapfound = FALSE;
-	for (ep_index = 1; ep_index < 10; ep_index += 1)
+	for (ep_index = 1; ep_index < 16; ep_index += 1)
 	{
-		for (index = 1 ; index < 10 ; index += 1)
+		for (index = 1 ; index < 16 ; index += 1)
 		{
-			n = (ep_index * 10) + index;
+			n = (ep_index * 15) + index;
 			if (warpmap[n].name != "" && warpmap[n].name == maparg)
 			{
 				mapfound = TRUE;
@@ -1637,4 +1652,13 @@ float () items_are_ready =
 	if ((clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED)) || (clanring_playmode & CLANRING_DMM4_MODE && boss.state != CA_MATCH_PLAYING))
 		return FALSE;
 	return TRUE;
+};
+
+float () match_in_progress =
+{
+	if ((clanring_playmode & CLANRING_MATCH_MODE) && (clanring_state & CLANRING_MATCH_STARTED))
+		return TRUE;
+	else if ((mode_is_arena()) && (boss.state != CA_MATCH_WAITING))
+		return TRUE;
+	return FALSE;
 };

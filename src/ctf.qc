@@ -259,9 +259,9 @@ void() TeamCaptureFlagTouch =
 				compare = (time - other.lefty);//stop the clock
 				if (other.lefty > 0)
 				{
-					bprint("\bcapture time ù");
+					bprint("\bcapture time \x90");
 					utils_bprint_time (compare);
-					bprint("ë\n");					
+					bprint("\x91\n");					
 					if (compare < other.captime) other.captime = compare;
 				}
 
@@ -270,7 +270,8 @@ void() TeamCaptureFlagTouch =
 				last_capture_team = other.team;
 
 				// no score/stats from prematch capture practice
-				if ((clanring_playmode & CLANRING_NORMAL_MODE) || (clanring_state & CLANRING_MATCH_STARTED))
+				if (((clanring_playmode & CLANRING_MATCH_MODE) && (clanring_state & CLANRING_MATCH_STARTED))
+					|| (clanring_playmode & CLANRING_NORMAL_MODE))
 				{
 					sound (world, CHAN_AUTO, self.noise2, 1, ATTN_NONE);
 					

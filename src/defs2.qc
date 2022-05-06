@@ -408,9 +408,9 @@ typedef struct
 	string	author; 
 }servermap_t;
 
-servermap_t warpmap[200];
+servermap_t warpmap[250];
 
-string warpmenutop[11]; // Customizable map categories for the warp menu contents.
+string warpmenutop[15]; // Customizable map categories for the warp menu contents.
 
 string default_nextmap;
 
