@@ -1523,6 +1523,8 @@ void (float tm, float tf) pqc_team_frags =
 			}
 			else
 			{
+				if (tf < 0)
+					tf = tf + 65536;
 				msg_entity = self;				
 				WriteByte (MSG_ONE, SVC_STUFFCMD);
 				WriteByte (MSG_ONE, MOD_PROQUAKE);
