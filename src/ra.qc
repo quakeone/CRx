@@ -590,32 +590,32 @@ void () ra_ready_players =
 	// 	arena_match_end();
 };
 
-void () ra_spawn_players =
-{
-	local entity 	pteam, player, tmp;
+// void () ra_spawn_players =
+// {
+// 	local entity 	pteam, player, tmp;
 
-	pteam = boss.next_team;
-	player = pteam.chain_gang;
+// 	pteam = boss.next_team;
+// 	player = pteam.chain_gang;
 
-	while (pteam != world)
-	{
-		while (player != world)
-		{
-			if (player.ca_player_flag == PF_READY)
-			{
-				tmp = self;
-				self = player;
-				observer_end ();
-				self = tmp;
-				player.dmg_given_round = 0;
-			}
-			player = player.chain_gang;
-		}
+// 	while (pteam != world)
+// 	{
+// 		while (player != world)
+// 		{
+// 			if (player.ca_player_flag == PF_READY)
+// 			{
+// 				tmp = self;
+// 				self = player;
+// 				observer_end ();
+// 				self = tmp;
+// 				player.dmg_given_round = 0;
+// 			}
+// 			player = player.chain_gang;
+// 		}
 
-		pteam = pteam.next_team;
-		player = pteam.chain_gang;
-	}
-};
+// 		pteam = pteam.next_team;
+// 		player = pteam.chain_gang;
+// 	}
+// };
 
 void() ra_reset_draw_player =
 {
