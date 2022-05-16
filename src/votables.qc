@@ -337,6 +337,9 @@ void() votables_set_gametype_mode_map =
 		if (request_gametype == 0)
 		{
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
+			if (!(clanring_playmode & CLANRING_NORMAL_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE)
+				 && !(clanring_playmode & CLANRING_MATCH_MODE))
+				clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
 			cvar_set("timelimit", "0");
 			votables_clear_arena_playmode_flags();
 			cvar_set("teamplay", "2");
@@ -351,6 +354,9 @@ void() votables_set_gametype_mode_map =
 			votables_clear_arena_playmode_flags();
 			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 				clanring_playmode = (clanring_playmode | CLANRING_CAPTURE_THE_FLAG);
+			if (!(clanring_playmode & CLANRING_NORMAL_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE)
+				 && !(clanring_playmode & CLANRING_MATCH_MODE))
+				clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
 			cvar_set("timelimit", "0");
 			cvar_set("teamplay", "1");
 			if (deathmatch == 4)

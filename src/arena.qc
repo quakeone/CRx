@@ -1615,7 +1615,10 @@ void () arena_match_end =
 	temp = ftos(boss.round);
 	localcmd("skill \"", temp, "\"\n");//this still used?
 
-	utils_make_scheduled_event(reset_match, 1);
+	if (clanring_playmode & CLANRING_RA_MODE)
+		NextLevel();
+	else
+		utils_make_scheduled_event(reset_match, 1);
 	pqc_match_time (0, 0);
 	pqc_match_reset();
 };
