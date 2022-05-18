@@ -127,6 +127,10 @@ void(entity player, float cast) Request_Poll_Vote =
 				Request_Poll_Cleanup();
 				return;
 			}
+			else
+			{
+				bprint(player.netname, " flipped their vote.\n");
+			}
 		}
 		else
 		{
@@ -135,12 +139,13 @@ void(entity player, float cast) Request_Poll_Vote =
 			return;
 		}
 	}
+
 	player.vote = cast;
 
 	if (player != clanring_request.owner)
 		bprint(player.netname, " voted.\n");
 
-	if ((cast == 1) && (Request_Poll_Tally(cast) == TRUE)) // majority YES
+	if ((cast == 1) && ((Request_Poll_Tally(cast) == TRUE)||(player.style & CLANRING_ADMINISTRATOR))) // majority YES
 	{
 		clanring_request.touch();
 		sound(world, CHAN_AUTO, "misc/runekey.wav", 1, ATTN_NONE);
@@ -148,7 +153,7 @@ void(entity player, float cast) Request_Poll_Vote =
 	}
 	else
 	{
-		if ((cast == 2) && (Request_Poll_Tally(cast) == TRUE)) // majority NO
+		if ((cast == 2) && ((Request_Poll_Tally(cast) == TRUE)||(player.style & CLANRING_ADMINISTRATOR))) // majority NO
 		{
 			sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
 			bprint("The request was declined.\n");
