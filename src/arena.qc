@@ -30,6 +30,7 @@ void () wipeout_try_spawn_item;
 void () respawn;
 void (entity pteam) ra_leave_next_queue;
 void (entity pteam) ra_join_next_queue;
+void () ra_next_player_ready;
 
 void () arena_precache =
 {
@@ -1611,6 +1612,7 @@ void () arena_match_end =
     gameover = FALSE;
 
 	boss.aborted = FALSE;
+	boss.draw = FALSE;
 
 	temp = ftos(boss.round);
 	localcmd("skill \"", temp, "\"\n");//this still used?
@@ -1628,6 +1630,9 @@ void () arena_match_end =
 void() arena_refresh_player =
 {
 	updatename(self,self.netname);
+
+	if (clanring_playmode & CLANRING_RA_MODE)
+		return; //bucksh0t: RA will handle this in ra_spawn_players
 
 	//R00K: Only respawn players that hadn't died
 	if (self.ca_player_flag == PF_PLAYING)
@@ -1671,10 +1676,14 @@ void() reset_round =
 	temp = ftos(boss.round);
 	localcmd("skill \"", temp, "\"\n");
 
+	if ((clanring_playmode & CLANRING_RA_MODE) && (boss.draw == FALSE))
+		ra_next_player_ready();
+
 	utils_do_arena_players(arena_refresh_player);
 
 	boss.state = CA_MATCH_ROUNDSTART;
 	boss.busy = FALSE;
+	boss.draw = FALSE;
 	remove(self);//delete temp ent that called this function
 };
 

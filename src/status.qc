@@ -290,7 +290,7 @@ void () WipeoutModePlayerUpdate =
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
 
-	self.laststattime = (time + .2);
+	self.laststattime = (time + .5);
 
 	e = boss.next_team;
 

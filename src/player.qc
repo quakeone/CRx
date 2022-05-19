@@ -564,22 +564,20 @@ void() PlayerDead =
 	}
 	else if (mode_is_arena())
 	{
-		self.think = respawn;
-		if (deathmatch == 4)
+		if (!gameover)			
 		{
-			if (!gameover)			
+			self.think = respawn;
+			if (deathmatch == 4)
 			{
-				if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait == 0))
-				{
-					self.movetarget = world;
-					self.nextthink = time + 2;
-				}
-				else
-					self.nextthink = time + 1;
+				self.nextthink = time + 1;
 			}
-			// else ??
+			else if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait == 0))
+			{
+				self.movetarget = world;
+				self.nextthink = time + 2;
+			}
+			else self.nextthink = time + 3; //default for ca mode.
 		}
-		else self.nextthink = time + 3; //default for ca mode.
 	}
 	else
 	{

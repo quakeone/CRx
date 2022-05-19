@@ -538,10 +538,10 @@ entity () ra_get_next_player =
 	return p;
 };
 
-float () ra_next_player_ready =
+void () ra_next_player_ready =
 {
 	local entity pteam, player;
-	local float enough_players = 0;
+	//local float player_ready = 0;
 
 	pteam = ra_get_next_player ();
 	if (pteam != world)
@@ -552,7 +552,7 @@ float () ra_next_player_ready =
 			if (player.style & CLANRING_CONNECTED)
 			{
 				player.ca_player_flag = PF_READY;
-				enough_players = 1;
+				//player_ready = 1;
 				if (boss.round != 1)
 				{
 					bprint2 (player.netname, " is the next challenger\n");
@@ -561,61 +561,61 @@ float () ra_next_player_ready =
 			player = player.chain_gang;
 		}
 	}
-	return enough_players;
+	//return player_ready;
 };
 
-void () ra_ready_players =
+void () ra_spawn_players =
 {
-	if (boss.round == 1)
+	local entity 	pteam, player, tmp;
+	local string tmpc = "";
+
+	pteam = boss.next_team;
+
+	while (pteam != world)
 	{
-		if (ra_next_player_ready())
+		player = pteam.chain_gang;
+		while (player != world)
 		{
-			if (ra_next_player_ready())
+			if (player.ca_player_flag == PF_READY)
 			{
-				return;
+				if (player.style & CLANRING_OBSERVER)
+				{
+					tmp = self;
+					self = player;
+					observer_end ();
+					self = tmp;
+				}
+				else
+				{
+					//if player hasn't been through observer_start yet (1v1) just respawn
+					tmp = self;
+					self = player;
+					respawn();
+					setcolour(self,self.team2,self.team2);
+					tmpc = ftos(self.team2);
+					stuffcmd(self,"color ");
+					stuffcmd(self,tmpc);
+					stuffcmd(self,";\n");
+					self = tmp;
+				}
+				player.dmg_given_round = 0;
 			}
+			else if (player.ca_player_flag == PF_PLAYING)
+			{
+				player.health = 100;
+				player.armorvalue = 200;
+				player.armortype = .8;
+				player.ammo_shells = 30;
+				player.ammo_nails = 80;
+				player.ammo_rockets = 30;
+				player.ammo_cells = 30;
+			}
+			player = player.chain_gang;
 		}
+
+		pteam = pteam.next_team;
 	}
-	else
-	{
-		if (ra_next_player_ready())
-		{
-			return;
-		}
-	}
-	//not enough players
-	// 	gameover = TRUE;
-	// 	boss.aborted = TRUE;
-	// 	boss.state = CA_MATCH_OVER;
-	// 	arena_match_end();
 };
-
-// void () ra_spawn_players =
-// {
-// 	local entity 	pteam, player, tmp;
-
-// 	pteam = boss.next_team;
-// 	player = pteam.chain_gang;
-
-// 	while (pteam != world)
-// 	{
-// 		while (player != world)
-// 		{
-// 			if (player.ca_player_flag == PF_READY)
-// 			{
-// 				tmp = self;
-// 				self = player;
-// 				observer_end ();
-// 				self = tmp;
-// 				player.dmg_given_round = 0;
-// 			}
-// 			player = player.chain_gang;
-// 		}
-
-// 		pteam = pteam.next_team;
-// 		player = pteam.chain_gang;
-// 	}
-// };
 
 void() ra_reset_draw_player =
 {
@@ -647,6 +647,31 @@ float () ra_players_alive =
 	return n;
 };
 
+float () ra_number_teams =
+{
+	local float n = 0.0;
+	local entity e,p;
+
+	e = boss.next_team;
+
+	while (e)
+	{
+		p = e.chain_gang;
+		while (p)
+		{
+			if (p.style & CLANRING_CONNECTED)
+			{
+				n = n + 1;
+				break;
+			}
+			p = p.chain_gang;
+		}
+		e = e.next_team;
+	}
+
+	return n;
+};
+
 void () rocket_arena_main_loop =
 {
 	if ((clanring_state & CLANRING_MATCH_PAUSED) && (!boss.unpausing))
@@ -665,7 +690,7 @@ void () rocket_arena_main_loop =
 
 	if (boss.state == CA_MATCH_PLAYING)
 	{
-		if (number_teams () > 1)
+		if (ra_number_teams () > 1)
 		{
 			if (ra_players_alive () < 2)
 			{
@@ -681,13 +706,13 @@ void () rocket_arena_main_loop =
 					if (ra_players_alive () == 0)
 					{
 						boss.round = (boss.round - 1);// repeat round
+						boss.draw = TRUE;
 						announce ("round is a \bdraw\b!");
 						utils_do_arena_players(ra_reset_draw_player);
 						utils_make_scheduled_event(reset_round,0.5);//fixed v.0.94b
 						return;
 					}
 					round_end();
-					ra_ready_players();
 				}
 			}
 		}
@@ -717,7 +742,7 @@ void () rocket_arena_main_loop =
 			{
 				if (boss.count == 8)
 				{
-					respawn_teams ();
+					ra_spawn_players ();
 					bprint ("\bround:\b ");
 					temp = ftos (boss.round);
 					bprint2 (temp,"\n");
@@ -784,11 +809,14 @@ void () rocket_arena_main_loop =
 				boss.timetofight	= FALSE;
 				boss.count 	= 10;
 				boss.wait 	= 0;
+				boss.draw = FALSE;
+				boss.busy = FALSE;
 				sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
 				utils_do_players(reset_frags);
 				Practice_Object_Remove();
 				boss.state = CA_MATCH_ROUNDSTART;
-				ra_ready_players(); //get first two players
+				ra_next_player_ready();
+				ra_next_player_ready();
 				pqc_match_reset();
 				find_pqc_teamscore_teams();							
 			}
