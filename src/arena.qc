@@ -1631,9 +1631,11 @@ void() arena_refresh_player =
 {
 	updatename(self,self.netname);
 
+	if (clanring_playmode & CLANRING_RA_MODE)
+		return; //bucksh0t: RA will handle this in ra_spawn_players
+
 	//R00K: Only respawn players that hadn't died
-	//bucksh0t: RA will handle this in ra_spawn_players
-	if ((self.ca_player_flag == PF_PLAYING) && !(clanring_playmode & CLANRING_RA_MODE))
+	if (self.ca_player_flag == PF_PLAYING)
 	{
 		self.ca_player_flag = PF_WAITING;
 		self.deadflag 	 	= DEAD_DYING;
