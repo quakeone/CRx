@@ -114,7 +114,7 @@ void() StartItem =
 	{
 		if (self.touch == weapon_touch)
 		{
-			self.effects = self.effects - (self.effects & self.effects);
+			self.effects = 0;
 			self.model = string_null;
 			self.solid = SOLID_NOT;
 			self.nextthink = 9999999; // must be really big for quaketv

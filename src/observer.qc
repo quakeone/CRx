@@ -1549,7 +1549,7 @@ void () observer_update_display =
 	{
 		rtime = ceil(self.respawntime - time);
 		respawn_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
-		self.delay = time + 0.25; //update display a little quicker while waiting to spawn
+		//self.delay = time + 0.25; //update display a little quicker while waiting to spawn, or causing lag ?
 	}
 	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)
 			&& (boss.wait == 0) && (self.next_team != world))

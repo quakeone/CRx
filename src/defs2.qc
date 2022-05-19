@@ -430,6 +430,7 @@ entity boss;
 .float busy;
 .float aborted;
 .float forced;
+.float draw;
 .float unpausing;
 .float allready;
 .float timetofight;
