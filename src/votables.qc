@@ -743,13 +743,13 @@ void() votables_set_weaponstay =
 		cvar_set("deathmatch", "3");
 		deathmatch = 3;
 		utils_do_weapons(SUB_regen);
-		bprint("Deathmatch set to \3\n");
+		bprint("Deathmatch set to \3 [weaponstay \bon\b]\n");
 	}
 	else
 	{
 		cvar_set("deathmatch", "1");
 		deathmatch = 1;
-		bprint("Deathmatch set to \1\n");
+		bprint("Deathmatch set to \1 [weaponstay \boff\b]\n");
 	}
 };
 
