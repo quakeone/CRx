@@ -481,6 +481,40 @@ void () clanring_init_world =
 	utils_make_scheduled_event(StartRuneSpawnStart, 2);
 	// fix the start teleport bug
 	utils_make_scheduled_event(clanring_remove_start_teleport, 3);
+
+	// woods lets set serverinfo playmode
+
+	if (clanring_playmode & CLANRING_PRACTICE_MODE)
+		forceinfokey(world, "playmode", "practice");
+
+	else if (clanring_playmode & CLANRING_NORMAL_MODE)
+		forceinfokey(world, "playmode", "normal");
+
+	else
+		forceinfokey(world, "playmode", "match");
+
+	// woods lets set serverinfo to current mode set in mod
+
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		forceinfokey(world, "mode", "airshot");
+
+	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+		forceinfokey(world, "mode", "wipeout");
+
+	else if (clanring_playmode & CLANRING_CA_MODE)
+		forceinfokey(world, "mode", "ca");	
+
+	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		forceinfokey(world, "mode", "ctf");
+
+	else if (clanring_playmode & CLANRING_DMM4_MODE)
+		forceinfokey(world, "mode", "dmm4");
+
+	else if (clanring_playmode & CLANRING_RA_MODE)
+		forceinfokey(world, "mode", "ra");
+
+	else
+		forceinfokey(world, "mode", "dm");	
 };
 
 //
