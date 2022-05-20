@@ -1682,7 +1682,7 @@ void () clanring_show_rules_prematch =
 		if (temp > 9)
 			s2 = sprintf("%s%s\n", "\btimelimit    ", ftos(temp));
 		else if (temp == 0)
-			s2 = "\btimelimit   \boff";
+			s2 = "\btimelimit   \boff\n";
 		else
 			s2 = sprintf("%s%s\n", "\btimelimit     ", ftos(temp));
 
@@ -1692,7 +1692,7 @@ void () clanring_show_rules_prematch =
 		else if (temp > 9)
 			s3 = sprintf("%s%s\n", "\bfraglimit    ", ftos(temp));
 		else if (temp == 0)
-			s3 = "\bfraglimit   \boff";	
+			s3 = "\bfraglimit   \boff\n";	
 		else
 			s3 = sprintf("%s%s\n", "\bfraglimit     ", ftos(temp));
 		
