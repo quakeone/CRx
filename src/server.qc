@@ -1964,7 +1964,9 @@ void () clanring_impulse =
 			afk_name();
 			self.style = self.style | CLANRING_AFK_CLIENT;
 			self.afk_time = time;
-		}		
+		}
+		else
+			clear_afk_status(self);
 	}
 	else if (self.impulse == 70)
 			self.statstate = -1;
