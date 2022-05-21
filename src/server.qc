@@ -276,6 +276,7 @@ void (entity client) clear_afk_status =
 		client.style = client.style - (client.style & CLANRING_AFK_CLIENT);
 	}
 	client.afk_time = time;	
+	stuffcmd(self, "setinfo afk no\n");// woods
 }
 
 void () W_Precache;
