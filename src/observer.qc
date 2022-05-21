@@ -724,7 +724,7 @@ entity (entity e) observer_find_target =
 	while (targ != e && (!targ || (targ.style & CLANRING_OBSERVER) || !(targ.style & CLANRING_CONNECTED)))
 		targ = find(targ, classname, "player");
 
-	stuffcmd(self, "setinfo observering \"");// woods
+    stuffcmd(self, "setinfo observing \"");// woods
     stuffcmd(self, targ.netname);
     stuffcmd(self, "\"\n");
 
