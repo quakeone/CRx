@@ -180,6 +180,7 @@ void () observer_walk_start =
 		sprint(self, "type 'headsup' for fullscreen display\n");
 */
 	stuffcmd(self, "setinfo observer walk\n");// woods
+	stuffcmd(self, "setinfo observing off\n");// woods
 	if (mode_is_arena())
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
@@ -200,7 +201,8 @@ void () observer_fly_start =
 	self.view_ofs = '0 0 22';
 	self.flags = self.flags | FL_ONGROUND;
 	self.waterlevel = 0;
-	stuffcmd(self, "setinfo observer fly\n");
+	stuffcmd(self, "setinfo observer fly\n");// woods
+	stuffcmd(self, "setinfo observing off\n");// woods
 /*
 	stuffcmd(self, "sm0\n");		// CRMOD - smoothing off
 	stuffcmd(self, "v_centerspeed 500\n");
@@ -603,6 +605,7 @@ void() observer_end =
 //	stuffcmd(self, "sm0\n");// CRMOD - smoothing off
 //	stuffcmd(self, "v_centerspeed 500\n");
 	stuffcmd(self, "setinfo observer off\n");// woods
+	stuffcmd(self, "setinfo observing off\n");// woods
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 100\n");
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
@@ -720,6 +723,11 @@ entity (entity e) observer_find_target =
 	targ = find(e, classname, "player");
 	while (targ != e && (!targ || (targ.style & CLANRING_OBSERVER) || !(targ.style & CLANRING_CONNECTED)))
 		targ = find(targ, classname, "player");
+
+	stuffcmd(self, "setinfo observering \"");// woods
+    stuffcmd(self, targ.netname);
+    stuffcmd(self, "\"\n");
+
 	return targ;
 };
 
