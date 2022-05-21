@@ -482,6 +482,10 @@ void () clanring_init_world =
 	// fix the start teleport bug
 	utils_make_scheduled_event(clanring_remove_start_teleport, 3);
 
+	// woods set serverinfo mod name
+
+	forceinfokey(world, "mod", "crx");
+
 	// woods lets set serverinfo playmode
 
 	if (clanring_playmode & CLANRING_PRACTICE_MODE)
