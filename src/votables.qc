@@ -340,9 +340,13 @@ void() votables_set_gametype_mode_map =
 			if (!(clanring_playmode & CLANRING_NORMAL_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE)
 				 && !(clanring_playmode & CLANRING_MATCH_MODE))
 				clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
+
 			cvar_set("timelimit", "0");
 			votables_clear_arena_playmode_flags();
-			cvar_set("teamplay", "2");
+		//R00k: force teamplay 0 as default. Match sets this later.
+			if (clanring_playmode & CLANRING_NORMAL_MODE)
+				cvar_set("teamplay", "0");
+
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
@@ -657,7 +661,7 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 
 		if (request_gametype == 0)
 		{
-			gametype_string = "Team DeathMatch";
+			gametype_string = "Team DeathMatch";//change to just DeathMatch? Normal is DM, FFA
 		}
 		else if (request_gametype == 1)
 		{
