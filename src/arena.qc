@@ -39,13 +39,16 @@ void () arena_precache =
 	precache_sound ("ra/3.wav");
 	precache_sound ("ra/fight.wav");
 	precache_sound ("ra/laugh.wav");
+	precache_sound ("ra/laugh2.wav");
+	precache_sound ("ra/laugh3.wav");
 	precache_sound ("ra/flawless.wav");
 	precache_sound ("ra/outstand.wav");	
-	precache_sound ("ra/excellent.wav");		
+	precache_sound ("ra/excellent.wav");	
 	precache_sound ("ra/welldone.wav");
 	precache_sound ("ra/gong.wav");	
 	precache_sound ("ambience/thunder1.wav");
 	precache_sound ("ra/itembk3.wav");
+	precache_sound ("ra/pathetic.wav");
 	precache_sound ("ra/lastone.wav");
 }
 
@@ -695,6 +698,9 @@ void () respawn_teams =
 				bprint4 (player.netname, " \bColor-Changed\b to: ", pteam.netname, "\n");
 				player.cc_queue = 0;
 				player.cc_queue_vote = 0;
+				player.frags = 0;
+				player.respawntime = 0;
+				player.rounddeaths = 0;
 			}
 
 			if (cp < boss.start_players)
@@ -751,6 +757,7 @@ void () im_dead_now_what =
 {
 	local string tmp = "";
 	local entity e;
+	local float prnd=0;
 
 	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
 		return;
@@ -774,7 +781,13 @@ void () im_dead_now_what =
 			if (self.next_team.teamalive < 1)
 			{
 				bprint3 ("The ", self.next_team.netname, " has been \bwiped out\b\n");
-				sound (world, CHAN_VOICE, "ra/laugh.wav", 1, ATTN_NONE); //R00k, this might be annoying?
+				prnd = floor(random() * 5) + 1;
+				if (prnd == 1)
+					sound (world, CHAN_VOICE, "ra/laugh2.wav", 1, ATTN_NONE);
+				else if (prnd == 2)
+					sound (world, CHAN_VOICE, "ra/laugh3.wav", 1, ATTN_NONE);
+				else
+					sound (world, CHAN_VOICE, "ra/laugh.wav", 1, ATTN_NONE); //R00k, this might be annoying?
 
 				e = self.next_team.chain_gang;
 				while (e)
@@ -1543,6 +1556,12 @@ void () report_mvp_game =
 	announce4(name," was the \bmatch\b MVP with ",smvp," points of damage given.");
 };
 
+void() do_sound_sweep =
+{
+	sound(world, CHAN_AUTO, "ra/pathetic.wav", 1, ATTN_NONE);
+	remove(self);
+};
+
 void () arena_match_end =
 {
 	local string temp, t2="";//, mc;
@@ -1601,6 +1620,11 @@ void () arena_match_end =
 	bprint ("The match is over\n");//required for Qrack cl_autodemo 2
 
 	sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+
+	if ((boss.round == 5) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
+	{
+		utils_make_scheduled_event(do_sound_sweep, 2);
+	}
 
 	boss.round 		 = 1;
 	boss.count 		 = 10;

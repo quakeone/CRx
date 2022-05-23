@@ -54,6 +54,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias practice cmd practice\n");
 	stuffcmd(self, "alias match cmd match\n");
 	stuffcmd(self, "alias dm cmd dm\n");
+	stuffcmd(self, "alias ffa cmd ffa\n");
 	stuffcmd(self, "alias ctf cmd ctf\n");
 	stuffcmd(self, "alias wipeout cmd wipeout\n");
 	stuffcmd(self, "alias ca cmd ca\n");
@@ -657,7 +658,16 @@ void(float newtype, float newmode, optional string newmap = "") votables_request
 
 		if (request_gametype == 0)
 		{
-			gametype_string = "Team DeathMatch";
+			if ((request_mode == 0) 
+				|| ((request_mode < 0) 
+					&& !(clanring_playmode & CLANRING_PRACTICE_MODE) 
+					&& !(clanring_playmode & CLANRING_MATCH_MODE)))
+			{
+				gametype_string = "Free For All";
+				mode = "";
+			}
+			else
+				gametype_string = "Team DeathMatch";
 		}
 		else if (request_gametype == 1)
 		{

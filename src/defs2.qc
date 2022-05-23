@@ -280,6 +280,7 @@ float  	last_capture_team;
 .float 	last_returned_flag;
 .float 	last_fragged_carrier;
 .float 	lastteamupdate;
+.float  leaderboardtime;
 
 //flagstats
 
@@ -291,6 +292,7 @@ float  	last_capture_team;
 .float 	fcdefenses;
 .float 	fcassists;
 .float	fcfrags;
+.float	fctime;
 
 //.float 	onteam;
 .float	true_kills;
@@ -413,6 +415,21 @@ servermap_t warpmap[250];
 string warpmenutop[15]; // Customizable map categories for the warp menu contents.
 
 string default_nextmap;
+
+typedef struct
+{
+	string player;
+	//string date;
+	float teamcolor;
+	float statvalue;
+}playerrecord_t;
+
+float PLAYER_RECORDS_MAX_COUNT = 3;
+playerrecord_t playerrecord[PLAYER_RECORDS_MAX_COUNT];
+playerrecord_t playerrecord2[PLAYER_RECORDS_MAX_COUNT];
+float new_player_record;
+float RECORD_LOW = 0;
+float RECORD_HIGH = 1;
 
 //Arena
 entity boss;

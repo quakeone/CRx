@@ -570,21 +570,39 @@ void() console_show_fstats =
 	local entity player;
 
 	player = find(world, classname, "player");//flagstats in normal mode too
-	
+
 	cprint("\"------------\"\n");
 	cprint("\" Flag Stats \"\n");
-	cprint("\"------------------------------------------------------\"\n");
-	cprint("\"flag |cap|def|rtn|fcd|fca|fck|  time  |     name      \"\n");
-	cprint("\"-----+---+---+---+---+---+---+--------+---------------\"\n");
+	cprint("\"-------------------------------------------\"\n");
+	cprint("\"flag |  time  |cap|  best  |     name      \"\n");
+	cprint("\"-----+--------+---+--------+---------------\"\n");
+
+	while (player)
+	{
+		if (!(player.style & CLANRING_OBSERVER))
+		{
+			cprint("\"  ");
+			utils_cprint_int3(player.fpickups);
+			localcmd("|");
+			utils_cprint_time(player.fctime);
+			localcmd("|");
+			utils_cprint_int3(player.fcaptures);
+			localcmd("|");
+			utils_cprint_time(player.captime);
+			localcmd3("| ", player.netname, "\"\n");
+		}
+		player = find(player, classname, "player");
+	}
+	cprint("\n");
+	cprint("\"-----------------------------------\"\n");
+	cprint("\"def|rtn|fcd|fca|fck|     name      \"\n");
+	cprint("\"---+---+---+---+---+---------------\"\n");
 
 	while (player)
 	{
 		if (!(player.style & CLANRING_OBSERVER))
 		{
 			cprint("\" ");
-			utils_cprint_int3(player.fpickups);
-			localcmd(" |");
-			utils_cprint_int3(player.fcaptures);
 			localcmd("|");
 			utils_cprint_int3(player.fdefenses);
 			localcmd("|");
@@ -595,8 +613,6 @@ void() console_show_fstats =
 			utils_cprint_int3(player.fcassists);
 			localcmd("|");
 			utils_cprint_int3(player.fcfrags);
-			localcmd("|");
-			utils_cprint_time(player.captime);
 			localcmd3("| ", player.netname, "\"\n");
 		}
 		player = find(player, classname, "player");

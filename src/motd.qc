@@ -171,6 +171,12 @@ void ()motd_arena_start =
 		motd_top2 = "\n\x85Airshot Mode\x85\n\n";
 		motd_top3 = "You can only be damaged while in the air.\nThe higher off the ground, the more\ndamage you will take.\n";
 		motd_top4 = "\n1 to join\n\n\n2 to leave\n\n";
+
+		if (playerrecord[0].statvalue > 0)
+		motd_top5 =	sprintf("\nGib Record: %s %s", ftos(rint(playerrecord[0].statvalue)), playerrecord[0].player);
+		
+		if (playerrecord2[0].statvalue > 0)
+		motd_top6 = sprintf("\nHighest Gib: %s %s", ftos(rint(playerrecord2[0].statvalue)), playerrecord2[0].player);
 	}
 	else
 		return;

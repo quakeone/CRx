@@ -1273,7 +1273,7 @@ PLAYER BACKPACKS
 void() BackpackTouch =
 {
 	local string s;
-	local float best, new, acount;
+	local float best, new, acount, rnd;
 	local entity stemp;
 
 	if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
@@ -1290,8 +1290,36 @@ void() BackpackTouch =
 
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
+		rnd = floor((random() * 8) + 1);
+		if (rnd == 5)
+		{
+			other.invincible_time = 1;
+			other.invincible_finished = time + 15;
+			other.effects = other.effects | EF_DIMLIGHT;
+			other.effects = other.effects | EF_RED;
+			other.items = other.items | IT_INVULNERABILITY;
+			bprint(other.netname);
+			bprint(" got pent protection\n");
+			sound (other, CHAN_ITEM, "items/protect.wav", 1, ATTN_NORM);
+		}
+		else if (rnd > 5)
+		{
+			other.invisible_time = 1;
+			other.invisible_finished = time + 15;
+			other.frame = 0;
+			other.items = other.items | IT_INVISIBILITY;
+			bprint(other.netname);
+			bprint(" is invisible\n");
+			sound (other, CHAN_ITEM, "items/inv1.wav", 1, ATTN_NORM);
+		}
+		else
+		{
+			other.health = other.health + 10;
+			if (other.health > 300)
+				other.health = 300;
+			sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
+		}
 		//other.arenapacks += 1;
-		sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
 		// remove the backpack, change self to the player
 		remove(self);
 		self = other;

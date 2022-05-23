@@ -1,3 +1,5 @@
+void () write_airshot_gib_stats;
+void (float t_statvalue, float t_teamcolor, string t_player) check_player_high_record;
 void () dmm4_init_world =
 {
 	local entity oself;
@@ -35,17 +37,46 @@ void () dmm4_init_world =
 
 void () dmm4_report_winner =
 {
+	local string winnername = "";
+	local float winnerteam = 0;
     arena_set_winning_team();
+
+	if (team_first_place == world)
+		return;
+	if (team_first_place.chain_gang != world)
+	{
+		winnername = team_first_place.chain_gang.netname;
+		winnerteam = team_first_place.chain_gang.team2;
+	}
+	else
+	{
+		winnername = team_first_place.netname;
+	}
 
 	if ((team_first_place.wins > team_second_place.wins))
 	{
-        bprint2(team_first_place.netname, " wins the match.\n");
+        bprint2(winnername, " wins the match.\n");
         bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
 	}
 	else
 	{
         bprint("The match was a draw\n");
         bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
+	}
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	{
+		new_player_record = 0;
+		check_player_high_record(team_first_place.wins, winnerteam, winnername);
+		if (new_player_record > 0)
+		{
+			if (new_player_record == 1)
+			{
+				bprint(winnername);
+				bprint(" set the new \bgib record\b\n");
+				sound (self, CHAN_VOICE, "ra/congrats.wav", 1, ATTN_NORM);
+			}
+			write_airshot_gib_stats();
+		}
 	}
 };
 
@@ -113,6 +144,7 @@ void () dmm4_main_loop =
 			{
 				if (boss.count == 9)
 				{
+					utils_do_item(SUB_Remove, "item_backpack");
 					arena_ready_players ();
 				}
 				else if (boss.count == 8)

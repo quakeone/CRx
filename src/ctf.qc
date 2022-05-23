@@ -5,6 +5,8 @@ void() vote_impulse;
 void() votables_disable_item;
 void() hurt_touch;
 void(entity client, float fragval) client_frag;
+void () write_capture_stats;
+void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record;
 
 void(entity flg) RegenFlag =
 {
@@ -129,6 +131,7 @@ void(entity flg) TeamDropFlag =
 		announce2(p.netname," ÏÔÛÙ the “≈ƒ flag!"); // red
 	}
 
+	p.fctime += (time - p.flag_since);
 
 	flg.owner      	= world;
 	flg.origin     	= p.origin - '0 0 16';	
@@ -191,7 +194,7 @@ void(entity player, float reset) TeamCaptureDropFlagOfPlayer =
 void() TeamCaptureFlagTouch =
 {
 	local entity p;
-	local float compare;
+	local float compare, i=0,j=0;
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
@@ -263,7 +266,24 @@ void() TeamCaptureFlagTouch =
 					utils_bprint_time (compare);
 					bprint("\x91\n");					
 					if (compare < other.captime) other.captime = compare;
+
+					if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+					{
+						new_player_record = 0;
+						check_player_low_record(compare, other.team, other.netname);
+						if (new_player_record > 0)
+						{
+							if (new_player_record == 1)
+								sound(world,CHAN_AUTO,"ra/congrats.wav",1,ATTN_NONE);
+							else if (new_player_record == 2)
+								sound(world,CHAN_AUTO,"ra/superb.wav",1,ATTN_NONE);
+							else if (new_player_record == 3)
+								sound(world,CHAN_AUTO,"ra/excell2.wav",1,ATTN_NONE);
+							write_capture_stats();
+						}
+					}
 				}
+				other.fctime += (time - other.flag_since);
 
 				other.items = other.items - (other.items & (IT_KEY1 | IT_KEY2));
 				last_flag_capture = time;
@@ -330,6 +350,10 @@ void() TeamCaptureFlagTouch =
 						p = find(p, classname, "player");
 					}
 				}
+				else if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+				{
+					other.leaderboardtime = time + 5;
+				}
 
 				other.flag_carrier = FALSE;// doesnt have a flag anymore.
 				TeamCaptureRegenFlags ();// respawn flags
@@ -369,7 +393,7 @@ void() TeamCaptureFlagTouch =
 	//centerprint(other, "Ÿœ’ «œ‘ ‘»≈ ≈Œ≈ÕŸ ∆Ã¡«\n\n“≈‘’“Œ ‘œ ¬¡”≈\n");
 	if ((clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_state & CLANRING_MATCH_STARTED)))
 	{
-		centerprint(other, "éématch has not begunùù\néù„·ÙıÚÂ†ÙÈÌÂ†ÙÚÈ·ÏÛëù");
+		centerprint(other, "éématch has not begunéé\n\x80\x81\bcapture time trials\b\x81\x82");
 	}
 
 	if ((!(clanring_playmode & CLANRING_MATCH_MODE)) || (clanring_state & CLANRING_MATCH_STARTED))

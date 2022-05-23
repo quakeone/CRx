@@ -181,7 +181,7 @@ Killed
 void(entity targ, entity attacker) Killed =
 {
 	local entity oself;
-	local float rtime;
+	local float rtime, as_sound = 0;
 
 	oself = self;
 	self = targ;
@@ -225,20 +225,22 @@ void(entity targ, entity attacker) Killed =
 				{
 					attacker.frags += 1;
 
-					if (targ.airborn_pos > 850)
+					if (targ.airborn_pos > 750)
 					{
 						bprint("\b[\bDEEPˆ‰SPACE\b]\b\n");
-						sound (self, CHAN_VOICE, "demon/ddeath.wav", 1, ATTN_NORM);
+						as_sound = 2;
 					}
-					else if (targ.airborn_pos > 650)
+					else if (targ.airborn_pos > 600)
 					{
 						bprint("\b[\b…Moon…Shot…\b]\b\n");
+						as_sound = 3;
 					}
-					else if (targ.airborn_pos > 450)
+					else if (targ.airborn_pos > 300)
 					{
 						bprint("\b[\bMax Air Gib\b]\b\n");
+						as_sound = 4;
 					}
-					else if (targ.airborn_pos > 250)
+					else if (targ.airborn_pos > 200)
 					{
 						bprint("\b[\bBig Air Gib\b]\b\n");
 					}
@@ -247,25 +249,44 @@ void(entity targ, entity attacker) Killed =
 						bprint("[Mid Air Gib]\n");
 					}
 
-					// if (targ.airborn_pos > highgibdist)
-					// {
-					// 	cvar_set("saved2", ftos(targ.airborn_pos));
-					// 	highgibdist = cvar("saved2");
-					// 	bprint(attacker.netname);
-					// 	bprint(" set the new \bhighest gib\b\n");
-					// 	sound (self, CHAN_VOICE, "misc/secret.wav", 1, ATTN_NORM);
-					// }
+
+					new_player_record = 0;
+					check_player_high_record2(targ.airborn_pos, other.team, other.netname);
+					if (new_player_record > 0)
+					{
+						if (new_player_record == 1)
+						{
+							bprint(attacker.netname);
+							bprint(" set the new \bhighest gib\b\n");
+							as_sound = 5;
+						}
+						write_airshot_height_stats();
+					}
 
 					if (boss.lip < 1)
 					{
 						if (attacker.super_damage_finished >= time)
-							sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
+						{
+							if (as_sound == 0)
+								as_sound = 1;
+						}
 
 						attacker.super_time = 1;
-						attacker.super_damage_finished = time + 3.5;
+						attacker.super_damage_finished = time + 3;
 
 						attacker.items = attacker.items | IT_QUAD;
 					}
+
+					if (as_sound == 1)
+						sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
+					else if (as_sound == 2)
+						sound (self, CHAN_VOICE, "ra/beyond.wav", 1, ATTN_NORM);
+					else if (as_sound == 3)
+						sound (self, CHAN_VOICE, "ra/gasp.wav", 1, ATTN_NORM);
+					else if (as_sound == 4)
+						sound (self, CHAN_VOICE, "ra/excell3.wav", 1, ATTN_NORM);
+					else if (as_sound == 5)
+						sound (self, CHAN_VOICE, "ra/congrats.wav", 1, ATTN_NORM);
 				}
 
 				attacker.next_team.wins += 1;
@@ -287,7 +308,7 @@ void(entity targ, entity attacker) Killed =
 	{
 		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
 		{
-			//TODO: too many messages?
+			//TODO: too many messages? or show [rounddeaths] in obituary?
 			if (targ.next_team.teamalive > 1)
 			{
 				rtime = wipeout_get_respawn(targ.rounddeaths);

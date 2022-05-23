@@ -332,6 +332,12 @@ void () clanring_init_world =
 	precache_sound("ogre/ogwake.wav");
 	precache_sound("shambler/ssight.wav");
 	precache_sound("soldier/sight1.wav");
+	precache_sound ("ra/gasp.wav");
+	precache_sound ("ra/beyond.wav");
+	precache_sound ("ra/excell2.wav");
+	precache_sound ("ra/excell3.wav");
+	precache_sound ("ra/superb.wav");
+	precache_sound ("ra/congrats.wav");
 
 	//	qsmack_init_server ();
 
@@ -710,6 +716,8 @@ void () clanring_set_aliases =
 	//stuffcmd(self, "alias vote-exit impulse 204\n");
 	stuffcmd(self, "alias faststart impulse 209\n");		
 	stuffcmd(self, "alias afk impulse 57\n");
+	stuffcmd(self, "alias captimes impulse 58\n");
+	stuffcmd(self, "alias highscores impulse 58\n");
 	stuffcmd(self, "alias modes impulse 181\n");
 	stuffcmd(self, "alias gameplay impulse 182\n");
 	stuffcmd(self, "alias watch impulse 183\n");
@@ -1686,7 +1694,10 @@ void () clanring_show_rules_prematch =
 		else
 			s2 = sprintf("%s%s\n", "\btimelimit     ", ftos(temp));
 
-		temp = cvar("fraglimit");
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+			temp = 0;
+		else
+			temp = cvar("fraglimit");
 		if (temp > 99)
 			s3 = sprintf("%s%s\n", "\bfraglimit   ", ftos(temp));	
 		else if (temp > 9)
@@ -1965,6 +1976,13 @@ void () clanring_impulse =
 			self.style = self.style | CLANRING_AFK_CLIENT;
 			self.afk_time = time;
 		}		
+	}
+	else if (self.impulse == 58)
+	{
+		// if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+		// {
+			self.leaderboardtime = time + 8;
+		// }
 	}
 	else if (self.impulse == 70)
 			self.statstate = -1;

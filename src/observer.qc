@@ -1501,7 +1501,7 @@ void () observer_update_display =
     local string w, armour, aval, healthammo, ammo;
 	local entity player;	// CRMOD cameras
 	local string score, pad, teamname;
-	local string respawn_string = "", pad_top = "";
+	local string prepend_string = "", pad_top = "";
 	local float rtime = 0;
 
 	// compute score and pad
@@ -1526,7 +1526,6 @@ void () observer_update_display =
 		teamname = "                       ";
 	}
 
-	
     self.delay = time + 0.5;
     if ((clanring_state & CLANRING_MATCH_PAUSED) ||
         (self.style & (CLANRING_SETTING_OPTIONS | CLANRING_MOTD)))
@@ -1543,12 +1542,24 @@ void () observer_update_display =
 		clanring_show_rules_prematch();
 		return;
 	}
-
+	//--show high scores check
+	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) && (self.leaderboardtime > time))
+	{
+		AirshotHighScores();
+		return;
+	}
+	else if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (self.leaderboardtime > time))
+	{
+		TeamCapturePlayerUpdate();
+		return;
+	}
+	//--end high scores check
+	//--prepend string check
 	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING)
 			&& (boss.wait == 0) && (self.next_team != world))
 	{
 		rtime = ceil(self.respawntime - time);
-		respawn_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
+		prepend_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
 		//self.delay = time + 0.25; //update display a little quicker while waiting to spawn, or causing lag ?
 	}
 	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)
@@ -1556,16 +1567,17 @@ void () observer_update_display =
 	{
 		if (self.next_team.next_queue == world)
 		{
-			respawn_string = "You are NEXT in line";
+			prepend_string = "You are NEXT in line";
 		}
 	}
+	//--end prepend check
 
     if (!player)
     {
 		if ((clanring_state & CLANRING_MATCH_STARTED) || ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING)))
 			centerprint4(self, "\n\n\n\n\n\n\n\n\n\n\n\n               ", teamname, score, pad);
-		else if (respawn_string != "")
-			centerprint(self, respawn_string);
+		else if (prepend_string != "")
+			centerprint(self, prepend_string);
 
 //		else
 //			centerprint(self, " ");//R00k: dont spam this!
@@ -1580,8 +1592,8 @@ void () observer_update_display =
         healthammo = strings_get_health_ammo(player);
         ammo = ftos(player.currentammo);
     
-		if (respawn_string != "")
-			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n\n\n\n", respawn_string);
+		if (prepend_string != "")
+			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n\n\n\n", prepend_string);
 		else
 			pad_top = "\n\n\n\n\n\n\n\n\n\n\n\n\n";
 
@@ -1596,8 +1608,8 @@ void () observer_update_display =
 		else
 			othertarget = "";
 
-		if (respawn_string != "")
-			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n", respawn_string);
+		if (prepend_string != "")
+			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n", prepend_string);
 		else
 			pad_top = "\n\n\n\n\n\n\n\n\n\n";
 

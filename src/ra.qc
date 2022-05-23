@@ -602,13 +602,13 @@ void () ra_spawn_players =
 			}
 			else if (player.ca_player_flag == PF_PLAYING)
 			{
-				player.health = 100;
-				player.armorvalue = 200;
-				player.armortype = .8;
-				player.ammo_shells = 30;
-				player.ammo_nails = 80;
-				player.ammo_rockets = 30;
-				player.ammo_cells = 30;
+				player.health = boss.health;
+				player.armorvalue = boss.armorvalue;
+				player.armortype = (boss.armortype * 0.01);
+				player.ammo_shells = boss.ammo_shells;
+				player.ammo_nails = boss.ammo_nails;
+				player.ammo_rockets = boss.ammo_rockets;
+				player.ammo_cells = boss.ammo_cells;
 			}
 			player = player.chain_gang;
 		}
@@ -696,6 +696,7 @@ void () rocket_arena_main_loop =
 			{
 				if (boss.wait == 0)
 				{
+					boss.timetofight = FALSE;
 					boss.wait = (time + 4);//slight pause before end of round.					
 					return;
 				}

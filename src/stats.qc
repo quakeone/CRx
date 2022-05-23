@@ -31,6 +31,7 @@ void() stats_reset_player =
 	self.freturns = 0;
 	self.fcassists = 0;
 	self.fcfrags = 0;
+	self.fctime = 0;
 	self.captime = 1200;//default time = matchtime;
 	self.true_kills = 0;
 	self.direct_hit = 0;
@@ -346,8 +347,8 @@ void() stats_show_fstats =
 	sprint(self, "\n");
 	sprint(self, "\bctf related\b\n");
 	sprint(self, "\n");
-	sprint(self, "flag ücapüdefürtnüfcdüfcaüfckü  time  ü     name\n");
-	sprint(self, "­­­­­«­­­«­­­«­­­«­­­«­­­«­­­«­­­­­­­­«­­­­­­­­­­­­­­­\n");
+	sprint(self, "\bflag |  time  |cap|  best  |def|rtn|fcd|fca|fck|     name      \b\n");
+	sprint(self, "\b-----+--------+---+--------+---+---+---+---+---+---------------\b\n");
 
 	player = clanring_sentinel.next_player;
 	pteam = player.next_team;
@@ -359,46 +360,50 @@ void() stats_show_fstats =
 			{
 				sprint(self, "\x90");
 				utils_print_int3(player.fpickups);//pickups
-				sprint(self, "‘ü");
+				sprint(self, "\x91\b|");
 			}
 			else
 			{
 				sprint(self, " ");
 				utils_print_int3(player.fpickups);
-				sprint(self, " ü");
+				sprint(self, " \b|");
 			}
-
+			utils_sprint_stat_time(self,(player.fctime));
+			sprint(self, "\b|");
 			utils_print_int3(player.fcaptures);
-			sprint(self, "ü");
+			sprint(self, "\b|");
+			if (player.captime == 1200)
+				utils_sprint_stat_time(self,(0));
+			else
+				utils_sprint_stat_time(self,(player.captime));
+			sprint(self, "\b|");
 			utils_print_int3(player.fdefenses);
-			sprint(self, "ü");
+			sprint(self, "\b|");
 			utils_print_int3(player.freturns);
-			sprint(self, "ü");
+			sprint(self, "\b|");
 			utils_print_int3(player.fcdefenses);
-			sprint(self, "ü");
+			sprint(self, "\b|");
 			utils_print_int3(player.fcassists);
-			sprint(self, "ü");
-			utils_print_int3(player.fcfrags);
-			sprint(self, "ü");
-			utils_sprint_stat_time(self,(player.captime));
+			sprint(self, "\b|");
+			utils_print_int3(player.fcfrags);			
 			if (player == self)
 			{
-				sprint(self, "ü\x90");
+				sprint(self, "\b|\b\x90");
 				sprint(self, player.netname);
-				sprint(self, "‘\n");
+				sprint(self, "\x91\n");
 			}
 			else
 			{
-				sprint(self, "ü ");
+				sprint(self, "\b| ");
 				sprint(self, player.netname);
 				sprint(self, "\n");
 			}
+
 		}
 		player = player.next_player;
 		if (useteams && (player.next_team != pteam))
 		{
-			sprint(self, "    ");
-			sprint3(self, " ü   ü   ü   ü   ü", pteam.mdl, "\n");
+			sprint3(self, "\b     |        |   |        |   |   |   |   |   |\b", pteam.mdl, "\n");
 			pteam = player.next_team;
 		}
 	}
@@ -939,4 +944,121 @@ void() stats_delete_copies =
 {	
 //	utils_do_item(SUB_Remove, "stats_copy");
 //	clanring_sentinel.owner = clanring_sentinel;
+};
+
+//Check if a cap time is in the top records, then set it and return the rank or return 0 if not
+//TODO:refactor all these into one, just check high/low and pass struct array? 
+void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record =
+{
+	local float i=0,j=0, tmp = 0;
+	while ((i < PLAYER_RECORDS_MAX_COUNT) && (tmp == 0))
+	{
+		if (playerrecord[i].statvalue == 0)
+		{
+			playerrecord[i].statvalue = t_statvalue;
+			playerrecord[i].teamcolor = t_teamcolor;
+			playerrecord[i].player = strzone(t_player);
+			tmp = (i+1);
+			break;
+		}
+		else if ((playerrecord[i].statvalue > 0) && (t_statvalue < playerrecord[i].statvalue))
+		{
+			j = (PLAYER_RECORDS_MAX_COUNT - 1);
+			while (j > i)
+			{
+				playerrecord[j].statvalue = playerrecord[(j-1)].statvalue;
+				playerrecord[j].teamcolor = playerrecord[(j-1)].teamcolor;
+				playerrecord[j].player = playerrecord[(j-1)].player;
+				j -= 1;
+			}
+			playerrecord[i].statvalue = t_statvalue;
+			playerrecord[i].teamcolor = t_teamcolor;
+			playerrecord[i].player = strzone(t_player);
+			tmp = (i+1);
+			break;
+		}
+		i += 1;
+	}
+	if (tmp > 0)
+	{
+		//strunzone(tt_netname);
+	}
+	new_player_record = tmp;
+	//return tmp;
+};
+void (float t_statvalue, float t_teamcolor, string t_player) check_player_high_record =
+{
+	local float i=0,j=0, tmp = 0;
+	while ((i < PLAYER_RECORDS_MAX_COUNT) && (tmp == 0))
+	{
+		if (playerrecord[i].statvalue == 0)
+		{
+			playerrecord[i].statvalue = t_statvalue;
+			playerrecord[i].teamcolor = t_teamcolor;
+			playerrecord[i].player = strzone(t_player);
+			tmp = (i+1);
+			break;
+		}
+		else if ((playerrecord[i].statvalue > 0) && (t_statvalue > playerrecord[i].statvalue))
+		{
+			j = (PLAYER_RECORDS_MAX_COUNT - 1);
+			while (j > i)
+			{
+				playerrecord[j].statvalue = playerrecord[(j-1)].statvalue;
+				playerrecord[j].teamcolor = playerrecord[(j-1)].teamcolor;
+				playerrecord[j].player = playerrecord[(j-1)].player;
+				j -= 1;
+			}
+			playerrecord[i].statvalue = t_statvalue;
+			playerrecord[i].teamcolor = t_teamcolor;
+			playerrecord[i].player = strzone(t_player);
+			tmp = (i+1);
+			break;
+		}
+		i += 1;
+	}
+	if (tmp > 0)
+	{
+		//strunzone(tt_netname);
+	}
+	new_player_record = tmp;
+	//return tmp;
+};
+void (float t_statvalue, float t_teamcolor, string t_player) check_player_high_record2 =
+{
+	local float i=0,j=0, tmp = 0;
+	while ((i < PLAYER_RECORDS_MAX_COUNT) && (tmp == 0))
+	{
+		if (playerrecord2[i].statvalue == 0)
+		{
+			playerrecord2[i].statvalue = t_statvalue;
+			playerrecord2[i].teamcolor = t_teamcolor;
+			playerrecord2[i].player = strzone(t_player);
+			tmp = (i+1);
+			break;
+		}
+		else if ((playerrecord2[i].statvalue > 0) && (t_statvalue > playerrecord2[i].statvalue))
+		{
+			j = (PLAYER_RECORDS_MAX_COUNT - 1);
+			while (j > i)
+			{
+				playerrecord2[j].statvalue = playerrecord2[(j-1)].statvalue;
+				playerrecord2[j].teamcolor = playerrecord2[(j-1)].teamcolor;
+				playerrecord2[j].player = playerrecord2[(j-1)].player;
+				j -= 1;
+			}
+			playerrecord2[i].statvalue = t_statvalue;
+			playerrecord2[i].teamcolor = t_teamcolor;
+			playerrecord2[i].player = strzone(t_player);
+			tmp = (i+1);
+			break;
+		}
+		i += 1;
+	}
+	if (tmp > 0)
+	{
+		//strunzone(tt_netname);
+	}
+	new_player_record = tmp;
+	//return tmp;
 };

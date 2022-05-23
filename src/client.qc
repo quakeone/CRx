@@ -1383,7 +1383,13 @@ void() PlayerPreThink =
 		{
 			if (self.plag == FALSE)
 			{
-				motd_print ();
+				//bucksh0t: allow high scores to print over motd
+				if ((clanring_playmode & CLANRING_AIRSHOT_MODE) && (self.leaderboardtime > time))
+					AirshotHighScores();
+				else if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (self.leaderboardtime > time))
+					TeamCapturePlayerUpdate();
+				else
+					motd_print ();
 			}
 			self.motd_delay = time + 1.5;
 		}
@@ -2668,6 +2674,21 @@ void(string cmd) SV_ParseClientCommand =
 				return;
 			}
 			votables_request_set_gametype_mode_map(0, -1, "");
+			return;
+		case "ffa":
+			if (arg1 != "")
+			{
+				if (found_in_warp_list(arg1))
+				{
+					votables_request_set_gametype_mode_map(0, 0, arg1);
+				}
+				else
+				{
+					sprint2(self, arg1, " is not a recognized map.\n");
+				}
+				return;
+			}
+			votables_request_set_gametype_mode_map(0, 0, "");
 			return;
     	case "ctf":
 			if (arg2 != "")

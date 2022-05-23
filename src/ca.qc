@@ -133,6 +133,7 @@ void () arena_main_loop =
 			{
 				if (boss.count == 9)
 				{
+					utils_do_item(SUB_Remove, "item_backpack");
 					arena_ready_players ();
 				}
 				else if (boss.count == 8)

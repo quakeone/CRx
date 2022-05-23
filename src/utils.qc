@@ -545,6 +545,39 @@ void (float t) utils_bprint_time =
 	//--------------------
 };
 
+string (float t) utils_get_time =
+{
+	local float minutes;
+	local float seconds;
+	local float csec;
+	local string temp;
+	local string tmin="",tsec="",tcsec="";
+
+	minutes = floor((t/60));
+	seconds = floor((((t/60)-minutes)*60));
+	csec    = floor((((((t/60)-minutes)*60)-seconds)*100));
+
+	temp = ftos(minutes);
+	if ((minutes < 10))
+		tmin = sprintf("0%s", temp);
+	else
+		tmin = temp;
+
+	temp = ftos(seconds);
+	if ((seconds < 10))
+		tsec = sprintf("0%s", temp);
+	else
+		tsec = temp;
+
+	temp = ftos(csec);
+	if ((csec < 10))
+		tcsec = sprintf("0%s", temp);
+	else
+		tcsec = temp;
+
+	return sprintf("%s:%s.%s",tmin,tsec,tcsec);
+};
+
 //
 //  B P R I N T  F L O A T
 //
