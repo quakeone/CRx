@@ -746,6 +746,13 @@ void() clanring_exec_configs =
 		nextmap = mapname;//just restart samelevel
 	}
 
+	//R00k: ticrate defaults for different modes :|
+	local string useTicrate = ftos(clanring_tdm_ticrate);
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		useTicrate = ftos(clanring_ctf_ticrate);
+	dprint("setting sys_ticrate to ", useTicrate, "\n");
+	cvar_set("sys_ticrate", useTicrate);
+
 	remove(self);//scheduled_event_entity
 	sys_ready = TRUE;
 };

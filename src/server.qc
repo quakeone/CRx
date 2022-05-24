@@ -424,12 +424,6 @@ void () clanring_init_world =
 	utils_make_scheduled_event(clanring_find_powerups, 5);
 	nextmap = "";
 
-	//R00k: ticrate defaults for different modes :|
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		cvar_set("sys_ticrate", ftos(clanring_ctf_ticrate));
-	else
-		cvar_set("sys_ticrate", ftos(clanring_tdm_ticrate));
-
 	if ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		clanring_timelimit = cvar("timelimit");

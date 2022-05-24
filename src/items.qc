@@ -1293,31 +1293,33 @@ void() BackpackTouch =
 		rnd = floor((random() * 8) + 1);
 		if (rnd == 5)
 		{
+			bprint(other.netname);
+			bprint(" got pent protection\n");
+			stuffcmd(other, "bf\n");
+			sound (other, CHAN_ITEM, "items/protect.wav", 1, ATTN_NORM);
 			other.invincible_time = 1;
 			other.invincible_finished = time + 15;
 			other.effects = other.effects | EF_DIMLIGHT;
 			other.effects = other.effects | EF_RED;
 			other.items = other.items | IT_INVULNERABILITY;
-			bprint(other.netname);
-			bprint(" got pent protection\n");
-			sound (other, CHAN_ITEM, "items/protect.wav", 1, ATTN_NORM);
 		}
 		else if (rnd > 5)
 		{
+			bprint(other.netname);
+			bprint(" is invisible\n");
+			stuffcmd(other, "bf\n");
+			sound (other, CHAN_ITEM, "items/inv1.wav", 1, ATTN_NORM);
 			other.invisible_time = 1;
 			other.invisible_finished = time + 15;
 			other.frame = 0;
 			other.items = other.items | IT_INVISIBILITY;
-			bprint(other.netname);
-			bprint(" is invisible\n");
-			sound (other, CHAN_ITEM, "items/inv1.wav", 1, ATTN_NORM);
 		}
 		else
 		{
+			sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
 			other.health = other.health + 10;
 			if (other.health > 300)
 				other.health = 300;
-			sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
 		}
 		//other.arenapacks += 1;
 		// remove the backpack, change self to the player

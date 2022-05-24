@@ -225,12 +225,12 @@ void(entity targ, entity attacker) Killed =
 				{
 					attacker.frags += 1;
 
-					if (targ.airborn_pos > 750)
+					if (targ.airborn_pos > 650)
 					{
 						bprint("\b[\bDEEPˆ‰SPACE\b]\b\n");
 						as_sound = 2;
 					}
-					else if (targ.airborn_pos > 600)
+					else if (targ.airborn_pos > 500)
 					{
 						bprint("\b[\b…Moon…Shot…\b]\b\n");
 						as_sound = 3;
@@ -263,7 +263,7 @@ void(entity targ, entity attacker) Killed =
 						write_airshot_height_stats();
 					}
 
-					if (boss.lip < 1)
+					if ((boss.lip < 1) && (boss.count <= 30))
 					{
 						if (attacker.super_damage_finished >= time)
 						{
@@ -271,10 +271,12 @@ void(entity targ, entity attacker) Killed =
 								as_sound = 1;
 						}
 
-						attacker.super_time = 1;
-						attacker.super_damage_finished = time + 3;
-
-						attacker.items = attacker.items | IT_QUAD;
+						if (attacker.frags < (targ.frags + 3))
+						{
+							attacker.super_time = 1;
+							attacker.super_damage_finished = time + 3;
+							attacker.items = attacker.items | IT_QUAD;
+						}
 					}
 
 					if (as_sound == 1)

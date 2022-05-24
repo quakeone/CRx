@@ -50,6 +50,7 @@ void () arena_precache =
 	precache_sound ("ra/itembk3.wav");
 	precache_sound ("ra/pathetic.wav");
 	precache_sound ("ra/lastone.wav");
+	precache_sound ("ra/activate.wav");
 }
 
 void () arena_init_world =

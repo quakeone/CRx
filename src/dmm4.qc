@@ -404,6 +404,11 @@ void () arena_timer_think =
 		else if (boss.count == 30)
 		{
 			announce("Match ends in 30 seconds");
+			if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+			{
+				announce("\bQuad Juggling\b activated");
+				sound (world, CHAN_ITEM, "ra/activate.wav", 1, ATTN_NONE);
+			}
 			// if (clanring_overtime > 0)
 			// {
 			// 	temp = ftos(clanring_overtime);
