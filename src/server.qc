@@ -264,6 +264,7 @@ void () rocket_arena_main_loop;
 void () arena_precache;
 void () RemoveFromTeam;//R00k: ca mode
 void () arena_client_disconnect;
+void () Teamplay_Select_Team;
 //
 // C L E A R   A F K   S T A T U S
 //
