@@ -1684,8 +1684,9 @@ float () ammo_is_infinite =
 
 float () items_are_ready =
 {
-	if ((clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED)) 
-		|| (mode_is_arena()) && (boss.timetofight = FALSE))
+	if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+		return FALSE;
+	if ((mode_is_arena()) && ((boss == world) || ((boss != world) && (boss.timetofight == FALSE))))
 		return FALSE;
 	return TRUE;
 };

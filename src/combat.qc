@@ -526,7 +526,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	{	
 		targ.airborn_pos = 0;
 		if (targ.waterlevel < 2)
-		{		
+		{
 			old_damage = damage; // save back the original damage
 			damage = airshot_damage_z (targ, old_damage); // Modify damage to the target based on the distance they are from the ground; save the height in airborn_pos.
 			if (old_damage < 100) // Ignore splash damage caused by missing the target and hitting walls.
