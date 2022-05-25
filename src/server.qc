@@ -419,12 +419,6 @@ void () clanring_init_world =
 	utils_make_scheduled_event(clanring_find_powerups, 5);
 	nextmap = "";
 
-	//R00k: ticrate defaults for different modes :|
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		cvar_set("sys_ticrate", ftos(clanring_ctf_ticrate));
-	else
-		cvar_set("sys_ticrate", ftos(clanring_tdm_ticrate));
-
 	if ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		clanring_timelimit = cvar("timelimit");
@@ -1045,7 +1039,7 @@ void () clanring_client_connect =
 		// Get rid of the new client flag
 		parm10	= parm10 - (parm10 & CLANRING_NEW_CLIENT);
 		// Set default observer flags
-		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_DEMO | OBSERVER_COMMENTARY;
+		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_WALK | OBSERVER_COMMENTARY;
 
 		parm13 = 0;
 		
@@ -1720,8 +1714,6 @@ void () clanring_show_rules_prematch =
 		else { temp = 0; }
 		if (temp > 9)
 			s2 = sprintf("%s%s\n", "\btimelimit    ", ftos(temp));
-		else if (temp == 0)
-			s2 = "\btimelimit   \boff\n";
 		else
 			s2 = sprintf("%s%s\n", "\btimelimit     ", ftos(temp));
 
@@ -1730,8 +1722,6 @@ void () clanring_show_rules_prematch =
 			s3 = sprintf("%s%s\n", "\bfraglimit   ", ftos(temp));	
 		else if (temp > 9)
 			s3 = sprintf("%s%s\n", "\bfraglimit    ", ftos(temp));
-		else if (temp == 0)
-			s3 = "\bfraglimit   \boff\n";	
 		else
 			s3 = sprintf("%s%s\n", "\bfraglimit     ", ftos(temp));
 		
@@ -1981,6 +1971,9 @@ void () votables_request_set_faststarts;
 //
 void () clanring_impulse =
 {
+	if (self.impulse)			//R00k: clear AFK status if any impulse command is issued.
+		clear_afk_status(self);
+
 	if (self.impulse == 19)
 		TossRune ();
 	else if (self.impulse == 20)
@@ -2005,7 +1998,7 @@ void () clanring_impulse =
 			self.afk_time = time;
 		}
 		else
-			clear_afk_status(self);
+			clear_afk_status(self);		
 	}
 	else if (self.impulse == 70)
 			self.statstate = -1;
@@ -2308,6 +2301,62 @@ void () clanring_periodic_checks =
 			self.style = (self.style | CLANRING_AFK_CLIENT);
 	
 			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");			
+		}
+	}
+	//R00k: Moved here from PlayerPreThink
+	if (mode_is_arena())
+	{
+		if (clanring_playmode & CLANRING_CA_MODE)
+		{
+			if (self.style & CLANRING_CONNECTED)
+			{
+				if (self.team != (self.team2 + 1))
+				{		
+					if (self.next_team == world)
+					{
+						if (self.team == 14)
+							self.impulse = 1;
+						else if (self.team == 5)
+							self.impulse = 2;
+						else if (self.team == 13)
+							self.impulse = 3;
+						else if (self.team == 3)
+							self.impulse = 4;
+						
+						Teamplay_Select_Team();
+						self.impulse = 0;
+					}
+					else
+					{	
+						if (self.health > 0)
+						{
+							self.team2 = self.next_team.team2;
+							//R00k -- this forces team colors, unless they are in queue to join.
+							if ((!self.cc_queue))
+							{							
+								setcolour(self, self.team2, self.team2);
+							}						
+							self.team = (self.team2 + 1);
+						}
+					}
+				}
+
+				if (boss.timetofight == TRUE)
+				{
+					if ((self.ca_player_flag == PF_PLAYING) && (self.style & CLANRING_CONNECTED))//v1.97 fix lagouts.
+					{
+						self.takedamage = DAMAGE_AIM;		
+					}
+				}
+			}		
+		}
+
+		if (self.style & CLANRING_MOTD)
+		{
+			if (self.plag == FALSE)
+			{
+				motd_print ();
+			}
 		}
 	}
 };

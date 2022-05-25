@@ -607,20 +607,49 @@ entity () SelectSpawnPoint =
 	
 	lastspawn = spot;
 
-//	if (((random() * (dm_num_spawns))) % 2)	//random telefrag chance? or if !(match.think != match_timer_think1)
+// SPAWNFRAG_PROTECTION: dont pick a spawnpoint that will telefrag any player -- BEGIN	
+//	if (clanring_playmode & CLANRING_SPAWNFRAG_PROTECTION)
 //	{
-	while (loop_count)
-	{
-		if (spot != world)
+		while (loop_count)
 		{
-			if (spot == self.trigger_field)
-				pcount = 1;
-			else
+			if (spot != world)
 			{
-				thing = findradius (spot.origin, 128);
+				if (spot == self.trigger_field)
+					pcount = 1;
+				else
+				{
+					thing = findradius (spot.origin, 128);
+					while (thing)
+					{
+						if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))//r00k: todo thing.health check ?
+						{
+							pcount = 1;
+							thing = world;
+						}
+						else
+						{
+							thing = thing.chain;
+						}
+					}
+				}
+				if (pcount == 0)
+				{
+					return spot;
+				}
+				pcount = 0;
+			}
+
+			spot = find(spot, classname, "info_player_deathmatch");
+
+			if (spot == lastspawn)
+			{
+				pcount = 0;
+
+				thing = findradius (self.trigger_field.origin, 128);
+
 				while (thing)
 				{
-					if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))//r00k: todo thing.health check ?
+					if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))
 					{
 						pcount = 1;
 						thing = world;
@@ -630,42 +659,18 @@ entity () SelectSpawnPoint =
 						thing = thing.chain;
 					}
 				}
-			}
-			if (pcount == 0)
-			{
-				return spot;
-			}
-			pcount = 0;
-		}
-
-		spot = find(spot, classname, "info_player_deathmatch");
-
-		if (spot == lastspawn)
-		{
-			pcount = 0;
-
-			thing = findradius (self.trigger_field.origin, 128);
-
-			while (thing)
-			{
-				if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))
+				if (pcount == 0)
 				{
-					pcount = 1;
-					thing = world;
+					return self.trigger_field;
 				}
-				else
-				{
-					thing = thing.chain;
-				}
+				return lastspawn;//someone is gonna get hurt! :P
 			}
-			if (pcount == 0)
-			{
-				return self.trigger_field;
-			}
-			return lastspawn;//someone is gonna get hurt! :P
+			loop_count = loop_count - 1; //let's not get a runaway here...
 		}
-		loop_count = loop_count - 1; //let's not get a runaway here...
-	}
+//	}
+//	else return spot;
+// SPAWNFRAG_PROTECTION: dont pick a spawnpoint that will telefrag any player	-- END
+
 	if (serverflags)
 	{
 		spot = find(world, classname, "info_player_start2");
@@ -1091,7 +1096,7 @@ void() PlayerDeathThink =
 		//R00k 1.55 look at enemy when dead
 		if ((self.enemy.classname == "player") && (self.enemy != self))
 				self.movetarget = self.enemy;
-		
+
 		if (time < self.ca_deathcamtime)
 		{
 			if (self.movetarget.ca_player_flag == PF_PLAYING)
@@ -1340,55 +1345,8 @@ void() PlayerPreThink =
 		}
 		return;		// intermission or finale
 	}
-	if (mode_is_arena())
-	{
-		if (clanring_playmode & CLANRING_CA_MODE)
-		{
-			if (self.style & CLANRING_CONNECTED)
-			{
-				if (self.team != (self.team2 + 1))
-				{		
-					if (self.next_team == world)
-					{
-						if (self.team == 14)
-							self.impulse = 1;
-						else if (self.team == 5)
-							self.impulse = 2;
-						else if (self.team == 13)
-							self.impulse = 3;
-						else if (self.team == 3)
-							self.impulse = 4;
-						
-						Teamplay_Select_Team();
-						self.impulse = 0;
-					}	
-					//R00k -- this forces team colors
-					if ((!self.cc_queue))
-					{	
-						setcolour(self, self.team2, self.team2);
-					}
-				}
-
-				if (boss.timetofight == TRUE)
-				{
-					if ((self.ca_player_flag == PF_PLAYING) && (self.style & CLANRING_CONNECTED))//v1.97 fix lagouts.
-					{
-						self.takedamage = DAMAGE_AIM;		
-					}
-				}
-			}		
-		}
-
-		if (self.style & CLANRING_MOTD && self.motd_delay < time)
-		{
-			if (self.plag == FALSE)
-			{
-				motd_print ();
-			}
-			self.motd_delay = time + 1.5;
-		}
-	}
-	else if (self.height != self.team - 1)
+	
+	if (self.height != self.team - 1)
 		match_verify_team ();
 
 	if (self.movetype != self.finaldest_y) // dork used admin 0 noclip or fly (R00k: CL_PRIVILEGED was removed is this still needed?)
