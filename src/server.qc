@@ -1975,9 +1975,6 @@ void () votables_request_set_faststarts;
 //
 void () clanring_impulse =
 {
-	if (self.impulse)			//R00k: clear AFK status if any impulse command is issued.
-		clear_afk_status(self);
-
 	if (self.impulse == 19)
 		TossRune ();
 	else if (self.impulse == 20)
