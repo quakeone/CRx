@@ -1633,7 +1633,8 @@ void() W_WeaponFrame =
 		if (self.style & CLANRING_OK_TO_SHOOT)
 		{
 			W_Attack ();			
-			SuperDamageSound();			
+			SuperDamageSound();		
+			clear_afk_status(self);	//R00k:	
 		}
 	}
 	else if (time > self.attack_finished) //R00k added

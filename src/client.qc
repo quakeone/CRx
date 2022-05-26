@@ -317,6 +317,7 @@ void() IntermissionThink =
 	}
 	if (self.button0 || self.button2)
 	{
+		clear_afk_status(self);		//AFK status carries over.
 		GotoNextMap ();
 	}	
 };
@@ -1127,7 +1128,7 @@ void() PlayerDeathThink =
 	// wait for any button down
 	if (!self.button2 && !self.button1 && !self.button0)
 		return;
-
+	clear_afk_status(self);								//R00k:
 	self.button0 = self.button1 = self.button2 = 0;
 	respawn();
 };
@@ -1169,7 +1170,7 @@ void() PlayerJump =
 	//CRMOD - this is more efficient
 	self.flags = self.flags - (self.flags & (FL_JUMPRELEASED | FL_ONGROUND));//
 	self.finaldest_x = time;  // CRMOD - player is alive
-	
+	clear_afk_status(self);								//R00k:
 	self.button2 = 0;
 // player jumping sound
     sound (self, CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM);
@@ -1373,11 +1374,6 @@ void() PlayerPreThink =
 		return;
 	}
 	
-	if (self.button2)//or button0?
-	{
-		clear_afk_status(self);
-	}
-
 	if (self.style & CLANRING_OBSERVER)
 	{
 		observer_pre_think ();
@@ -1673,10 +1669,6 @@ void() PlayerPostThink =
 	if (!(self.style & CLANRING_CONNECTED))
 		return;
 
-	if (self.button0)
-	{
-		clear_afk_status(self);
-	}
 	// ELOHIM_MOD
 	//
 	// - don't do post think stuff while observing
