@@ -57,14 +57,6 @@ float (entity targ, float damage) airshot_damage_z =
 		rheight = rint(dist);
 		s = ftos(rheight);
 		bprint3("\x90height: ",s,"\x91\n");
-		if (dist > 128)
-		{
-			damage = (damage + ((dist/128)*damage));
-		}
-		else
-		{
-			damage = (damage + ((dist/256)*damage));
-		}
 		
 		if (damage < 100)
 		{
@@ -72,6 +64,15 @@ float (entity targ, float damage) airshot_damage_z =
 		}
 		else
 		{
+			if (dist > 128)
+			{
+				damage = (damage + ((dist/128)*damage));
+			}
+			else
+			{
+				damage = (damage + ((dist/256)*damage));
+			}
+
 			if (targ.health > damage)
 			{
 				rdamage = rint(damage);

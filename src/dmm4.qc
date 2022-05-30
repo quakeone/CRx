@@ -73,7 +73,7 @@ void () dmm4_report_winner =
 			{
 				bprint(winnername);
 				bprint(" set the new \bgib record\b\n");
-				sound (self, CHAN_VOICE, "ra/congrats.wav", 1, ATTN_NORM);
+				sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
 			}
 			write_airshot_gib_stats();
 		}
@@ -407,7 +407,7 @@ void () arena_timer_think =
 			if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			{
 				announce("\bQuad Juggling\b activated");
-				sound (world, CHAN_ITEM, "ra/activate.wav", 1, ATTN_NONE);
+				sound (world, CHAN_ITEM, "crx/activate.wav", 1, ATTN_NONE);
 			}
 			// if (clanring_overtime > 0)
 			// {

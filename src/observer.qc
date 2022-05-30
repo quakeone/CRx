@@ -1498,9 +1498,9 @@ void () observer_check_size =
 //
 void () observer_update_display =
 {
-    local string w, armour, aval, healthammo, ammo;
+    local string w="", armour="", aval="", healthammo="", ammo="";
 	local entity player;	// CRMOD cameras
-	local string score, pad, teamname;
+	local string score="", pad="", teamname="";
 	local string prepend_string = "", pad_top = "";
 	local float rtime = 0;
 
@@ -1536,8 +1536,7 @@ void () observer_update_display =
 	if ((player != world) && (player.classname == "clanring_camera"))
 		player = player.movetarget;
     
-	if (((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED)) ||
-		((mode_is_arena()) && (boss.state == CA_MATCH_ROUNDSTART) && (boss.round == 1)))
+	if (prematch_rules())
 	{
 		clanring_show_rules_prematch();
 		return;

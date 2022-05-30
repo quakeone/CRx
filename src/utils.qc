@@ -1699,3 +1699,12 @@ float () match_in_progress =
 		return TRUE;
 	return FALSE;
 };
+
+float () prematch_rules =
+{
+	if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
+		return TRUE;
+	if (mode_is_arena() && (boss.state == CA_MATCH_ROUNDSTART) && (boss.round == 1))
+		return TRUE;
+	return FALSE;
+}

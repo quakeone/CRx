@@ -1383,13 +1383,7 @@ void() PlayerPreThink =
 		{
 			if (self.plag == FALSE)
 			{
-				//bucksh0t: allow high scores to print over motd
-				if ((clanring_playmode & CLANRING_AIRSHOT_MODE) && (self.leaderboardtime > time))
-					AirshotHighScores();
-				else if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (self.leaderboardtime > time))
-					TeamCapturePlayerUpdate();
-				else
-					motd_print ();
+				motd_print ();
 			}
 			self.motd_delay = time + 1.5;
 		}
@@ -1779,15 +1773,7 @@ void() PlayerPostThink =
 		observer_post_think ();
 		return;
 	}
-	else if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
-	{
-		if (time >= self.delay)
-		{
-			self.delay = time + 0.1;
-			clanring_show_rules_prematch();
-		}
-	}
-	else if (mode_is_arena() && (boss.state == CA_MATCH_ROUNDSTART) && (boss.round == 1))
+	else if (prematch_rules())
 	{
 		if (time >= self.delay)
 		{

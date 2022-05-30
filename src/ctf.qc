@@ -274,11 +274,13 @@ void() TeamCaptureFlagTouch =
 						if (new_player_record > 0)
 						{
 							if (new_player_record == 1)
-								sound(world,CHAN_AUTO,"ra/congrats.wav",1,ATTN_NONE);
+								sound(world,CHAN_AUTO,"crx/congrats.wav",1,ATTN_NONE);
 							else if (new_player_record == 2)
-								sound(world,CHAN_AUTO,"ra/superb.wav",1,ATTN_NONE);
+								sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
 							else if (new_player_record == 3)
-								sound(world,CHAN_AUTO,"ra/excell2.wav",1,ATTN_NONE);
+								sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
+							else
+								sound(world,CHAN_AUTO,"crx/capreg.wav",1,ATTN_NONE);
 							write_capture_stats();
 						}
 					}

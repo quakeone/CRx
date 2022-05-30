@@ -181,7 +181,7 @@ Killed
 void(entity targ, entity attacker) Killed =
 {
 	local entity oself;
-	local float rtime, as_sound = 0;
+	local float rtime, prand, as_sound = 0;
 
 	oself = self;
 	self = targ;
@@ -243,24 +243,34 @@ void(entity targ, entity attacker) Killed =
 					else if (targ.airborn_pos > 200)
 					{
 						bprint("\b[\bBig Air Gib\b]\b\n");
+						as_sound = 5;
 					}
 					else
 					{
 						bprint("[Mid Air Gib]\n");
 					}
 
-
 					new_player_record = 0;
-					check_player_high_record2(targ.airborn_pos, other.team, other.netname);
+					check_player_high_record2(targ.airborn_pos, attacker.team, attacker.netname);
 					if (new_player_record > 0)
 					{
 						if (new_player_record == 1)
 						{
 							bprint(attacker.netname);
 							bprint(" set the new \bhighest gib\b\n");
-							as_sound = 5;
+							as_sound = 6;
 						}
 						write_airshot_height_stats();
+					}
+
+					if ((self.lefty > 0) && time < (self.lefty + 8))
+					{
+						as_sound = 7;
+						self.lefty = 0;
+					}
+					else
+					{
+						self.lefty = time;
 					}
 
 					if ((boss.lip < 1) && (boss.count <= 30))
@@ -279,16 +289,37 @@ void(entity targ, entity attacker) Killed =
 						}
 					}
 
+					prand = floor(random() * 2) + 1;
+
 					if (as_sound == 1)
-						sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
+					{
+						if (prand == 1)
+							sound (self, CHAN_VOICE, "crx/onemore.wav", 1, ATTN_NORM);
+						else if (prand == 2)
+							sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
+					}
 					else if (as_sound == 2)
-						sound (self, CHAN_VOICE, "ra/beyond.wav", 1, ATTN_NORM);
+						sound (self, CHAN_VOICE, "crx/beyond.wav", 1, ATTN_NORM);
 					else if (as_sound == 3)
-						sound (self, CHAN_VOICE, "ra/gasp.wav", 1, ATTN_NORM);
+						sound (self, CHAN_VOICE, "crx/gasp.wav", 1, ATTN_NORM);
 					else if (as_sound == 4)
-						sound (self, CHAN_VOICE, "ra/excell3.wav", 1, ATTN_NORM);
+					{
+						if (prand == 1)
+							sound (self, CHAN_VOICE, "crx/gasp2.wav", 1, ATTN_NORM);
+						else if (prand == 2)
+							sound (self, CHAN_VOICE, "crx/excell3.wav", 1, ATTN_NORM);
+					}
 					else if (as_sound == 5)
-						sound (self, CHAN_VOICE, "ra/congrats.wav", 1, ATTN_NORM);
+					{
+						if (prand == 1)
+							sound (self, CHAN_VOICE, "crx/superb.wav", 1, ATTN_NORM);
+						else if (prand == 2)
+							sound (self, CHAN_VOICE, "crx/excell2.wav", 1, ATTN_NORM);
+					}
+					else if (as_sound == 6)
+						sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
+					else if (as_sound == 7)
+						sound (self, CHAN_VOICE, "crx/onfire.wav", 1, ATTN_NORM);
 				}
 
 				attacker.next_team.wins += 1;

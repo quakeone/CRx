@@ -56,6 +56,10 @@ string (entity e) ident_get_armor_type =
 
 void() ident_update_display =
 {
+	//avoid centerprint war
+	if (prematch_rules())
+		return;
+
 	local string armour;
 	local string aval, hval, rtype, weap, ammo, it; 
 	local string line1 = "", line2 = "";

@@ -39,18 +39,30 @@ void () arena_precache =
 	precache_sound ("ra/3.wav");
 	precache_sound ("ra/fight.wav");
 	precache_sound ("ra/laugh.wav");
-	precache_sound ("ra/laugh2.wav");
-	precache_sound ("ra/laugh3.wav");
 	precache_sound ("ra/flawless.wav");
 	precache_sound ("ra/outstand.wav");	
 	precache_sound ("ra/excellent.wav");	
 	precache_sound ("ra/welldone.wav");
 	precache_sound ("ra/gong.wav");	
 	precache_sound ("ambience/thunder1.wav");
-	precache_sound ("ra/itembk3.wav");
-	precache_sound ("ra/pathetic.wav");
-	precache_sound ("ra/lastone.wav");
-	precache_sound ("ra/activate.wav");
+	precache_sound ("crx/itembk3.wav");
+	precache_sound ("crx/pathetic.wav");
+	precache_sound ("crx/lastone.wav");
+	precache_sound ("crx/activate.wav");
+	precache_sound ("crx/laugh2.wav");
+	precache_sound ("crx/laugh3.wav");
+	precache_sound ("crx/laugh4.wav");
+	precache_sound ("crx/gasp.wav");
+	precache_sound ("crx/gasp2.wav");
+	precache_sound ("crx/beyond.wav");
+	precache_sound ("crx/excell2.wav");
+	precache_sound ("crx/excell3.wav");
+	precache_sound ("crx/helpyou.wav");
+	precache_sound ("crx/hiscore.wav");
+	precache_sound ("crx/onfire.wav");
+	precache_sound ("crx/gameover.wav");
+	precache_sound ("crx/superb.wav");
+	precache_sound ("crx/onemore.wav");
 }
 
 void () arena_init_world =
@@ -782,11 +794,13 @@ void () im_dead_now_what =
 			if (self.next_team.teamalive < 1)
 			{
 				bprint3 ("The ", self.next_team.netname, " has been \bwiped out\b\n");
-				prnd = floor(random() * 5) + 1;
+				prnd = floor(random() * 6) + 1;
 				if (prnd == 1)
-					sound (world, CHAN_VOICE, "ra/laugh2.wav", 1, ATTN_NONE);
+					sound (world, CHAN_VOICE, "crx/laugh2.wav", 1, ATTN_NONE);
 				else if (prnd == 2)
-					sound (world, CHAN_VOICE, "ra/laugh3.wav", 1, ATTN_NONE);
+					sound (world, CHAN_VOICE, "crx/laugh3.wav", 1, ATTN_NONE);
+				else if (prnd == 3)
+					sound (world, CHAN_VOICE, "crx/laugh4.wav", 1, ATTN_NONE);
 				else
 					sound (world, CHAN_VOICE, "ra/laugh.wav", 1, ATTN_NONE); //R00k, this might be annoying?
 
@@ -802,7 +816,7 @@ void () im_dead_now_what =
 			{
 				if (self.next_team.teamalive == 1)
 				{
-					sound(world, CHAN_AUTO, "ra/lastone.wav", 1, ATTN_NONE);
+					sound(world, CHAN_AUTO, "crx/lastone.wav", 1, ATTN_NONE);
 				}
 
 				//set player's respawn and update team nextspawn for huds
@@ -1287,7 +1301,8 @@ void () Teamplay_Select_Team =
 			}
 		}
 
-		if (boss.state == CA_MATCH_WAITING)
+		//allow player to leave team when they are waiting or between rounds
+		if ((self.ca_player_flag == PF_WAITING) || (boss.state == CA_MATCH_ROUNDSTART))
 		{
 			if (self.next_team != world)
 			RemoveFromTeam ();
@@ -1303,7 +1318,8 @@ void () Teamplay_Select_Team =
 			self.cc_queue_vote = 0;
 		}
 
-		if (self.style & CLANRING_CONNECTED)
+		//don't change to white if remove didn't work
+		if ((self.style & CLANRING_CONNECTED) && (self.next_team == world))
 		{
 			stuffcmd(self,";color 0;\n");
 		}
@@ -1557,9 +1573,18 @@ void () report_mvp_game =
 	announce4(name," was the \bmatch\b MVP with ",smvp," points of damage given.");
 };
 
+void() do_sound_owned =
+{
+	sound(world, CHAN_AUTO, "crx/gameover.wav", 1, ATTN_NONE);
+	remove(self);
+};
 void() do_sound_sweep =
 {
-	sound(world, CHAN_AUTO, "ra/pathetic.wav", 1, ATTN_NONE);
+	local float prnd = floor(random() * 2) + 1;
+	if (prnd == 1)
+		sound (world, CHAN_VOICE, "crx/helpyou.wav", 1, ATTN_NONE);
+	else
+		sound(world, CHAN_AUTO, "crx/pathetic.wav", 1, ATTN_NONE);
 	remove(self);
 };
 
@@ -1625,6 +1650,10 @@ void () arena_match_end =
 	if ((boss.round == 5) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
 	{
 		utils_make_scheduled_event(do_sound_sweep, 2);
+	}
+	else if ((boss.round == 6) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
+	{
+		utils_make_scheduled_event(do_sound_owned, 2);
 	}
 
 	boss.round 		 = 1;

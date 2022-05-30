@@ -264,6 +264,8 @@ void () rocket_arena_main_loop;
 void () arena_precache;
 void () RemoveFromTeam;//R00k: ca mode
 void () arena_client_disconnect;
+void () CaptureHighScores_sprint;
+void () AirshotHighScores_sprint;
 //
 // C L E A R   A F K   S T A T U S
 //
@@ -332,12 +334,9 @@ void () clanring_init_world =
 	precache_sound("ogre/ogwake.wav");
 	precache_sound("shambler/ssight.wav");
 	precache_sound("soldier/sight1.wav");
-	precache_sound ("ra/gasp.wav");
-	precache_sound ("ra/beyond.wav");
-	precache_sound ("ra/excell2.wav");
-	precache_sound ("ra/excell3.wav");
-	precache_sound ("ra/superb.wav");
-	precache_sound ("ra/congrats.wav");
+	precache_sound ("crx/capreg.wav");
+	precache_sound ("crx/goodstat.wav");
+	precache_sound ("crx/congrats.wav");
 
 	//	qsmack_init_server ();
 
@@ -1973,10 +1972,10 @@ void () clanring_impulse =
 	}
 	else if (self.impulse == 58)
 	{
-		// if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
-		// {
-			self.leaderboardtime = time + 8;
-		// }
+		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+			AirshotHighScores_sprint();
+		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			CaptureHighScores_sprint();
 	}
 	else if (self.impulse == 70)
 			self.statstate = -1;

@@ -2007,3 +2007,68 @@ void(float command) console_command =
 		default: cprint("unknown 'console_command'.\n"); break;
 	}
 };
+
+void () CaptureHighScores_sprint =
+{
+	local string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
+	if (playerrecord[0].statvalue > 0)
+	{
+		s1 = sprintf("\1  %s %s %-16s\n", utils_get_time(playerrecord[0].statvalue), get_team_letter(playerrecord[0].teamcolor), playerrecord[0].player);
+		if (playerrecord[1].statvalue > 0)
+		{
+			s2 = sprintf("\2  %s %s %-16s\n", utils_get_time(playerrecord[1].statvalue), get_team_letter(playerrecord[1].teamcolor), playerrecord[1].player);
+			if (playerrecord[2].statvalue > 0)
+			{
+				s3 = sprintf("\3  %s %s %-16s\n", utils_get_time(playerrecord[2].statvalue), get_team_letter(playerrecord[2].teamcolor), playerrecord[2].player);
+			}
+		}
+	}
+	else
+	{
+		s1 = "No capture times set";
+	}
+	sprint(self, sprintf("\bTime Trial Leaders\b for %s:\n", mapname), s1, s2, s3);
+	return;
+};
+
+void () AirshotHighScores_sprint =
+{
+	local string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
+
+	//TODO: update for higher PLAYER_RECORDS_MAX_COUNT?
+	if (playerrecord[0].statvalue > 0)
+	{
+		s1 = sprintf("\1   %-2s %-16s\n", ftos(playerrecord[0].statvalue), playerrecord[0].player);
+		if (playerrecord[1].statvalue > 0)
+		{
+			s2 = sprintf("\2   %-2s %-16s\n", ftos(playerrecord[1].statvalue), playerrecord[1].player);
+			if (playerrecord[2].statvalue > 0)
+			{
+				s3 = sprintf("\3   %-2s %-16s\n", ftos(playerrecord[2].statvalue), playerrecord[2].player);
+			}
+		}
+	}
+	else
+	{
+		s1 = "No gib records set";
+	}
+	if (playerrecord2[0].statvalue > 0)
+	{
+		ts1 = sprintf("\1  %-3s %-16s\n", ftos(rint(playerrecord2[0].statvalue)), playerrecord2[0].player);
+		if (playerrecord2[1].statvalue > 0)
+		{
+			ts2 = sprintf("\2  %-3s %-16s\n", ftos(rint(playerrecord2[1].statvalue)), playerrecord2[1].player);
+			if (playerrecord2[2].statvalue > 0)
+			{
+				ts3 = sprintf("\3  %-3s %-16s\n", ftos(rint(playerrecord2[2].statvalue)), playerrecord2[2].player);
+			}
+		}
+		s4 = sprintf("%s%s%s",ts1,ts2,ts3);
+	}
+	else
+	{
+		s4 = "No height records set";
+	}
+	centerprint(self, "\bAirshot Gib Leaders\b:\n", s1, s2, s3, "\bAirshot Highest Gibs\b:\n", s4);
+	return;
+};
