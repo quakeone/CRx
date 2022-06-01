@@ -739,47 +739,38 @@ void () rocket_arena_main_loop =
 			if (clanring_request.noise1 == "\bforce match start\b")	//cancel Vote to force
 				Request_Poll_Cleanup();
 			
-			if (boss.count > 5)
-			{
-				if (boss.count == 8)
-				{
-					ra_spawn_players ();
-					bprint ("\bround:\b ");
-					temp = ftos (boss.round);
-					bprint2 (temp,"\n");
-						
-					local string stmp;
-					stmp = (report_winning_team());
-					bprint2 (stmp, "\n");
-				}
+
+			if (boss.count == 0)
+			{					
+				sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
+				utils_do_arena_players(arena_fight_and_shoot);
+				boss.timetofight = TRUE;
+				boss.state = CA_MATCH_PLAYING;	
+				if (boss.round == 1)
+					announce("The match has begun!");
 			}
-			else
+			else if (boss.count == 1)
 			{
-				if (boss.count == 0)
-				{					
-					sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
-					utils_do_arena_players(arena_fight_and_shoot);
-					boss.timetofight = TRUE;
-					boss.state = CA_MATCH_PLAYING;	
-					if (boss.round == 1)
-						announce("The match has begun!");
-				}
-				else if (boss.count == 1)
-				{
-					sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
-				}
-				else if (boss.count == 2)
-				{
-					sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
-				}
-				else if (boss.count == 3)
-				{
-					sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
-				}
-				else if (boss.count == 5)
-				{
-					announce("prepare to fight");	
-				}
+				sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
+			}
+			else if (boss.count == 2)
+			{
+				sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
+			}
+			else if (boss.count == 3)
+			{
+				sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
+			}
+			else if (boss.count == 4)
+			{
+				ra_spawn_players ();
+				bprint ("\bround:\b ");
+				temp = ftos (boss.round);
+				bprint2 (temp,"\n");
+					
+				local string stmp;
+				stmp = (report_winning_team());
+				bprint2 (stmp, "\n");
 			}
 		}
 		else
@@ -802,13 +793,13 @@ void () rocket_arena_main_loop =
 				
 				boss.wait = time + 5;
 				sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
-				announce("Match begins in \b15\b seconds.");//boss.wait (5) + countdowntimer (10) = 15 seconds...
+				announce("Match begins in \b10\b seconds.");//boss.wait (5) + countdowntimer (5) = 10 seconds...
 			}
 
 			if (time >= boss.wait)
 			{
 				boss.timetofight	= FALSE;
-				boss.count 	= 10;
+				boss.count 	= 5;
 				boss.wait 	= 0;
 				boss.draw = FALSE;
 				boss.busy = FALSE;
@@ -819,7 +810,8 @@ void () rocket_arena_main_loop =
 				ra_next_player_ready();
 				ra_next_player_ready();
 				pqc_match_reset();
-				find_pqc_teamscore_teams();							
+				find_pqc_teamscore_teams();
+				announce("prepare to fight");		
 			}
 		}
 		else if (number_teams () < 2)

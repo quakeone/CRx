@@ -39,7 +39,7 @@ void () arena_precache =
 	precache_sound ("ra/3.wav");
 	precache_sound ("ra/fight.wav");
 	precache_sound ("ra/laugh.wav");
-	precache_sound ("ra/flawless.wav");
+	//precache_sound ("ra/flawless.wav");  //not used
 	precache_sound ("ra/outstand.wav");	
 	precache_sound ("ra/excellent.wav");	
 	precache_sound ("ra/welldone.wav");
@@ -63,6 +63,7 @@ void () arena_precache =
 	precache_sound ("crx/gameover.wav");
 	precache_sound ("crx/superb.wav");
 	precache_sound ("crx/onemore.wav");
+	precache_sound ("crx/flawless.wav");
 }
 
 void () arena_init_world =
@@ -1725,13 +1726,17 @@ void() reset_round =
 	boss.timetofight = FALSE;
 	boss.quadtime = 0;
 	boss.wait   = 0;
-	boss.count  = 10;
+	boss.count  = (clanring_playmode & CLANRING_RA_MODE) ? 5 : 10;
 	boss.round  = boss.round + 1;
 	temp = ftos(boss.round);
 	localcmd("skill \"", temp, "\"\n");
 
-	if ((clanring_playmode & CLANRING_RA_MODE) && (boss.draw == FALSE))
-		ra_next_player_ready();
+	if (clanring_playmode & CLANRING_RA_MODE)
+	{
+		if (boss.draw == FALSE)
+			ra_next_player_ready();
+		announce("prepare to fight");
+	}
 
 	utils_do_arena_players(arena_refresh_player);
 
@@ -1745,7 +1750,7 @@ void (float x,float y) announce_winner =
 {
 	if (x == 200 && y == 100)
 	{
-		sound(world, CHAN_AUTO, "ra/flawless.wav", 1, ATTN_NONE);// Health = 100 Armor == 200 = 300
+		sound(world, CHAN_AUTO, "crx/flawless.wav", 1, ATTN_NONE);// Health = 100 Armor == 200 = 300
 	}
 	else
 	if (x >= 100 && y >= 75)
@@ -1832,7 +1837,10 @@ void() round_end =
 
 			bprint ("\n");
 			if (wteam.chain_gang != world)
-			announce2((wteam.chain_gang.netname)," has won the round.");
+			{
+				wteam.chain_gang.frags = wteam.wins;
+				announce2((wteam.chain_gang.netname)," has won the round.");
+			}
 		}
 
 		//find team with dead player and put them back in the queue

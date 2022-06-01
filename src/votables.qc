@@ -471,6 +471,7 @@ void() votables_set_gametype_mode_map =
 				clanring_playmode = clanring_playmode | CLANRING_MATCH_MODE;
 				utils_do_players(votables_starve_player);//R00k ADDED
 				utils_set_cvar("timelimit", clanring_timelimit);
+				utils_set_cvar("fraglimit", 0);
 				
 				if (!(self.style & CLANRING_SETTING_OPTIONS))
 				{

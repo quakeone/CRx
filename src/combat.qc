@@ -554,7 +554,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	save = 0;
 
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-	{	
+	{
 		targ.airborn_pos = 0;
 		if (targ.waterlevel < 2)
 		{
@@ -593,7 +593,9 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		}
 	}
 	else if ((damage >= 100) && ((inflictor.classname == "missile") || (inflictor.classname == "grenade")))
+	{
 		attacker.direct_hit = attacker.direct_hit + 1;
+	}
 
 	if ((teamdamage)&&(!(match_prewar())))
 	{

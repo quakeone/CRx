@@ -2044,7 +2044,7 @@ void() ClientDisconnect =
 //
 void(entity client, float fragval) client_frag =
 {
-	if (clanring_playmode & CLANRING_CA_MODE)
+	if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE))
 		return;
 		
 	if (clanring_playmode & CLANRING_MATCH_MODE)
