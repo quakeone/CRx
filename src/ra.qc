@@ -503,16 +503,15 @@ void () ra_select_team =
 
 	if (self.impulse == 2)
 	{
-		if (boss.state == CA_MATCH_WAITING)
+		if ((self.ca_player_flag == PF_WAITING) && (self.next_team != world))
 		{
-			if (self.next_team != world)
-				ra_leave_queue ();
-		}
+			ra_leave_queue ();
 				
-		if (self.style & CLANRING_CONNECTED)
-		{		
-			stuffcmd(self,";color 0;\n");
-		}		
+			if ((self.next_team == world) && (self.style & CLANRING_CONNECTED))
+			{		
+				stuffcmd(self,";color 0;\n");
+			}
+		}
 	}
 	
 	self.impulse = 0;
