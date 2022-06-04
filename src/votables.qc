@@ -1001,9 +1001,9 @@ void() votables_select_timelimit =
 	}
 
 	sprint(self, "Select timelimit:\n");
-	sprint(self, "\x80\1\x82  3 minutes  \x80\1\x82 15 minutes\n");
-	sprint(self, "\x80\1\x82  5 minutes  \x80\1\x82 20 minutes\n");
-	sprint(self, "\x80\1\x82 10 minutes  \x80\1\x82 25 minutes\n");
+	sprint(self, "\x80\1\x82  3 minutes    \x80\4\x82 15 minutes\n");
+	sprint(self, "\x80\2\x82  5 minutes    \x80\5\x82 20 minutes\n");
+	sprint(self, "\x80\3\x82 10 minutes    \x80\6\x82 25 minutes\n");
 	self.use = votables_get_timelimit;
 };
 
