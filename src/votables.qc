@@ -9,6 +9,7 @@
 // global variables
 string request_mapname;     // Used for requesting a new level
 float request_timelimit;    // Used for requesting a new time limit
+float request_fraglimit;    // Used for requesting a new frag limit
 float request_overtime;		// Used for requesting a new overtime
 float request_gibs;         // Used to set gib level
 float request_mode;         // Used to request a new mode
@@ -41,6 +42,7 @@ void() votables_send_aliases =
 	// timelimit aliases
 	stuffcmd(self, "alias timeset impulse 215\n");
 	stuffcmd(self, "alias otset impulse 216\n");
+	stuffcmd(self, "alias fragset impulse 219\n");
 	// Quad, Pent, Ring aliases
 	stuffcmd(self, "alias setquad impulse 221\n");
 	stuffcmd(self, "alias setpent impulse 222\n");
@@ -54,7 +56,6 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias practice cmd practice\n");
 	stuffcmd(self, "alias match cmd match\n");
 	stuffcmd(self, "alias dm cmd dm\n");
-	stuffcmd(self, "alias ffa cmd ffa\n");
 	stuffcmd(self, "alias ctf cmd ctf\n");
 	stuffcmd(self, "alias wipeout cmd wipeout\n");
 	stuffcmd(self, "alias ca cmd ca\n");
@@ -393,6 +394,7 @@ void() votables_set_gametype_mode_map =
 			votables_clear_playmode_flags();
 			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE);
 			cvar_set("timelimit", "3");
+			cvar_set("fraglimit", "0");
 			cvar_set("teamplay", "0");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
@@ -405,6 +407,7 @@ void() votables_set_gametype_mode_map =
 			votables_clear_playmode_flags();
 			clanring_playmode = (clanring_playmode | CLANRING_AIRSHOT_MODE);
 			cvar_set("timelimit", "3");
+			cvar_set("fraglimit", "0");
 			cvar_set("teamplay", "0");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
@@ -798,6 +801,97 @@ void () votables_request_set_weaponstay =
 };
 
 //
+//	S E T  F R A G L I M I T
+//
+void() votables_set_fraglimit =
+{
+	clanring_set_fraglimit(request_fraglimit);
+};
+void (float newlimit) votables_request_set_fraglimit =
+{
+	local string temp;
+
+	if ((clanring_playmode & CLANRING_MATCH_MODE) && (clanring_state & CLANRING_MATCH_STARTED))
+	{
+		sprint(self, "Cannot change frag limit while match is in progress.\n");
+		return;
+	}
+	else if (((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
+		&& ((boss != world) && (boss.state == CA_MATCH_PLAYING)))
+	{
+		sprint(self, "Cannot change frag limit while match is in progress.\n");
+		return;
+	}
+
+    // Do it right away if we're an administrator, otherwise vote
+	if (self.style & CLANRING_ADMINISTRATOR)
+	{
+		request_fraglimit = newlimit;
+		votables_set_fraglimit ();
+	}
+	else
+	{
+		temp = strings_ftos_bronze (newlimit);
+		if (vote_init("change frag limit to ", temp, votables_set_fraglimit))
+		{
+			request_fraglimit = newlimit;
+			vote_yes();
+		}
+	}
+};
+void() votables_get_fraglimit =
+{
+	if (self.finaldest_z >= 1 && self.finaldest_z <= 5)
+		votables_request_set_fraglimit(self.finaldest_z * 5);
+	else if (self.finaldest_z == 6)
+		votables_request_set_fraglimit(35);
+	else if (self.finaldest_z == 7)
+		votables_request_set_fraglimit(50);
+	else if (self.finaldest_z == 8)
+		votables_request_set_fraglimit(75);
+	else if (self.finaldest_z == 9)
+		votables_request_set_fraglimit(100);
+	else if (self.finaldest_z == 10)
+		votables_request_set_fraglimit(0);
+	else if (self.finaldest_z == 0)
+		sprint(self, "cancelled\n");
+	else
+		sprint(self, "invalid selection\n");
+	self.use = SUB_Null;
+};
+void() votables_select_fraglimit =
+{
+	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
+	{
+		if ((boss != world) && (boss.state == CA_MATCH_PLAYING))
+		{
+			sprint(self, "Cannot change frag limit while match is in progress.\n");
+			return;
+		}
+	}
+	else
+	{
+		if (!(clanring_playmode & CLANRING_MATCH_MODE))
+		{
+			sprint(self, "Command valid in match modes only\n");
+			return;
+		}
+		if (clanring_state & CLANRING_MATCH_STARTED)
+		{
+			sprint(self, "Cannot change frag limit while match is in progress.\n");
+			return;
+		}
+	}
+
+	sprint(self, "Select fraglimit:\n");
+	sprint(self, "\x80\1\x82  \b5 frags\b    \x80\4\x82 \b20 frags\b    \x80\7\x82  \b50 frags\b\n");
+	sprint(self, "\x80\2\x82 \b10 frags\b    \x80\5\x82 \b25 frags\b    \x80\8\x82  \b75 frags\b\n");
+	sprint(self, "\x80\3\x82 \b15 frags\b    \x80\6\x82 \b35 frags\b    \x80\9\x82 \b100 frags\b\n");
+	sprint(self, "\x80\0\x82 \bcancel\b\n");
+	self.use = votables_get_fraglimit;
+};
+
+//
 //  S E T  T I M E L I M I T
 //
 //  Called when a request to change the timelimit passes.  The new
@@ -834,7 +928,13 @@ void (float newlimit) votables_request_set_timelimit =
 {
 	local string temp;
 
-	if (clanring_state & CLANRING_MATCH_STARTED)
+	if ((clanring_playmode & CLANRING_MATCH_MODE) && (clanring_state & CLANRING_MATCH_STARTED))
+	{
+		sprint(self, "Cannot change time limit while match is in progress.\n");
+		return;
+	}
+	else if (((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
+		&& ((boss != world) && (boss.state == CA_MATCH_PLAYING)))
 	{
 		sprint(self, "Cannot change time limit while match is in progress.\n");
 		return;
@@ -862,8 +962,12 @@ void (float newlimit) votables_request_set_timelimit =
 //
 void() votables_get_timelimit =
 {
-	if (self.finaldest_z >= 1 && self.finaldest_z <= 6)
-		votables_request_set_timelimit(self.finaldest_z * 5);
+	if (self.finaldest_z == 1)
+		votables_request_set_timelimit(3);
+	else if (self.finaldest_z >= 2 && self.finaldest_z <= 6)
+		votables_request_set_timelimit((self.finaldest_z - 1) * 5);
+	else if (self.finaldest_z == 10)
+		votables_request_set_timelimit(0);
 	else
 		sprint(self, "invalid selection\n");
 	self.use = SUB_Null;
@@ -874,20 +978,32 @@ void() votables_get_timelimit =
 //
 void() votables_select_timelimit =
 {
-	if (!(clanring_playmode & CLANRING_MATCH_MODE))
+	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
 	{
-		sprint(self, "Command valid in match mode only\n");
-		return;
+		if ((boss != world) && (boss.state == CA_MATCH_PLAYING))
+		{
+			sprint(self, "Cannot change time limit while match is in progress.\n");
+			return;
+		}
 	}
-	if (clanring_state & CLANRING_MATCH_STARTED)
+	else
 	{
-		sprint(self, "Cannot change time limit while match is in progress.\n");
-		return;
+		if (!(clanring_playmode & CLANRING_MATCH_MODE))
+		{
+			sprint(self, "Command valid in match modes only\n");
+			return;
+		}
+		if (clanring_state & CLANRING_MATCH_STARTED)
+		{
+			sprint(self, "Cannot change time limit while match is in progress.\n");
+			return;
+		}
 	}
+
 	sprint(self, "Select timelimit:\n");
-	sprint(self, "“Ÿ µ Íéîõôåó     –Ÿ ²° Íéîõôåó\n");
-	sprint(self, "”Ÿ ±° Íéîõôåó    —Ÿ ²µ Íéîõôåó\n");
-	sprint(self, "•Ÿ ±µ Íéîõôåó    ˜Ÿ ³° Íéîõôåó\n");
+	sprint(self, "\x80\1\x82  3 minutes  \x80\1\x82 15 minutes\n");
+	sprint(self, "\x80\1\x82  5 minutes  \x80\1\x82 20 minutes\n");
+	sprint(self, "\x80\1\x82 10 minutes  \x80\1\x82 25 minutes\n");
 	self.use = votables_get_timelimit;
 };
 

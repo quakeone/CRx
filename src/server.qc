@@ -590,7 +590,7 @@ void () clanring_set_warpaliases =
 	}
 
 	self = temp;
-	self.nextthink = time + 0.2;
+	self.nextthink = time + 0.3;
 	self.think = votables_send_aliases;
 };
 

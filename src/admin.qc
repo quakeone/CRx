@@ -1264,6 +1264,8 @@ void() admin_impulse =
 		votables_force_start();
 	else if (self.impulse == 218)
 		votables_request_set_weaponstay();
+	else if (self.impulse == 219)
+		votables_select_fraglimit();
 	else if (self.impulse == 221)
 		votables_request_set_quad();
 	else if (self.impulse == 222)

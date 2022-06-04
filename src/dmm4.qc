@@ -56,13 +56,12 @@ void () dmm4_report_winner =
 	if ((team_first_place.wins > team_second_place.wins))
 	{
         bprint2(winnername, " wins the match.\n");
-        bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
 	}
 	else
 	{
         bprint("The match was a draw\n");
-        bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
 	}
+	bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
 		new_player_record = 0;
@@ -173,7 +172,7 @@ void () dmm4_main_loop =
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
 					boss.state = CA_MATCH_PLAYING;
-                    clanring_timelimit = 3;
+                    clanring_timelimit = cvar("timelimit");
                     boss.lip = clanring_timelimit;
                     boss.count = 0;
                     arena_show_timelimit();
@@ -226,7 +225,7 @@ void () dmm4_main_loop =
 			boss.wait 	= 0;
 			boss.state 	= CA_MATCH_ROUNDSTART;
 
-			clanring_timelimit = 3;
+			clanring_timelimit = cvar("timelimit");
 
 			//sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
 			sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
@@ -241,7 +240,7 @@ void () dmm4_main_loop =
 				if (clanring_request.noise1 == "\bforce match start\b")
 				Request_Poll_Cleanup();
 
-				clanring_timelimit = 3;
+				clanring_timelimit = cvar("timelimit");
 
 				boss.wait = time + 5;
 				sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
@@ -302,6 +301,9 @@ void () dmm4_main_loop =
 void() arena_show_timelimit =
 {
 	local string temp;
+
+	if (!clanring_timelimit)
+		return;
 
 	localcmd("timelimit \"");
 

@@ -180,7 +180,7 @@ Killed
 */
 void(entity targ, entity attacker) Killed =
 {
-	local entity oself;
+	local entity oself, e;
 	local float rtime, prand, as_sound = 0;
 
 	oself = self;
@@ -214,8 +214,25 @@ void(entity targ, entity attacker) Killed =
 	{
 		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
 		{
-			targ.next_team.losses += 1;
-			pqc_team_frags(targ.next_team.team2, targ.next_team.wins);
+			if (targ != attacker)
+			{
+				targ.next_team.losses += 1;
+				pqc_team_frags(targ.next_team.team2, targ.next_team.wins);
+			}
+			else
+			{
+				e = find(world, classname, "player");
+				while (e)
+				{
+					if ((e.next_team != world) && (e != targ) && (e.ca_player_flag != PF_WAITING))
+					{
+						e.next_team.losses -= 1;
+						pqc_team_frags(e.next_team.team2, e.next_team.wins);
+						break;
+					}
+					e = find(e, classname, "player");
+				}
+			}
 		}
 		if ((attacker != world) && (attacker.classname == "player") && (attacker.next_team != world))
 		{
@@ -325,15 +342,20 @@ void(entity targ, entity attacker) Killed =
 				attacker.next_team.wins += 1;
 				pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
 			}
-		}
+			else
+			{
+				attacker.next_team.wins -= 1;
+				pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
+			}
 
-		// if ((attacker != world) && (attacker.classname == "player") && (targ != attacker))
-		// {
-		// 	if (attacker.next_team.wins > team_first_place.wins)
-		// 	{
-		// 		team_first_place = attacker.next_team;
-		// 	}
-		// }
+			if ((fraglimit) && (attacker.frags > fraglimit))
+			{
+				boss.busy = TRUE;
+				gameover = TRUE;
+				match_show_timelimit();
+				arena_match_end();
+			}
+		}
 	}
 
 	self = oself;
