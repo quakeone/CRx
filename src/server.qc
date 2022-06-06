@@ -1349,8 +1349,8 @@ void () clanring_commands =
 {
 	// regular user commands
 	sprint(self, "\n");
-	sprint(self, " \byes [y]\b    vote yes\n");
-	sprint(self, " \bno [n]\b     vote no\n");
+	sprint(self, " \byes [\by\b]\b    vote yes\n");
+	sprint(self, " \bno [\bn\b]\b     vote no\n");
 	sprint(self, " \bwarp\b       initiate vote to change level\n");
 	sprint(self, " \bmodes\b      mode switch commands\n");
 	sprint(self, " \bgameplay\b   match/game variable commands\n");
@@ -1396,6 +1396,7 @@ void () modes_commands =
 		sprint(self, " \bmatch\b\n");
 		sprint(self, " \bnormal\b\n");
 		sprint(self, " \bpractice\b\n");
+		sprint(self, " \bra\b\n");
 		sprint(self, " \bwipeout\b\n");
 		sprint(self, "\n");
 };
@@ -1403,15 +1404,16 @@ void () modes_commands =
 void () gameplay_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " \bdroprune [dr]\b   \bsetpent\b\n");
-		sprint(self, " \bflagstatus\b      \bsetquad\b\n");
-		sprint(self, " \bghost\b           \bsetring\b\n");
-		sprint(self, " \bghostcode\b       \btimerstart [st]\b\n");
-		sprint(self, " \bhook\b            \btimerstop [pa]\b\n");
+		sprint(self, " \bdroprune [\bdr\b]\b   \bsetquad\b\n");
+		sprint(self, " \bflagstatus\b      \bsetring\b\n");
+		sprint(self, " \bghost\b           \btimerstart [\bst\b]\b\n");
+		sprint(self, " \bghostcode\b       \btimerstop [\bpa\b]\b\n");
 		sprint(self, " \block\b            \btimeset\b\n");
-		sprint(self, " \botset\b           \btimeset10 [t10]\b\n");
-		sprint(self, " \bready [r]\b       \btimeset20 [t20]\b\n");
-		sprint(self, " \bready? [?]\b      \bunlock\b\n");
+		sprint(self, " \botset\b           \btimeset10 [\bt10\b]\b\n");
+		sprint(self, " \bready [\br\b]\b       \btimeset20 [\bt20\b]\b\n");
+		sprint(self, " \bready? [\b?\b]\b      \bunlock\b\n");
+		sprint(self, " \bsethook\b         \bweaponstay\b\n");
+		sprint(self, " \bsetpent\b\n");
 		sprint(self, "\n");
 };
 
@@ -1442,10 +1444,12 @@ void () stat_commands =
 void () misc_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " \bdeathmatch\b\n");
+		sprint(self, " \bcaptimes\b\n");
 		sprint(self, " \bdropammo\b\n");
 		sprint(self, " \bdropweapon\b\n");
+		sprint(self, " \bhighscores\b\n");
 		sprint(self, " \bmotd\b\n");
+		sprint(self, " \brules\b\n");
 		sprint(self, "\n");
 };
 
