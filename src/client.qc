@@ -161,6 +161,9 @@ void() SetNewParms2 =
 		parm7 = boss.ammo_cells;
 		parm8 = boss.weapon;
 		parm9 = boss.armortype;
+
+		if (!(clanring_playmode & CLANRING_NO_HOOK))
+			parm1 = parm1 | IT_HOOK;
 	}
 	else
 	{
@@ -917,9 +920,7 @@ void() info_player_deathmatch =
 	dm_num_spawns = dm_num_spawns + 1.00;	
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		setmodel (self, "progs/player.mdl");
-		self.frame = 13;
-		self.alpha = 0.6;
+		spawns_restore_model();
 	}
 };
 
@@ -927,9 +928,7 @@ void() info_player_team1 =
 {
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		setmodel (self, "progs/player.mdl");
-		self.frame = 13;
-		self.alpha = 0.6;
+		spawns_restore_model();
 	}
 };
 
@@ -937,9 +936,7 @@ void() info_player_team2 =
 {
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		setmodel (self, "progs/player.mdl");
-		self.frame = 13;
-		self.alpha = 0.6;
+		spawns_restore_model();
 	}
 };
 /*QUAKED info_player_coop (1 0 1) (-16 -16 -24) (16 16 24)
@@ -1656,6 +1653,31 @@ void() CheckPowerups =
 					self.effects = self.effects - (self.effects & EF_DIMLIGHT);
 				}
 				self.effects = self.effects - (self.effects & EF_BLUE);
+
+				if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+				{
+					new_player_record = 0;
+					check_player_high_record(self.fragstreak, self.team2, self.netname);
+					if (new_player_record > 0)
+					{
+						if (new_player_record == 1)
+						{
+							bprint(self.netname);
+							bprint(" set the new \bair-gib streak\b\n");
+							sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
+						}
+						write_airshot_streak_stats();
+					}
+
+					//since player should always get quad after frag, check limit here to let juggling continue
+					if (((fraglimit) && (self.frags >= fraglimit)) || (boss.suddendeath == TRUE))
+					{
+						boss.busy = TRUE;
+						gameover = TRUE;
+						match_show_timelimit();
+						arena_match_end();
+					}
+				}
 			}
 		}
 	}
@@ -2076,7 +2098,7 @@ void(entity client, float fragval) client_frag =
 		client.frags += fragval;
 		if (client.frags >= fraglimit)
 		{
-			if (fraglimit && (clanring_levelcount == -1))
+			if (fraglimit && (clanring_levelcount == -1) && (!(mode_is_arena())))//bucksh0t: arena modes will handle fraglimit, stay on map)
 			{
 				if (!gameover)
 				{
@@ -2130,6 +2152,8 @@ void(entity targ, entity attacker) ClientObituary =
 				attacker.owner.mangle_y = attacker.owner.mangle_y + 1;// attacker.owner killed teammate
 				if (attacker.super_damage_finished > time)					
 					attacker.clanring_qdkill_y = attacker.clanring_qdkill_y + 1;//STATS
+				if (attacker.invincible_finished > time)
+					attacker.clanring_ptkill_y = attacker.clanring_ptkill_y + 1;
 				client_frag (attacker.owner, -1);
 				announce3(targ.netname, " telefragged his teammate ", attacker.owner.netname);
 			}
@@ -2243,6 +2267,8 @@ void(entity targ, entity attacker) ClientObituary =
 							
 					if (attacker.super_damage_finished > time)
 						attacker.clanring_qdkill_y = attacker.clanring_qdkill_y + 1;
+					if (attacker.invincible_finished > time)
+						attacker.clanring_ptkill_y = attacker.clanring_ptkill_y + 1;
 					
 					if (rnum < 0.25)
 					{
@@ -2382,6 +2408,8 @@ void(entity targ, entity attacker) ClientObituary =
 					
 					if (attacker.super_damage_finished > time)
 						attacker.clanring_qdkill_x = attacker.clanring_qdkill_x + 1;
+					if (attacker.invincible_finished > time)
+						attacker.clanring_ptkill_x = attacker.clanring_ptkill_x + 1;
 
 					targ.mangle_z = targ.mangle_z + 1;//STATS
 					client_frag (attacker, 1);

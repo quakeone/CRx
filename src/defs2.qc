@@ -204,6 +204,8 @@ vector 	clanring_angle;					// used for both autoss and intermission
 // client variables
 .vector clanring_qdwep;             // vector to keep track of quad weapon stats	// CRMOD - stats
 .vector clanring_qdkill;            // vector to keep track of quad kill stats	// CRMOD - stats
+.vector clanring_ptwep;             // vector to keep track of pent weapon stats	// CRMOD - stats
+.vector clanring_ptkill;            // vector to keep track of pent kill stats	// CRMOD - stats
 .vector clanring_badstats;          // keep track of RL paks and damage done to team
 .entity clanring_othertarget;       // entity to focus on in tourneycam		// CRMOD - tourneycam
 .entity clanring_inflicted;         // stores entity last attacked			// CRMOD - combat
@@ -443,6 +445,7 @@ entity boss;
 .float start_players;
 .float ca_player_flag;
 .float airborn_pos;
+.float fragstreak;
 
 .float busy;
 .float aborted;
@@ -450,6 +453,7 @@ entity boss;
 .float draw;
 .float unpausing;
 .float allready;
+.float suddendeath;
 .float timetofight;
 .float maprecycle;
 .float weaponlevel;
@@ -457,6 +461,7 @@ entity boss;
 
 .entity chain_gang;
 .entity next_queue;
+.float next_color;
 
 .float team2;
 .float wins;

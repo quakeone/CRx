@@ -173,7 +173,7 @@ void ()motd_arena_start =
 		motd_top4 = "\n1 to join\n\n\n2 to leave\n\n";
 
 		if (playerrecord[0].statvalue > 0)
-		motd_top5 =	sprintf("\nGib Record: %s %s", ftos(rint(playerrecord[0].statvalue)), playerrecord[0].player);
+		motd_top5 =	sprintf("\nAir Gib Streak: %s %s", ftos(rint(playerrecord[0].statvalue)), playerrecord[0].player);
 		
 		if (playerrecord2[0].statvalue > 0)
 		motd_top6 = sprintf("\nHighest Gib: %s %s", ftos(rint(playerrecord2[0].statvalue)), playerrecord2[0].player);

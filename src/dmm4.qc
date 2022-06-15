@@ -1,4 +1,4 @@
-void () write_airshot_gib_stats;
+//void () write_airshot_gib_stats;
 void (float t_statvalue, float t_teamcolor, string t_player) check_player_high_record;
 void () dmm4_init_world =
 {
@@ -32,6 +32,7 @@ void () dmm4_init_world =
 	boss.next_team 		= world;
 	boss.busy			= FALSE;
 	boss.aborted 		= FALSE;
+	boss.suddendeath 	= FALSE;
 	ca_mvp_entity		= world;
 };
 
@@ -62,21 +63,22 @@ void () dmm4_report_winner =
         bprint("The match was a draw\n");
 	}
 	bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
-	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-	{
-		new_player_record = 0;
-		check_player_high_record(team_first_place.wins, winnerteam, winnername);
-		if (new_player_record > 0)
-		{
-			if (new_player_record == 1)
-			{
-				bprint(winnername);
-				bprint(" set the new \bgib record\b\n");
-				sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
-			}
-			write_airshot_gib_stats();
-		}
-	}
+	//leave for timed matches ?
+	// if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	// {
+	// 	new_player_record = 0;
+	// 	check_player_high_record(team_first_place.wins, winnerteam, winnername);
+	// 	if (new_player_record > 0)
+	// 	{
+	// 		if (new_player_record == 1)
+	// 		{
+	// 			bprint(winnername);
+	// 			bprint(" set the new \bgib record\b\n");
+	// 			sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
+	// 		}
+	// 		write_airshot_gib_stats();
+	// 	}
+	// }
 };
 
 void () dmm4_main_loop =
@@ -121,6 +123,7 @@ void () dmm4_main_loop =
 		{
 			gameover = TRUE;
 			boss.aborted = TRUE;
+			boss.suddendeath = FALSE;
 			boss.state = CA_MATCH_OVER;
 			arena_match_end ();
 		}
@@ -171,6 +174,7 @@ void () dmm4_main_loop =
 					//ctprint ("\bFIGHT!");
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
+					boss.suddendeath = FALSE;
 					boss.state = CA_MATCH_PLAYING;
                     clanring_timelimit = cvar("timelimit");
                     boss.lip = clanring_timelimit;
@@ -211,6 +215,7 @@ void () dmm4_main_loop =
 		{
 			gameover = TRUE;
 			boss.aborted = TRUE;
+			boss.suddendeath = FALSE;
 			boss.state = CA_MATCH_OVER;
 			arena_match_end();
 		}
@@ -364,6 +369,9 @@ void () arena_timer_think =
 {
 	local string temp;
 
+	if ((!clanring_timelimit) || (boss.suddendeath))
+		return;
+
 	boss.count -= 1;
 
 	if (boss.count < 0)
@@ -375,7 +383,7 @@ void () arena_timer_think =
 	if (!(clanring_state & CLANRING_MATCH_PAUSED))
 		pqc_match_time(boss.lip, boss.count);
 
-	match_show_timelimit();
+	arena_show_timelimit();
 
 	if (boss.lip)
 	{
@@ -384,11 +392,11 @@ void () arena_timer_think =
 
 		if (boss.lip > 1)
 		{
-			match_show_timelimit();
+			arena_show_timelimit();
 		}
 		else
 		{
-			match_show_timelimit();
+			arena_show_timelimit();
 			announce("Match ends in 1 minute");
 			if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 				sound (world, CHAN_ITEM, "ambience/thunder1.wav", 1, ATTN_NONE);
@@ -398,9 +406,19 @@ void () arena_timer_think =
 	{
 		if (boss.count == 0)
 		{
+			arena_set_winning_team();
+			if (team_first_place.wins == team_second_place.wins)
+			{
+				announce("Sudden Death!!");
+				boss.suddendeath = TRUE;
+				boss.lip = -1;
+				arena_show_timelimit();
+				return;
+			}
+
 			boss.busy = TRUE;
 			gameover = TRUE;
-			match_show_timelimit();
+			arena_show_timelimit();
 			arena_match_end();
 		}
 		else if (boss.count == 30)

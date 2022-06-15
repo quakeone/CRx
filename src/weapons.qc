@@ -41,7 +41,7 @@ void() W_Precache =
 	precache_sound ("knight/sword1.wav");		//server modules hook
 	precache_sound ("shambler/smack.wav");  	// hook tear
 
-	if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+	if ((clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM) || (mode_is_arena()))
 	{		
 		precache_sound ("weapons/chain1.wav");
 		precache_sound ("weapons/chain2.wav");
@@ -310,6 +310,8 @@ void(float shotcount, vector dir, vector spread) FireBullets =
 	// CRMOD - count damage fired with quad    
 	if (self.super_damage_finished > time)			// CRMOD - stats
 		self.clanring_qdwep_y = self.clanring_qdwep_y + 16 * shotcount;// CRMOD - stats
+	if (self.invincible_finished > time)
+		self.clanring_ptwep_y = self.clanring_ptwep_y + 4 * shotcount;
 
 	makevectors(self.v_angle);
 	src = self.origin + v_forward * 10;
@@ -469,6 +471,8 @@ void() T_MissileTouch =
 			self.owner.clanring_badstats_y = self.owner.clanring_badstats_y + self.clanring_badstats_y;
 		if (self.owner.super_damage_finished > time)
 			self.owner.clanring_qdwep_y = self.owner.clanring_qdwep_y + 480;
+		if (self.owner.invincible_finished > time)
+			self.owner.clanring_ptwep_y = self.owner.clanring_ptwep_y + 120;
 	}
 	// END_MOD
 
@@ -685,6 +689,8 @@ void() W_FireLightning =
 	// CRMOD - count damage fired with quad.
     if (self.super_damage_finished > time)                     // ELOHIM_MOD - stats
     	self.clanring_qdwep_y = self.clanring_qdwep_y + 120;             // ELOHIM_MOD - stats
+    if (self.invincible_finished > time)
+    	self.clanring_ptwep_y = self.clanring_ptwep_y + 30;
 	LightningDamage (org, trace_endpos + v_forward * 4, self, 30);
 };
 
@@ -840,7 +846,9 @@ void() W_FireSuperSpikes =
 	// CRMOD - count damage fired with quad.
 	if (self.super_damage_finished > time)
 		self.clanring_qdwep_y = (self.clanring_qdwep_y + 72);// ELOHIM_MOD - stats
-	
+	if (self.invincible_finished > time)
+		self.clanring_ptwep_y = (self.clanring_ptwep_y + 18);
+
 	if (self.player_flag & ITEM_RUNE3_FLAG)
 	{
 		HasteSound ();
@@ -914,6 +922,8 @@ void(float ox) W_FireSpikes =
 	// CRMOD - count damage fired with quad.
 	if (self.super_damage_finished > time)// CRMOD - stats
 		self.clanring_qdwep_y = self.clanring_qdwep_y + 36;// CRMOD - stats
+	if (self.invincible_finished > time)
+		self.clanring_ptwep_y = self.clanring_ptwep_y + 9;
 	//self.punchangle_x = -2;
 };
 

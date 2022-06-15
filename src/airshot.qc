@@ -30,6 +30,7 @@ void () airshot_init_world =
 	boss.next_team 		= world;
 	boss.busy			= FALSE;
 	boss.aborted 		= FALSE;
+	boss.suddendeath 	= FALSE;
 	ca_mvp_entity		= world;
 };
 
@@ -128,7 +129,7 @@ void () AirshotHighScores =
 		}
 		else
 		{
-			s1 = "No gib records set";
+			s1 = "No streaks set";
 		}
 		if (playerrecord2[0].statvalue > 0)
 		{
@@ -147,7 +148,7 @@ void () AirshotHighScores =
 		{
 			s4 = "No height records set";
 		}
-		centerprint(self, "\bAirshot Gib Leaders\b:\n\n", s1, s2, s3, "\bAirshot Highest Gibs\b:\n\n", s4);
+		centerprint(self, "\bAir Gib Streak Leaders\b:\n\n", s1, s2, s3, "\bHighest Air Gibs\b:\n\n", s4);
 		return;
 	}
 };

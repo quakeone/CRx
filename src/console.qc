@@ -487,6 +487,48 @@ void() console_show_quadstats =
 	cprint("\n");
 };
 
+void() console_show_pentstats =
+{
+	local entity player, pteam;
+	local float useteams;
+
+	if ((clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)) && teamplay)
+		useteams = TRUE;
+	else
+		useteams = FALSE;
+
+	cprint("\"------------\"\n");
+	cprint("\" Pent Stats \"\n");
+	cprint("\"------------\"\n");
+
+	cprint("\" pents | efficiency | enemy | teammates |      name\"\n");
+	cprint("-------+------------+-------+-----------+-----------------\n");
+	player = clanring_sentinel.next_player;
+	pteam = player.next_team;
+
+	while (player)
+	{
+		cprint("\"  ");
+		utils_cprint_int3 (player.clanring_ptwep_z);
+		localcmd("  |    ");
+		console_print_percent4 (player.clanring_ptwep_x, player.clanring_ptwep_y);
+		localcmd("    |  ");
+		utils_cprint_int3 (player.clanring_ptkill_x);
+		localcmd("  |    ");
+		utils_cprint_int3 (player.clanring_ptkill_y);
+		localcmd3("    | ", player.netname, "\"\n");
+		player = player.next_player;
+		if ((useteams && (player.next_team != pteam)))
+		{
+			cprint("\" [");
+			utils_cprint_int3 (pteam.dest2_y);
+			localcmd3("] |            |       |           | ", pteam.netname, "\"\n");
+			pteam = player.next_team;
+		}
+	}
+	cprint("\n");
+};
+
 //
 //  S H O W  B A D S T A T S
 //
@@ -845,6 +887,9 @@ void() console_autodump =
 
 		if (!(clanring_playmode & CLANRING_NO_QUAD))//R00k -added-
 			console_show_quadstats ();
+
+		if (!(clanring_playmode & CLANRING_NO_PENT))
+			console_show_pentstats ();
 
 		if ((clanring_playmode & CLANRING_MATCH_MODE) && (teamplay == 2))
 			console_show_badstats ();
@@ -1696,7 +1741,7 @@ void(float command) console_command =
 
 		case 12:
 		case 13:
-		case 14:
+		case 14: console_show_pentstats();	break;
 		case 15:
 		{
 			votables_request_set_gametype_mode_map(-1, command - 12, "");
@@ -2050,7 +2095,7 @@ void () AirshotHighScores_sprint =
 	}
 	else
 	{
-		s1 = "No gib records set";
+		s1 = "No streaks set\n";
 	}
 	if (playerrecord2[0].statvalue > 0)
 	{
@@ -2069,6 +2114,6 @@ void () AirshotHighScores_sprint =
 	{
 		s4 = "No height records set";
 	}
-	centerprint(self, "\bAirshot Gib Leaders\b:\n", s1, s2, s3, "\bAirshot Highest Gibs\b:\n", s4);
+	sprint(self, "\bAir Gib Streak Leaders\b:\n", s1, s2, s3, "\bHighest Air Gibs\b:\n", s4, "\n");
 	return;
 };

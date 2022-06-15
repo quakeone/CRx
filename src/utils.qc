@@ -1144,6 +1144,13 @@ void (void () dofunc) utils_do_flags =
 	utils_do_item(dofunc, "item_flag_team2");
 };
 
+void (void () dofunc) utils_do_match_spawns =
+{
+    utils_do_item(dofunc, "info_player_deathmatch");
+    utils_do_item(dofunc, "info_player_team1");
+    utils_do_item(dofunc, "info_player_team2");
+};
+
 void () reset_frags =
 {
 	if (self.next_team == world)

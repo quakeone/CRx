@@ -1256,6 +1256,8 @@ void() admin_impulse =
 		votables_request_set_autopause();
 	else if (self.impulse == 211)
 		votables_request_set_obits();
+	else if (self.impulse == 214)
+		votables_request_abortmatch();
 	else if (self.impulse == 215)
 		votables_select_timelimit();
 	else if (self.impulse == 216)
@@ -1305,16 +1307,6 @@ void() admin_impulse =
 		admin_list_ghosts ();
 	else if (self.impulse == 213)
 		admin_start_kick ();
-	else if (self.impulse == 214)
-    {
-        if (mode_is_arena())
-        {
-            boss.aborted = TRUE;
-            arena_match_end();
-        }
-        else
-            match_end();
-    }
 	else if (self.impulse == 224)
 		utils_toggle_sflag (CLANRING_NO_SPOOGE, "Safe practice mode");
 	else if (self.impulse == 228)

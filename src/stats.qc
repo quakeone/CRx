@@ -16,7 +16,8 @@ void(float frac, float tot) stats_print_percent3;
 //
 void() stats_reset_player =
 {
-	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = self.clanring_qdkill = self.clanring_qdwep = '0 0 0';
+	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = '0 0 0';
+	self.clanring_qdkill = self.clanring_qdwep = self.clanring_ptkill = self.clanring_ptwep = '0 0 0';
 	self.stats_gl_frac	= 0;
 	self.stats_gl_tot	= 0;
 	self.dmg_taken	= 0;
@@ -149,6 +150,59 @@ void() stats_show_quadstats =
 			sprint(self, " ");
 			utils_print_int3_gold(pteam.dest2_x);
 			sprint3(self, " ü   ü   ü   ü   ü", pteam.mdl, "\n");
+			pteam = player.next_team;
+		}
+	}
+	sprint(self, "\n");
+};
+
+//
+//  S H O W  P E N T S T A T S
+//
+
+void() stats_show_pentstats =
+{
+    local entity player, pteam;
+	local float useteams;
+
+	if (teamplay && ((clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)) || clanring_sentinel.owner != clanring_sentinel))
+		useteams = TRUE;
+	else
+		useteams = FALSE;
+
+	sprint(self, "\n");
+	sprint(self, "\bpent protection\b\n");
+	sprint(self, "\n");
+	sprint(self, "pentsüeffüoppütm ü     name\n");
+	sprint(self, "­­­­­«­­­«­­­«­­­«­­­­­­­­­­­­­­­\n");
+	player = clanring_sentinel.next_player;
+	pteam = player.next_team;
+	while (player)
+	{
+		if (player == self)
+		{
+			sprint(self, "\x90");
+			utils_print_int3(player.clanring_ptwep_z);
+			sprint(self, "‘ü");
+		}
+		else
+		{
+			sprint(self, " ");
+			utils_print_int3(player.clanring_ptwep_z);
+			sprint(self, " ü");
+		}
+		stats_print_percent3(player.clanring_ptwep_x, player.clanring_ptwep_y);
+		sprint(self, "ü");
+		utils_print_int3(player.clanring_ptkill_x);
+		sprint(self, "ü");
+		utils_print_int3(player.clanring_ptkill_y);
+		sprint3(self, "ü", player.netname, "\n");
+		player = player.next_player;
+		if (useteams && (player.next_team != pteam))
+		{
+			sprint(self, " ");
+			utils_print_int3_gold(pteam.dest2_y);
+			sprint3(self, " ü   ü   ü   ü", pteam.mdl, "\n");
 			pteam = player.next_team;
 		}
 	}
@@ -297,7 +351,8 @@ void () stats_show_efficiency =
 	player = find(world,classname, "player");
 	while (player)
 	{
-		if (!(player.style & CLANRING_OBSERVER))
+		if (((mode_is_arena()) && (player.next_team != world)) ||
+			(!(mode_is_arena()) && !(player.style & CLANRING_OBSERVER)))
 		{
 			stats_print_percent3(player.dest2_x, player.dest1_x);
 			sprint(self, "ü");
@@ -756,13 +811,13 @@ void() stats_autodump =
 			stats_show_quadstats ();
 			//sprint(self, "\n");
 		}
-/*
-		if (!(clanring_playmode & CLANRING_NO_PENT))//R00k -TODO-
+
+		if (!(clanring_playmode & CLANRING_NO_PENT))
 		{
 			stats_show_pentstats ();
 			//sprint(self, "\n");
 		}
-*/
+
 		if ((clanring_playmode & CLANRING_MATCH_MODE) && (teamplay == 2))
 		{
 			stats_show_badstats();
@@ -854,6 +909,7 @@ void () stats_impulse =
 {
 	switch (self.impulse)
 	{
+		case 169: stats_show_pentstats();	break;
 		case 170: stats_show_killstats();	break;	
 		case 171: stats_show_efficiency();	break;
 		case 172: stats_autodump();			break;

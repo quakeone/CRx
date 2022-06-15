@@ -1600,7 +1600,7 @@ void () observer_update_display =
     }
     else
     {
-		local string othertarget;
+		local string othertarget = "";
 
 		if ((self.oflags & OBSERVER_TOURNEY) && (self.clanring_othertarget != world) && (self.movetarget.classname == "player"))
 			othertarget = self.clanring_othertarget.netname;

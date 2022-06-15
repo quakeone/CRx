@@ -280,40 +280,36 @@ void(entity targ, entity attacker) Killed =
 						write_airshot_height_stats();
 					}
 
-					if ((self.lefty > 0) && time < (self.lefty + 8))
-					{
-						as_sound = 7;
-						self.lefty = 0;
-					}
-					else
-					{
-						self.lefty = time;
-					}
-
-					if ((boss.lip < 1) && (boss.count <= 30))
+					// last 30 seconds
+					if ((!clanring_timelimit) || ((boss.lip < 1) && (boss.count <= 30)))
 					{
 						if (attacker.super_damage_finished >= time)
 						{
-							if (as_sound == 0)
+							attacker.fragstreak += 1;
+							if ((attacker.fragstreak % 2 == 0) || (as_sound == 0))
 								as_sound = 1;
 						}
-
-						if (attacker.frags < (targ.frags + 3))
+						else
 						{
-							attacker.super_time = 1;
-							attacker.super_damage_finished = time + 3;
-							attacker.items = attacker.items | IT_QUAD;
+							attacker.fragstreak = 1;
 						}
-					}
 
-					prand = floor(random() * 2) + 1;
+						attacker.super_time = 1;
+						attacker.super_damage_finished = time + 3;
+						attacker.items = attacker.items | IT_QUAD;
+					}
 
 					if (as_sound == 1)
 					{
+						prand = floor(random() * 4) + 1;
 						if (prand == 1)
 							sound (self, CHAN_VOICE, "crx/onemore.wav", 1, ATTN_NORM);
 						else if (prand == 2)
 							sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
+						else if (prand == 3)
+							sound (self, CHAN_VOICE, "crx/laugh6.wav", 1, ATTN_NORM);
+						else
+							sound (self, CHAN_VOICE, "crx/onfire.wav", 1, ATTN_NORM);
 					}
 					else if (as_sound == 2)
 						sound (self, CHAN_VOICE, "crx/beyond.wav", 1, ATTN_NORM);
@@ -321,22 +317,37 @@ void(entity targ, entity attacker) Killed =
 						sound (self, CHAN_VOICE, "crx/gasp.wav", 1, ATTN_NORM);
 					else if (as_sound == 4)
 					{
+						prand = floor(random() * 3) + 1;
 						if (prand == 1)
 							sound (self, CHAN_VOICE, "crx/gasp2.wav", 1, ATTN_NORM);
 						else if (prand == 2)
+							sound (self, CHAN_VOICE, "crx/kaboom.wav", 1, ATTN_NORM);
+						else
 							sound (self, CHAN_VOICE, "crx/excell3.wav", 1, ATTN_NORM);
 					}
 					else if (as_sound == 5)
 					{
+						prand = floor(random() * 3) + 1;
 						if (prand == 1)
 							sound (self, CHAN_VOICE, "crx/superb.wav", 1, ATTN_NORM);
 						else if (prand == 2)
 							sound (self, CHAN_VOICE, "crx/excell2.wav", 1, ATTN_NORM);
+						else
+							sound (self, CHAN_VOICE, "ra/outstand.wav", 1, ATTN_NORM);
 					}
 					else if (as_sound == 6)
 						sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
-					else if (as_sound == 7)
-						sound (self, CHAN_VOICE, "crx/onfire.wav", 1, ATTN_NORM);
+				}
+				else
+				{
+					//dmm4 fraglimit check
+					if (((fraglimit) && (self.frags >= fraglimit)) || (boss.suddendeath == TRUE))
+					{
+						boss.busy = TRUE;
+						gameover = TRUE;
+						arena_show_timelimit();
+						arena_match_end();
+					}
 				}
 
 				attacker.next_team.wins += 1;
@@ -346,14 +357,6 @@ void(entity targ, entity attacker) Killed =
 			{
 				attacker.next_team.wins -= 1;
 				pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
-			}
-
-			if ((fraglimit) && (attacker.frags > fraglimit))
-			{
-				boss.busy = TRUE;
-				gameover = TRUE;
-				match_show_timelimit();
-				arena_match_end();
 			}
 		}
 	}
@@ -569,6 +572,17 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			if ((((targ.classname != "player") || (attacker.team != targ.team)) || !teamplay))
 			{
 				attacker.clanring_qdwep_x = (attacker.clanring_qdwep_x + damage);
+			}
+		}
+	}
+	//pent stats
+	if ((attacker.invincible_finished > time) && (inflictor.classname != "door"))
+	{
+		if ((((attacker.classname == "player") && (targ != attacker)) && (inflictor.classname != "grenade")))
+		{
+			if ((((targ.classname != "player") || (attacker.team != targ.team)) || !teamplay))
+			{
+				attacker.clanring_ptwep_x = (attacker.clanring_ptwep_x + damage);
 			}
 		}
 	}

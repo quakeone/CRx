@@ -1128,6 +1128,7 @@ void() powerup_touch =
 		other.effects = other.effects | EF_DIMLIGHT;	// 1998-07-23 Better performance in handling of powerups by Maddes
 		other.effects = other.effects | EF_RED;	
 
+		other.clanring_ptwep_z = other.clanring_ptwep_z + 1; //pent stats
 		if (other.next_team != world)
 		{
 			other.next_team.dest2_y = other.next_team.dest2_y + 1;

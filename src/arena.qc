@@ -30,7 +30,7 @@ void () wipeout_try_spawn_item;
 void () respawn;
 void (entity pteam) ra_leave_next_queue;
 void (entity pteam) ra_join_next_queue;
-void () ra_next_player_ready;
+void (float nextcolor) ra_next_player_ready;
 
 void () arena_precache =
 {
@@ -52,6 +52,7 @@ void () arena_precache =
 	precache_sound ("crx/laugh2.wav");
 	precache_sound ("crx/laugh3.wav");
 	precache_sound ("crx/laugh4.wav");
+	precache_sound ("crx/laugh6.wav");
 	precache_sound ("crx/gasp.wav");
 	precache_sound ("crx/gasp2.wav");
 	precache_sound ("crx/beyond.wav");
@@ -60,6 +61,7 @@ void () arena_precache =
 	precache_sound ("crx/helpyou.wav");
 	precache_sound ("crx/hiscore.wav");
 	precache_sound ("crx/onfire.wav");
+	precache_sound ("crx/kaboom.wav");
 	precache_sound ("crx/gameover.wav");
 	precache_sound ("crx/superb.wav");
 	precache_sound ("crx/onemore.wav");
@@ -1417,6 +1419,8 @@ void () arena_fight_and_shoot =
 	if (!(self.style & CLANRING_OK_TO_SHOOT))
 		self.style = self.style | CLANRING_OK_TO_SHOOT;
 
+	self.fragstreak = 0;
+
 	centerprint(self, "\bFIGHT!");
 
 	clear_name();
@@ -1636,6 +1640,12 @@ void () arena_match_end =
 		}
 
 		report_mvp_game();
+
+		bprint ("The match is over\n");//required for Qrack cl_autodemo 2
+		sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+
+		NextLevel();
+		return;
 	}
 	else bprint ("Match \baborted\b.\n");//Added v1.4c
 
@@ -1672,10 +1682,7 @@ void () arena_match_end =
 	temp = ftos(boss.round);
 	localcmd("skill \"", temp, "\"\n");//this still used?
 
-	if (clanring_playmode & CLANRING_RA_MODE)
-		NextLevel();
-	else
-		utils_make_scheduled_event(reset_match, 1);
+	utils_make_scheduled_event(reset_match, 1);
 	pqc_match_time (0, 0);
 	pqc_match_reset();
 };
@@ -1734,7 +1741,7 @@ void() reset_round =
 	if (clanring_playmode & CLANRING_RA_MODE)
 	{
 		if (boss.draw == FALSE)
-			ra_next_player_ready();
+			ra_next_player_ready(boss.next_color);
 		announce("prepare to fight");
 	}
 
@@ -1799,8 +1806,9 @@ void () report_mvp_round =
 
 void() round_end =
 {
-	local 	entity	current_player, wteam = world, lteam;
-	local	string	temp;
+	local entity current_player, wteam = world, lteam;
+	local string temp;
+	local float prand;
 
 	boss.busy = TRUE;//hold the presses!
 
@@ -1854,6 +1862,12 @@ void() round_end =
 				{
 					lteam.losses = lteam.losses + 1;
 					current_player.ca_player_flag = PF_WAITING;
+					boss.next_color = lteam.team2;
+					prand = floor(random() * 11) + 1;
+					if (prand == 4)
+						lteam.team2 = COLOR_YELLOW;
+					else
+						lteam.team2 = prand;
 					ra_join_next_queue(lteam);
 					break;
 				}
@@ -1865,6 +1879,7 @@ void() round_end =
 		{
 			team_first_place = wteam;
 			gameover = TRUE;
+			boss.aborted = FALSE;
 			arena_match_end();
 			return;
 		}

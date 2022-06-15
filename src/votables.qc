@@ -80,7 +80,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias 14 impulse 244\n");
 	stuffcmd(self, "alias 15 impulse 245\n");
 	// send this LAST to make sure that client received all impulses
-	stuffcmd(self, "alias clanring_ignorethis \"impulse 180;\"\n");
+	stuffcmd(self, "alias crx_ignorethis \"impulse 180;\"\n");
 	self = temp;
 	remove(self);
 };
@@ -100,6 +100,9 @@ void() votables_set_hook =
 	{
 		clanring_playmode = (clanring_playmode | CLANRING_NO_HOOK);
 
+		if (mode_is_arena())
+			clanring_state = clanring_state - (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM);
+
 		p = find(world, classname, "player");
 
 		while (p)
@@ -115,7 +118,9 @@ void() votables_set_hook =
 					self = tmp;
 					p.weapon = IT_AXE;
 				}			
-				self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));	
+				//self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));
+				p.hook2 = (p.hook2 - (p.hook2 & HOOK_OUT)); //not this?
+				p.items = p.items - (p.items & IT_HOOK);
 			}
 			p= find(p ,classname , "player");			
 		}
@@ -126,8 +131,20 @@ void() votables_set_hook =
 		if (clanring_playmode & CLANRING_NO_HOOK)
 		{
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NO_HOOK);
+			if (mode_is_arena())
+				clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
 			bprint("grappling hook has been \benabled\n");
-		}					
+
+			p = find(world, classname, "player");
+			while (p)
+			{
+				if (p.style & CLANRING_CONNECTED)
+				{				
+					p.items = p.items | IT_HOOK;	
+				}
+				p= find(p ,classname , "player");			
+			}
+		}
 	}
 
 	utils_set_cvar("samelevel", clanring_playmode);	
@@ -342,6 +359,7 @@ void() votables_set_gametype_mode_map =
 			if (!(clanring_playmode & CLANRING_NORMAL_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE)
 				 && !(clanring_playmode & CLANRING_MATCH_MODE))
 				clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
+			clanring_playmode = clanring_playmode | CLANRING_NO_HOOK;
 			cvar_set("timelimit", "0");
 			votables_clear_arena_playmode_flags();
 			cvar_set("teamplay", "2");
@@ -358,7 +376,8 @@ void() votables_set_gametype_mode_map =
 				clanring_playmode = (clanring_playmode | CLANRING_CAPTURE_THE_FLAG);
 			if (!(clanring_playmode & CLANRING_NORMAL_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE)
 				 && !(clanring_playmode & CLANRING_MATCH_MODE))
-				clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
+			{clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;}
+			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NO_HOOK);
 			cvar_set("timelimit", "0");
 			cvar_set("teamplay", "1");
 			if (deathmatch == 4)
@@ -370,7 +389,7 @@ void() votables_set_gametype_mode_map =
 		else if (request_gametype == 2)
 		{
 			votables_clear_playmode_flags();
-			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE | CLANRING_NO_HOOK);
 			cvar_set("teamplay", "1");
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
@@ -381,7 +400,7 @@ void() votables_set_gametype_mode_map =
 		else if (request_gametype == 3)
 		{
 			votables_clear_playmode_flags();
-			clanring_playmode = (clanring_playmode | CLANRING_RA_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_RA_MODE | CLANRING_NO_HOOK);
 			cvar_set("teamplay", "0");
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
@@ -392,7 +411,7 @@ void() votables_set_gametype_mode_map =
 		else if (request_gametype == 4)
 		{
 			votables_clear_playmode_flags();
-			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE | CLANRING_NO_HOOK);
 			cvar_set("timelimit", "3");
 			cvar_set("fraglimit", "0");
 			cvar_set("teamplay", "0");
@@ -405,7 +424,7 @@ void() votables_set_gametype_mode_map =
 		else if (request_gametype == 5)
 		{
 			votables_clear_playmode_flags();
-			clanring_playmode = (clanring_playmode | CLANRING_AIRSHOT_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_AIRSHOT_MODE | CLANRING_NO_HOOK);
 			cvar_set("timelimit", "3");
 			cvar_set("fraglimit", "0");
 			cvar_set("teamplay", "0");
@@ -418,7 +437,7 @@ void() votables_set_gametype_mode_map =
 		else if (request_gametype == 6)
 		{
 			votables_clear_playmode_flags();
-			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE | CLANRING_WIPEOUT_MODE);
+			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE | CLANRING_WIPEOUT_MODE | CLANRING_NO_HOOK);
 			//cvar_set("timelimit", "0");
 			cvar_set("teamplay", "1");
 			if (deathmatch == 4)
@@ -539,7 +558,7 @@ void() votables_set_gametype_mode_map =
 //      0   -   normal
 //      1   -   practice
 //      2   -   match
-void(float newtype, float newmode, optional string newmap = "") votables_request_set_gametype_mode_map =
+void(float newtype, float newmode, string newmap) votables_request_set_gametype_mode_map =
 {
 	local string mode = "";
 
@@ -884,10 +903,11 @@ void() votables_select_fraglimit =
 	}
 
 	sprint(self, "Select fraglimit:\n");
-	sprint(self, "\x80\1\x82  \b5 frags\b    \x80\4\x82 \b20 frags\b    \x80\7\x82  \b50 frags\b\n");
-	sprint(self, "\x80\2\x82 \b10 frags\b    \x80\5\x82 \b25 frags\b    \x80\8\x82  \b75 frags\b\n");
-	sprint(self, "\x80\3\x82 \b15 frags\b    \x80\6\x82 \b35 frags\b    \x80\9\x82 \b100 frags\b\n");
-	sprint(self, "\x80\0\x82 \bcancel\b\n");
+	sprint(self, "\x80\1\x82   \b5 frags\b    \x80\4\x82 \b20 frags\b    \x80\7\x82  \b50 frags\b\n");
+	sprint(self, "\x80\2\x82  \b10 frags\b    \x80\5\x82 \b25 frags\b    \x80\8\x82  \b75 frags\b\n");
+	sprint(self, "\x80\3\x82  \b15 frags\b    \x80\6\x82 \b35 frags\b    \x80\9\x82 \b100 frags\b\n");
+	sprint(self, "\x80\1\0\x82 \bNo fraglimit\b\n");
+	sprint(self, "\x80\0\x82  \bcancel\b\n");
 	self.use = votables_get_fraglimit;
 };
 
@@ -962,12 +982,14 @@ void (float newlimit) votables_request_set_timelimit =
 //
 void() votables_get_timelimit =
 {
-	if (self.finaldest_z == 1)
+	if (self.finaldest_z >= 1 && self.finaldest_z <= 6)
+		votables_request_set_timelimit(self.finaldest_z * 5);
+	else if (self.finaldest_z == 9)
 		votables_request_set_timelimit(3);
-	else if (self.finaldest_z >= 2 && self.finaldest_z <= 6)
-		votables_request_set_timelimit((self.finaldest_z - 1) * 5);
 	else if (self.finaldest_z == 10)
 		votables_request_set_timelimit(0);
+	else if (self.finaldest_z == 0)
+		sprint(self, "cancelled\n");
 	else
 		sprint(self, "invalid selection\n");
 	self.use = SUB_Null;
@@ -1001,9 +1023,11 @@ void() votables_select_timelimit =
 	}
 
 	sprint(self, "Select timelimit:\n");
-	sprint(self, "\x80\1\x82  3 minutes    \x80\4\x82 15 minutes\n");
-	sprint(self, "\x80\2\x82  5 minutes    \x80\5\x82 20 minutes\n");
-	sprint(self, "\x80\3\x82 10 minutes    \x80\6\x82 25 minutes\n");
+	sprint(self, "\x80\1\x82   \b5 minutes\b  \x80\4\x82 \b20 minutes\b  \x80\7\x82 \b3 minutes\b\n");
+	sprint(self, "\x80\2\x82  \b10 minutes\b  \x80\5\x82 \b25 minutes\b\n");
+	sprint(self, "\x80\3\x82  \b15 minutes\b  \x80\6\x82 \b30 minutes\b\n");
+	sprint(self, "\x80\1\0\x82 \bNo timelimit\b\n");
+	sprint(self, "\x80\0\x82  \bcancel\b\n");
 	self.use = votables_get_timelimit;
 };
 
@@ -1625,3 +1649,50 @@ void() votables_request_set_faststarts =
 	// }
 };
 
+void() votables_do_abortmatch =
+{
+	if (mode_is_arena())
+	{
+		boss.aborted = TRUE;
+		arena_match_end();
+	}
+	else
+		match_end();
+};
+
+void() votables_request_abortmatch =
+{
+	if (mode_is_arena())
+	{
+		if ((boss == world) || ((boss.state != CA_MATCH_PLAYING) && (boss.state != CA_MATCH_ROUNDSTART)))
+		{
+			sprint(self, "No match in progress\n");
+			return;
+		}
+	}
+	else if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if ( !(clanring_state & CLANRING_MATCH_STARTED))
+		{
+			sprint(self, "No match in progress\n");
+			return;
+		}
+	}
+	else
+	{
+		sprint(self, "Command not valid in this mode\n");
+		return;
+	}
+
+	if ((self.style) & CLANRING_ADMINISTRATOR) 
+	{
+		votables_do_abortmatch ();
+	}
+	else
+	{
+		if (vote_init("\babort\b", " match", votables_do_abortmatch))
+		{
+			vote_yes();
+		}
+	}
+};

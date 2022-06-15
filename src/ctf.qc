@@ -279,10 +279,9 @@ void() TeamCaptureFlagTouch =
 								sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
 							else if (new_player_record == 3)
 								sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
-							else
-								sound(world,CHAN_AUTO,"crx/capreg.wav",1,ATTN_NONE);
 							write_capture_stats();
 						}
+						//else sound(world,CHAN_AUTO,"crx/capreg.wav",1,ATTN_NONE);
 					}
 				}
 				other.fctime += (time - other.flag_since);

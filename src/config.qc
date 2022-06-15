@@ -603,7 +603,8 @@ void () read_capture_stats =
 };
 void () read_airshot_stats =
 {
-	read_player_stats("airshot_gib.crx", RECORD_HIGH, 0);
+	read_player_stats("airshot_streak.crx", RECORD_HIGH, 0);
+	//read_player_stats("airshot_gib.crx", RECORD_HIGH, 0);
 	read_player_stats("airshot_height.crx", RECORD_HIGH, 2);
 };
 
@@ -665,9 +666,13 @@ void () write_airshot_height_stats =
 {
 	write_player_stats("airshot_height.crx", 2);
 };
-void () write_airshot_gib_stats =
+// void () write_airshot_gib_stats =
+// {
+// 	write_player_stats("airshot_gib.crx", 0);
+// };
+void () write_airshot_streak_stats =
 {
-	write_player_stats("airshot_gib.crx", 0);
+	write_player_stats("airshot_streak.crx", 0);
 };
 
 //TODO: maybe combine these .ent .cam files together into per $mapname.cfg files with subsections for entity, camera, server settings for speed and ease?

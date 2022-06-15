@@ -199,10 +199,6 @@ void () clanring_exec_configs;
 void (float value) clanring_set_teamplay;
 void (float value) clanring_set_fraglimit;
 void () stats_reset_player;
-void () stats_show_quadstats;
-void () stats_show_killstats;
-void () stats_show_efficiency;
-void () stats_show_summary;
 void () stats_impulse;
 void () score_init_world;
 void () score_client_connect;
@@ -679,6 +675,7 @@ void () clanring_set_aliases =
     stuffcmd(self, "alias quaketv impulse 154\n");      // CRMOD - autocam
 	stuffcmd(self, "alias autochase impulse 155\n");
 	stuffcmd(self, "alias help-camera impulse 156\n");
+	stuffcmd(self, "alias pentstats impulse 169\n");
 	stuffcmd(self, "alias killstats impulse 170\n");
 	stuffcmd(self, "alias efficiency impulse 171\n");
     stuffcmd(self, "alias eff impulse 171\n");          // CRMOD - so people don't have to spell out efficiency
@@ -756,7 +753,7 @@ void () clanring_send_ignore_this =
 	local entity ghostent;
 	local float temp;
 
-	stuffcmd(self.owner, "clanring_ignorethis\n");	// test for binds 
+	stuffcmd(self.owner, "crx_ignorethis\n");	// test for binds 
 	temp = 0;
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 	{
@@ -1007,7 +1004,7 @@ void () clanring_client_connect =
 		// Get rid of the new client flag
 		parm10	= parm10 - (parm10 & CLANRING_NEW_CLIENT);
 		// Set default observer flags
-		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_DEMO | OBSERVER_COMMENTARY;
+		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_WALK | OBSERVER_COMMENTARY;
 
 		parm13 = 0;
 		
@@ -1208,6 +1205,12 @@ void () clanring_put_client_in_server =
 			self.cc_queue_vote	= 0;//R00k - test
 			self.ca_player_flag = PF_PLAYING;
 			self.respawntime = 0;
+
+			if (clanring_timelimit & CLANRING_RA_MODE)
+			{
+				makevectors (self.v_angle);
+				self.velocity = v_forward * 350;
+			}
 		}
 
 		UnHookPlayer();
@@ -1711,7 +1714,14 @@ void () clanring_show_rules_prematch =
 		temp = cvar("teamplay");
 		s5 = sprintf("%s%s\n", "\bteamplay      ", ftos(temp));
 
-		if (clanring_overtime > 0)
+		if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+		{
+			if (clanring_timelimit)
+				s6 = "\bovertime     \bsd\n";
+			else
+				s6 = "\bovertime    \boff\n";
+		}
+		else if (clanring_overtime > 0)
 		{
 			if (clanring_overtime > 9)
 				s6 = sprintf("%s%s\n", "\bovertime     ", ftos(clanring_overtime));
@@ -2014,7 +2024,7 @@ void () clanring_impulse =
     	match_impulse ();
 	else if (self.impulse >= 140 && self.impulse <= 159)
     	observer_impulse ();
-	else if (self.impulse >= 170 && self.impulse <= 179)
+	else if (self.impulse >= 169 && self.impulse <= 179)
     	stats_impulse ();
 	else if (self.impulse == 100)
     	clanring_help ();
