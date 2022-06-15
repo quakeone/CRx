@@ -258,7 +258,7 @@ void() votables_request_change_level =
 		votables_change_level();
 	}
 	else
-	if (vote_init("γθαξηε μεφεμ το ", newmap, votables_change_level))
+	if (vote_init("Γ£Γ¨Γ΅Γ®Γ§Γ¥Β Γ¬Γ¥Γ¶Γ¥Γ¬Β Γ΄Γ― ", newmap, votables_change_level))
 	{
 		request_mapname = newmap;
 		vote_yes();
@@ -362,7 +362,10 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = clanring_playmode | CLANRING_NO_HOOK;
 			cvar_set("timelimit", "0");
 			votables_clear_arena_playmode_flags();
-			cvar_set("teamplay", "2");
+		//R00k: force teamplay 0 as default. Match sets this later.
+			if (clanring_playmode & CLANRING_NORMAL_MODE)
+				cvar_set("teamplay", "0");
+
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
@@ -1088,7 +1091,7 @@ void(float overtime) votables_request_set_overtime =
 	{
 		if (overtime == 0)
 		{
-			if (vote_init("δισαβμε οφεςτινε", "", votables_set_overtime))
+			if (vote_init("Γ¤Γ©Γ³Γ΅ΓΆΓ¬Γ¥Β Γ―Γ¶Γ¥Γ²Γ΄Γ©Γ­Γ¥", "", votables_set_overtime))
 			{
 				request_overtime = overtime;
 				vote_yes();
@@ -1098,13 +1101,13 @@ void(float overtime) votables_request_set_overtime =
 		{
 			if (overtime < 0)
 			{
-				temp = "συδδεξ δεατθ";
+				temp = "Γ³ΓµΓ¤Γ¤Γ¥Γ®Β Γ¤Γ¥Γ΅Γ΄Γ¨";
 			}
 			else
 			{
 				temp = strings_ftos_bronze (overtime);
 			}
-			if (vote_init("γθαξηε οφεςτινε το ", temp, votables_set_overtime))
+			if (vote_init("Γ£Γ¨Γ΅Γ®Γ§Γ¥Β Γ―Γ¶Γ¥Γ²Γ΄Γ©Γ­Γ¥Β Γ΄Γ― ", temp, votables_set_overtime))
 			{
 				request_overtime = overtime;
 				vote_yes();
@@ -1148,10 +1151,10 @@ void() votables_select_overtime =
 		return;
 	}
 	sprint(self, "Select overtime:\n");
-	sprint(self, "’ Δισαβμεδ      – ΄ Νιξυτεσ\n");
-	sprint(self, "“ ± Νιξυτε      — µ Νιξυτεσ\n");
-	sprint(self, "” ² Νιξυτεσ      ±° Νιξυτεσ\n");
-	sprint(self, "• ³ Νιξυτεσ     ™ Συδδεξ δεατθ\n");
+	sprint(self, "ΒΒ’Β Γ„Γ©Γ³Γ΅ΓΆΓ¬Γ¥Γ¤      ΒΒ–Β Β΄ ΓΓ©Γ®ΓµΓ΄Γ¥Γ³\n");
+	sprint(self, "ΒΒ“Β Β± ΓΓ©Γ®ΓµΓ΄Γ¥      ΒΒ—Β Βµ ΓΓ©Γ®ΓµΓ΄Γ¥Γ³\n");
+	sprint(self, "ΒΒ”Β Β² ΓΓ©Γ®ΓµΓ΄Γ¥Γ³     ΒΒΒ Β±Β° ΓΓ©Γ®ΓµΓ΄Γ¥Γ³\n");
+	sprint(self, "ΒΒ•Β Β³ ΓΓ©Γ®ΓµΓ΄Γ¥Γ³     ΒΒ™Β Γ“ΓµΓ¤Γ¤Γ¥Γ® Γ¤Γ¥Γ΅Γ΄Γ¨\n");
 	self.use = votables_get_overtime;
 };
 
@@ -1275,7 +1278,7 @@ void (float gibs) votables_request_set_gibs =
 		gibmode = "'low'";
 		else
 		gibmode = "'high'";
-		if (vote_init("γθαξηε ηιβσ το ", gibmode, votables_set_gibs))
+		if (vote_init("Γ£Γ¨Γ΅Γ®Γ§Γ¥Β Γ§Γ©ΓΆΓ³Β Γ΄Γ― ", gibmode, votables_set_gibs))
 		{
 			request_gibs = gibs;
 			vote_yes();
@@ -1341,11 +1344,11 @@ void() votables_request_set_quad =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_QUAD)
-			newstate = "εξαβμε";
+			newstate = "Γ¥Γ®Γ΅ΓΆΓ¬Γ¥";
 		else
-			newstate = "δισαβμε";
+			newstate = "Γ¤Γ©Γ³Γ΅ΓΆΓ¬Γ¥";
 
-		if (vote_init(newstate, " ρυαδ", votables_set_quad))
+		if (vote_init(newstate, " Γ±ΓµΓ΅Γ¤", votables_set_quad))
 			vote_yes();
 	}
 };
@@ -1430,11 +1433,11 @@ void() votables_request_set_pent =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_PENT)
-			newstate = "εξαβμε";
+			newstate = "Γ¥Γ®Γ΅ΓΆΓ¬Γ¥";
 		else
-			newstate = "δισαβμε";
+			newstate = "Γ¤Γ©Γ³Γ΅ΓΆΓ¬Γ¥";
 
-		if (vote_init(newstate, " πεξταηςαν", votables_set_pent))
+		if (vote_init(newstate, " Γ°Γ¥Γ®Γ΄Γ΅Γ§Γ²Γ΅Γ­", votables_set_pent))
 			vote_yes();
 	}
 };
@@ -1483,11 +1486,11 @@ void() votables_request_set_ring =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_RING)
-		newstate = "εξαβμε";
+		newstate = "Γ¥Γ®Γ΅ΓΆΓ¬Γ¥";
 		else
-		newstate = "δισαβμε";
+		newstate = "Γ¤Γ©Γ³Γ΅ΓΆΓ¬Γ¥";
 
-		if (vote_init(newstate, " ςιξη οζ σθαδοχσ", votables_set_ring))
+		if (vote_init(newstate, " Γ²Γ©Γ®Γ§Β Γ―Γ¦Β Γ³Γ¨Γ΅Γ¤Γ―Γ·Γ³", votables_set_ring))
 			vote_yes();
 	}
 };
@@ -1516,11 +1519,11 @@ void() votables_request_set_obits =
 	{
 		local string newstate;
 		if ((clanring_playmode & CLANRING_EXTENDED_OBITS))
-		newstate = "δισαβμε";
+		newstate = "Γ¤Γ©Γ³Γ΅ΓΆΓ¬Γ¥";
 		else
-		newstate = "εξαβμε";
+		newstate = "Γ¥Γ®Γ΅ΓΆΓ¬Γ¥";
 
-		if (vote_init(newstate, " εψτςα οβιτυαςιεσ", votables_set_obits))
+		if (vote_init(newstate, " Γ¥ΓΈΓ΄Γ²Γ΅Β Γ―ΓΆΓ©Γ΄ΓµΓ΅Γ²Γ©Γ¥Γ³", votables_set_obits))
 			vote_yes();
 	}
 };
@@ -1551,11 +1554,11 @@ void() votables_request_set_autopause =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_AUTO_PAUSE)
-			newstate = "δισαβμε";
+			newstate = "Γ¤Γ©Γ³Γ΅ΓΆΓ¬Γ¥";
 		else
-			newstate = "εξαβμε";
+			newstate = "Γ¥Γ®Γ΅ΓΆΓ¬Γ¥";
 
-		if (vote_init(newstate, " νατγθ αυτοπαυσε", votables_set_autopause))
+		if (vote_init(newstate, " Γ­Γ΅Γ΄Γ£Γ¨Β Γ΅ΓµΓ΄Γ―Γ°Γ΅ΓµΓ³Γ¥", votables_set_autopause))
 			vote_yes();
 	}
 };
@@ -1601,7 +1604,7 @@ void() votables_request_set_runes =
 			newstate = "\bdisable\b";
 		}
 		
-		if (vote_init(newstate, " ςυξεσ", votables_set_runes))
+		if (vote_init(newstate, " Γ²ΓµΓ®Γ¥Γ³", votables_set_runes))
 		{
 			vote_yes();
 		}

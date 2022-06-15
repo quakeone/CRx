@@ -339,6 +339,7 @@ void () afk_name =
 	
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
+	stuffcmd(self, "setinfo afk yes\n");// woods
 };
 
 void () dead_name =

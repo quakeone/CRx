@@ -4,7 +4,7 @@
 // This is the main file for CRMod++.  CRMod++ was derived from the
 // Elohim server, which is why everything is still called "elohim".
 //
-// Developed by J.P. Grossman (a.k.a. ùMephistopheles) and Paul Baker
+// Developed by J.P. Grossman (a.k.a. Ã¹Mephistopheles) and Paul Baker
 //
 // All code by J.P. Grossman unless otherwise commented.
 //
@@ -262,6 +262,7 @@ void () RemoveFromTeam;//R00k: ca mode
 void () arena_client_disconnect;
 void () CaptureHighScores_sprint;
 void () AirshotHighScores_sprint;
+void () Teamplay_Select_Team;
 //
 // C L E A R   A F K   S T A T U S
 //
@@ -272,6 +273,7 @@ void (entity client) clear_afk_status =
 	{
 		updatename(client, client.netname);
 		client.style = client.style - (client.style & CLANRING_AFK_CLIENT);
+		stuffcmd(self, "setinfo afk no\n");// woods
 	}
 	client.afk_time = time;	
 }
@@ -476,6 +478,44 @@ void () clanring_init_world =
 	utils_make_scheduled_event(StartRuneSpawnStart, 2);
 	// fix the start teleport bug
 	utils_make_scheduled_event(clanring_remove_start_teleport, 3);
+
+	// woods set serverinfo mod name
+
+	forceinfokey(world, "mod", "crx");
+
+	// woods lets set serverinfo playmode
+
+	if (clanring_playmode & CLANRING_PRACTICE_MODE)
+		forceinfokey(world, "playmode", "practice");
+
+	else if (clanring_playmode & CLANRING_NORMAL_MODE)
+		forceinfokey(world, "playmode", "normal");
+
+	else
+		forceinfokey(world, "playmode", "match");
+
+	// woods lets set serverinfo to current mode set in mod
+
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		forceinfokey(world, "mode", "airshot");
+
+	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+		forceinfokey(world, "mode", "wipeout");
+
+	else if (clanring_playmode & CLANRING_CA_MODE)
+		forceinfokey(world, "mode", "ca");	
+
+	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		forceinfokey(world, "mode", "ctf");
+
+	else if (clanring_playmode & CLANRING_DMM4_MODE)
+		forceinfokey(world, "mode", "dmm4");
+
+	else if (clanring_playmode & CLANRING_RA_MODE)
+		forceinfokey(world, "mode", "ra");
+
+	else
+		forceinfokey(world, "mode", "dm");	
 };
 
 //
@@ -1262,8 +1302,8 @@ void () clanring_help_change =
 	sprint(self, "\n");
 	sprint(self, " type \bwarp\b to change maps\n");
 	sprint(self, "\n");
-	//sprint(self, "Ôï ãèáîçå ìåöåìó¬ åîôåò ôèå îáíå ïæ\n");
-	//sprint(self, "ôèå ìåöåì éî ôèå ãïîóïìå®\n");
+	//sprint(self, "Ã”Ã¯ Ã£Ã¨Ã¡Ã®Ã§Ã¥ Ã¬Ã¥Ã¶Ã¥Ã¬Ã³Â¬ Ã¥Ã®Ã´Ã¥Ã² Ã´Ã¨Ã¥ Ã®Ã¡Ã­Ã¥ Ã¯Ã¦\n");
+	//sprint(self, "Ã´Ã¨Ã¥ Ã¬Ã¥Ã¶Ã¥Ã¬ Ã©Ã® Ã´Ã¨Ã¥ Ã£Ã¯Ã®Ã³Ã¯Ã¬Ã¥Â®\n");
 };
 
 //
@@ -1319,8 +1359,8 @@ void () clanring_commands =
 {
 	// regular user commands
 	sprint(self, "\n");
-	sprint(self, " \byes [y]\b    vote yes\n");
-	sprint(self, " \bno [n]\b     vote no\n");
+	sprint(self, " \byes [\by\b]\b    vote yes\n");
+	sprint(self, " \bno [\bn\b]\b     vote no\n");
 	sprint(self, " \bwarp\b       initiate vote to change level\n");
 	sprint(self, " \bmodes\b      mode switch commands\n");
 	sprint(self, " \bgameplay\b   match/game variable commands\n");
@@ -1366,6 +1406,7 @@ void () modes_commands =
 		sprint(self, " \bmatch\b\n");
 		sprint(self, " \bnormal\b\n");
 		sprint(self, " \bpractice\b\n");
+		sprint(self, " \bra\b\n");
 		sprint(self, " \bwipeout\b\n");
 		sprint(self, "\n");
 };
@@ -1373,15 +1414,16 @@ void () modes_commands =
 void () gameplay_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " \bdroprune [dr]\b   \bsetpent\b\n");
-		sprint(self, " \bflagstatus\b      \bsetquad\b\n");
-		sprint(self, " \bghost\b           \bsetring\b\n");
-		sprint(self, " \bghostcode\b       \btimerstart [st]\b\n");
-		sprint(self, " \bhook\b            \btimerstop [pa]\b\n");
+		sprint(self, " \bdroprune [\bdr\b]\b   \bsetquad\b\n");
+		sprint(self, " \bflagstatus\b      \bsetring\b\n");
+		sprint(self, " \bghost\b           \btimerstart [\bst\b]\b\n");
+		sprint(self, " \bghostcode\b       \btimerstop [\bpa\b]\b\n");
 		sprint(self, " \block\b            \btimeset\b\n");
-		sprint(self, " \botset\b           \btimeset10 [t10]\b\n");
-		sprint(self, " \bready [r]\b       \btimeset20 [t20]\b\n");
-		sprint(self, " \bready? [?]\b      \bunlock\b\n");
+		sprint(self, " \botset\b           \btimeset10 [\bt10\b]\b\n");
+		sprint(self, " \bready [\br\b]\b       \btimeset20 [\bt20\b]\b\n");
+		sprint(self, " \bready? [\b?\b]\b      \bunlock\b\n");
+		sprint(self, " \bsethook\b         \bweaponstay\b\n");
+		sprint(self, " \bsetpent\b\n");
 		sprint(self, "\n");
 };
 
@@ -1412,10 +1454,12 @@ void () stat_commands =
 void () misc_commands =
 {
 		sprint(self, "\n");
-		sprint(self, " \bdeathmatch\b\n");
+		sprint(self, " \bcaptimes\b\n");
 		sprint(self, " \bdropammo\b\n");
 		sprint(self, " \bdropweapon\b\n");
+		sprint(self, " \bhighscores\b\n");
 		sprint(self, " \bmotd\b\n");
+		sprint(self, " \brules\b\n");
 		sprint(self, "\n");
 };
 
@@ -1516,93 +1560,93 @@ void () clanring_show_rules =
 	local float temp;
 
 	if (clanring_playmode & CLANRING_DMM4_MODE)
-		sprint(self, " 1v1 duel  mode \n");
+		sprint(self, "Â 1v1 duel  mode Â\n");
 	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-		sprint(self, "  airshot mode  \n");
+		sprint(self, "Â  airshot mode  Â\n");
 	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)	
-		sprint(self, " wipeout mode\n");
+		sprint(self, "Â wipeout modeÂ\n");
 	else if (clanring_playmode & CLANRING_CA_MODE)
-		sprint(self, "clan arena  mode\n");
+		sprint(self, "Âclan arena  modeÂ\n");
 	else if (clanring_playmode & CLANRING_RA_MODE)
-		sprint(self, "rocket arena mode\n");
+		sprint(self, "Ârocket arena modeÂ\n");
 	else if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			sprint(self, "CRCTF match mode\n");
+			sprint(self, "ÂCRCTF match modeÂ\n");
 		else
-			sprint(self, "CRMod match mode\n");
+			sprint(self, "ÂCRMod match modeÂ\n");
 	}
 	else if (clanring_playmode & CLANRING_PRACTICE_MODE)
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			sprint(self, "ctf practice mode\n");
+			sprint(self, "Âctf practice modeÂ\n");
 		else
-			sprint(self, "practice mode\n");
+			sprint(self, "Âpractice modeÂ\n");
 	}
 	else
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			sprint(self, "Public CTF mode\n");
+			sprint(self, "ÂPublic CTF modeÂ\n");
 		else
 		{
 			if (teamplay)
-				sprint(self, "Public Team DeathMatch mode\n");
+				sprint(self, "ÂPublic Team DeathMatch modeÂ\n");
 			else
-				sprint(self, "FFA DeathMatch mode\n");
+				sprint(self, "ÂFFA DeathMatch modeÂ\n");
 		}
 	}
 	temp = cvar("deathmatch");
-	sprint(self, "deathmatch®®®");
+	sprint(self, "deathmatchÂ®Â®Â®");
 	utils_print_float(temp);
 	temp = cvar("teamplay");
-	sprint(self, "teamplay®®®®®");
+	sprint(self, "teamplayÂ®Â®Â®Â®Â®");
 	utils_print_float(temp);
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 		temp = cvar("timelimit");
 	else
 		temp = clanring_timelimit;	
 
-	sprint(self, "timelimit®®®®");
+	sprint(self, "timelimitÂ®Â®Â®Â®");
 	utils_print_float(temp);
 	temp = cvar("fraglimit");
-	sprint(self, "fraglimit®®®®");
+	sprint(self, "fraglimitÂ®Â®Â®Â®");
 	utils_print_float(temp);
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (clanring_overtime > 0)
 		{
-			sprint(self, "overtime®®®®®");
+			sprint(self, "overtimeÂ®Â®Â®Â®Â®");
 			utils_print_float(clanring_overtime);
 		}
 		else
 		{
 			if (clanring_overtime == 0)
-				sprint(self, "overtime®®®®®disabled\n");
+				sprint(self, "overtimeÂ®Â®Â®Â®Â®disabled\n");
 			else
-				sprint(self, "overtime®®®®®sudden death\n");
+				sprint(self, "overtimeÂ®Â®Â®Â®Â®sudden death\n");
 		}
 	}
 	else
 	{
 		temp = cvar("noexit");
-		sprint(self, "noexit®®®®®®®");
+		sprint(self, "noexitÂ®Â®Â®Â®Â®Â®Â®");
 		utils_print_float(temp);
 	}
 
-	sprint(self, "quad®®®®®®®®®");
+	sprint(self, "quadÂ®Â®Â®Â®Â®Â®Â®Â®Â®");
 
 	if (clanring_playmode & CLANRING_NO_QUAD)
 		sprint(self, "\bOFF\n");
 	else
 		sprint(self, "on\n");
 
-	sprint(self, "pent®®®®®®®®®");
+	sprint(self, "pentÂ®Â®Â®Â®Â®Â®Â®Â®Â®");
 	if (clanring_playmode & CLANRING_NO_PENT)
 		sprint(self, "\bOFF\n");
 	else
 		sprint(self, "on\n");
 
-	sprint(self, "ring®®®®®®®®®");
+	sprint(self, "ringÂ®Â®Â®Â®Â®Â®Â®Â®Â®");
 	if (clanring_playmode & CLANRING_NO_RING)
 		sprint(self, "\bOFF\n");
 	else
@@ -1610,13 +1654,13 @@ void () clanring_show_rules =
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
-		sprint(self, "runes®®®®®®®®");
+		sprint(self, "runesÂ®Â®Â®Â®Â®Â®Â®Â®");
 		if (clanring_playmode & CLANRING_RUNES)
 			sprint(self, "on\n");
 		else
 			sprint(self, "\bOFF\n"); 
 	
-		sprint(self, "hook®®®®®®®®®");
+		sprint(self, "hookÂ®Â®Â®Â®Â®Â®Â®Â®Â®");
 		if (clanring_playmode & CLANRING_NO_HOOK)
 			sprint(self, "\bOFF\n");
 		else
@@ -1624,7 +1668,7 @@ void () clanring_show_rules =
 	}
 	
 	if (clanring_playmode & CLANRING_NO_SPOOGE)
-		sprint(self, "no spooge®®®®on\n");
+		sprint(self, "no spoogeÂ®Â®Â®Â®on\n");
 
 	sprint(self, "\n");
 };
@@ -1664,19 +1708,19 @@ void () clanring_show_rules_prematch =
 	if (timervar > 3)
 	{
 		if (clanring_playmode & CLANRING_DMM4_MODE)
-			s1 = "  d u e l mode  \n\n";
+			s1 = "Â  d u e l mode  Â\n\n";
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-			s1 = "  airshot mode  \n\n";
+			s1 = "Â  airshot mode  Â\n\n";
 		else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-			s1 = "clan arena wipeout\n\n";
+			s1 = "Âclan arena wipeoutÂ\n\n";
 		else if (clanring_playmode & CLANRING_CA_MODE)
-			s1 = "clan arena  mode\n\n";
+			s1 = "Âclan arena  modeÂ\n\n";
 		else if (clanring_playmode & CLANRING_RA_MODE)
-			s1 = "rocket arena mode\n\n";
+			s1 = "Ârocket arena modeÂ\n\n";
 		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			s1 = "crctf match mode\n\n";
+			s1 = "Âcrctf match modeÂ\n\n";
 		else
-			s1 = "crmod match mode\n\n";
+			s1 = "Âcrmod match modeÂ\n\n";
 
 		if (!(clanring_playmode & CLANRING_CA_MODE) && !(clanring_playmode & CLANRING_RA_MODE))
 		{
@@ -1699,7 +1743,7 @@ void () clanring_show_rules_prematch =
 		else if (temp > 9)
 			s3 = sprintf("%s%s\n", "\bfraglimit    ", ftos(temp));
 		else if (temp == 0)
-			s3 = "\bfraglimit   \boff\n";	
+			s3 = "\bfraglimit   \boff\n";				
 		else
 			s3 = sprintf("%s%s\n", "\bfraglimit     ", ftos(temp));
 		
@@ -1809,15 +1853,15 @@ void () clanring_admins =
 		sprint(self, "There are no administrators\n");
 		return;
 	}
-	sprint(self, "\n Ãïäå ü      Îáíå\n");
-	sprint(self, "­­­­­­«­­­­­­­­­­­­­­­­­\n");
+	sprint(self, "\nÂ ÃƒÃ¯Ã¤Ã¥Â Ã¼Â Â Â Â Â Â ÃÃ¡Ã­Ã¥\n");
+	sprint(self, "Â­Â­Â­Â­Â­Â­Â«Â­Â­Â­Â­Â­Â­Â­Â­Â­Â­Â­Â­Â­Â­Â­Â­Â­\n");
 	e = find(world, classname, "player");
 	while (e)
 	{
 		if ((e.style & CLANRING_CONNECTED) && (e.style & CLANRING_ADMINISTRATOR))
 		{
 			s = ftos(e.clanring_hack_count);
-			sprint5(self, "   ", s, "  ü ", e.netname, "\n");
+			sprint5(self, "   ", s, "  Ã¼ ", e.netname, "\n");
 		}
 		e = find(e, classname, "player");
 	}
@@ -1978,7 +2022,9 @@ void () clanring_impulse =
 			afk_name();
 			self.style = self.style | CLANRING_AFK_CLIENT;
 			self.afk_time = time;
-		}		
+		}
+		else
+			clear_afk_status(self);		
 	}
 	else if (self.impulse == 58)
 	{
@@ -2290,6 +2336,62 @@ void () clanring_periodic_checks =
 			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");			
 		}
 	}
+	//R00k: Moved here from PlayerPreThink
+	if (mode_is_arena())
+	{
+		if (clanring_playmode & CLANRING_CA_MODE)
+		{
+			if (self.style & CLANRING_CONNECTED)
+			{
+				if (self.team != (self.team2 + 1))
+				{		
+					if (self.next_team == world)
+					{
+						if (self.team == 14)
+							self.impulse = 1;
+						else if (self.team == 5)
+							self.impulse = 2;
+						else if (self.team == 13)
+							self.impulse = 3;
+						else if (self.team == 3)
+							self.impulse = 4;
+						
+						Teamplay_Select_Team();
+						self.impulse = 0;
+					}
+					else
+					{	
+						if (self.health > 0)
+						{
+							self.team2 = self.next_team.team2;
+							//R00k -- this forces team colors, unless they are in queue to join.
+							if ((!self.cc_queue))
+							{							
+								setcolour(self, self.team2, self.team2);
+							}						
+							self.team = (self.team2 + 1);
+						}
+					}
+				}
+
+				if (boss.timetofight == TRUE)
+				{
+					if ((self.ca_player_flag == PF_PLAYING) && (self.style & CLANRING_CONNECTED))//v1.97 fix lagouts.
+					{
+						self.takedamage = DAMAGE_AIM;		
+					}
+				}
+			}		
+		}
+
+		if (self.style & CLANRING_MOTD)
+		{
+			if (self.plag == FALSE)
+			{
+				motd_print ();
+			}
+		}
+	}
 };
 
 //
@@ -2426,55 +2528,55 @@ void () clanring_start_frame =
 				{
 					if (rint(timelimit - time) == 300)
 					{
-						bprint("\nÇáíå åîäó éî  íéîõôåó\n\n");
+						bprint("\nÃ‡Ã¡Ã­Ã¥ Ã¥Ã®Ã¤Ã³ Ã©Ã®  Ã­Ã©Ã®ÃµÃ´Ã¥Ã³\n\n");
 					}
 					else
 					{
 						if (rint(timelimit - time) == 60)
 						{
-							bprint("\nÇáíå åîäó éî  íéîõôå\n\n");
+							bprint("\nÃ‡Ã¡Ã­Ã¥ Ã¥Ã®Ã¤Ã³ Ã©Ã®  Ã­Ã©Ã®ÃµÃ´Ã¥\n\n");
 						}
 						else
 						{
 							if (rint(timelimit - time) == 30)
 							{
-								bprint("\nÇáíå åîäó éî  óåãïîäó\n\n");
+								bprint("\nÃ‡Ã¡Ã­Ã¥ Ã¥Ã®Ã¤Ã³ Ã©Ã®  Ã³Ã¥Ã£Ã¯Ã®Ã¤Ã³\n\n");
 							}
 							else
 							{
 								if (rint(timelimit - time) == 10)
 								{
-									bprint("\nÇáíå åîäó éî  óåãïîäó\n\n");
+									bprint("\nÃ‡Ã¡Ã­Ã¥ Ã¥Ã®Ã¤Ã³ Ã©Ã®  Ã³Ã¥Ã£Ã¯Ã®Ã¤Ã³\n\n");
 								}
 								else
 								{
 									if (rint(timelimit - time) == 5)
 									{
-										bprint(" — ‘\n");
+										bprint("Â Â— Â‘\n");
 									}
 									else
 									{
 										if (rint(timelimit - time) == 4)
 										{
-											bprint(" – ‘\n");
+											bprint("Â Â– Â‘\n");
 										}
 										else
 										{
 											if (rint(timelimit - time) == 3)
 											{
-												bprint(" • ‘\n");
+												bprint("Â Â• Â‘\n");
 											}
 											else
 											{
 												if (rint(timelimit - time) == 2)
 												{
-													bprint(" ” ‘\n");
+													bprint("Â Â” Â‘\n");
 												}
 												else
 												{
 													if (rint(timelimit - time) == 1)
 													{
-														bprint(" “ ‘\n");
+														bprint("Â Â“ Â‘\n");
 													}
 												}
 											}
