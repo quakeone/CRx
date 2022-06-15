@@ -546,6 +546,39 @@ void (float t) utils_bprint_time =
 	//--------------------
 };
 
+string (float t) utils_get_time =
+{
+	local float minutes;
+	local float seconds;
+	local float csec;
+	local string temp;
+	local string tmin="",tsec="",tcsec="";
+
+	minutes = floor((t/60));
+	seconds = floor((((t/60)-minutes)*60));
+	csec    = floor((((((t/60)-minutes)*60)-seconds)*100));
+
+	temp = ftos(minutes);
+	if ((minutes < 10))
+		tmin = sprintf("0%s", temp);
+	else
+		tmin = temp;
+
+	temp = ftos(seconds);
+	if ((seconds < 10))
+		tsec = sprintf("0%s", temp);
+	else
+		tsec = temp;
+
+	temp = ftos(csec);
+	if ((csec < 10))
+		tcsec = sprintf("0%s", temp);
+	else
+		tcsec = temp;
+
+	return sprintf("%s:%s.%s",tmin,tsec,tcsec);
+};
+
 //
 //  B P R I N T  F L O A T
 //
@@ -1112,6 +1145,13 @@ void (void () dofunc) utils_do_flags =
 	utils_do_item(dofunc, "item_flag_team2");
 };
 
+void (void () dofunc) utils_do_match_spawns =
+{
+    utils_do_item(dofunc, "info_player_deathmatch");
+    utils_do_item(dofunc, "info_player_team1");
+    utils_do_item(dofunc, "info_player_team2");
+};
+
 void () reset_frags =
 {
 	if (self.next_team == world)
@@ -1652,7 +1692,9 @@ float () ammo_is_infinite =
 
 float () items_are_ready =
 {
-	if ((clanring_playmode & CLANRING_MATCH_MODE && !(clanring_state & CLANRING_MATCH_STARTED)) || (clanring_playmode & CLANRING_DMM4_MODE && boss.state != CA_MATCH_PLAYING))
+	if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+		return FALSE;
+	if ((mode_is_arena()) && ((boss == world) || ((boss != world) && (boss.timetofight == FALSE))))
 		return FALSE;
 	return TRUE;
 };
@@ -1665,3 +1707,12 @@ float () match_in_progress =
 		return TRUE;
 	return FALSE;
 };
+
+float () prematch_rules =
+{
+	if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
+		return TRUE;
+	if (mode_is_arena() && (boss.state == CA_MATCH_ROUNDSTART) && (boss.round == 1))
+		return TRUE;
+	return FALSE;
+}

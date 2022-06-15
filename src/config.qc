@@ -554,6 +554,127 @@ void() clanring_warp_config =
 	exec_warp_cfg();
 }
 
+//desc = 0 descending false, so lowest is first
+void (string filename, optional float desc = 0, optional float recordset = 0) read_player_stats =
+{
+	string line;
+	string tt_player = "";
+	float tt_statvalue = 0,tt_teamcolor=0;
+	filestream f = fopen(sprintf("data/stats/%s", filename), FILE_READ);
+	if (f < 0)
+	{
+		f = fopen(sprintf("stats/%s", filename), FILE_READ);
+	}
+	if (f < 0)
+	{
+		dprint(filename, " not found\n");
+		return;
+	}
+
+	dprint("Loading ", filename, "...\n");
+	while ((line = fgets(f)))
+	{
+		float argc = tokenize(line);
+		if (!argc)
+			continue;
+		if (argv(0) == "//" || argv(0) == "#" ) continue;	// Skip comments
+		tt_player = strtrim(strzone(line));
+		tt_teamcolor = stof(strzone(fgets(f)));
+		tt_statvalue = stof(strzone(fgets(f)));
+		if (tt_statvalue > 0)
+		{
+			if (desc == RECORD_LOW)
+				check_player_low_record(tt_statvalue, tt_teamcolor, tt_player);
+			else
+			{
+				if (recordset == 2)
+					check_player_high_record2(tt_statvalue, tt_teamcolor, tt_player);
+				else
+					check_player_high_record(tt_statvalue, tt_teamcolor, tt_player);
+			}
+		}
+	}
+	if (new_player_record == 0) strunzone(line);
+	fclose(f);
+}
+void () read_capture_stats =
+{
+	read_player_stats(sprintf("%s_captimes.crx", mapname), RECORD_LOW, 0);
+};
+void () read_airshot_stats =
+{
+	read_player_stats("airshot_streak.crx", RECORD_HIGH, 0);
+	//read_player_stats("airshot_gib.crx", RECORD_HIGH, 0);
+	read_player_stats("airshot_height.crx", RECORD_HIGH, 2);
+};
+
+void (string filename, float recordset) write_player_stats =
+{
+	float i=0;
+	filestream f = fopen(sprintf("stats/%s", filename), FILE_WRITE);
+	if (f<0)
+	{
+		dprint("WARNING: Could not write to ", filename, "\n");
+		f = fopen(sprintf("stats/%s", filename), FILE_APPEND);
+	}
+	if (f<0)
+	{
+		dprint("WARNING: Could not append to ", filename, "\n");
+	}
+	else
+	{
+		dprint("updating ", filename, "\n");
+		while (i < PLAYER_RECORDS_MAX_COUNT)
+		{
+			if (recordset == 2)
+			{
+				if (playerrecord2[i].statvalue > 0)
+				{
+					fputs(f, playerrecord2[i].player);
+					fputs(f, "\n");
+					fputs(f, ftos(playerrecord2[i].teamcolor));
+					fputs(f, "\n");
+					fputs(f, ftos(playerrecord2[i].statvalue));
+					fputs(f, "\n");
+					i += 1;
+				}
+				else break;
+			}
+			else
+			{
+				if (playerrecord[i].statvalue > 0)
+				{
+					fputs(f, playerrecord[i].player);
+					fputs(f, "\n");
+					fputs(f, ftos(playerrecord[i].teamcolor));
+					fputs(f, "\n");
+					fputs(f, ftos(playerrecord[i].statvalue));
+					fputs(f, "\n");
+					i += 1;
+				}
+				else break;
+			}
+		}
+		fclose(f);
+	}
+}
+void () write_capture_stats =
+{
+	write_player_stats(sprintf("%s_captimes.crx", mapname), 0);
+};
+void () write_airshot_height_stats =
+{
+	write_player_stats("airshot_height.crx", 2);
+};
+// void () write_airshot_gib_stats =
+// {
+// 	write_player_stats("airshot_gib.crx", 0);
+// };
+void () write_airshot_streak_stats =
+{
+	write_player_stats("airshot_streak.crx", 0);
+};
+
 //TODO: maybe combine these .ent .cam files together into per $mapname.cfg files with subsections for entity, camera, server settings for speed and ease?
 void() clanring_ent_config =
 {
@@ -606,6 +727,14 @@ void() clanring_exec_configs =
 //	clanring_map_config();//(FIXME)
 //	clanring_ent_config();//(FIXME)
 //	clanring_cam_config();//(FIXME)
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+	{
+		read_capture_stats();
+	}
+	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	{
+		read_airshot_stats();
+	}
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
@@ -621,6 +750,13 @@ void() clanring_exec_configs =
 		clanring_levelcount = -1;
 		nextmap = mapname;//just restart samelevel
 	}
+
+	//R00k: ticrate defaults for different modes :|
+	local string useTicrate = ftos(clanring_tdm_ticrate);
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		useTicrate = ftos(clanring_ctf_ticrate);
+	dprint("setting sys_ticrate to ", useTicrate, "\n");
+	cvar_set("sys_ticrate", useTicrate);
 
 	remove(self);//scheduled_event_entity
 	sys_ready = TRUE;

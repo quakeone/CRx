@@ -30,6 +30,7 @@ void () airshot_init_world =
 	boss.next_team 		= world;
 	boss.busy			= FALSE;
 	boss.aborted 		= FALSE;
+	boss.suddendeath 	= FALSE;
 	ca_mvp_entity		= world;
 };
 
@@ -57,14 +58,6 @@ float (entity targ, float damage) airshot_damage_z =
 		rheight = rint(dist);
 		s = ftos(rheight);
 		bprint3("\x90height: ",s,"\x91\n");
-		if (dist > 128)
-		{
-			damage = (damage + ((dist/128)*damage));
-		}
-		else
-		{
-			damage = (damage + ((dist/256)*damage));
-		}
 		
 		if (damage < 100)
 		{
@@ -72,6 +65,15 @@ float (entity targ, float damage) airshot_damage_z =
 		}
 		else
 		{
+			if (dist > 128)
+			{
+				damage = (damage + ((dist/128)*damage));
+			}
+			else
+			{
+				damage = (damage + ((dist/256)*damage));
+			}
+
 			if (targ.health > damage)
 			{
 				rdamage = rint(damage);
@@ -102,3 +104,51 @@ vector (entity e) airshot_droptofloor =
 
 	return start;
 }
+
+void () AirshotHighScores =
+{
+	local string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
+
+	if (boss.state == CA_MATCH_PLAYING)
+	{
+		self.leaderboardtime = 0;
+	}
+	else
+	{	//TODO: update for higher PLAYER_RECORDS_MAX_COUNT?
+		if (playerrecord[0].statvalue > 0)
+		{
+			s1 = sprintf("    \1   %-2s %-16s\n\n", ftos(playerrecord[0].statvalue), playerrecord[0].player);
+			if (playerrecord[1].statvalue > 0)
+			{
+				s2 = sprintf("    \2   %-2s %-16s\n\n", ftos(playerrecord[1].statvalue), playerrecord[1].player);
+				if (playerrecord[2].statvalue > 0)
+				{
+					s3 = sprintf("    \3   %-2s %-16s\n\n", ftos(playerrecord[2].statvalue), playerrecord[2].player);
+				}
+			}
+		}
+		else
+		{
+			s1 = "No streaks set";
+		}
+		if (playerrecord2[0].statvalue > 0)
+		{
+			ts1 = sprintf("    \1  %-3s %-16s\n\n", ftos(rint(playerrecord2[0].statvalue)), playerrecord2[0].player);
+			if (playerrecord2[1].statvalue > 0)
+			{
+				ts2 = sprintf("    \2  %-3s %-16s\n\n", ftos(rint(playerrecord2[1].statvalue)), playerrecord2[1].player);
+				if (playerrecord2[2].statvalue > 0)
+				{
+					ts3 = sprintf("    \3  %-3s %-16s\n\n", ftos(rint(playerrecord2[2].statvalue)), playerrecord2[2].player);
+				}
+			}
+			s4 = sprintf("%s%s%s",ts1,ts2,ts3);
+		}
+		else
+		{
+			s4 = "No height records set";
+		}
+		centerprint(self, "\bAir Gib Streak Leaders\b:\n\n", s1, s2, s3, "\bHighest Air Gibs\b:\n\n", s4);
+		return;
+	}
+};

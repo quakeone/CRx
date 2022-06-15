@@ -1,3 +1,5 @@
+//void () write_airshot_gib_stats;
+void (float t_statvalue, float t_teamcolor, string t_player) check_player_high_record;
 void () dmm4_init_world =
 {
 	local entity oself;
@@ -30,23 +32,53 @@ void () dmm4_init_world =
 	boss.next_team 		= world;
 	boss.busy			= FALSE;
 	boss.aborted 		= FALSE;
+	boss.suddendeath 	= FALSE;
 	ca_mvp_entity		= world;
 };
 
 void () dmm4_report_winner =
 {
+	local string winnername = "";
+	local float winnerteam = 0;
     arena_set_winning_team();
+
+	if (team_first_place == world)
+		return;
+	if (team_first_place.chain_gang != world)
+	{
+		winnername = team_first_place.chain_gang.netname;
+		winnerteam = team_first_place.chain_gang.team2;
+	}
+	else
+	{
+		winnername = team_first_place.netname;
+	}
 
 	if ((team_first_place.wins > team_second_place.wins))
 	{
-        bprint2(team_first_place.netname, " wins the match.\n");
-        bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
+        bprint2(winnername, " wins the match.\n");
 	}
 	else
 	{
         bprint("The match was a draw\n");
-        bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
 	}
+	bprint5("Final score: ", ftos(team_first_place.wins), " - ", ftos(team_second_place.wins), "\n");
+	//leave for timed matches ?
+	// if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	// {
+	// 	new_player_record = 0;
+	// 	check_player_high_record(team_first_place.wins, winnerteam, winnername);
+	// 	if (new_player_record > 0)
+	// 	{
+	// 		if (new_player_record == 1)
+	// 		{
+	// 			bprint(winnername);
+	// 			bprint(" set the new \bgib record\b\n");
+	// 			sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
+	// 		}
+	// 		write_airshot_gib_stats();
+	// 	}
+	// }
 };
 
 void () dmm4_main_loop =
@@ -91,6 +123,7 @@ void () dmm4_main_loop =
 		{
 			gameover = TRUE;
 			boss.aborted = TRUE;
+			boss.suddendeath = FALSE;
 			boss.state = CA_MATCH_OVER;
 			arena_match_end ();
 		}
@@ -113,6 +146,7 @@ void () dmm4_main_loop =
 			{
 				if (boss.count == 9)
 				{
+					utils_do_item(SUB_Remove, "item_backpack");
 					arena_ready_players ();
 				}
 				else if (boss.count == 8)
@@ -140,8 +174,9 @@ void () dmm4_main_loop =
 					//ctprint ("\bFIGHT!");
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
+					boss.suddendeath = FALSE;
 					boss.state = CA_MATCH_PLAYING;
-                    clanring_timelimit = 3;
+                    clanring_timelimit = cvar("timelimit");
                     boss.lip = clanring_timelimit;
                     boss.count = 0;
                     arena_show_timelimit();
@@ -180,6 +215,7 @@ void () dmm4_main_loop =
 		{
 			gameover = TRUE;
 			boss.aborted = TRUE;
+			boss.suddendeath = FALSE;
 			boss.state = CA_MATCH_OVER;
 			arena_match_end();
 		}
@@ -194,7 +230,7 @@ void () dmm4_main_loop =
 			boss.wait 	= 0;
 			boss.state 	= CA_MATCH_ROUNDSTART;
 
-			clanring_timelimit = 3;
+			clanring_timelimit = cvar("timelimit");
 
 			//sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
 			sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
@@ -209,7 +245,7 @@ void () dmm4_main_loop =
 				if (clanring_request.noise1 == "\bforce match start\b")
 				Request_Poll_Cleanup();
 
-				clanring_timelimit = 3;
+				clanring_timelimit = cvar("timelimit");
 
 				boss.wait = time + 5;
 				sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
@@ -271,6 +307,9 @@ void() arena_show_timelimit =
 {
 	local string temp;
 
+	if (!clanring_timelimit)
+		return;
+
 	localcmd("timelimit \"");
 
 	if (boss.state != CA_MATCH_PLAYING)
@@ -330,6 +369,9 @@ void () arena_timer_think =
 {
 	local string temp;
 
+	if ((!clanring_timelimit) || (boss.suddendeath))
+		return;
+
 	boss.count -= 1;
 
 	if (boss.count < 0)
@@ -341,7 +383,7 @@ void () arena_timer_think =
 	if (!(clanring_state & CLANRING_MATCH_PAUSED))
 		pqc_match_time(boss.lip, boss.count);
 
-	match_show_timelimit();
+	arena_show_timelimit();
 
 	if (boss.lip)
 	{
@@ -350,11 +392,11 @@ void () arena_timer_think =
 
 		if (boss.lip > 1)
 		{
-			match_show_timelimit();
+			arena_show_timelimit();
 		}
 		else
 		{
-			match_show_timelimit();
+			arena_show_timelimit();
 			announce("Match ends in 1 minute");
 			if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 				sound (world, CHAN_ITEM, "ambience/thunder1.wav", 1, ATTN_NONE);
@@ -364,14 +406,29 @@ void () arena_timer_think =
 	{
 		if (boss.count == 0)
 		{
+			arena_set_winning_team();
+			if (team_first_place.wins == team_second_place.wins)
+			{
+				announce("Sudden Death!!");
+				boss.suddendeath = TRUE;
+				boss.lip = -1;
+				arena_show_timelimit();
+				return;
+			}
+
 			boss.busy = TRUE;
 			gameover = TRUE;
-			match_show_timelimit();
+			arena_show_timelimit();
 			arena_match_end();
 		}
 		else if (boss.count == 30)
 		{
 			announce("Match ends in 30 seconds");
+			if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+			{
+				announce("\bQuad Juggling\b activated");
+				sound (world, CHAN_ITEM, "crx/activate.wav", 1, ATTN_NONE);
+			}
 			// if (clanring_overtime > 0)
 			// {
 			// 	temp = ftos(clanring_overtime);

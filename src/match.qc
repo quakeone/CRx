@@ -36,6 +36,7 @@ void() match_enter_ghost_code;
 void() match_start_unpause_countdown;
 void() match_unpause;
 void(entity ghostent) match_restore_ghost;
+void() spawns_restore_model;
 void() votables_disable_item;
 void() console_show_score;
 void() console_autodump;
@@ -449,6 +450,7 @@ void() match_end =
 	announce("The match is over");//used for cl_autodemo 2, stop the demo after stats_autodump.
 	// Backup all statistics so that they don't go away
 	//stats_copy_statistics();
+	utils_do_match_spawns(spawns_restore_model);
 };
 
 //
@@ -625,6 +627,13 @@ void() spawns_remove_model =
 	self.modelindex = 0;
 }
 
+void() spawns_restore_model =
+{
+	setmodel (self, "progs/player.mdl");
+	self.frame = 13;
+	self.alpha = 0.6;
+};
+
 //
 //  B E G I N
 //
@@ -637,9 +646,7 @@ void() match_begin =
 	clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
 
 	// Remove the spawnpoints' visible models
-	utils_do_item(spawns_remove_model, "info_player_deathmatch");
-	utils_do_item(spawns_remove_model, "info_player_team1");
-	utils_do_item(spawns_remove_model, "info_player_team2");
+	utils_do_match_spawns(spawns_remove_model);
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
@@ -1236,6 +1243,8 @@ void(entity ghostent) match_restore_ghost =
 	self.clanring_badstats = ghostent.clanring_badstats;
 	self.clanring_qdwep	= ghostent.clanring_qdwep;
 	self.clanring_qdkill = ghostent.clanring_qdkill;
+	self.clanring_ptwep = ghostent.clanring_ptwep;
+	self.clanring_ptkill = ghostent.clanring_ptkill;
 	self.clanring_hack_count = ghostent.clanring_hack_count;	// clanring
 	self.true_kills = ghostent.true_kills;
 	self.pos1_x	= ghostent.pos1_x;
@@ -1684,12 +1693,12 @@ void() match_show_not_ready =
 	else
 	{
 		local entity player;
-		sprint(self, "The following players are not ready:\n");
+		bprint("The following players are not ready:\n");
 		player = find(world, classname, "player");
 		while (player)
 		{
 			if (!(player.style & (CLANRING_OBSERVER | CLANRING_READY)) && (player.style & CLANRING_CONNECTED))
-				sprint3(self, " ", player.netname, "\n");
+				bprint3(" ", player.netname, "\n");
 			player = find(player, classname, "player");
 		}
 	}
@@ -2319,6 +2328,8 @@ void(entity player) match_disconnect_notify =
 				self.owner.mangle 		= self.mangle;
 				self.owner.clanring_qdwep 	= self.clanring_qdwep;
 				self.owner.clanring_qdkill = self.clanring_qdkill;
+				self.owner.clanring_ptwep = self.clanring_ptwep;
+				self.owner.clanring_ptkill = self.clanring_ptkill;
 				self.owner.clanring_hack_count = self.clanring_hack_count;// clanring
 				self.owner.style 		= self.style & (CLANRING_ADMINISTRATOR | CLANRING_HEADS_UP | CLANRING_SMART_WEAPON | CLANRING_AUTOSTATS);
 				self.owner.true_kills 	= self.true_kills;

@@ -727,6 +727,10 @@ void() PlayerDie =
 		DropBackpack ();
 		TeamCaptureDropFlagOfPlayer (self, 0);		
 	}
+	else if ((clanring_playmode & CLANRING_AIRSHOT_MODE) && (self.airborn_pos >= 200))
+	{
+		DropBackpack ();
+	}
 	
 	DropRune ();
 	

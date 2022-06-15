@@ -180,8 +180,8 @@ Killed
 */
 void(entity targ, entity attacker) Killed =
 {
-	local entity oself;
-	local float rtime;
+	local entity oself, e;
+	local float rtime, prand, as_sound = 0;
 
 	oself = self;
 	self = targ;
@@ -214,8 +214,25 @@ void(entity targ, entity attacker) Killed =
 	{
 		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
 		{
-			targ.next_team.losses += 1;
-			pqc_team_frags(targ.next_team.team2, targ.next_team.wins);
+			if (targ != attacker)
+			{
+				targ.next_team.losses += 1;
+				pqc_team_frags(targ.next_team.team2, targ.next_team.wins);
+			}
+			else
+			{
+				e = find(world, classname, "player");
+				while (e)
+				{
+					if ((e.next_team != world) && (e != targ) && (e.ca_player_flag != PF_WAITING))
+					{
+						e.next_team.losses -= 1;
+						pqc_team_frags(e.next_team.team2, e.next_team.wins);
+						break;
+					}
+					e = find(e, classname, "player");
+				}
+			}
 		}
 		if ((attacker != world) && (attacker.classname == "player") && (attacker.next_team != world))
 		{
@@ -225,61 +242,123 @@ void(entity targ, entity attacker) Killed =
 				{
 					attacker.frags += 1;
 
-					if (targ.airborn_pos > 850)
+					if (targ.airborn_pos > 650)
 					{
 						bprint("\b[\bDEEPˆ‰SPACE\b]\b\n");
-						sound (self, CHAN_VOICE, "demon/ddeath.wav", 1, ATTN_NORM);
+						as_sound = 2;
 					}
-					else if (targ.airborn_pos > 650)
+					else if (targ.airborn_pos > 500)
 					{
 						bprint("\b[\b…Moon…Shot…\b]\b\n");
+						as_sound = 3;
 					}
-					else if (targ.airborn_pos > 450)
+					else if (targ.airborn_pos > 300)
 					{
 						bprint("\b[\bMax Air Gib\b]\b\n");
+						as_sound = 4;
 					}
-					else if (targ.airborn_pos > 250)
+					else if (targ.airborn_pos > 200)
 					{
 						bprint("\b[\bBig Air Gib\b]\b\n");
+						as_sound = 5;
 					}
 					else
 					{
 						bprint("[Mid Air Gib]\n");
 					}
 
-					// if (targ.airborn_pos > highgibdist)
-					// {
-					// 	cvar_set("saved2", ftos(targ.airborn_pos));
-					// 	highgibdist = cvar("saved2");
-					// 	bprint(attacker.netname);
-					// 	bprint(" set the new \bhighest gib\b\n");
-					// 	sound (self, CHAN_VOICE, "misc/secret.wav", 1, ATTN_NORM);
-					// }
+					new_player_record = 0;
+					check_player_high_record2(targ.airborn_pos, attacker.team, attacker.netname);
+					if (new_player_record > 0)
+					{
+						if (new_player_record == 1)
+						{
+							bprint(attacker.netname);
+							bprint(" set the new \bhighest gib\b\n");
+							as_sound = 6;
+						}
+						write_airshot_height_stats();
+					}
 
-					if (boss.lip < 1)
+					// last 30 seconds
+					if ((!clanring_timelimit) || ((boss.lip < 1) && (boss.count <= 30)))
 					{
 						if (attacker.super_damage_finished >= time)
-							sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
+						{
+							attacker.fragstreak += 1;
+							if ((attacker.fragstreak % 2 == 0) || (as_sound == 0))
+								as_sound = 1;
+						}
+						else
+						{
+							attacker.fragstreak = 1;
+						}
 
 						attacker.super_time = 1;
-						attacker.super_damage_finished = time + 3.5;
-
+						attacker.super_damage_finished = time + 3;
 						attacker.items = attacker.items | IT_QUAD;
+					}
+
+					if (as_sound == 1)
+					{
+						prand = floor(random() * 4) + 1;
+						if (prand == 1)
+							sound (self, CHAN_VOICE, "crx/onemore.wav", 1, ATTN_NORM);
+						else if (prand == 2)
+							sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
+						else if (prand == 3)
+							sound (self, CHAN_VOICE, "crx/laugh6.wav", 1, ATTN_NORM);
+						else
+							sound (self, CHAN_VOICE, "crx/onfire.wav", 1, ATTN_NORM);
+					}
+					else if (as_sound == 2)
+						sound (self, CHAN_VOICE, "crx/beyond.wav", 1, ATTN_NORM);
+					else if (as_sound == 3)
+						sound (self, CHAN_VOICE, "crx/gasp.wav", 1, ATTN_NORM);
+					else if (as_sound == 4)
+					{
+						prand = floor(random() * 3) + 1;
+						if (prand == 1)
+							sound (self, CHAN_VOICE, "crx/gasp2.wav", 1, ATTN_NORM);
+						else if (prand == 2)
+							sound (self, CHAN_VOICE, "crx/kaboom.wav", 1, ATTN_NORM);
+						else
+							sound (self, CHAN_VOICE, "crx/excell3.wav", 1, ATTN_NORM);
+					}
+					else if (as_sound == 5)
+					{
+						prand = floor(random() * 3) + 1;
+						if (prand == 1)
+							sound (self, CHAN_VOICE, "crx/superb.wav", 1, ATTN_NORM);
+						else if (prand == 2)
+							sound (self, CHAN_VOICE, "crx/excell2.wav", 1, ATTN_NORM);
+						else
+							sound (self, CHAN_VOICE, "ra/outstand.wav", 1, ATTN_NORM);
+					}
+					else if (as_sound == 6)
+						sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
+				}
+				else
+				{
+					//dmm4 fraglimit check
+					if (((fraglimit) && (self.frags >= fraglimit)) || (boss.suddendeath == TRUE))
+					{
+						boss.busy = TRUE;
+						gameover = TRUE;
+						arena_show_timelimit();
+						arena_match_end();
 					}
 				}
 
 				attacker.next_team.wins += 1;
 				pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
 			}
+			else
+			{
+				attacker.next_team.wins -= 1;
+				pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
+			}
 		}
-
-		// if ((attacker != world) && (attacker.classname == "player") && (targ != attacker))
-		// {
-		// 	if (attacker.next_team.wins > team_first_place.wins)
-		// 	{
-		// 		team_first_place = attacker.next_team;
-		// 	}
-		// }
 	}
 
 	self = oself;
@@ -287,7 +366,7 @@ void(entity targ, entity attacker) Killed =
 	{
 		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
 		{
-			//TODO: too many messages?
+			//TODO: too many messages? or show [rounddeaths] in obituary?
 			if (targ.next_team.teamalive > 1)
 			{
 				rtime = wipeout_get_respawn(targ.rounddeaths);
@@ -496,14 +575,25 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			}
 		}
 	}
+	//pent stats
+	if ((attacker.invincible_finished > time) && (inflictor.classname != "door"))
+	{
+		if ((((attacker.classname == "player") && (targ != attacker)) && (inflictor.classname != "grenade")))
+		{
+			if ((((targ.classname != "player") || (attacker.team != targ.team)) || !teamplay))
+			{
+				attacker.clanring_ptwep_x = (attacker.clanring_ptwep_x + damage);
+			}
+		}
+	}
 
 	save = 0;
 
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-	{	
+	{
 		targ.airborn_pos = 0;
 		if (targ.waterlevel < 2)
-		{		
+		{
 			old_damage = damage; // save back the original damage
 			damage = airshot_damage_z (targ, old_damage); // Modify damage to the target based on the distance they are from the ground; save the height in airborn_pos.
 			if (old_damage < 100) // Ignore splash damage caused by missing the target and hitting walls.
@@ -539,7 +629,9 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		}
 	}
 	else if ((damage >= 100) && ((inflictor.classname == "missile") || (inflictor.classname == "grenade")))
+	{
 		attacker.direct_hit = attacker.direct_hit + 1;
+	}
 
 	if ((teamdamage)&&(!(match_prewar())))
 	{

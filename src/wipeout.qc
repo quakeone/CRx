@@ -102,7 +102,7 @@ void (vector vspot) do_spawn_quad =
 	item.touch = powerup_touch;
 	item.nextthink = time + 30;
 	item.think = SUB_Remove;
-	sound (item, CHAN_VOICE, "ra/itembk3.wav", 1, ATTN_NORM);
+	sound (item, CHAN_VOICE, "crx/itembk3.wav", 1, ATTN_NORM);
 };
 
 void() BackpackTouch;

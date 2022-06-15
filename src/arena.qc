@@ -30,7 +30,7 @@ void () wipeout_try_spawn_item;
 void () respawn;
 void (entity pteam) ra_leave_next_queue;
 void (entity pteam) ra_join_next_queue;
-void () ra_next_player_ready;
+void (float nextcolor) ra_next_player_ready;
 
 void () arena_precache =
 {
@@ -39,14 +39,33 @@ void () arena_precache =
 	precache_sound ("ra/3.wav");
 	precache_sound ("ra/fight.wav");
 	precache_sound ("ra/laugh.wav");
-	precache_sound ("ra/flawless.wav");
+	//precache_sound ("ra/flawless.wav");  //not used
 	precache_sound ("ra/outstand.wav");	
-	precache_sound ("ra/excellent.wav");		
+	precache_sound ("ra/excellent.wav");	
 	precache_sound ("ra/welldone.wav");
 	precache_sound ("ra/gong.wav");	
 	precache_sound ("ambience/thunder1.wav");
-	precache_sound ("ra/itembk3.wav");
-	precache_sound ("ra/lastone.wav");
+	precache_sound ("crx/itembk3.wav");
+	precache_sound ("crx/pathetic.wav");
+	precache_sound ("crx/lastone.wav");
+	precache_sound ("crx/activate.wav");
+	precache_sound ("crx/laugh2.wav");
+	precache_sound ("crx/laugh3.wav");
+	precache_sound ("crx/laugh4.wav");
+	precache_sound ("crx/laugh6.wav");
+	precache_sound ("crx/gasp.wav");
+	precache_sound ("crx/gasp2.wav");
+	precache_sound ("crx/beyond.wav");
+	precache_sound ("crx/excell2.wav");
+	precache_sound ("crx/excell3.wav");
+	precache_sound ("crx/helpyou.wav");
+	precache_sound ("crx/hiscore.wav");
+	precache_sound ("crx/onfire.wav");
+	precache_sound ("crx/kaboom.wav");
+	precache_sound ("crx/gameover.wav");
+	precache_sound ("crx/superb.wav");
+	precache_sound ("crx/onemore.wav");
+	precache_sound ("crx/flawless.wav");
 }
 
 void () arena_init_world =
@@ -695,6 +714,9 @@ void () respawn_teams =
 				bprint4 (player.netname, " \bColor-Changed\b to: ", pteam.netname, "\n");
 				player.cc_queue = 0;
 				player.cc_queue_vote = 0;
+				player.frags = 0;
+				player.respawntime = 0;
+				player.rounddeaths = 0;
 			}
 
 			if (cp < boss.start_players)
@@ -751,6 +773,7 @@ void () im_dead_now_what =
 {
 	local string tmp = "";
 	local entity e;
+	local float prnd=0;
 
 	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
 		return;
@@ -774,7 +797,15 @@ void () im_dead_now_what =
 			if (self.next_team.teamalive < 1)
 			{
 				bprint3 ("The ", self.next_team.netname, " has been \bwiped out\b\n");
-				sound (world, CHAN_VOICE, "ra/laugh.wav", 1, ATTN_NONE); //R00k, this might be annoying?
+				prnd = floor(random() * 6) + 1;
+				if (prnd == 1)
+					sound (world, CHAN_VOICE, "crx/laugh2.wav", 1, ATTN_NONE);
+				else if (prnd == 2)
+					sound (world, CHAN_VOICE, "crx/laugh3.wav", 1, ATTN_NONE);
+				else if (prnd == 3)
+					sound (world, CHAN_VOICE, "crx/laugh4.wav", 1, ATTN_NONE);
+				else
+					sound (world, CHAN_VOICE, "ra/laugh.wav", 1, ATTN_NONE); //R00k, this might be annoying?
 
 				e = self.next_team.chain_gang;
 				while (e)
@@ -788,7 +819,7 @@ void () im_dead_now_what =
 			{
 				if (self.next_team.teamalive == 1)
 				{
-					sound(world, CHAN_AUTO, "ra/lastone.wav", 1, ATTN_NONE);
+					sound(world, CHAN_AUTO, "crx/lastone.wav", 1, ATTN_NONE);
 				}
 
 				//set player's respawn and update team nextspawn for huds
@@ -1273,7 +1304,8 @@ void () Teamplay_Select_Team =
 			}
 		}
 
-		if (boss.state == CA_MATCH_WAITING)
+		//allow player to leave team when they are waiting or between rounds
+		if ((self.ca_player_flag == PF_WAITING) || (boss.state == CA_MATCH_ROUNDSTART))
 		{
 			if (self.next_team != world)
 			RemoveFromTeam ();
@@ -1289,7 +1321,8 @@ void () Teamplay_Select_Team =
 			self.cc_queue_vote = 0;
 		}
 
-		if (self.style & CLANRING_CONNECTED)
+		//don't change to white if remove didn't work
+		if ((self.style & CLANRING_CONNECTED) && (self.next_team == world))
 		{
 			stuffcmd(self,";color 0;\n");
 		}
@@ -1385,6 +1418,8 @@ void () arena_fight_and_shoot =
 {
 	if (!(self.style & CLANRING_OK_TO_SHOOT))
 		self.style = self.style | CLANRING_OK_TO_SHOOT;
+
+	self.fragstreak = 0;
 
 	centerprint(self, "\bFIGHT!");
 
@@ -1543,6 +1578,21 @@ void () report_mvp_game =
 	announce4(name," was the \bmatch\b MVP with ",smvp," points of damage given.");
 };
 
+void() do_sound_owned =
+{
+	sound(world, CHAN_AUTO, "crx/gameover.wav", 1, ATTN_NONE);
+	remove(self);
+};
+void() do_sound_sweep =
+{
+	local float prnd = floor(random() * 2) + 1;
+	if (prnd == 1)
+		sound (world, CHAN_VOICE, "crx/helpyou.wav", 1, ATTN_NONE);
+	else
+		sound(world, CHAN_AUTO, "crx/pathetic.wav", 1, ATTN_NONE);
+	remove(self);
+};
+
 void () arena_match_end =
 {
 	local string temp, t2="";//, mc;
@@ -1590,6 +1640,12 @@ void () arena_match_end =
 		}
 
 		report_mvp_game();
+
+		bprint ("The match is over\n");//required for Qrack cl_autodemo 2
+		sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+
+		NextLevel();
+		return;
 	}
 	else bprint ("Match \baborted\b.\n");//Added v1.4c
 
@@ -1601,6 +1657,15 @@ void () arena_match_end =
 	bprint ("The match is over\n");//required for Qrack cl_autodemo 2
 
 	sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+
+	if ((boss.round == 5) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
+	{
+		utils_make_scheduled_event(do_sound_sweep, 2);
+	}
+	else if ((boss.round == 6) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
+	{
+		utils_make_scheduled_event(do_sound_owned, 2);
+	}
 
 	boss.round 		 = 1;
 	boss.count 		 = 10;
@@ -1617,10 +1682,7 @@ void () arena_match_end =
 	temp = ftos(boss.round);
 	localcmd("skill \"", temp, "\"\n");//this still used?
 
-	if (clanring_playmode & CLANRING_RA_MODE)
-		NextLevel();
-	else
-		utils_make_scheduled_event(reset_match, 1);
+	utils_make_scheduled_event(reset_match, 1);
 	pqc_match_time (0, 0);
 	pqc_match_reset();
 };
@@ -1671,13 +1733,17 @@ void() reset_round =
 	boss.timetofight = FALSE;
 	boss.quadtime = 0;
 	boss.wait   = 0;
-	boss.count  = 10;
+	boss.count  = (clanring_playmode & CLANRING_RA_MODE) ? 5 : 10;
 	boss.round  = boss.round + 1;
 	temp = ftos(boss.round);
 	localcmd("skill \"", temp, "\"\n");
 
-	if ((clanring_playmode & CLANRING_RA_MODE) && (boss.draw == FALSE))
-		ra_next_player_ready();
+	if (clanring_playmode & CLANRING_RA_MODE)
+	{
+		if (boss.draw == FALSE)
+			ra_next_player_ready(boss.next_color);
+		announce("prepare to fight");
+	}
 
 	utils_do_arena_players(arena_refresh_player);
 
@@ -1691,7 +1757,7 @@ void (float x,float y) announce_winner =
 {
 	if (x == 200 && y == 100)
 	{
-		sound(world, CHAN_AUTO, "ra/flawless.wav", 1, ATTN_NONE);// Health = 100 Armor == 200 = 300
+		sound(world, CHAN_AUTO, "crx/flawless.wav", 1, ATTN_NONE);// Health = 100 Armor == 200 = 300
 	}
 	else
 	if (x >= 100 && y >= 75)
@@ -1740,8 +1806,9 @@ void () report_mvp_round =
 
 void() round_end =
 {
-	local 	entity	current_player, wteam = world, lteam;
-	local	string	temp;
+	local entity current_player, wteam = world, lteam;
+	local string temp;
+	local float prand;
 
 	boss.busy = TRUE;//hold the presses!
 
@@ -1778,7 +1845,10 @@ void() round_end =
 
 			bprint ("\n");
 			if (wteam.chain_gang != world)
-			announce2((wteam.chain_gang.netname)," has won the round.");
+			{
+				wteam.chain_gang.frags = wteam.wins;
+				announce2((wteam.chain_gang.netname)," has won the round.");
+			}
 		}
 
 		//find team with dead player and put them back in the queue
@@ -1792,6 +1862,12 @@ void() round_end =
 				{
 					lteam.losses = lteam.losses + 1;
 					current_player.ca_player_flag = PF_WAITING;
+					boss.next_color = lteam.team2;
+					prand = floor(random() * 11) + 1;
+					if (prand == 4)
+						lteam.team2 = COLOR_YELLOW;
+					else
+						lteam.team2 = prand;
 					ra_join_next_queue(lteam);
 					break;
 				}
@@ -1803,6 +1879,7 @@ void() round_end =
 		{
 			team_first_place = wteam;
 			gameover = TRUE;
+			boss.aborted = FALSE;
 			arena_match_end();
 			return;
 		}

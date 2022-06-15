@@ -204,6 +204,8 @@ vector 	clanring_angle;					// used for both autoss and intermission
 // client variables
 .vector clanring_qdwep;             // vector to keep track of quad weapon stats	// CRMOD - stats
 .vector clanring_qdkill;            // vector to keep track of quad kill stats	// CRMOD - stats
+.vector clanring_ptwep;             // vector to keep track of pent weapon stats	// CRMOD - stats
+.vector clanring_ptkill;            // vector to keep track of pent kill stats	// CRMOD - stats
 .vector clanring_badstats;          // keep track of RL paks and damage done to team
 .entity clanring_othertarget;       // entity to focus on in tourneycam		// CRMOD - tourneycam
 .entity clanring_inflicted;         // stores entity last attacked			// CRMOD - combat
@@ -280,6 +282,7 @@ float  	last_capture_team;
 .float 	last_returned_flag;
 .float 	last_fragged_carrier;
 .float 	lastteamupdate;
+.float  leaderboardtime;
 
 //flagstats
 
@@ -291,6 +294,7 @@ float  	last_capture_team;
 .float 	fcdefenses;
 .float 	fcassists;
 .float	fcfrags;
+.float	fctime;
 
 //.float 	onteam;
 .float	true_kills;
@@ -414,6 +418,21 @@ string warpmenutop[15]; // Customizable map categories for the warp menu content
 
 string default_nextmap;
 
+typedef struct
+{
+	string player;
+	//string date;
+	float teamcolor;
+	float statvalue;
+}playerrecord_t;
+
+float PLAYER_RECORDS_MAX_COUNT = 3;
+playerrecord_t playerrecord[PLAYER_RECORDS_MAX_COUNT];
+playerrecord_t playerrecord2[PLAYER_RECORDS_MAX_COUNT];
+float new_player_record;
+float RECORD_LOW = 0;
+float RECORD_HIGH = 1;
+
 //Arena
 entity boss;
 
@@ -426,6 +445,7 @@ entity boss;
 .float start_players;
 .float ca_player_flag;
 .float airborn_pos;
+.float fragstreak;
 
 .float busy;
 .float aborted;
@@ -433,6 +453,7 @@ entity boss;
 .float draw;
 .float unpausing;
 .float allready;
+.float suddendeath;
 .float timetofight;
 .float maprecycle;
 .float weaponlevel;
@@ -440,6 +461,7 @@ entity boss;
 
 .entity chain_gang;
 .entity next_queue;
+.float next_color;
 
 .float team2;
 .float wins;

@@ -24,6 +24,7 @@ void () rocket_arena_init_world =
 	boss.armortype   	= 80.001;
 	boss.timetofight 	= FALSE;
 	boss.next_team 		= world;
+	boss.next_color		= COLOR_RED;
 
 	boss.busy			= FALSE;
 	boss.aborted 		= FALSE;
@@ -191,7 +192,7 @@ entity() SelectRASpawnPoint =
 	local entity spot;
 	//local entity thing;
 	//local float	pcount;
-	//local float	loop_count;
+	//local float	n;
 
 	//loop_count = 64;
 	
@@ -218,124 +219,17 @@ entity() SelectRASpawnPoint =
 			spot.origin = spot.origin + '64 64 64';
 		}
 	}
-	
+
+	//Check for telefrag
+	if (spot != world)
+	{
+		self.solid = SOLID_NOT;//this will unstick players at spawn
+		makevectors(self.v_angle);
+		self.velocity = v_forward * (320);//R00k:Nudge them forward
+	}
+
 	ra_lastspawn = spot;
-
-	// while (loop_count)
-	// {
-	// 	if (spot != world)
-	// 	{
-	// 		if (spot == self.trigger_field)
-	// 			pcount = 1;
-	// 		else
-	// 		{
-	// 			thing = findradius (spot.origin, 128);
-	// 			while (thing)
-	// 			{
-	// 				if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))//r00k: todo thing.health check ?
-	// 				{
-	// 					pcount = 1;
-	// 					thing = world;
-	// 				}
-	// 				else
-	// 				{
-	// 					thing = thing.chain;
-	// 				}
-	// 			}
-	// 		}
-	// 		if (pcount == 0)
-	// 		{
-	// 			return spot;
-	// 		}
-	// 		pcount = 0;
-	// 	}
-
-	// 	spot = find(spot, classname, "info_teleport_destination");
-
-	// 	if (spot == ra_lastspawn)
-	// 	{
-	// 		pcount = 0;
-
-	// 		thing = findradius (self.trigger_field.origin, 128);
-
-	// 		while (thing)
-	// 		{
-	// 			if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))
-	// 			{
-	// 				pcount = 1;
-	// 				thing = world;
-	// 			}
-	// 			else
-	// 			{
-	// 				thing = thing.chain;
-	// 			}
-	// 		}
-	// 		if (pcount == 0)
-	// 		{
-	// 			return self.trigger_field;
-	// 		}
-	// 		spot.origin_z = spot.origin_z + 75;
-	// 		return spot;
-	// 	}
-	// 	loop_count = loop_count - 1; //let's not get a runaway here...
-	// }
 	return spot;
-};
-
-float() find_next_team_color =
-{
-	local float checkteam;
-	local entity e;
-
-	checkteam = 1;
-	e = boss.next_team;
-	while (e != world)
-	{
-		if (e.team2 == checkteam)
-		{
-			//goto next color
-			checkteam += 1;
-			e = boss.next_team;
-		}
-		else if (e.next_team != world)
-		{
-			//goto next team
-			e = e.next_team;
-		}
-		else
-		{
-			//nobody using this color
-			break;
-		}
-	}
-	return checkteam;
-};
-
-float(float checkteam) find_this_team_color =
-{
-	local entity e;
-
-	e = boss.next_team;
-	while (e != world)
-	{
-		if (e.team2 == checkteam)
-		{
-			//color in use
-			checkteam = 0;
-			break;
-		}
-		else if (e.next_team != world)
-		{
-			//goto next team
-			e = e.next_team;
-		}
-		else
-		{
-			//nobody using this color
-			break;
-		}
-	}
-	return checkteam;
 };
 
 void (entity pteam) ra_join_next_queue =
@@ -348,7 +242,7 @@ void() ra_join_queue =
 {
 	local entity pteam;
 	local string tmp;
-	local float whichteam = 0;
+	local float whichteam;
 
 	if ((boss.state == CA_MATCH_CLEANUP) || (boss.state == CA_MATCH_OVER))
 	{
@@ -370,43 +264,27 @@ void() ra_join_queue =
 
 	self.lip = time + 2; //R00k: two seconds between team choice will stop script spam
 
-	//try current pants color, otherwise next available
-	if (self.team > 1)
-	{
-		whichteam = find_this_team_color(self.team - 1);
-	}
-	if (whichteam == 0)
-	{
-		whichteam = find_next_team_color();
-	}
+	whichteam = floor(random() * 11) + 1;
+	if (whichteam == 4)
+		{ whichteam = COLOR_YELLOW; }
 
-	if ((whichteam > 0) && (whichteam < 14))
-	{
-		pteam = spawn();
+	pteam = spawn();
+	pteam.classname 	= "ra_team";
+	pteam.team2			= whichteam;
+	pteam.wins			= 0;
+	pteam.losses 		= 0;
+	pteam.armorvalue 	= 0;
+	pteam.health		= 0;
+	//pteam.netname 		= self.netname;
 
-		pteam.classname 	= "ra_team";
-		pteam.team2			= whichteam;
-		pteam.wins			= 0;
-		pteam.losses 		= 0;
-		pteam.armorvalue 	= 0;
-		pteam.health		= 0;
-		//pteam.netname 		= self.netname;
+	pteam.next_player	= world;//init entity
+	pteam.chain_gang 	= world;//init entity
 
-		pteam.next_player	= world;//init entity
-		pteam.chain_gang 	= world;//init entity
+	pteam.next_team   	= boss.next_team;
+	boss.next_team    	= pteam;
 
-		pteam.next_team   	= boss.next_team;
-		boss.next_team    	= pteam;
-
-		announce2 (self.netname, " has joined the queue");
-		//pqc_new_team (pteam.team2);
-	}
-	else
-	{
-		//sound (self, CHAN_VOICE, "player/axhit2.wav", 1, ATTN_NORM);
-		sprint (self, "The maximum amount of teams exists.\n");
-		return;
-	}
+	announce2 (self.netname, " has joined the queue");
+	//pqc_new_team (pteam.team2);
 
 	self.team2  	= whichteam;
 	self.next_team 	= pteam;
@@ -503,16 +381,15 @@ void () ra_select_team =
 
 	if (self.impulse == 2)
 	{
-		if (boss.state == CA_MATCH_WAITING)
+		if ((self.ca_player_flag == PF_WAITING) && (self.next_team != world))
 		{
-			if (self.next_team != world)
-				ra_leave_queue ();
-		}
+			ra_leave_queue ();
 				
-		if (self.style & CLANRING_CONNECTED)
-		{		
-			stuffcmd(self,";color 0;\n");
-		}		
+			if ((self.next_team == world) && (self.style & CLANRING_CONNECTED))
+			{		
+				stuffcmd(self,";color 0;\n");
+			}
+		}
 	}
 	
 	self.impulse = 0;
@@ -538,7 +415,7 @@ entity () ra_get_next_player =
 	return p;
 };
 
-void () ra_next_player_ready =
+void (float nextcolor) ra_next_player_ready =
 {
 	local entity pteam, player;
 	//local float player_ready = 0;
@@ -546,6 +423,8 @@ void () ra_next_player_ready =
 	pteam = ra_get_next_player ();
 	if (pteam != world)
 	{
+		pteam.team2 = nextcolor;
+
 		player = pteam.chain_gang;
 		while (player != world)
 		{
@@ -602,13 +481,13 @@ void () ra_spawn_players =
 			}
 			else if (player.ca_player_flag == PF_PLAYING)
 			{
-				player.health = 100;
-				player.armorvalue = 200;
-				player.armortype = .8;
-				player.ammo_shells = 30;
-				player.ammo_nails = 80;
-				player.ammo_rockets = 30;
-				player.ammo_cells = 30;
+				player.health = boss.health;
+				player.armorvalue = boss.armorvalue;
+				player.armortype = (boss.armortype * 0.01);
+				player.ammo_shells = boss.ammo_shells;
+				player.ammo_nails = boss.ammo_nails;
+				player.ammo_rockets = boss.ammo_rockets;
+				player.ammo_cells = boss.ammo_cells;
 			}
 			player = player.chain_gang;
 		}
@@ -696,6 +575,7 @@ void () rocket_arena_main_loop =
 			{
 				if (boss.wait == 0)
 				{
+					boss.timetofight = FALSE;
 					boss.wait = (time + 4);//slight pause before end of round.					
 					return;
 				}
@@ -738,47 +618,38 @@ void () rocket_arena_main_loop =
 			if (clanring_request.noise1 == "\bforce match start\b")	//cancel Vote to force
 				Request_Poll_Cleanup();
 			
-			if (boss.count > 5)
-			{
-				if (boss.count == 8)
-				{
-					ra_spawn_players ();
-					bprint ("\bround:\b ");
-					temp = ftos (boss.round);
-					bprint2 (temp,"\n");
-						
-					local string stmp;
-					stmp = (report_winning_team());
-					bprint2 (stmp, "\n");
-				}
+
+			if (boss.count == 0)
+			{					
+				sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
+				utils_do_arena_players(arena_fight_and_shoot);
+				boss.timetofight = TRUE;
+				boss.state = CA_MATCH_PLAYING;	
+				if (boss.round == 1)
+					announce("The match has begun!");
 			}
-			else
+			else if (boss.count == 1)
 			{
-				if (boss.count == 0)
-				{					
-					sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
-					utils_do_arena_players(arena_fight_and_shoot);
-					boss.timetofight = TRUE;
-					boss.state = CA_MATCH_PLAYING;	
-					if (boss.round == 1)
-						announce("The match has begun!");
-				}
-				else if (boss.count == 1)
-				{
-					sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
-				}
-				else if (boss.count == 2)
-				{
-					sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
-				}
-				else if (boss.count == 3)
-				{
-					sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
-				}
-				else if (boss.count == 5)
-				{
-					announce("prepare to fight");	
-				}
+				sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
+			}
+			else if (boss.count == 2)
+			{
+				sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
+			}
+			else if (boss.count == 3)
+			{
+				sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
+			}
+			else if (boss.count == 4)
+			{
+				ra_spawn_players ();
+				bprint ("\bround:\b ");
+				temp = ftos (boss.round);
+				bprint2 (temp,"\n");
+					
+				local string stmp;
+				stmp = (report_winning_team());
+				bprint2 (stmp, "\n");
 			}
 		}
 		else
@@ -801,13 +672,13 @@ void () rocket_arena_main_loop =
 				
 				boss.wait = time + 5;
 				sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
-				announce("Match begins in \b15\b seconds.");//boss.wait (5) + countdowntimer (10) = 15 seconds...
+				announce("Match begins in \b10\b seconds.");//boss.wait (5) + countdowntimer (5) = 10 seconds...
 			}
 
 			if (time >= boss.wait)
 			{
 				boss.timetofight	= FALSE;
-				boss.count 	= 10;
+				boss.count 	= 5;
 				boss.wait 	= 0;
 				boss.draw = FALSE;
 				boss.busy = FALSE;
@@ -815,10 +686,11 @@ void () rocket_arena_main_loop =
 				utils_do_players(reset_frags);
 				Practice_Object_Remove();
 				boss.state = CA_MATCH_ROUNDSTART;
-				ra_next_player_ready();
-				ra_next_player_ready();
+				ra_next_player_ready(COLOR_BLUE);
+				ra_next_player_ready(COLOR_RED);
 				pqc_match_reset();
-				find_pqc_teamscore_teams();							
+				find_pqc_teamscore_teams();
+				announce("prepare to fight");		
 			}
 		}
 		else if (number_teams () < 2)

@@ -487,6 +487,48 @@ void() console_show_quadstats =
 	cprint("\n");
 };
 
+void() console_show_pentstats =
+{
+	local entity player, pteam;
+	local float useteams;
+
+	if ((clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)) && teamplay)
+		useteams = TRUE;
+	else
+		useteams = FALSE;
+
+	cprint("\"------------\"\n");
+	cprint("\" Pent Stats \"\n");
+	cprint("\"------------\"\n");
+
+	cprint("\" pents | efficiency | enemy | teammates |      name\"\n");
+	cprint("-------+------------+-------+-----------+-----------------\n");
+	player = clanring_sentinel.next_player;
+	pteam = player.next_team;
+
+	while (player)
+	{
+		cprint("\"  ");
+		utils_cprint_int3 (player.clanring_ptwep_z);
+		localcmd("  |    ");
+		console_print_percent4 (player.clanring_ptwep_x, player.clanring_ptwep_y);
+		localcmd("    |  ");
+		utils_cprint_int3 (player.clanring_ptkill_x);
+		localcmd("  |    ");
+		utils_cprint_int3 (player.clanring_ptkill_y);
+		localcmd3("    | ", player.netname, "\"\n");
+		player = player.next_player;
+		if ((useteams && (player.next_team != pteam)))
+		{
+			cprint("\" [");
+			utils_cprint_int3 (pteam.dest2_y);
+			localcmd3("] |            |       |           | ", pteam.netname, "\"\n");
+			pteam = player.next_team;
+		}
+	}
+	cprint("\n");
+};
+
 //
 //  S H O W  B A D S T A T S
 //
@@ -570,21 +612,39 @@ void() console_show_fstats =
 	local entity player;
 
 	player = find(world, classname, "player");//flagstats in normal mode too
-	
+
 	cprint("\"------------\"\n");
 	cprint("\" Flag Stats \"\n");
-	cprint("\"------------------------------------------------------\"\n");
-	cprint("\"flag |cap|def|rtn|fcd|fca|fck|  time  |     name      \"\n");
-	cprint("\"-----+---+---+---+---+---+---+--------+---------------\"\n");
+	cprint("\"-------------------------------------------\"\n");
+	cprint("\"flag |  time  |cap|  best  |     name      \"\n");
+	cprint("\"-----+--------+---+--------+---------------\"\n");
+
+	while (player)
+	{
+		if (!(player.style & CLANRING_OBSERVER))
+		{
+			cprint("\"  ");
+			utils_cprint_int3(player.fpickups);
+			localcmd("|");
+			utils_cprint_time(player.fctime);
+			localcmd("|");
+			utils_cprint_int3(player.fcaptures);
+			localcmd("|");
+			utils_cprint_time(player.captime);
+			localcmd3("| ", player.netname, "\"\n");
+		}
+		player = find(player, classname, "player");
+	}
+	cprint("\n");
+	cprint("\"-----------------------------------\"\n");
+	cprint("\"def|rtn|fcd|fca|fck|     name      \"\n");
+	cprint("\"---+---+---+---+---+---------------\"\n");
 
 	while (player)
 	{
 		if (!(player.style & CLANRING_OBSERVER))
 		{
 			cprint("\" ");
-			utils_cprint_int3(player.fpickups);
-			localcmd(" |");
-			utils_cprint_int3(player.fcaptures);
 			localcmd("|");
 			utils_cprint_int3(player.fdefenses);
 			localcmd("|");
@@ -595,8 +655,6 @@ void() console_show_fstats =
 			utils_cprint_int3(player.fcassists);
 			localcmd("|");
 			utils_cprint_int3(player.fcfrags);
-			localcmd("|");
-			utils_cprint_time(player.captime);
 			localcmd3("| ", player.netname, "\"\n");
 		}
 		player = find(player, classname, "player");
@@ -829,6 +887,9 @@ void() console_autodump =
 
 		if (!(clanring_playmode & CLANRING_NO_QUAD))//R00k -added-
 			console_show_quadstats ();
+
+		if (!(clanring_playmode & CLANRING_NO_PENT))
+			console_show_pentstats ();
 
 		if ((clanring_playmode & CLANRING_MATCH_MODE) && (teamplay == 2))
 			console_show_badstats ();
@@ -1680,7 +1741,7 @@ void(float command) console_command =
 
 		case 12:
 		case 13:
-		case 14:
+		case 14: console_show_pentstats();	break;
 		case 15:
 		{
 			votables_request_set_gametype_mode_map(-1, command - 12, "");
@@ -1990,4 +2051,69 @@ void(float command) console_command =
 		case  90: console_admins (); break;
 		default: cprint("unknown 'console_command'.\n"); break;
 	}
+};
+
+void () CaptureHighScores_sprint =
+{
+	local string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
+	if (playerrecord[0].statvalue > 0)
+	{
+		s1 = sprintf("\1  %s %s %-16s\n", utils_get_time(playerrecord[0].statvalue), get_team_letter(playerrecord[0].teamcolor), playerrecord[0].player);
+		if (playerrecord[1].statvalue > 0)
+		{
+			s2 = sprintf("\2  %s %s %-16s\n", utils_get_time(playerrecord[1].statvalue), get_team_letter(playerrecord[1].teamcolor), playerrecord[1].player);
+			if (playerrecord[2].statvalue > 0)
+			{
+				s3 = sprintf("\3  %s %s %-16s\n", utils_get_time(playerrecord[2].statvalue), get_team_letter(playerrecord[2].teamcolor), playerrecord[2].player);
+			}
+		}
+	}
+	else
+	{
+		s1 = "No capture times set";
+	}
+	sprint(self, sprintf("\bTime Trial Leaders\b for %s:\n", mapname), s1, s2, s3);
+	return;
+};
+
+void () AirshotHighScores_sprint =
+{
+	local string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
+
+	//TODO: update for higher PLAYER_RECORDS_MAX_COUNT?
+	if (playerrecord[0].statvalue > 0)
+	{
+		s1 = sprintf("\1   %-2s %-16s\n", ftos(playerrecord[0].statvalue), playerrecord[0].player);
+		if (playerrecord[1].statvalue > 0)
+		{
+			s2 = sprintf("\2   %-2s %-16s\n", ftos(playerrecord[1].statvalue), playerrecord[1].player);
+			if (playerrecord[2].statvalue > 0)
+			{
+				s3 = sprintf("\3   %-2s %-16s\n", ftos(playerrecord[2].statvalue), playerrecord[2].player);
+			}
+		}
+	}
+	else
+	{
+		s1 = "No streaks set\n";
+	}
+	if (playerrecord2[0].statvalue > 0)
+	{
+		ts1 = sprintf("\1  %-3s %-16s\n", ftos(rint(playerrecord2[0].statvalue)), playerrecord2[0].player);
+		if (playerrecord2[1].statvalue > 0)
+		{
+			ts2 = sprintf("\2  %-3s %-16s\n", ftos(rint(playerrecord2[1].statvalue)), playerrecord2[1].player);
+			if (playerrecord2[2].statvalue > 0)
+			{
+				ts3 = sprintf("\3  %-3s %-16s\n", ftos(rint(playerrecord2[2].statvalue)), playerrecord2[2].player);
+			}
+		}
+		s4 = sprintf("%s%s%s",ts1,ts2,ts3);
+	}
+	else
+	{
+		s4 = "No height records set";
+	}
+	sprint(self, "\bAir Gib Streak Leaders\b:\n", s1, s2, s3, "\bHighest Air Gibs\b:\n", s4, "\n");
+	return;
 };

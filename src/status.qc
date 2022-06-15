@@ -80,15 +80,24 @@ string(entity who) TeamSetStatRes2 =
 	return "\n\n\n\n\n\n\n\n\n\n\n";
 };
 
+string (float t_teamcolor) get_team_letter =
+{
+	if (t_teamcolor == TEAM_BLUE)
+		return "\bB\b";
+	if (t_teamcolor == TEAM_RED)
+		return "\bR\b";
+	return " ";
+};
+
 void() TeamCapturePlayerUpdate =
 {
 	local entity e;
-	local string n;
-	local string t;
-	local string s1;
-	local string s2;
-	local string s3;
-	local string res;
+	local string n="";
+	local string t="";
+	local string s1="";
+	local string s2="";
+	local string s3="";
+	local string res="";
 
 	if (clanring_playmode & CLANRING_PRACTICE_MODE)
 		return;
@@ -106,11 +115,40 @@ void() TeamCapturePlayerUpdate =
 		return;
 	}
 
-	if (self.style & CLANRING_MOTD)//r00k v3.21
+	if ((self.style & CLANRING_MOTD) && (time >= self.leaderboardtime)) //r00k v3.21
 		return;
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
+
+	if (self.leaderboardtime > time)
+	{
+		if ((clanring_state & CLANRING_MATCH_STARTED) || (clanring_state & CLANRING_TIMER_STARTED))
+		{
+			self.leaderboardtime = 0;
+		}
+		else
+		{	//TODO: update for higher PLAYER_RECORDS_MAX_COUNT?
+			if (playerrecord[0].statvalue > 0)
+			{
+				s1 = sprintf("    \1  %s %s %-16s\n\n", utils_get_time(playerrecord[0].statvalue), get_team_letter(playerrecord[0].teamcolor), playerrecord[0].player);
+				if (playerrecord[1].statvalue > 0)
+				{
+					s2 = sprintf("    \2  %s %s %-16s\n\n", utils_get_time(playerrecord[1].statvalue), get_team_letter(playerrecord[1].teamcolor), playerrecord[1].player);
+					if (playerrecord[2].statvalue > 0)
+					{
+						s3 = sprintf("    \3  %s %s %-16s\n\n", utils_get_time(playerrecord[2].statvalue), get_team_letter(playerrecord[2].teamcolor), playerrecord[2].player);
+					}
+				}
+			}
+			else
+			{
+				s1 = "No capture times set";
+			}
+			centerprint(self, sprintf("\bTime Trial Leaders\b for %s:\n\n", mapname), s1, s2, s3);
+			return;
+		}
+	}
 
 	TeamCaptureCheckUpdate ();
 
