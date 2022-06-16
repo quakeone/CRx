@@ -784,7 +784,7 @@ void () im_dead_now_what =
 		tmp = ftos(self.team2);
 		stuffcmd(self,";color ");
 		stuffcmd(self,tmp);
-		stuffcmd(self,",0;\n");
+		stuffcmd(self," 0;\n");
 		self.team2 = 0;
 		dead_name();
 
@@ -1863,11 +1863,19 @@ void() round_end =
 					lteam.losses = lteam.losses + 1;
 					current_player.ca_player_flag = PF_WAITING;
 					boss.next_color = lteam.team2;
+
 					prand = floor(random() * 11) + 1;
 					if (prand == 4)
 						lteam.team2 = COLOR_YELLOW;
 					else
 						lteam.team2 = prand;
+					current_player.team2 = lteam.team2;
+					setcolour(current_player,lteam.team2,0);
+					temp = ftos(lteam.team2);
+					stuffcmd(current_player,";color ");
+					stuffcmd(current_player,temp);
+					stuffcmd(current_player," 0;\n");
+
 					ra_join_next_queue(lteam);
 					break;
 				}

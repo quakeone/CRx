@@ -743,7 +743,7 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias droprune impulse 19\n");		
 	stuffcmd(self, "alias rune-delete impulse 19\n");		
 	stuffcmd(self, "alias nextmap impulse 199\n");	
-	//stuffcmd(self, "alias vote-exit impulse 204\n");
+	stuffcmd(self, "alias vote-exit impulse 220\n");
 	stuffcmd(self, "alias faststart impulse 209\n");		
 	stuffcmd(self, "alias afk impulse 57\n");
 	stuffcmd(self, "alias captimes impulse 58\n");
@@ -1560,39 +1560,39 @@ void () clanring_show_rules =
 	local float temp;
 
 	if (clanring_playmode & CLANRING_DMM4_MODE)
-		sprint(self, " 1v1 duel  mode \n");
+		sprint(self, "Ž 1v1 duel  mode Ž\n");
 	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-		sprint(self, "  airshot mode  \n");
+		sprint(self, "Ž  airshot mode  Ž\n");
 	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)	
-		sprint(self, " wipeout mode\n");
+		sprint(self, "Ž wipeout modeŽ\n");
 	else if (clanring_playmode & CLANRING_CA_MODE)
-		sprint(self, "clan arena  mode\n");
+		sprint(self, "Žclan arena  modeŽ\n");
 	else if (clanring_playmode & CLANRING_RA_MODE)
-		sprint(self, "rocket arena mode\n");
+		sprint(self, "Žrocket arena modeŽ\n");
 	else if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			sprint(self, "CRCTF match mode\n");
+			sprint(self, "ŽCRCTF match modeŽ\n");
 		else
-			sprint(self, "CRMod match mode\n");
+			sprint(self, "ŽCRMod match modeŽ\n");
 	}
 	else if (clanring_playmode & CLANRING_PRACTICE_MODE)
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			sprint(self, "ctf practice mode\n");
+			sprint(self, "Žctf practice modeŽ\n");
 		else
-			sprint(self, "practice mode\n");
+			sprint(self, "Žpractice modeŽ\n");
 	}
 	else
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			sprint(self, "Public CTF mode\n");
+			sprint(self, "ŽPublic CTF modeŽ\n");
 		else
 		{
 			if (teamplay)
-				sprint(self, "Public Team DeathMatch mode\n");
+				sprint(self, "ŽPublic Team DeathMatch modeŽ\n");
 			else
-				sprint(self, "FFA DeathMatch mode\n");
+				sprint(self, "ŽFFA DeathMatch modeŽ\n");
 		}
 	}
 	temp = cvar("deathmatch");
@@ -1708,19 +1708,19 @@ void () clanring_show_rules_prematch =
 	if (timervar > 3)
 	{
 		if (clanring_playmode & CLANRING_DMM4_MODE)
-			s1 = "  d u e l mode  \n\n";
+			s1 = "Ž  d u e l mode  Ž\n\n";
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-			s1 = "  airshot mode  \n\n";
+			s1 = "Ž  airshot mode  Ž\n\n";
 		else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-			s1 = "clan arena wipeout\n\n";
+			s1 = "Žclan arena wipeoutŽ\n\n";
 		else if (clanring_playmode & CLANRING_CA_MODE)
-			s1 = "clan arena  mode\n\n";
+			s1 = "Žclan arena  modeŽ\n\n";
 		else if (clanring_playmode & CLANRING_RA_MODE)
-			s1 = "rocket arena mode\n\n";
+			s1 = "Žrocket arena modeŽ\n\n";
 		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			s1 = "crctf match mode\n\n";
+			s1 = "Žcrctf match modeŽ\n\n";
 		else
-			s1 = "crmod match mode\n\n";
+			s1 = "Žcrmod match modeŽ\n\n";
 
 		if (!(clanring_playmode & CLANRING_CA_MODE) && !(clanring_playmode & CLANRING_RA_MODE))
 		{
@@ -2552,31 +2552,31 @@ void () clanring_start_frame =
 								{
 									if (rint(timelimit - time) == 5)
 									{
-										bprint("  \n");
+										bprint(" — ‘\n");
 									}
 									else
 									{
 										if (rint(timelimit - time) == 4)
 										{
-											bprint("  \n");
+											bprint(" – ‘\n");
 										}
 										else
 										{
 											if (rint(timelimit - time) == 3)
 											{
-												bprint("  \n");
+												bprint(" • ‘\n");
 											}
 											else
 											{
 												if (rint(timelimit - time) == 2)
 												{
-													bprint("  \n");
+													bprint(" ” ‘\n");
 												}
 												else
 												{
 													if (rint(timelimit - time) == 1)
 													{
-														bprint("  \n");
+														bprint(" “ ‘\n");
 													}
 												}
 											}
