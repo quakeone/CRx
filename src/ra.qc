@@ -431,6 +431,7 @@ void (float nextcolor) ra_next_player_ready =
 			if (player.style & CLANRING_CONNECTED)
 			{
 				player.ca_player_flag = PF_READY;
+				player.team2 = nextcolor;
 				//player_ready = 1;
 				if (boss.round != 1)
 				{

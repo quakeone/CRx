@@ -32,8 +32,9 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias w5 \"wait;wait;wait;wait;wait\"\n");
 	stuffcmd(self, "alias sethook impulse 202\n");
 	stuffcmd(self, "alias setrunes impulse 203\n");
-	stuffcmd(self, "alias weaponstay impulse 218\n");
+	stuffcmd(self, "alias abortmatch impulse 214\n");
 	stuffcmd(self, "alias force impulse 217\n");
+	stuffcmd(self, "alias weaponstay impulse 218\n");
 	// toggle faststarts	
 	stuffcmd(self, "alias faststart impulse 209\n");
 	stuffcmd(self, "alias autopause impulse 210\n");
@@ -817,6 +818,44 @@ void () votables_request_set_weaponstay =
 		if (vote_init("change weaponstay to ", temp, votables_set_weaponstay))
 		{
 			request_weaponstay = newweaponstay;
+			vote_yes();
+		}
+	}
+};
+
+void () votables_next_map =
+{
+	//TODO:
+	if (!(clanring_playmode & CLANRING_RA_MODE))
+	{
+		sprint(self, "How did you get here?\n");
+		return;
+	}
+
+	NextLevel();
+}
+
+void () votables_request_next_map =
+{
+	local string temp;
+
+	//TODO: Public CTF look for changelevel ? Other modes?
+	if (!(clanring_playmode & CLANRING_RA_MODE))
+	{
+		sprint(self, "Command not available in this mode.\n");
+		return;
+	}
+
+    // Do it right away if we're an administrator, otherwise vote
+	if (self.style & CLANRING_ADMINISTRATOR)
+	{
+		votables_next_map ();
+	}
+	else
+	{
+		temp = "\brandom map\b";
+		if (vote_init("change to a ", temp, votables_next_map))
+		{
 			vote_yes();
 		}
 	}

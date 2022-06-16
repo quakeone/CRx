@@ -48,7 +48,6 @@ void() admin_send_aliases =
 	stuffcmd(self, "alias kick! impulse 213\n");
 	stuffcmd(self, "alias skick impulse 213\n");
     stuffcmd(self, "alias crkick impulse 213\n");		//I think we need more kick aliases
-	stuffcmd(self, "alias abortmatch impulse 214\n");
 	stuffcmd(self, "alias safepractice impulse 224\n");
 	stuffcmd(self, "alias modevote impulse 228\n");
 	stuffcmd(self, "alias options impulse 229\n");
@@ -1268,6 +1267,8 @@ void() admin_impulse =
 		votables_request_set_weaponstay();
 	else if (self.impulse == 219)
 		votables_select_fraglimit();
+	else if (self.impulse == 220)
+		votables_request_next_map();
 	else if (self.impulse == 221)
 		votables_request_set_quad();
 	else if (self.impulse == 222)

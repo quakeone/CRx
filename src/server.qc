@@ -743,7 +743,7 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias droprune impulse 19\n");		
 	stuffcmd(self, "alias rune-delete impulse 19\n");		
 	stuffcmd(self, "alias nextmap impulse 199\n");	
-	//stuffcmd(self, "alias vote-exit impulse 204\n");
+	stuffcmd(self, "alias vote-exit impulse 220\n");
 	stuffcmd(self, "alias faststart impulse 209\n");		
 	stuffcmd(self, "alias afk impulse 57\n");
 	stuffcmd(self, "alias captimes impulse 58\n");
