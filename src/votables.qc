@@ -1190,10 +1190,10 @@ void() votables_select_overtime =
 		return;
 	}
 	sprint(self, "Select overtime:\n");
-	sprint(self, " Äéóáâìåä       ´ Íéîõôåó\n");
-	sprint(self, " ± Íéîõôå       µ Íéîõôåó\n");
-	sprint(self, " ² Íéîõôåó      ±° Íéîõôåó\n");
-	sprint(self, " ³ Íéîõôåó      Óõääåî äåáôè\n");
+	sprint(self, "’Ÿ Äéóáâìåä      –Ÿ ´ Íéîõôåó\n");
+	sprint(self, "“Ÿ ± Íéîõôå      —Ÿ µ Íéîõôåó\n");
+	sprint(self, "”Ÿ ² Íéîõôåó     ˜Ÿ ±° Íéîõôåó\n");
+	sprint(self, "•Ÿ ³ Íéîõôåó     ™Ÿ Óõääåî äåáôè\n");
 	self.use = votables_get_overtime;
 };
 
