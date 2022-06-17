@@ -825,10 +825,9 @@ void () votables_request_set_weaponstay =
 
 void () votables_next_map =
 {
-	//TODO:
-	if (!(clanring_playmode & CLANRING_RA_MODE))
+	if (clanring_state & CLANRING_MATCH_STARTED)
 	{
-		sprint(self, "How did you get here?\n");
+		sprint(self, "Match is already in progress.\n");
 		return;
 	}
 
@@ -839,13 +838,6 @@ void () votables_request_next_map =
 {
 	local string temp;
 
-	//TODO: Public CTF look for changelevel ? Other modes?
-	if (!(clanring_playmode & CLANRING_RA_MODE))
-	{
-		sprint(self, "Command not available in this mode.\n");
-		return;
-	}
-
     // Do it right away if we're an administrator, otherwise vote
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
@@ -853,7 +845,7 @@ void () votables_request_next_map =
 	}
 	else
 	{
-		temp = "\brandom map\b";
+		temp = (clanring_playmode & CLANRING_RA_MODE) ? "\brandom map\b" : "\bnext map\b";
 		if (vote_init("change to a ", temp, votables_next_map))
 		{
 			vote_yes();
@@ -1130,7 +1122,7 @@ void(float overtime) votables_request_set_overtime =
 	{
 		if (overtime == 0)
 		{
-			if (vote_init("??????? ????????", "", votables_set_overtime))
+			if (vote_init("turn off overtime", "", votables_set_overtime))
 			{
 				request_overtime = overtime;
 				vote_yes();
@@ -1140,13 +1132,13 @@ void(float overtime) votables_request_set_overtime =
 		{
 			if (overtime < 0)
 			{
-				temp = "?????? ?????";
+				temp = "\bsudden death\b";
 			}
 			else
 			{
 				temp = strings_ftos_bronze (overtime);
 			}
-			if (vote_init("?????? ???????? ?? ", temp, votables_set_overtime))
+			if (vote_init("change overtime to ", temp, votables_set_overtime))
 			{
 				request_overtime = overtime;
 				vote_yes();
@@ -1190,10 +1182,10 @@ void() votables_select_overtime =
 		return;
 	}
 	sprint(self, "Select overtime:\n");
-	sprint(self, "?’? ????????      ?–? ? ???????\n");
-	sprint(self, "?“? ± ??????      ?—? µ ???????\n");
-	sprint(self, "?”? ² ???????     ??? ±° ???????\n");
-	sprint(self, "?•? ³ ???????     ?™? ?????? ?????\n");
+	sprint(self, "\x80\0\x82 \bturn off\b      \x80\4\x82 \b4 minutes\b\n");
+	sprint(self, "\x80\1\x82 \b1 minute\b      \x80\5\x82 \b5 minutes\b\n");
+	sprint(self, "\x80\2\x82 \b2 minutes\b     \x80\6\x82 \b10 minutes\b\n");
+	sprint(self, "\x80\3\x82 \b3 minutes\b     \x80\7\x82 \bsudden deeath\b\n");
 	self.use = votables_get_overtime;
 };
 

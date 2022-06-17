@@ -724,7 +724,7 @@ void() clanring_exec_configs =
 
 	clanring_main_config();
 	clanring_warp_config();
-//	clanring_map_config();//(FIXME)
+	clanring_map_config();
 //	clanring_ent_config();//(FIXME)
 //	clanring_cam_config();//(FIXME)
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
