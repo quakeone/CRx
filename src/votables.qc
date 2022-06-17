@@ -1130,7 +1130,7 @@ void(float overtime) votables_request_set_overtime =
 	{
 		if (overtime == 0)
 		{
-			if (vote_init("äéóáâìå ïöåòôéíå", "", votables_set_overtime))
+			if (vote_init("???????�????????", "", votables_set_overtime))
 			{
 				request_overtime = overtime;
 				vote_yes();
@@ -1140,13 +1140,13 @@ void(float overtime) votables_request_set_overtime =
 		{
 			if (overtime < 0)
 			{
-				temp = "óõääåî äåáôè";
+				temp = "??????�?????";
 			}
 			else
 			{
 				temp = strings_ftos_bronze (overtime);
 			}
-			if (vote_init("ãèáîçå ïöåòôéíå ôï ", temp, votables_set_overtime))
+			if (vote_init("??????�????????�?? ", temp, votables_set_overtime))
 			{
 				request_overtime = overtime;
 				vote_yes();
@@ -1190,10 +1190,10 @@ void() votables_select_overtime =
 		return;
 	}
 	sprint(self, "Select overtime:\n");
-	sprint(self, "’Ÿ Äéóáâìåä      –Ÿ ´ Íéîõôåó\n");
-	sprint(self, "“Ÿ ± Íéîõôå      —Ÿ µ Íéîõôåó\n");
-	sprint(self, "”Ÿ ² Íéîõôåó     ˜Ÿ ±° Íéîõôåó\n");
-	sprint(self, "•Ÿ ³ Íéîõôåó     ™Ÿ Óõääåî äåáôè\n");
+	sprint(self, "?�? ????????      ?�? ? ???????\n");
+	sprint(self, "?�? � ??????      ?�? � ???????\n");
+	sprint(self, "?�? � ???????     ??? �� ???????\n");
+	sprint(self, "?�? � ???????     ?�? ?????? ?????\n");
 	self.use = votables_get_overtime;
 };
 
@@ -1317,7 +1317,7 @@ void (float gibs) votables_request_set_gibs =
 		gibmode = "'low'";
 		else
 		gibmode = "'high'";
-		if (vote_init("ãèáîçå çéâó ôï ", gibmode, votables_set_gibs))
+		if (vote_init("??????�????�?? ", gibmode, votables_set_gibs))
 		{
 			request_gibs = gibs;
 			vote_yes();
@@ -1383,11 +1383,11 @@ void() votables_request_set_quad =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_QUAD)
-			newstate = "åîáâìå";
+			newstate = "??????";
 		else
-			newstate = "äéóáâìå";
+			newstate = "???????";
 
-		if (vote_init(newstate, " ñõáä", votables_set_quad))
+		if (vote_init(newstate, " ????", votables_set_quad))
 			vote_yes();
 	}
 };
@@ -1472,11 +1472,11 @@ void() votables_request_set_pent =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_PENT)
-			newstate = "åîáâìå";
+			newstate = "??????";
 		else
-			newstate = "äéóáâìå";
+			newstate = "???????";
 
-		if (vote_init(newstate, " ðåîôáçòáí", votables_set_pent))
+		if (vote_init(newstate, " ?????????", votables_set_pent))
 			vote_yes();
 	}
 };
@@ -1525,11 +1525,11 @@ void() votables_request_set_ring =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_RING)
-		newstate = "åîáâìå";
+		newstate = "??????";
 		else
-		newstate = "äéóáâìå";
+		newstate = "???????";
 
-		if (vote_init(newstate, " òéîç ïæ óèáäï÷ó", votables_set_ring))
+		if (vote_init(newstate, " ????�??�???????", votables_set_ring))
 			vote_yes();
 	}
 };
@@ -1558,11 +1558,11 @@ void() votables_request_set_obits =
 	{
 		local string newstate;
 		if ((clanring_playmode & CLANRING_EXTENDED_OBITS))
-		newstate = "äéóáâìå";
+		newstate = "???????";
 		else
-		newstate = "åîáâìå";
+		newstate = "??????";
 
-		if (vote_init(newstate, " åøôòá ïâéôõáòéåó", votables_set_obits))
+		if (vote_init(newstate, " ?????�??????????", votables_set_obits))
 			vote_yes();
 	}
 };
@@ -1593,11 +1593,11 @@ void() votables_request_set_autopause =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_AUTO_PAUSE)
-			newstate = "äéóáâìå";
+			newstate = "???????";
 		else
-			newstate = "åîáâìå";
+			newstate = "??????";
 
-		if (vote_init(newstate, " íáôãè áõôïðáõóå", votables_set_autopause))
+		if (vote_init(newstate, " ?????�?????????", votables_set_autopause))
 			vote_yes();
 	}
 };
@@ -1643,7 +1643,7 @@ void() votables_request_set_runes =
 			newstate = "\bdisable\b";
 		}
 		
-		if (vote_init(newstate, " òõîåó", votables_set_runes))
+		if (vote_init(newstate, " ?????", votables_set_runes))
 		{
 			vote_yes();
 		}
