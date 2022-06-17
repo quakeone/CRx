@@ -1632,7 +1632,15 @@ void () arena_match_end =
 			if (clanring_playmode & CLANRING_RA_MODE)
 			{
 				if (team_first_place.chain_gang != world)
-					announce2((team_first_place.chain_gang.netname)," has won the match.");	
+					announce2((team_first_place.chain_gang.netname)," has won the match.");
+
+				report_mvp_game();
+
+				bprint ("The match is over\n");//required for Qrack cl_autodemo 2
+				sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+
+				NextLevel();
+				return;
 			}
 			else
 				announce2((team_first_place.netname)," has won the match.");	
@@ -1640,12 +1648,6 @@ void () arena_match_end =
 		}
 
 		report_mvp_game();
-
-		bprint ("The match is over\n");//required for Qrack cl_autodemo 2
-		sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
-
-		NextLevel();
-		return;
 	}
 	else bprint ("Match \baborted\b.\n");//Added v1.4c
 
