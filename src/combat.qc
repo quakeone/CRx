@@ -238,6 +238,8 @@ void(entity targ, entity attacker) Killed =
 		{
 			if (targ != attacker)
 			{
+				attacker.next_team.wins += 1;
+
 				if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 				{
 					attacker.frags += 1;
@@ -349,15 +351,19 @@ void(entity targ, entity attacker) Killed =
 						arena_match_end();
 					}
 				}
-
-				attacker.next_team.wins += 1;
-				pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
 			}
 			else
 			{
 				attacker.next_team.wins -= 1;
-				pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
+				if (boss.suddendeath == TRUE)
+				{
+					boss.busy = TRUE;
+					gameover = TRUE;
+					arena_show_timelimit();
+					arena_match_end();
+				}
 			}
+			pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
 		}
 	}
 
