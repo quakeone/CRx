@@ -259,7 +259,7 @@ void() votables_request_change_level =
 		votables_change_level();
 	}
 	else
-	if (vote_init("Γ£Γ¨Γ΅Γ®Γ§Γ¥Β Γ¬Γ¥Γ¶Γ¥Γ¬Β Γ΄Γ― ", newmap, votables_change_level))
+	if (vote_init("γθαξηε μεφεμ το ", newmap, votables_change_level))
 	{
 		request_mapname = newmap;
 		vote_yes();
@@ -1130,7 +1130,7 @@ void(float overtime) votables_request_set_overtime =
 	{
 		if (overtime == 0)
 		{
-			if (vote_init("??????? ????????", "", votables_set_overtime))
+			if (vote_init("δισαβμε οφεςτινε", "", votables_set_overtime))
 			{
 				request_overtime = overtime;
 				vote_yes();
@@ -1140,13 +1140,13 @@ void(float overtime) votables_request_set_overtime =
 		{
 			if (overtime < 0)
 			{
-				temp = "?????? ?????";
+				temp = "συδδεξ δεατθ";
 			}
 			else
 			{
 				temp = strings_ftos_bronze (overtime);
 			}
-			if (vote_init("?????? ???????? ?? ", temp, votables_set_overtime))
+			if (vote_init("γθαξηε οφεςτινε το ", temp, votables_set_overtime))
 			{
 				request_overtime = overtime;
 				vote_yes();
@@ -1383,11 +1383,11 @@ void() votables_request_set_quad =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_QUAD)
-			newstate = "??????";
+			newstate = "εξαβμε";
 		else
-			newstate = "???????";
+			newstate = "δισαβμε";
 
-		if (vote_init(newstate, " ????", votables_set_quad))
+		if (vote_init(newstate, " ρυαδ", votables_set_quad))
 			vote_yes();
 	}
 };
@@ -1525,11 +1525,11 @@ void() votables_request_set_ring =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_RING)
-		newstate = "??????";
+		newstate = "εξαβμε";
 		else
-		newstate = "???????";
+		newstate = "δισαβμε";
 
-		if (vote_init(newstate, " ???? ?? ???????", votables_set_ring))
+		if (vote_init(newstate, " ςιξη οζ σθαδοχσ", votables_set_ring))
 			vote_yes();
 	}
 };
@@ -1558,11 +1558,11 @@ void() votables_request_set_obits =
 	{
 		local string newstate;
 		if ((clanring_playmode & CLANRING_EXTENDED_OBITS))
-		newstate = "???????";
+		newstate = "δισαβμε";
 		else
-		newstate = "??????";
+		newstate = "εξαβμε";
 
-		if (vote_init(newstate, " ????? ??????????", votables_set_obits))
+		if (vote_init(newstate, " εψτςα οβιτυαςιεσ", votables_set_obits))
 			vote_yes();
 	}
 };
@@ -1593,11 +1593,11 @@ void() votables_request_set_autopause =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_AUTO_PAUSE)
-			newstate = "???????";
+			newstate = "δισαβμε";
 		else
-			newstate = "??????";
+			newstate = "εξαβμε";
 
-		if (vote_init(newstate, " ????? ?????????", votables_set_autopause))
+		if (vote_init(newstate, " νατγθ αυτοπαυσε", votables_set_autopause))
 			vote_yes();
 	}
 };
@@ -1643,7 +1643,7 @@ void() votables_request_set_runes =
 			newstate = "\bdisable\b";
 		}
 		
-		if (vote_init(newstate, " ?????", votables_set_runes))
+		if (vote_init(newstate, " ςυξεσ", votables_set_runes))
 		{
 			vote_yes();
 		}

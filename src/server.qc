@@ -4,7 +4,7 @@
 // This is the main file for CRMod++.  CRMod++ was derived from the
 // Elohim server, which is why everything is still called "elohim".
 //
-// Developed by J.P. Grossman (a.k.a. ΓΉMephistopheles) and Paul Baker
+// Developed by J.P. Grossman (a.k.a. ωMephistopheles) and Paul Baker
 //
 // All code by J.P. Grossman unless otherwise commented.
 //
@@ -273,7 +273,7 @@ void (entity client) clear_afk_status =
 	{
 		updatename(client, client.netname);
 		client.style = client.style - (client.style & CLANRING_AFK_CLIENT);
-		stuffcmd(self, "setinfo afk no\n");// woods
+		stuffcmd(self, "cmd setinfo afk no\n");// woods
 	}
 	client.afk_time = time;	
 }
@@ -1302,8 +1302,8 @@ void () clanring_help_change =
 	sprint(self, "\n");
 	sprint(self, " type \bwarp\b to change maps\n");
 	sprint(self, "\n");
-	//sprint(self, "Γ”Γ― Γ£Γ¨Γ΅Γ®Γ§Γ¥ Γ¬Γ¥Γ¶Γ¥Γ¬Γ³Β¬ Γ¥Γ®Γ΄Γ¥Γ² Γ΄Γ¨Γ¥ Γ®Γ΅Γ­Γ¥ Γ―Γ¦\n");
-	//sprint(self, "Γ΄Γ¨Γ¥ Γ¬Γ¥Γ¶Γ¥Γ¬ Γ©Γ® Γ΄Γ¨Γ¥ Γ£Γ―Γ®Γ³Γ―Γ¬Γ¥Β®\n");
+	//sprint(self, "Το γθαξηε μεφεμσ¬ εξτες τθε ξανε οζ\n");
+	//sprint(self, "τθε μεφεμ ιξ τθε γοξσομε®\n");
 };
 
 //
@@ -2020,6 +2020,7 @@ void () clanring_impulse =
 		{
 			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
 			afk_name();
+			stuffcmd(self, "cmd setinfo afk yes\n");// woods
 			self.style = self.style | CLANRING_AFK_CLIENT;
 			self.afk_time = time;
 		}
@@ -2332,7 +2333,7 @@ void () clanring_periodic_checks =
 		{
 			self.afk_time = time;
 			self.style = (self.style | CLANRING_AFK_CLIENT);
-	
+			stuffcmd(self, "cmd setinfo afk yes\n");// woods
 			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");			
 		}
 	}
@@ -2552,31 +2553,31 @@ void () clanring_start_frame =
 								{
 									if (rint(timelimit - time) == 5)
 									{
-										bprint("? — ‘\n");
+										bprint(" — ‘\n");
 									}
 									else
 									{
 										if (rint(timelimit - time) == 4)
 										{
-											bprint("? – ‘\n");
+											bprint(" – ‘\n");
 										}
 										else
 										{
 											if (rint(timelimit - time) == 3)
 											{
-												bprint("? • ‘\n");
+												bprint(" • ‘\n");
 											}
 											else
 											{
 												if (rint(timelimit - time) == 2)
 												{
-													bprint("? ” ‘\n");
+													bprint(" ” ‘\n");
 												}
 												else
 												{
 													if (rint(timelimit - time) == 1)
 													{
-														bprint("? “ ‘\n");
+														bprint(" “ ‘\n");
 													}
 												}
 											}
@@ -2586,7 +2587,7 @@ void () clanring_start_frame =
 							}
 						}
 					}				
-				}										
+				}									
 				clanring_nextcheck2 = time + 1;
 			}
 			auto_check_current_camera();

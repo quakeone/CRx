@@ -278,7 +278,7 @@ void (entity ent, string c_name) updatename =
 {
 	local float client;
 
-	if (ent.style & CLANRING_CONNECTED)
+	//if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);
 
@@ -339,7 +339,7 @@ void () afk_name =
 	
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
-	stuffcmd(self, "setinfo afk yes\n");// woods
+	stuffcmd(self, "cmd setinfo afk yes\n");// woods
 };
 
 void () dead_name =
@@ -356,9 +356,9 @@ void () dead_name =
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
 };
-/*FIXME: need to fix levels.cfg
+//FIXME: need to fix levels.cfg
 void (string s) changelevel =
-{
+{/*
 	if (clanring_levelcount != -1)
 	{
 		cprint("changelevel: still checking levels.cfg\n");
@@ -366,10 +366,10 @@ void (string s) changelevel =
 	}
 	if (s == "")
 		localcmd("changelevel e4m3\n");
-	else
+	else*/
 		localcmd3("changelevel ", s, "\n");
 };
-*/
+
 void (entity client, float x) utils_sprint_time =
 {
 	local float  minutes;

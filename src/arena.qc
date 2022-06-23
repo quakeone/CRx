@@ -780,12 +780,12 @@ void () im_dead_now_what =
 
 	if (self.style & CLANRING_CONNECTED)
 	{
-		setcolour(self,self.team2,0);
-		tmp = ftos(self.team2);
-		stuffcmd(self,";color ");
-		stuffcmd(self,tmp);
-		stuffcmd(self," 0;\n");
-		self.team2 = 0;
+//		setcolour(self,self.team2,0);
+//		tmp = ftos(self.team2);
+//		stuffcmd(self,";color ");
+//		stuffcmd(self,tmp);
+//		stuffcmd(self," 0;\n");
+//		self.team2 = 0;
 		dead_name();
 
 		self.ca_deathcamtime = time + 4;
@@ -1075,7 +1075,9 @@ float (float n) join_team2 =
 		pqc_new_team (pteam.team2);
 	}
 
-	self.team2		= TEAM_SPECTATOR;//dont allow dead teammates to talk to playing teammates
+	self.team2 	= TEAM_SPECTATOR;
+	self.team 	= ((self.team2) + 1);
+
 	self.ca_player_flag	= PF_WAITING;
 
 	self.next_team 	= pteam;
@@ -1133,7 +1135,7 @@ void () ca_cc_vote_join =
 void (float whichteam) Request_Join_Team =
 {
 	local entity pteam;
-	local string color;
+//	local string color;
 
 	self.impulse = 0;//R00k
 
@@ -1173,7 +1175,7 @@ void (float whichteam) Request_Join_Team =
 		return;
 	}
 
-	if (clanring_playmode & CLANRING_CA_CC_VOTE)//FIXME (22/03/12 10:55am)
+//	if (clanring_playmode & CLANRING_CA_CC_VOTE)//FIXME (22/03/12 10:55am)
 	{
 		if ((boss.count < 8))// After team line-up / spawns take place!
 		{
@@ -1189,7 +1191,7 @@ void (float whichteam) Request_Join_Team =
 			return;
 		}
 	}
-	else
+/*	else
 	{
 		if ((boss.count < 8))// After team line-up / spawns take place!
 		{
@@ -1214,7 +1216,7 @@ void (float whichteam) Request_Join_Team =
 			sprint (self, "Try again in 5 seconds...\n");
 			return;
 		}
-	}
+	}*/
 };
 //---------------------------------------------------------------------------------------------
 void () Teamplay_Select_Team =
