@@ -1373,6 +1373,7 @@ void(entity ghostent) match_restore_ghost =
 		vote_yes();
 };
 
+float request_timelimit;
 //
 //  R E A D Y
 //
