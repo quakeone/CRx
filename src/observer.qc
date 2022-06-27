@@ -1989,6 +1989,11 @@ void () observer_post_think =
 			observer_update_display();
 	}
 
+	if (self.button0 || self.button2)
+	{
+		clear_afk_status(self);//R00k: this was missing? (6/27/2022)
+	}
+	
     if (self.impulse)
     {
 		self.finaldest_x = time;//R00k
