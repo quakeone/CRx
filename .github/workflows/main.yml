@@ -1,0 +1,38 @@
+name: crmod-plus
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache fteqcc
+        uses: actions/cache@v3
+        id: cache-dependencies
+        with:
+          path: |
+            fteqcc64
+          key: fteqcc
+
+      - name: Fetch fteqcc
+        run: |
+          curl -Ofteqcc.zip https://www.fteqcc.org/dl/fteqcc_linux64.zip
+          unzip fteqcc_linux64.zip fteqcc64
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+
+      - name: Compile CRMod Plus
+        run: ./fteqcc64 -src src
+
+      - name: Collect artifacts
+        run: |
+          mv src/progs.dat release/
+          mv src/csprogs.dat release/
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: crmod-plus
+          path: |
+            release/*
