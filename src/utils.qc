@@ -1145,6 +1145,14 @@ void (void () dofunc) utils_do_flags =
 	utils_do_item(dofunc, "item_flag_team2");
 };
 
+void (void () dofunc) utils_do_runes =
+{
+	utils_do_item(dofunc, "item_rune_res");
+	utils_do_item(dofunc, "item_rune_str");
+	utils_do_item(dofunc, "item_rune_hst");
+	utils_do_item(dofunc, "item_rune_rgn");
+};
+
 void (void () dofunc) utils_do_match_spawns =
 {
     utils_do_item(dofunc, "info_player_deathmatch");

@@ -832,6 +832,22 @@ void() item_flag_team2 =
 	self.nextthink = (time + 0.2);	
 };
 
+void() item_rune_res =
+{
+}
+
+void() item_rune_str =
+{
+}
+
+void() item_rune_hst =
+{
+}
+
+void() item_rune_rgn =
+{
+}
+
 void() func_clanring_wall =
 {
 	self.angles   = '0 0 0';
@@ -842,16 +858,35 @@ void() func_clanring_wall =
 
 //--Runes Code Based from ZOID's 3WAVE CTF
 
-entity () SelectRuneSpawnPoint =
+entity (float flag) SelectRuneSpawnPoint =
 {
-	runespawn = find(runespawn, classname, "info_player_deathmatch");
-	if (runespawn == world)
+	if (flag & ITEM_RUNE1_FLAG)
 	{
-		runespawn = find(runespawn, classname, "info_player_deathmatch");
+		runespawn = find(world, classname, "item_rune_res");
+	}
+	else if (flag & ITEM_RUNE2_FLAG)
+	{
+		runespawn = find(world, classname, "item_rune_str");
+	}
+	else if (flag & ITEM_RUNE3_FLAG)
+	{
+		runespawn = find(world, classname, "item_rune_hst");
+	}
+	else if (flag & ITEM_RUNE4_FLAG)
+	{
+		runespawn = find(world, classname, "item_rune_rgn");
 	}
 	if (runespawn == world)
 	{
-		error ("no info_player_deathmatch to spawn rune");
+		runespawn = find(runespawn, classname, "info_player_deathmatch");
+		if (runespawn == world)
+		{
+			runespawn = find(runespawn, classname, "info_player_deathmatch");
+		}
+		if (runespawn == world)
+		{
+			error ("no info_player_deathmatch to spawn rune");
+		}
 	}
 	return (runespawn);
 };
@@ -920,7 +955,7 @@ void() RuneRespawn =
 	local entity oself;
 
 	oself = self;
-	self = SelectRuneSpawnPoint ();
+	self = SelectRuneSpawnPoint (oself.player_flag);
 	Do_DropRune (oself.player_flag);
 	remove(oself);
 };
@@ -938,7 +973,19 @@ void(float flag) Do_DropRune =
 	item.velocity_y = (-500 + (random () * 1000));
 	item.flags = FL_ITEM;
 	item.solid = SOLID_TRIGGER;
-	item.movetype = MOVETYPE_TOSS;
+
+	switch (self.classname)
+	{
+	case "item_rune_res":
+	case "item_rune_str":
+	case "item_rune_hst":
+	case "item_rune_rgn":
+		item.movetype = MOVETYPE_NONE;
+		break;
+	default:
+		item.movetype = MOVETYPE_TOSS;
+		break;
+	}
 
 	if (flag & ITEM_RUNE1_FLAG)
 	{
@@ -1021,16 +1068,16 @@ void() SpawnRunes =
 	i = (random() * 10);
 	while (i > 0)
 	{
-		self = SelectRuneSpawnPoint ();
+		self = SelectRuneSpawnPoint (ITEM_RUNE1_FLAG);
 		i = i - 1;
 	}
-	self = SelectRuneSpawnPoint ();
+	self = SelectRuneSpawnPoint (ITEM_RUNE1_FLAG);
 	Do_DropRune (ITEM_RUNE1_FLAG);
-	self = SelectRuneSpawnPoint ();
+	self = SelectRuneSpawnPoint (ITEM_RUNE2_FLAG);
 	Do_DropRune (ITEM_RUNE2_FLAG);
-	self = SelectRuneSpawnPoint ();
+	self = SelectRuneSpawnPoint (ITEM_RUNE3_FLAG);
 	Do_DropRune (ITEM_RUNE3_FLAG);
-	self = SelectRuneSpawnPoint ();
+	self = SelectRuneSpawnPoint (ITEM_RUNE4_FLAG);
 	Do_DropRune (ITEM_RUNE4_FLAG);
 	remove(oself);
 };
