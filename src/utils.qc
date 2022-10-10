@@ -278,7 +278,7 @@ void (entity ent, string c_name) updatename =
 {
 	local float client;
 
-	//if (ent.style & CLANRING_CONNECTED)
+	if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);
 
@@ -339,7 +339,6 @@ void () afk_name =
 	
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
-	stuffcmd(self, "cmd setinfo afk yes\n");// woods
 };
 
 void () dead_name =
@@ -356,6 +355,7 @@ void () dead_name =
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
 };
+
 //FIXME: need to fix levels.cfg
 void (string s) changelevel =
 {/*
@@ -578,7 +578,6 @@ string (float t) utils_get_time =
 
 	return sprintf("%s:%s.%s",tmin,tsec,tcsec);
 };
-
 //
 //  B P R I N T  F L O A T
 //
@@ -707,16 +706,6 @@ void (float f) utils_print_int3_gold =
 	sprint(self, s);
 };
 
-/*
-float () get_top_color =
-{
-	local float tc;
-
-	tc = floor((self.cl[CL_COLORS] / %1) / 16);
-
-	return tc;
-};
-*/
 void (float f) utils_print_damage_gold =
 {
    	local float n;
@@ -1145,13 +1134,13 @@ void (void () dofunc) utils_do_flags =
 	utils_do_item(dofunc, "item_flag_team2");
 };
 
-void (void () dofunc) utils_do_match_spawns =
+void (void () dofunc) utils_do_match_markers =
 {
     utils_do_item(dofunc, "info_player_deathmatch");
     utils_do_item(dofunc, "info_player_team1");
     utils_do_item(dofunc, "info_player_team2");
+	utils_do_item(dofunc, "info_teleport_destination");
 };
-
 void () reset_frags =
 {
 	if (self.next_team == world)
@@ -1654,10 +1643,19 @@ float (entity e) client_ping =
 {	
 	local float ping;
 
-	ping = stof(infokey(e,INFOKEY_P_PING));
+	ping = stof(infokey(e,INFOKEY_P_PING));//Check for infokey first
+
+	if (ping <= 0)
+	{
+		ping = floor(((e.finaldest_x * 1000) - ((e.lagcheck - 1) * 1000))/1000);
+	}
+	
 	return ping;
 };
 
+//
+//  S E N D  P I N G  T I M E S
+//
 void ()pqc_ping_times =
 {	
 	local entity e;
@@ -1667,20 +1665,25 @@ void ()pqc_ping_times =
 	WriteByte(MSG_ALL, MOD_PROQUAKE);
 	WriteByte(MSG_ALL, PQC_PING_TIMES);
 
-	e = world;
-	for (i = 0; i < 16; i = i + 1)
-	{		
-		e = nextent (e);
-		
-		if ((e.style & CLANRING_CONNECTED) && e.ping_time)
-		{
-			ping = e.ping_time;
-			WriteShortPQ (MSG_ALL, ping + (i * 4096));
-		}
-	}
+	e = find(world, classname, "player");
+	while (e)
+	{
+		ping = 0;
+		for (i = 0 ; i < 16 ; i = i + 1)
+			ping = /*ping +*/ e.ping_time;
+		ping = ping / 16;
 
-	WriteShortPQ (MSG_ALL, 0);
-	WriteString(MSG_ALL, string_null);
+		if (ping < 1)
+			ping = 1;
+		if (ping > 4095)
+			ping = 4095;
+		ping = ping + ((e.colormap - 1) * 4096);
+		
+		WriteShortPQ(MSG_ALL, ping);
+		e = find(e, classname, "player");
+	}
+		WriteShortPQ(MSG_ALL, 0);
+		WriteString(MSG_ALL, string_null);
 };
 
 float () ammo_is_infinite =

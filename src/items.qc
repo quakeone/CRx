@@ -475,7 +475,6 @@ void() bound_other_ammo =
 		other.ammo_cells = 100;
 };
 
-
 float(entity ent, float w) RankForWeapon =
 {
 	if (w == IT_LIGHTNING && ent.waterlevel <= 2)
@@ -497,19 +496,24 @@ float(entity ent, float w) RankForWeapon =
 =============
 Deathmatch_Weapon
 
+A function that is called when a player is switching weapons.
+
 Deathmatch weapon change rules for picking up a weapon
 
 .float		ammo_shells, ammo_nails, ammo_rockets, ammo_cells;
 =============
 */
+
 void(entity ent, float new) Deathmatch_Weapon =
 {
 	local float or, nr;
 
-	if ((ent.weapon == IT_HOOK) || (ent.button0)) return;
+	if ((ent.weapon == IT_HOOK) || (ent.button0)) return;//R00k: Never switch while shooting or hooking.
 
 	or = RankForWeapon (ent, ent.weapon);
 	nr = RankForWeapon (ent, new);
+
+	
 	if ( nr < or )
 	{
 		if (nr == 1)
@@ -530,10 +534,10 @@ float () W_BestWeapon;
 
 void() weapon_touch =
 {
-	local float	best;
+	local float		best;
 	local entity	stemp;
-	local float	leave;
-	local float	donttake;
+	local float		leave;
+	local float		donttake;
 
 	if (!(items_are_ready()))
 		return;
@@ -542,6 +546,9 @@ void() weapon_touch =
 		return;
 
 	if (!(other.flags & FL_CLIENT))
+		return;
+
+	if (other.health < 1)	//R00k: was this never here?
 		return;
 
 // if the player was using his best weapon, change up to the new one if better		
@@ -638,30 +645,31 @@ void() weapon_touch =
 		bound_other_ammo ();
 
 // change to the weapon
-
-		if (!(other.items & self.weapon))
-		{
-			if (other.weapon != IT_HOOK)
+/*
+			if (!(other.items & self.weapon))
 			{
-				Deathmatch_Weapon (other, self.weapon);
+				if (other.weapon != IT_HOOK)
+				{
+					Deathmatch_Weapon (other, self.weapon);//switch if the picked up weapon is better than the one using
+				}
 			}
-		}
-
+*/
 		other.items = other.items | self.weapon;
 
-		stemp = self;
-		self = other;
-		// 1997-12-23 Thunderbolt fix by Maddes
-		if (( other.weapon == best ) && (other.weapon != IT_HOOK))
+		if (other.style & CLANRING_SMART_WEAPON)	// smart-auto-switching on pickups enabled.			
 		{
-			if (self.style & CLANRING_SMART_WEAPON)
-			self.weapon = W_BestWeapon();
+			stemp = self;
+			self = other;
+
+			if (( other.weapon == best ) && (other.weapon != IT_HOOK) && (other.button0 == FALSE))//R00K: never switch while shooting...
+			{
+				self.weapon = W_BestWeapon(); // switch to new weapon if we were using the best weapon we had and this new one is better
+			}
+			self = stemp;
 		}
 
 		if (other.weapon != IT_HOOK)
-			W_SetCurrentAmmo();
-
-		self = stemp;
+		W_SetCurrentAmmo();	//Update the hud
 
 		if (!leave)
 		{
@@ -1431,6 +1439,54 @@ void() BackpackTouch =
 		W_SetCurrentAmmo ();
 };
 
+void () BackpackThink =
+{
+	self.nextthink = time + 1;
+	self.think = BackpackThink;
+
+	if (time > self.lefty)
+	{
+		self.think = SUB_Null;
+		self.nextthink = -1;
+		SUB_Remove();
+		return;
+	}
+	self.netname = "Shotgun";
+	local entity tm = world;
+	tm = findradius(self.origin, 2048);
+	while (tm)
+	{
+		if ((tm.classname == "player"))// && (tm.style & CLANRING_CONNECTED) && (tm.style & CLANRING_OBSERVER))
+		{
+			//if (infront(tm))
+			{
+				//if (utils_visible(self, tm))
+				{
+					if (self.netname)
+						centerprint(tm, "[", self.netname,"");
+				}
+				makevectors (self.v_angle);
+				traceline (self.origin, self.origin + v_forward * 2048 + '0 0 32', FALSE, self);
+
+				if (trace_fraction < 1)
+				{
+					if ((trace_ent.classname == "player") && (trace_ent.style & CLANRING_CONNECTED))
+					{
+						if (trace_ent.team == self.team)
+						{
+							if (self.netname)
+								centerprint(tm, self.netname);
+							break;
+						}
+					}
+				}				
+			}
+		}
+		tm = tm.chain;
+	}
+};
+
+
 void() DropBackpack =
 {
 	local entity item;
@@ -1439,9 +1495,19 @@ void() DropBackpack =
 	return;	// nothing in it
 	
 	item = spawn();
-	item.origin 	= self.origin - '0 0 24';
+	item.origin = self.origin - '0 0 24';
     item.classname = "item_backpack";    // ELOHIM_MOD
 	item.owner = self;	// ELOHIM_MOD
+
+/* TODO: This limits weapon switching scripts so we dont get empty packs
+#ifdef clanring_fairpacks
+	if (clanring_state & CLANRING_FAIRPACK_LASTWEAPON)
+		if (self.items & self.previous_weapon)//dont let trolls drop weapons then backpacks.
+			item.weapon = self.previous_weapon;
+	if (clanring_state & CLANRING_FAIRPACK_BESTWEAPON)
+		item.weapon = W_BestWeapon();
+	if (clanring_state & CLANRING_FAIRPACK_CURRENTWEAPON)
+#endif */
 	item.items 	= self.weapon;
 	
 	if (item.items == IT_AXE)

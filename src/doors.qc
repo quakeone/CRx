@@ -452,9 +452,7 @@ Key doors are allways wait -1.
 */
 
 void() func_door =
-
 {
-
 	if (world.worldtype == 0)
 	{
 		precache_sound ("doors/medtry.wav");
@@ -515,7 +513,6 @@ void() func_door =
 		self.noise1 = "doors/ddoor2.wav";
 		self.noise2 = "doors/ddoor1.wav";
 	}
-
 
 	SetMovedir ();
 

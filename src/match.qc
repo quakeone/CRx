@@ -450,7 +450,7 @@ void() match_end =
 	announce("The match is over");//used for cl_autodemo 2, stop the demo after stats_autodump.
 	// Backup all statistics so that they don't go away
 	//stats_copy_statistics();
-	utils_do_match_spawns(spawns_restore_model);
+	utils_do_match_markers(spawns_restore_model);
 };
 
 //
@@ -625,13 +625,14 @@ void() spawns_remove_model =
 {
 	self.model = string_null;
 	self.modelindex = 0;
+	self.effects = 0;
 }
 
 void() spawns_restore_model =
 {
-	setmodel (self, "progs/player.mdl");
-	self.frame = 13;
-	self.alpha = 0.6;
+	setmodel (self, self.mdl);
+	if (self.classname == "info_teleport_destination")
+		self.effects |= EF_BRIGHTFIELD;
 };
 
 //
@@ -646,7 +647,9 @@ void() match_begin =
 	clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
 
 	// Remove the spawnpoints' visible models
-	utils_do_match_spawns(spawns_remove_model);
+	utils_do_match_markers(spawns_remove_model);
+
+	find_pqc_teamscore_teams();// R00k: make sure everyone has the teamscores teams.
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
@@ -755,6 +758,7 @@ void() match_timer_think1 =
 	}
 	self.nextthink = time + 1;
 	pqc_match_time(self.lip, self.count);
+	find_pqc_teamscore_teams();// R00k: make sure everyone has the teamscores teams. FIXME: only do this once during countdown.
 	score_update_time();
 	if (self.count == self.dest_x)
 	{
@@ -1374,6 +1378,7 @@ void(entity ghostent) match_restore_ghost =
 };
 
 float request_timelimit;
+void() match_notready;
 //
 //  R E A D Y
 //
@@ -1388,7 +1393,8 @@ void() match_ready =
 	}
 	if (self.style & CLANRING_READY)
 	{
-		sprint(self, "You are already committed\n");
+		//sprint(self, "You are already committed\n");
+		match_notready();
 		return;
 	}
 
@@ -1459,8 +1465,9 @@ void(entity player) match_remove_player =
 			player.next_team.next_player = player.next_player;
 
 		if (player.next_team != world)
+		{
 			player.next_team.count = player.next_team.count - 1;
-
+		}
 		if ((player.items & IT_ROCKET_LAUNCHER) && (clanring_state & CLANRING_MATCH_STARTED) && (!(player.deadflag)))
 			quaketv_lost_rl (player);
 	}
@@ -1469,6 +1476,7 @@ void(entity player) match_remove_player =
 		plast.next_team = player.next_team;
 		clanring_numteams = clanring_numteams - 1;
 	}
+
 	//R00k: adjust timelimit based on team size automatically.
 	if (!(clanring_state & CLANRING_MATCH_STARTED))
 	{
@@ -1539,8 +1547,10 @@ void() match_notready =
 	
 	match_remove_player(self);
 	
-	if (teamplay && !self.next_team.count)
+	if (teamplay && !(self.next_team.count))
 		match_remove_team(self.next_team);
+	
+	self.next_team = world;//R00k: (10/04/2022)
 	
 	if (clanring_numteams == 1)
 		announce3("Only one ", clanring_szteam, " present");
@@ -2352,7 +2362,7 @@ void(entity player) match_disconnect_notify =
 				self.owner.clanring_ptwep = self.clanring_ptwep;
 				self.owner.clanring_ptkill = self.clanring_ptkill;
 				self.owner.clanring_hack_count = self.clanring_hack_count;// clanring
-				self.owner.style 		= self.style & (CLANRING_ADMINISTRATOR | CLANRING_HEADS_UP | CLANRING_SMART_WEAPON | CLANRING_AUTOSTATS);
+				self.owner.style 		= self.style & (CLANRING_ADMINISTRATOR | CLANRING_HEADS_UP | CLANRING_AUTOSTATS);
 				self.owner.true_kills 	= self.true_kills;
 				self.owner.pos1_x 		= self.pos1_x;
 				self.owner.pos1_y 		= self.pos1_y;
@@ -2476,6 +2486,7 @@ void(entity player) match_disconnect_notify =
 			clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
 			match_show_timelimit();
 			score_resend_scoreboard();
+			utils_do_match_markers(spawns_restore_model);	//R00k
 		}
 		return;
 	}

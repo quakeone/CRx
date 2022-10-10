@@ -567,6 +567,10 @@ float () options_get_mode =
         return ADMIN_WIPEOUT_MODE;
     if (clanring_playmode & CLANRING_DMM4_MODE)
         return ADMIN_DMM4_MODE;
+//  if (clanring_playmode & CLANRING_FREEZETAG_MODE)        // Test before match
+//        return ADMIN_FREEZETAG_MODE;
+//  if (clanring_playmode & CLANRING_SPEEDBALL_MODE)        // Test before match
+//        return ADMIN_SPEEDBALL_MODE;
     if (clanring_playmode & CLANRING_CA_MODE)
         return ADMIN_CA_MODE;
     if (clanring_playmode & CLANRING_RA_MODE)
@@ -575,8 +579,6 @@ float () options_get_mode =
         return ADMIN_AIRSHOT_MODE;
     if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
         return ADMIN_CTF_MODE;
-    if (clanring_playmode & CLANRING_PRACTICE_MODE)
-        return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_PRACTICE_MODE)
         return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_MATCH_MODE)

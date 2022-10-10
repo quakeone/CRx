@@ -336,12 +336,10 @@ void () score_client_disconnect =
 
 	e = utils_make_scheduled_event(score_fix_disconnect, 0.1);
 	e.colormap = self.colormap - 1;
-
 	if (teamplay > 0 && self.next_team.next_player == self)
 		e.next_team = self.next_team;
 	else
 		e.next_team = world;
-
 	if (self.style & CLANRING_SCOREBOARD)
 		clanring_score_count = clanring_score_count - 1;
 };

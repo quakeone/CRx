@@ -267,7 +267,7 @@ void() TeamCaptureFlagTouch =
 					bprint("\x91\n");					
 					if (compare < other.captime) other.captime = compare;
 
-					if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+					if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))//fixme record match captimes
 					{
 						new_player_record = 0;
 						check_player_low_record(compare, other.team, other.netname);

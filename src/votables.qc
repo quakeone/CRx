@@ -371,7 +371,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
 
-			newmapname = "dm3";
+			//newmapname = "dm3";
 		}
 		else if (request_gametype == 1)
 		{
@@ -388,7 +388,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Capture The Flag\n");
 
-			newmapname = "ctf1";
+			//newmapname = "ctf1";
 		}
 		else if (request_gametype == 2)
 		{
@@ -399,7 +399,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena\n");
 
-			newmapname = "dm3";
+			//newmapname = "dm3";
 		}
 		else if (request_gametype == 3)
 		{
@@ -541,7 +541,19 @@ void() votables_set_gametype_mode_map =
 		else
 		newmapname = request_mapname;
 	}
+	
+	//R00k: make sure we have the actual map
+	string fname;
+	fname = sprintf("maps/%s.bsp", newmapname);
 
+	filestream f = fopen(fname, FILE_READ);
+	if (f < 0)
+	{
+		cprint(fname, " not found\n");
+		fclose(f);
+		return;
+	}
+	fclose(f);
 	changelevel (newmapname);
 };
 
@@ -1395,12 +1407,13 @@ void() votables_request_set_quad =
 void() GotoNextMap;
 void() votables_vote_exit =
 {
-	if ((clanring_levelcount == -1))
+	if (clanring_levelcount == -1)
 	{
 		GotoNextMap();
 	}
 };
 
+//Vote to exit to next map in levels.cfg
 void() votables_request_vote_exit =
 {
 	if (clanring_levelcount != -1)
@@ -1409,9 +1422,9 @@ void() votables_request_vote_exit =
 		return;
 	}
 	
-	if (clanring_playmode & CLANRING_MATCH_MODE)
+	if (!(clanring_playmode & CLANRING_NORMAL_MODE))
 	{
-		sprint(self,"Command not allowed in match mode.\n");
+		sprint(self,"Command not allowed in current gamemode.\n");
 		return;
 	}
 

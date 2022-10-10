@@ -415,7 +415,7 @@ void(string command, string value) config_command =
 
 				request_timelimit = console_timelimit;
 				votables_set_timelimit();
-				request_timelimit = 0;//R00k added.
+				request_timelimit = 0;//R00k added. (needed for dynamic timelimits based on teamsize)
 
 				clanring_set_fraglimit(console_fraglimit);
 				utils_set_cvar("pausable", console_pausable);//why again? we just set this 
@@ -514,13 +514,91 @@ void() exec_warp_cfg =
 
 		level += 1;
 		mapnum = (menunum * 15) + level;
-
 		warpmap[mapnum].name = strzone(mapfile);
 		warpmap[mapnum].title = strzone(fgets(f));
 		warpmap[mapnum].author = strzone(fgets(f));
-		//dprint(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
 	}
 	fclose(f);
+}
+
+//
+//	N E X T  L E V E L   C O N F I G 
+//
+// 	Reading the levels.cfg file and setting the nextmap variable to the next map in the list.
+//
+//  clanring_level		- number of current level in user level order
+//  clanring_levelcount	- This is used throughout to check that levels.cfg has been read...
+//  clanring_lastcount	- used to count how many maps are listed in levels.cfg so we know when to recycle.
+
+void() clanring_nextlevel_config =
+{
+	string 	line = "";
+	float 	i = 1;
+	
+	nextmap = "";
+
+	filestream f = fopen("configs/levels.cfg", FILE_READ);
+	cprint("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
+
+	if (f < 0)
+	{
+		nextmap = default_nextmap;
+		clanring_levelcount	= -1;	// This is used throughout to check that levels.cfg has been read...
+									// just disable nextlevel but allow the mod to run.
+		cprint("levels.cfg not found.\n");								
+		return;
+	}
+
+	// Count installed maps so we know when to recycle
+	while ((line = fgets(f)))
+	{
+		float argc = tokenize(line);
+
+		if (!argc) continue;		
+		if (argv(0) == "//" || argv(0) == "#") continue;
+
+		if (found_in_warp_list(line))
+			clanring_lastcount++;
+	}
+	fclose(f);
+
+	f = fopen("configs/levels.cfg", FILE_READ);
+
+	while ((line = fgets(f)))
+	{
+		argc = tokenize(line);
+
+		if (!argc) continue;		
+		if (argv(0) == "//" || argv(0) == "#") continue;
+
+		if (found_in_warp_list(line))
+		{
+			if (i == clanring_level)
+			{
+				nextmap = (line);
+				break;
+			}
+			i++;
+		}
+	}
+	fclose(f);
+
+	if (nextmap == "")
+	{
+		nextmap = mapname;	// Ugh, just reload the current map...
+		bprint("Nextmap not found, reloading \b", nextmap, "\b.\n");
+	}
+	else
+	{
+		bprint(sprintf("Nextmap is %s.\n", nextmap));
+		cprint(sprintf("Nextmap is %s.\n", nextmap));
+		clanring_level++;
+		if (clanring_level > clanring_lastcount)
+			clanring_level = 1;
+		utils_set_cvar ("scratch1", clanring_level);	// save out the next map to load.
+	}
+
+	clanring_levelcount	= -1;	// This is used throughout to check that levels.cfg has been read...
 }
 
 void(string cfg) exec_clanring_cfg =
@@ -556,7 +634,7 @@ void() clanring_warp_config =
 }
 
 //desc = 0 descending false, so lowest is first
-void (string filename, optional float desc = 0, optional float recordset = 0) read_player_stats =
+void (string filename, float desc = 0, float recordset = 0) read_player_stats =
 {
 	string line;
 	string tt_player = "";
@@ -739,7 +817,7 @@ void() clanring_exec_configs =
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
-		utils_make_scheduled_event(console_get_user_nextlevel, 5);
+		clanring_nextlevel_config();
 	}
 	else
 	{
@@ -752,10 +830,14 @@ void() clanring_exec_configs =
 		nextmap = mapname;//just restart samelevel
 	}
 
-	//R00k: ticrate defaults for different modes :|
-	local string useTicrate = ftos(clanring_tdm_ticrate);
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		useTicrate = ftos(clanring_ctf_ticrate);
+	//R00k: ticrate defaults for different modes :| this REALLY is dumb. none of the leet tdm players play anymore, except chr1s and he plays QW!!
+	local string useTicrate;
+
+	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
+		useTicrate = ftos(clanring_tdm_ticrate);
+	else
+		useTicrate = ftos(clanring_ctf_ticrate);//use the faster ticrate for everything else...
+
 	dprint("setting sys_ticrate to ", useTicrate, "\n");
 	cvar_set("sys_ticrate", useTicrate);
 

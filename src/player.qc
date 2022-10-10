@@ -503,6 +503,7 @@ void() observerforce =
 		bprint(self.netname);
 		bprint(" was forced \bobserver\b because of inactivity.\n");
 		respawn();//required?
+
 		observer_start();
 	}
 };

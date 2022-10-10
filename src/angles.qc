@@ -78,26 +78,15 @@ vector (vector from, vector to) angles_bestaim =
 //
 //  Sends new view angle to client and stores the value in .crmod_oldangle for use in angle smoothing
 //
-//R00k: changed to round angles by 1/16th towards nearest number...
-
-void(vector v) angles_fixangle =
+void (vector v) angles_fixangle =
 {
 	self.clanring_oldangle = v;
-
-	if (v_x >= 0)	
-		self.v_angle_x = self.angles_x = (v_x + 0.0625);
-	else
-		self.v_angle_x = self.angles_x = (v_x - 0.0625);
-
-	if (v_y >= 0)	
-		self.v_angle_y = self.angles_y = (v_y + 0.0625);
-	else
-		self.v_angle_y = self.angles_y = (v_y - 0.0625);
-		
-	if (v_z >= 0)	
-		self.v_angle_z = self.angles_z = (v_z + 0.0625);
-	else
-		self.v_angle_z = self.angles_z = (v_z - 0.0625);	
-	
+	// Set the new angles.  The 0.1 angles are subtracted to ensure
+    // that self.angles will get rounded off to angle (which was obtained
+    // by rounding off self.movetarget.v_angles).  Don't ask me why you
+    // have to subtract; logic dictates that you should be adding.  But
+    // I tried adding and it didn't work; I tried subtracting and it did.
+    // Take it up with id.
+	self.v_angle = self.angles = v - '0.1 0.1 0';
 	self.fixangle = TRUE;//forces client's angle to the above, using svc_setangle.
 };

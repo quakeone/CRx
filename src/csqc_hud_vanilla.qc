@@ -759,8 +759,8 @@ void () CSQC_Parse_Event =
 		case PQC_TEAM_FRAGS:
 			local float frags;
 			team = readbyte();
-			if (team < 0 || team > 15) return;
 			frags = readshort();
+			if (team < 0 || team > 15) return;
 			cl_teamscores[team].frags = frags;
 			break;			
 			

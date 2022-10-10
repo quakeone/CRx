@@ -11,7 +11,7 @@ void () rocket_arena_init_world =
 	boss.wait 			= 0;
 	boss.maprecycle		= 0;
 		
-    boss.items = ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
+    boss.items = IT_SHOTGUN | IT_AXE | IT_ROCKET_LAUNCHER | IT_ARMOR3 | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_GRENADE_LAUNCHER | IT_LIGHTNING | IT_SUPER_NAILGUN;
 
 	boss.health      	= 100;
 	boss.armorvalue  	= 200;
@@ -29,7 +29,7 @@ void () rocket_arena_init_world =
 	boss.busy			= FALSE;
 	boss.aborted 		= FALSE;
 
-	ra_wins = 10;
+	ra_wins = 2;
 };
 
 string() ra_get_next_map =
@@ -216,7 +216,6 @@ entity() SelectRASpawnPoint =
 		if (spot == world)
 		{
 			spot = find(world, classname, "info_teleport_destination");
-			spot.origin = spot.origin + '64 64 64';
 		}
 	}
 
@@ -284,7 +283,7 @@ void() ra_join_queue =
 	boss.next_team    	= pteam;
 
 	announce2 (self.netname, " has joined the queue");
-	//pqc_new_team (pteam.team2);
+	pqc_new_team (pteam.team2);
 
 	self.team2  	= whichteam;
 	self.next_team 	= pteam;
@@ -619,15 +618,16 @@ void () rocket_arena_main_loop =
 			if (clanring_request.noise1 == "\bforce match start\b")	//cancel Vote to force
 				Request_Poll_Cleanup();
 			
-
 			if (boss.count == 0)
 			{					
 				sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
-				utils_do_arena_players(arena_fight_and_shoot);
+
 				boss.timetofight = TRUE;
 				boss.state = CA_MATCH_PLAYING;	
 				if (boss.round == 1)
+				{
 					announce("The match has begun!");
+				}
 			}
 			else if (boss.count == 1)
 			{

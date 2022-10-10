@@ -9,7 +9,7 @@ void () stats_team_stats;
 void () RemoveFromTeam;
 void () ra_select_team;
 void() Request_Poll_Cleanup;
-float (string captiona, string captionb, void() passfunc, optional string pollname = "") vote_init;
+float (string captiona, string captionb, void() passfunc, string pollname = "") vote_init;
 float () W_BestWeapon;
 void () score_update_time;
 void () SUB_regen;
@@ -136,7 +136,9 @@ float (entity e) IS_CA_OBSERVER
      else
         return FALSE;
 }
-  
+
+//BAM: These functions replace the fields such
+//	 as: boss.num_teams or boss.teammates_alive.  
 float (entity team1) number_teammates =
 {
 	local entity e;
@@ -353,7 +355,7 @@ float (entity list, entity player) ca_check_player_in_list =
 
 void (entity list, entity player) add_player_to_stat_list =
 {
-	if (ca_check_player_in_list(list, player) == FALSE)// just incase
+	if (ca_check_player_in_list(list, player) == FALSE)// just in case
 	{
 		player.next_player = list.next_player;
 		list.next_player = player;
@@ -1418,9 +1420,7 @@ void () arena_unpause_player =
 
 void () arena_fight_and_shoot =
 {
-	if (!(self.style & CLANRING_OK_TO_SHOOT))
-		self.style = self.style | CLANRING_OK_TO_SHOOT;
-
+	boss.timetofight = TRUE;//R00k arenamodes dont use CLANRING_OK_TO_SHOOT
 	self.fragstreak = 0;
 
 	centerprint(self, "\bFIGHT!");
@@ -1574,7 +1574,7 @@ void () report_mvp_game =
 		current_player = find(current_player, classname, "player");
 	}
 
-	ca_mvp_entity = current_player;//R00k added for MVP Intermission
+//	ca_mvp_entity = current_player;//R00k added for MVP Intermission
 
 	smvp = ftos(mvp);
 	announce4(name," was the \bmatch\b MVP with ",smvp," points of damage given.");

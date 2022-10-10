@@ -446,10 +446,6 @@ void() respawn =
 //	CreateDeadBody (self);//R00k new corpse routine.
 	SetNewParms2 ();
 
-	if (self.style & CLANRING_CONNECTED)
-		updatename(self, self.netname);	//R00k: this is called in the next function; keep?
-
-	
 	PutClientInServer ();
 };
 /*
@@ -492,7 +488,7 @@ void() ClientKill =
 	{
 		DropBackpack();
 	}
-	TeamCaptureDropFlagOfPlayer (self, 1);
+	TeamCaptureDropFlagOfPlayer (self, 1);//Should this be ?? If you suicide the flag goes back to their base.
 	UnHookPlayer();
 	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));//added for server mod hook
 	self.modelindex = modelindex_player;
@@ -594,7 +590,7 @@ entity () SelectSpawnPoint =
 		return spot;
 	}
 
-	loop_count = 64;
+	loop_count = dm_num_spawns;
 	
 	pcount = random() * (dm_num_spawns - 0.001);
 	pcount = floor(pcount);
@@ -627,7 +623,7 @@ entity () SelectSpawnPoint =
 					thing = findradius (spot.origin, 128);
 					while (thing)
 					{
-						if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))//r00k: todo thing.health check ?
+						if (((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && (!(thing.style & CLANRING_OBSERVER)) && (thing.health))//r00k: added .health
 						{
 							pcount = 1;
 							thing = world;
@@ -753,8 +749,7 @@ void() PutClientInServer =
 			
 	DecodeLevelParms ();	
 	
-	if (self.style & CLANRING_CONNECTED)
-		updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
+	updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
 	
 	//in classic mode auto join on connect
 	if (teamplay)
@@ -800,8 +795,8 @@ void() PutClientInServer =
 	}
 	
 	self.trigger_field			= spot;
-	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-		self.origin = self.oldorigin = airshot_droptofloor(spot);	
+//	if (clanring_playmode & CLANRING_AIRSHOT_MODE)	//TODO: random chance?
+//		self.origin = self.oldorigin = airshot_droptofloor(spot);	
 	self.classname 				= "player";
 	self.health 				= 100;
 	self.takedamage 			= DAMAGE_AIM;
@@ -823,6 +818,7 @@ void() PutClientInServer =
 	self.watertype 				= CONTENT_EMPTY;
 	self.waterlevel 			= 0;
 	self.velocity 				= '0 0 0';
+	self.maxspeed 				= autocvar(sv_maxspeed, 320);
 	
 	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
@@ -847,9 +843,8 @@ void() PutClientInServer =
 	self.th_die 			= PlayerDie;
 	self.deadflag 			= DEAD_NO;	
 
-	//self.angles 			= spot.angles;
-	//self.fixangle 		= TRUE;
-	angles_fixangle(spot.angles);
+	self.angles 			= spot.angles;
+	self.fixangle	 		= TRUE;
 
 	self.avelocity 		= '0 0 0';
 	self.punchangle		= '0 0 0';
@@ -927,8 +922,14 @@ potential spawning position for deathmatch games
 void() info_player_deathmatch =
 {
 	dm_num_spawns = dm_num_spawns + 1.00;	
+
+	practice_spawn();	//TODO: for prewar or testing spawns
+
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
+		self.mdl = "progs/player.mdl";
+		self.frame = 6;
+		self.alpha = 0.4;
 		spawns_restore_model();
 	}
 };
@@ -937,7 +938,12 @@ void() info_player_team1 =
 {
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		spawns_restore_model();
+		self.mdl = "progs/player.mdl";
+		self.skin = 1;
+		self.frame = 17;
+		self.alpha = 0.4;
+		spawns_restore_model();		
+		self.angles = self.mangle;
 	}
 };
 
@@ -945,7 +951,12 @@ void() info_player_team2 =
 {
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
+		self.mdl = "progs/player.mdl";
+		self.skin = 3;
+		self.frame = 17;
+		self.alpha = 0.4;
 		spawns_restore_model();
+		self.angles = self.mangle;
 	}
 };
 /*QUAKED info_player_coop (1 0 1) (-16 -16 -24) (16 16 24)
@@ -985,81 +996,83 @@ only called if a time or frag limit has expired
 */
 void() NextLevel =
 {
-	local entity o;
+	local entity o = world;
 
-	if (mapname == "start")
+	o = spawn();
+
+	if (clanring_levelcount != -1) //if levels.cfg wasnt found, fallback
 	{
-		if (!cvar("registered"))
+		if (mapname == "start")
 		{
-			mapname = "e1m1";
-		}
-		else if (!(serverflags & 1))
-		{
-			mapname = "e1m1";
-			serverflags = serverflags | 1;
-		}
-		else if (!(serverflags & 2))
-		{
-			mapname = "e2m1";
-			serverflags = serverflags | 2;
-		}
-		else if (!(serverflags & 4))
-		{
-			mapname = "e3m1";
-			serverflags = serverflags | 4;
-		}
-		else if (!(serverflags & 8))
-		{
-			mapname = "e4m1";
-            serverflags = serverflags | 8;
-		}
-        else
-            mapname = "end";
+			if (!cvar("registered"))
+			{
+				mapname = "e1m1";
+			}
+			else if (!(serverflags & 1))
+			{
+				mapname = "e1m1";
+				serverflags = serverflags | 1;
+			}
+			else if (!(serverflags & 2))
+			{
+				mapname = "e2m1";
+				serverflags = serverflags | 2;
+			}
+			else if (!(serverflags & 4))
+			{
+				mapname = "e3m1";
+				serverflags = serverflags | 4;
+			}
+			else if (!(serverflags & 8))
+			{
+				mapname = "e4m1";
+				serverflags = serverflags | 8;
+			}
+			else
+				mapname = "end";
 
-		o = spawn();
-		o.map = mapname;
-	}
-    else if (mapname == "end")
-    {
-        o = spawn();
-        o.map = "dm1";
-    }
-    else if (mapname == "dm6")
-    {
-        o = spawn();
-        serverflags = (serverflags & 14) / 2;
-        if (serverflags > 0)
-            o.map = "dm1";
-        else
-            o.map = "start";
-    }
-    else if (mapname == "e2m3")
-    {
-        o = spawn();
-        o.map = "e2m7";
-    }
-	else
-	{
-		// find a trigger changelevel
-		o = find(world, classname, "trigger_changelevel");
-
-		// go back to start if no trigger_changelevel
-		if (!o)
-		{
-			mapname = "start";
-			o = spawn();
 			o.map = mapname;
 		}
+		else if (mapname == "end")
+		{
+			o.map = "dm1";
+		}
+		else if (mapname == "dm6")
+		{
+			serverflags = (serverflags & 14) / 2;
+			if (serverflags > 0)
+				o.map = "dm1";
+			else
+				o.map = "start";
+		}
+		else if (mapname == "e2m3")
+		{
+			o.map = "e2m7";
+		}
+		else
+		{
+			// find a trigger changelevel
+			o = find(world, classname, "trigger_changelevel");
+
+			// go back to start if no trigger_changelevel
+			if (!o)
+			{
+				mapname = "start";
+				
+				o.map = mapname;
+			}
+		}
+		if (o.map != string_null) //just in case.
+			nextmap = o.map;
 	}
 
 	if (clanring_playmode & CLANRING_RA_MODE)
 		nextmap = ra_get_next_map();
-	else
-		nextmap = o.map;
+		
 	gameover = TRUE;
 
     // check to see if there is a user-specified level sequence
-    console_get_user_nextlevel();
+//	console_get_user_nextlevel();	//removed, we already loaded levels.cfg at startup
 
     o.think = execute_changelevel;
     o.nextthink = time + 0.1;
@@ -1495,7 +1508,7 @@ void() CheckPowerups =
 					//stuffcmd(self, "bf\n");
 				}
 			}
-			
+		
 			// use the eyes
 			self.frame = 0;
 			if (self.skin == 0)//wait one frame to reset the skin
@@ -1503,15 +1516,14 @@ void() CheckPowerups =
 				self.modelindex	= modelindex_eyes;
 				setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 			}
-			
-			self.skin  = 0;//R00k: oversight 3wave forgot to reset the skin; engine complains about this during execution. :(
-	
+
 			if (self.invisible_finished < time)
 			{	// just stopped
 				self.items = self.items - (self.items & IT_INVISIBILITY);
 				self.invisible_finished = 0;
 				self.invisible_time = 0;
-				self.modelindex = modelindex_player;	// don't use eyes			
+				self.modelindex = modelindex_player;	// don't use eyes	
+
 				setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 				player_run();
 
@@ -1682,6 +1694,158 @@ void() CheckPowerups =
 	}
 };
 
+#ifdef antilag
+void () client_ping_think =
+{
+    local entity client;
+
+    client = find(world, classname, "player");
+    while (client)
+    {
+		client.responsetime3 = client.responsetime2;
+		client.responsetime2 = client.responsetime1;
+
+		if (client.lagcheck > self.finaldest_x)
+			client.responsetime1 = (floor(client.lagcheck - self.finaldest_x) - 16);
+		else
+			client.responsetime1 = ANTILAG_MAX_RESPONSETIME;
+
+		if (client.responsetime2 > 0)
+		{
+			if (client.responsetime3 > 0)
+			{
+				client.responsetime = ((client.responsetime1 + client.responsetime2 + client.responsetime3) / 3);
+			}
+			else
+			{
+				client.responsetime = ((client.responsetime1 + client.responsetime2) / 2);
+			}
+		}
+		else
+		{
+			client.responsetime = client.responsetime1;
+		}
+        client = find(client, classname, "player");
+    }
+
+    remove(self);
+};
+
+void () client_responsetime_get_all =
+{
+    local entity ping;
+
+    WriteByte(MSG_BROADCAST, SVC_STUFFTEXT);
+    WriteString(MSG_BROADCAST, "impulse 38\n");
+
+    ping = spawn();
+    ping.classname = "client_ping";
+    ping.owner = world;
+    ping.nextthink = time + 2;
+    ping.think = client_ping_think;
+    ping.finaldest_x = (time * 1000);
+};
+
+void () client_responsetime_set =
+{
+    self.lagcheck = (time * 1000);
+};
+
+//debug function to see response times and frames
+void () client_responsetime_show =
+{
+	//don't let players spam this
+	if (time < self.spamtime)
+		return;
+
+	self.spamtime = (time + 5);
+
+    sprint(self, "response time3: ");
+	sprint(self, ftos(self.responsetime3));
+	sprint(self, "\n");
+    sprint(self, "response time2: ");
+	sprint(self, ftos(self.responsetime2));
+	sprint(self, "\n");
+    sprint(self, "response time1: ");
+	sprint(self, ftos(self.responsetime1));
+	sprint(self, "\n");
+    sprint(self, "response time:  ");
+	sprint(self, ftos(self.responsetime));
+	sprint(self, "\n");
+    sprint(self, "current origin: ");
+	sprint(self, vtos(self.origin));
+	sprint(self, "\n");
+    sprint(self, "last frame1: ");
+	sprint(self, vtos(self.lastorigin1));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime1));
+	sprint(self, "\n");
+    sprint(self, "last frame2: ");
+	sprint(self, vtos(self.lastorigin2));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime2));
+	sprint(self, "\n");
+    sprint(self, "last frame3: ");
+	sprint(self, vtos(self.lastorigin3));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime3));
+	sprint(self, "\n");
+    sprint(self, "last frame4: ");
+	sprint(self, vtos(self.lastorigin4));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime4));
+	sprint(self, "\n");
+    sprint(self, "last frame5: ");
+	sprint(self, vtos(self.lastorigin5));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime5));
+	sprint(self, "\n");
+    sprint(self, "last frame6: ");
+	sprint(self, vtos(self.lastorigin6));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime6));
+	sprint(self, "\n");
+    sprint(self, "last frame7: ");
+	sprint(self, vtos(self.lastorigin7));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime7));
+	sprint(self, "\n");
+    sprint(self, "last frame8: ");
+	sprint(self, vtos(self.lastorigin8));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime8));
+	sprint(self, "\n");
+    sprint(self, "last frame9: ");
+	sprint(self, vtos(self.lastorigin9));
+	sprint(self, " ");
+	sprint(self, ftos(self.lastorigintime9));
+	sprint(self, "\n");
+};
+
+// rotate player positions
+void () UpdateLastOrigin =
+{
+	self.lastorigin9 = self.lastorigin8;
+	self.lastorigintime9 = self.lastorigintime8;
+	self.lastorigin8 = self.lastorigin7;
+	self.lastorigintime8 = self.lastorigintime7;
+	self.lastorigin7 = self.lastorigin6;
+	self.lastorigintime7 = self.lastorigintime6;
+	self.lastorigin6 = self.lastorigin5;
+	self.lastorigintime6 = self.lastorigintime5;
+	self.lastorigin5 = self.lastorigin4;
+	self.lastorigintime5 = self.lastorigintime4;
+	self.lastorigin4 = self.lastorigin3;
+	self.lastorigintime4 = self.lastorigintime3;
+	self.lastorigin3 = self.lastorigin2;
+	self.lastorigintime3 = self.lastorigintime2;
+	self.lastorigin2 = self.lastorigin1;
+	self.lastorigintime2 = self.lastorigintime1;
+	self.lastorigin1 = self.origin;
+	self.lastorigintime1 = (time * 1000);
+};
+#endif
+
 /*
 ================
 PlayerPostThink
@@ -1733,9 +1897,6 @@ void() PlayerPostThink =
 		}
 	}
 
-//	if ((mode_is_arena()) && (clanring_state & CLANRING_MATCH_PAUSED)) 
-//		return;
-// Players will lag-out if this check is here...
 	if (IS_CA_OBSERVER(self))
 	{
 		observer_post_think();
@@ -1756,7 +1917,8 @@ void() PlayerPostThink =
 			clanring_show_rules_prematch();
 		}
 	}
-	else if ((clanring_state & CLANRING_MATCH_STARTED))
+// This is clientside now. save the centerprints.
+/*	else if ((clanring_state & CLANRING_MATCH_STARTED))
 	{
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 			TeamCapturePlayerUpdate();
@@ -1766,7 +1928,7 @@ void() PlayerPostThink =
 	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
 		TeamCapturePlayerUpdate();
-	}
+	}*/
 	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 	{
 		WipeoutModePlayerUpdate();
@@ -1811,7 +1973,7 @@ void() PlayerPostThink =
 	//if (time >= self.attack_finished)//R00k removed so non weapon impulse commands can be handled faster
 	W_WeaponFrame ();
 	
-	if (self.style & CLANRING_AUTOID)
+	if ((self.style & CLANRING_AUTOID) && (!(self.style & CLANRING_OBSERVER)))//R00k; not observers.
 	{
 		if (teamplay)
 		{
@@ -1953,8 +2115,13 @@ void() ClientDisconnect =
 	{
 		if (self.frags > 0)
 			announce5(self.netname, " left the game with ", s, " frag", pl);
-		else
-			announce2(self.netname, " disconnected.");
+		else 
+		{
+			if ((self.frags < 1) && (self.frags > -99))
+				announce5(self.netname, " rage-quit with ", s, " frag", pl);
+			else
+				announce2(self.netname, " disconnected.");	//observers
+		}
 	}
 	// ELOHIM_MOD - play gib sound if client was kicked for suiciding
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) || !(clanring_state & CLANRING_MATCH_STARTED) || !(self.style & CLANRING_OBSERVER))//R00k: dont make a sound when match is going, unless a player disconnected.
@@ -2305,6 +2472,7 @@ void(entity targ, entity attacker) ClientObituary =
 							// bonus for fraggin someone who has recently hurt your flag carrier
 							flag_carrier_radius = 1;
 							announce4(attacker.netname," defends ",s,"'s flag carrier against an agressive enemy");
+							//TODO: play special sound here...
 							attacker.fcdefenses = attacker.fcdefenses + 1;
 						}
 						
@@ -2320,6 +2488,7 @@ void(entity targ, entity attacker) ClientObituary =
 										client_frag (attacker, TEAM_CAPTURE_CARRIER_PROTECT_BONUS);
 										flag_carrier_radius = 1;
 										announce4(attacker.netname," defends ",s,"'s flag carrier");
+										//TODO: play special sound here...
 										attacker.fcdefenses = (attacker.fcdefenses + 1);
 									}
 								}
@@ -2330,6 +2499,7 @@ void(entity targ, entity attacker) ClientObituary =
 										client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
 										flag_radius = 1;
 										announce4(attacker.netname," defends the ",s," flag");
+										//TODO: play special sound here...
 										attacker.fdefenses = (attacker.fdefenses + 1);
 									}
 								}
@@ -2353,6 +2523,7 @@ void(entity targ, entity attacker) ClientObituary =
 									client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
 									flag_radius = 1;
 									announce4(attacker.netname," defends the ",s," flag");
+									//TODO: play special sound here...
 									attacker.fdefenses = (attacker.fdefenses + 1);
 								}
 								head = head.chain;

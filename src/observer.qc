@@ -228,7 +228,9 @@ void () observer_camera_start =
 		if (!self.movetarget)
 		{
 			sprint(self, "no cameras found\n");
-			observer_walk_start();
+			if (self.oflags & OBSERVER_QUAKETV) //R00k: the show must go on!
+				observer_chase_start();
+			//observer_walk_start();
 			return;
 		}
 		self.delay = 0;
@@ -242,7 +244,9 @@ void () observer_camera_start =
 			if (!self.movetarget)
 			{
 				sprint(self, "no cameras found\n");
-				observer_walk_start();
+				if (self.oflags & OBSERVER_QUAKETV) //R00k: the show must go on!
+					observer_chase_start();
+				//observer_walk_start();
 				return;
 			}
 			self.delay = 0;
@@ -385,18 +389,30 @@ void () observer_demo_start =
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
 	stuffcmd(self, "cmd setinfo observer eyecam\n");// woods
 
+	//R00k: added auto pov
+	if (self.oflags & OBSERVER_GO_AUTO)
+	{
+		sprint(self, "Automatic Eyecam Enabled.\n");
+		self.oflags = self.oflags - OBSERVER_GO_AUTO;
+		self.oflags = self.oflags | OBSERVER_AUTO;
+	}
+	else
+		sprint(self, "type 'autopov' for automatic eyecam switching\n");
+
 	self.nextthink = -1;
     self.think = SUB_Null;
 };
 
 void () observer_centerprint_join =
-{//TODO replace this with csqc...
-if (clanring_playmode & CLANRING_PRACTICE_MODE)
-		centerprint(self.owner, "\btype \bready\b in console to join");
-else	
-if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
-	/*else if (clanring_playmode & CLANRING_MATCH_MODE)*/
+{
+	if (self.owner.style & CLANRING_MOTD)	return;
+
+	if (clanring_playmode & CLANRING_PRACTICE_MODE)
+			centerprint(self.owner, "\btype \bready\b in console to join");
+	else	
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		/*else if (clanring_playmode & CLANRING_MATCH_MODE)*/
 };
 
 //
@@ -533,8 +549,10 @@ void () observer_start =
 	}
 	else
 	if (self.oflags & OBSERVER_DEMO)
-	{
+	{		
 		// This is necessary to prevent the other player's model from being drawn. Don't fucking ask me why!!!
+		if (self.oflags & OBSERVER_AUTO)//R00k added autopov
+			self.oflags = self.oflags | OBSERVER_GO_AUTO;
 		self.nextthink = time + 0.1;
 		self.think = observer_demo_start;
 	}
@@ -1063,7 +1081,9 @@ void () observer_set_chase_position =
 				if (clanring_current_chase_target != world && self.movetarget != clanring_current_chase_target)
 				{
 					self.movetarget = clanring_current_chase_target;
+					observer_chase_start();//R00k: reset in case we were in autopov
 					self.delay = 0;
+					return;
 				}
 			}
 		}
@@ -1101,12 +1121,13 @@ void () observer_set_chase_position =
 	// be the same as the one used by the client (after the angle has been
 	// garbled by the network protocol)
 	//
-	if (!self.button0)
+
+/*	if (!self.button0)//TODO: remove this since we arent using an 8bit angle protocol...
 	{
 		angle_x = 360.0 / 256.0 * rint(angle_x * 256.0 / 360.0);
 		angle_y = 360.0 / 256.0 * rint(angle_y * 256.0 / 360.0);
 	}
-
+*/
     // The "ideal" position is 100 units behind and 40 units above the
     // chase target.  To deal with walls and ceilings, we first trace a
     // line 50 units up and then move 80% of the way along the
@@ -1138,7 +1159,26 @@ void () observer_set_chase_position =
 //
 void () observer_set_demo_position =
 {
-    setorigin(self, self.movetarget.origin);
+	if (self.oflags & OBSERVER_AUTO)
+	{
+		if (self.oflags & OBSERVER_DEMO)
+		{
+			if (time > self.clanring_cam_delay)
+			{
+				if (clanring_current_chase_target != world && self.movetarget != clanring_current_chase_target)
+				{
+					self.movetarget = clanring_current_chase_target;
+					centerprint (self,self.movetarget.netname);
+				    msg_entity = self;
+				    WriteByte(MSG_ONE, SVC_SETVIEWPORT);
+				    WriteEntity(MSG_ONE, self.movetarget);
+					self.delay = 0;
+				}
+			}
+		}
+	}
+
+	setorigin(self, self.movetarget.origin);
 
     if (self.button0)
         return;  // freelook; don't set the viewing angle
@@ -1408,6 +1448,8 @@ void () observer_impulse =
 			auto_camera_start();
 		else if (self.impulse == 155)
 			auto_chase_start();
+		else if (self.impulse == 157)
+			auto_pov_start();
     }
     else
     {                                                                              // CRMOD more commands to go observer

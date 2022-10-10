@@ -1268,7 +1268,7 @@ void() admin_impulse =
 	else if (self.impulse == 219)
 		votables_select_fraglimit();
 	else if (self.impulse == 220)
-		votables_request_next_map();
+		votables_request_next_map();//fixme
 	else if (self.impulse == 221)
 		votables_request_set_quad();
 	else if (self.impulse == 222)

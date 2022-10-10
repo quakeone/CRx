@@ -734,7 +734,9 @@ string (float mode) strings_get_mode =
 		case 5: return "RA";
 		case 6: return "Airshot";
 		case 7: return "DMM4";
-		case 8: return "Wipeout";		
+		case 8: return "Wipeout";
+		//case 9: return "Freezetag";
+		//case 10: return "SpeedBall";		
 	}
 	return "";
 };
@@ -752,6 +754,8 @@ string (float mode) strings_get_mode_gold =
 		case 6: return "\bAirshot";
 		case 7: return "\bDMM4";
 		case 8: return "\bWipeout";
+		//case 9: return "Freezetag";
+		//case 10: return "SpeedBall";
 	}
 	return "";
 };
@@ -764,7 +768,7 @@ string (float mode) strings_get_mode_gold =
 //
 string (float n) strings_szplural =
 {
-    if (n == 1)
-        return "";
+    if ((n == 1)||(n == -1))
+        return "";	
     return "s";
 };

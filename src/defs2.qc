@@ -82,13 +82,15 @@ float CLANRING_AIRSHOT_MODE			= 65536;
 float CLANRING_AUTO_PAUSE    		= 131072;
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
-//float CLANRING_CA_CC_VOTE			= 1048576;//removed; ALWAYS create a vote when a player wants to join the match
-float CLANRING_SPAWNFRAG_PROTECTION	= 1048576;
-//float UNUSED			= 1048576;
+//float CLANRING_CA_CC_VOTE			= 0;
+//float CLANRING_FREEZETAG			= 0;
+//float CLANRING_SPEEDBALL			= 0;
+//float CLANRING_SPAWNFRAG_PROTECTION = 0;
+//float UNUSED						= 1048576;
+float CLANRING_DMM4_MODE			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
 float CLANRING_CA_MODE				= 4194304;
 float CLANRING_RA_MODE				= 8388608;
-float CLANRING_DMM4_MODE			= 16777216;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
@@ -121,6 +123,8 @@ float ADMIN_RA_MODE    		= 5;
 float ADMIN_AIRSHOT_MODE    = 6;
 float ADMIN_DMM4_MODE    	= 7;
 float ADMIN_WIPEOUT_MODE	= 8;
+//float ADMIN_FREEZETAG_MODE	= 9;
+//float ADMIN_SPEEDBALL_MODE	= 10;
 
 // entity constants
 float CLANRING_MANUAL_SPAWN = 1;
@@ -139,7 +143,7 @@ entity  clanring_request;           // used to control voting
 float   clanring_level;             // number of current level in user level order
 float   clanring_levelcount;        // used to scan through list in levels.cfg
 float   clanring_lastcount;         // used to detect end-of-file in levels.cfg
-string  clanring_firstlevel;        // used to remember the name of the first level in levels.cfg
+
 float   dm_num_spawns;              // number of deathmatch spawn points (as opposed to ctf spawn points)
 float   clanring_num_starts;        // number of match extra start points
 float   clanring_num_cameras;       // number of cameras
@@ -416,8 +420,18 @@ typedef struct
 servermap_t warpmap[250];
 
 string warpmenutop[15]; // Customizable map categories for the warp menu contents.
-
 string default_nextmap;
+
+//-- ProQuake .loc support
+typedef struct location_s
+{
+	struct	location_s *next_loc;
+	vector	mins, maxs;		
+	string	name;
+	vector	sum;
+	float	col[3];
+} location_t;
+//---
 
 typedef struct
 {
@@ -479,7 +493,7 @@ float clanring_rulescheck;
 .float max_teams;
 float ra_wins;
 entity ra_lastspawn;
-float tele_num_spawns;
+//float tele_num_spawns;
 .float nextspawn;
 
 float COLOR_BLUE = 13;
@@ -505,3 +519,42 @@ float CA_MATCH_PLAYING = 3;
 float CA_MATCH_OVER = 4;
 float CA_MATCH_CLEANUP = 5;
 .float ca_deathcamtime;
+/*
+ * helpers. -- from cspreee
+ */
+ #define redify(s) strconv(0,2,2,s)
+ #define alternate(s) strconv(0,5 + ((time*4)&1), 5 + ((time*4)&1),s)
+ #define flash(s) strconv(0,1 + ((time*4)&1), 1 + ((time*4)&1),s)
+ #define goldnmbr(s) strconv(0,3,3,s)
+ #define lowrcase(s) strconv(1,0,0,s)
+ #define brackets(s) sprintf("%s%s%s", chr2str(0x90), s, chr2str(0x91))
+ #define disconnected(s) sprintf("%s %s", chr2str(0x87), s)
+ 
+ .vector lastorigin1;
+.vector lastorigin2;
+.vector lastorigin3;
+.vector lastorigin4;
+.vector lastorigin5;
+.vector lastorigin6;
+.vector lastorigin7;
+.vector lastorigin8;
+.vector lastorigin9;
+.float lastorigintime1;
+.float lastorigintime2;
+.float lastorigintime3;
+.float lastorigintime4;
+.float lastorigintime5;
+.float lastorigintime6;
+.float lastorigintime7;
+.float lastorigintime8;
+.float lastorigintime9;
+.vector hold_origin;
+.float responsetime;
+.float responsetime1;
+.float responsetime2;
+.float responsetime3;
+.float spamtime;
+
+float responsetimecheck;
+float ANTILAG_MAX_RESPONSETIME = 150;
+var float autocvar_clanring_gametype;

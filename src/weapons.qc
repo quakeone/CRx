@@ -16,12 +16,12 @@
 
     See file, 'COPYING', for details.
 */
-void()W_ChangeWeapon;
+void() W_ChangeWeapon;
 void() player_run;
 void(vector org, vector vel, float damage) SpawnBlood;
 void() SuperDamageSound;
 void() HasteSound;
-void()	player_hook4;
+void() player_hook4;
 
 // called by worldspawn
 void() W_Precache =
@@ -61,18 +61,6 @@ void() W_Precache =
 float() crandom =
 {
 	return 2*(random() - 0.5);
-};
-
-void () Practice_Object_Remove =
-{
-	local entity e;
-	
-	e = find (world, classname, "practice_object");
-		
-	if (e != world)
-	{
-		remove (e);
-	}
 };
 
 /*
@@ -745,6 +733,7 @@ void() W_FireGrenade =
 			self.weapon = W_BestWeapon ();
 			W_SetCurrentAmmo ();
 			sprint(self, "\b\< Grenade spam protection activated \>\n");
+			return;
 		}
 	}
     // END_MOD
@@ -1098,7 +1087,7 @@ float() W_BestWeapon =
 	
 	it = self.items;
 
-	if (self.waterlevel <= 2 && self.ammo_cells >= 1 && (it & IT_LIGHTNING) )
+	if (self.waterlevel <= 2 && self.ammo_cells >= 1 && (it & IT_LIGHTNING) )			// 1997-12-23 Thunderbolt fix by Maddes
 			return IT_LIGHTNING;
 	if(self.ammo_nails >= 2 && (it & IT_SUPER_NAILGUN) )
 		return IT_SUPER_NAILGUN;

@@ -8,7 +8,7 @@ void() HookVanish2 =
 		sound (self.owner, CHAN_WEAPON, "weapons/bounce2.wav", 1, ATTN_NORM);
 	}
 
-	self.owner.hook2 = (self.owner.hook2 - (self.owner.hook2 & (HOOK_OUT)));// | HOOK_SWING)));
+	self.owner.hook2 = (self.owner.hook2 - (self.owner.hook2 & (HOOK_OUT| HOOK_SWING)));
 	do
 	{
 		if ((self.classname == "hook_chain_link") || (self.classname == "hook2_entity"))//sanity check
@@ -21,9 +21,8 @@ void() HookVanish2 =
 
 void() HookPull2 =
 {
-	local vector vel;//,x,vo,vp;
-//local float vpn,vpnmin,xn,xnmin,acc,tmp, 
-	local float v, dorg;
+	local vector vel,x,vv,vo,vp;
+	local float vpn,vpnmin,xn,xnmin,acc,tmp, dorg, v;
 	local float a , b , c;
 	
 	if (self.enemy.takedamage)
@@ -140,16 +139,16 @@ void() HookPull2 =
 
 	self.dest = self.owner.origin;	
 	self.nextthink = (time + sys_ticrate);
-/*
 
-	v   = self.owner.velocity;
+//hook swing part...
+	vv   = (self.owner.velocity);
 	x   = self.origin - (self.owner.origin + '0 0 16');
 	xn  = vlen(x);
 	x   = normalize(x);
 
 	if (xn>0)
 	{
-		vp  = x*(v*x);
+		vp  = x*(vv*x);
 	}
 	else
 	{
@@ -157,7 +156,7 @@ void() HookPull2 =
 	}
 
 	vpn  	= vlen(vp);
-	vo  	= v - vp;
+	vo  	= vv - vp;
 	tmp 	= vlen(vo);
 
 	if (tmp > xn +100)
@@ -198,8 +197,8 @@ void() HookPull2 =
 	if (vlen(vo) > 700)
 		vo = normalize(vo)*850;
 
-	v = vo + vp;
-	self.owner.velocity = v;
+	vv = vo + vp;
+	self.owner.velocity = vv;
 
 	if (self.owner.waterlevel > 2)
 	{
@@ -209,7 +208,6 @@ void() HookPull2 =
 	{
 		vpnmin = 500; xnmin = 280;
 	}
-*/
 };
 
 void() T_ChainTouch2 =

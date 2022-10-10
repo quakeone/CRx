@@ -1203,13 +1203,14 @@ void() console_version_info =
 //
 //  Check to see if we've found the next level in levels.cfg
 //
+/*
 void(float newlevel) console_check_level =
 {
 	local string s;
 	
 	s = strings_get_mapname (newlevel);
 
-	// if clanring_levelcount == -1 then we haven't executed levels.cfg, so
+	// if clanring_levelcount == -1 then we HAVE executed levels.cfg, so
 	// change levels immediately.
 	if (clanring_levelcount == -1)
 	{
@@ -1247,7 +1248,7 @@ void() console_get_user_nextlevel =
 	clanring_nextcheck = 0;
 	remove(self);
 };
-
+*/
 //
 //  G E T  O R I G I N
 //
@@ -1695,13 +1696,13 @@ void(float command) console_command =
 			return;
 		}
 	}
-
+/*
 	if (command >= 100 && command < 200)
 	{
 		console_check_level(command - 100);
 		return;
 	}
-
+*/
 	if (command >= 80 && command <= 89)
 	{
 		arg = cvar("skill");

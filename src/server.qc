@@ -231,7 +231,7 @@ void () NextLevel;
 void (vector org, entity death_owner) spawn_tdeath;
 void () player_stand1;
 void (vector org) spawn_tfog;
-void () console_get_user_nextlevel;
+//void () console_get_user_nextlevel;
 void () observer_start;
 void () W_ChangeWeapon;
 void () W_SetCurrentAmmo;
@@ -332,7 +332,8 @@ void () clanring_init_world =
 	precache_sound("ogre/ogwake.wav");
 	precache_sound("shambler/ssight.wav");
 	precache_sound("soldier/sight1.wav");
-	precache_sound ("crx/capreg.wav");
+	//TODO: name these sounds with generic variables. Read them from a cfg file, ie precache_sound(CRX_CONNECTSOUND);
+//	precache_sound ("crx/capreg.wav");
 	precache_sound ("crx/goodstat.wav");
 	precache_sound ("crx/congrats.wav");
 
@@ -387,13 +388,13 @@ void () clanring_init_world =
 	clanring_overtime 		= cvar("scratch2");
 	clanring_maxteams 		= cvar("scratch3");
 	clanring_levelcount 	= 0;
-
+	clanring_lastcount 		= 0;
 //	clanring_player_ids 	= 1;
 	clanring_devparam 		= 0;
 	clanring_nextcheck 		= time;
 	clanring_nextcheck2 	= time;
 	clanring_request 		= world;
-	clanring_lastcount 		= 0;
+
 	clanring_state 			= 0;
 	//dm_num_spawns 	= 0;//R00k: Why reset this? the spawns are counted at map load before this init is called?
 	clanring_num_starts 	= 0;
@@ -715,6 +716,7 @@ void () clanring_set_aliases =
     stuffcmd(self, "alias quaketv impulse 154\n");      // CRMOD - autocam
 	stuffcmd(self, "alias autochase impulse 155\n");
 	stuffcmd(self, "alias help-camera impulse 156\n");
+	stuffcmd(self, "alias autopov impulse 157\n");
 	stuffcmd(self, "alias pentstats impulse 169\n");
 	stuffcmd(self, "alias killstats impulse 170\n");
 	stuffcmd(self, "alias efficiency impulse 171\n");
@@ -927,7 +929,7 @@ float () clanring_check_player_in_list =
 //This is for stats in Classic Mode.
 void () clanring_put_player_in_list =
 {
-	if (clanring_check_player_in_list() == FALSE)// just incase 
+	if (clanring_check_player_in_list() == FALSE)// just in case 
 	{
 		self.next_player = clanring_sentinel.next_player;
 		clanring_sentinel.next_player = self;
@@ -1036,6 +1038,8 @@ void () clanring_client_connect =
 	
 	if (parm10 & CLANRING_NEW_CLIENT)
 	{	
+		local string client = "";
+
 		// This is a new client (just connected over the network)
 		// Show the MOTD
 		motd_create ();
@@ -1044,14 +1048,33 @@ void () clanring_client_connect =
 		// Get rid of the new client flag
 		parm10	= parm10 - (parm10 & CLANRING_NEW_CLIENT);
 		// Set default observer flags
-		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_WALK | OBSERVER_COMMENTARY;
+//TODO:
+//		if (infokey(self,"observer_default" != string_null))
+//			parm12 = observer_parse_default_parm12();
+//		else			
 
-		parm13 = 0;
+		parm12 = OBSERVER_TOURNEY | OBSERVER_WALK | OBSERVER_COMMENTARY;
+
+		parm13 = 0; 
 		
 		stats_reset_player();
 
 		utils_make_scheduled_event(find_pqc_teamscore_teams, 1.25);//R00k
 		self.afk_time = time + 20;
+
+		if (substring(infokey(self, "*client"), 0, 7) == "ezQuake")
+			client = "ezQuake";
+		else
+		if (substring(infokey(self, "*ver"), 0, 3) == "FTE")
+			client = "FTE";                
+//		else
+//		if (substring(infokey(self, "*ver"), 1, 5) == "QSS-M")
+//			client = "QSS-M";    
+
+		if (client)
+			announce(sprintf("%s has connected using %s",self.netname, client));
+		else    
+			announce2(self.netname," has connected.");
 	}
 
 	// send aliases if necessary
@@ -1888,7 +1911,7 @@ void (float quakever) clanring_wingl_detect =
 };
 
 //-----------------------------------------------------------------------------------
-/*
+
 void () Practice_Object_Remove =
 {
 	local entity e;
@@ -1982,7 +2005,7 @@ void () practice_spawn =
 // shoot object from gun
 //
 	makevectors (self.v_angle);
-	e.velocity = e.velocity * 500;
+	e.velocity = e.velocity * v_forward * 500;
 	sound (self, CHAN_WEAPON, "misc/r_tele4.wav", 1, ATTN_NORM);
 };
 */
@@ -2055,8 +2078,9 @@ void () clanring_impulse =
 		clanring_ping_reply ();
 	else if (self.impulse == 39)
 	{
-		self.lagcheck    = self.finaldest_x;
+		self.lagcheck    = self.finaldest_x;//last ping_reply_time
 		self.finaldest_x = time;
+		self.ping_time = client_ping(self);
 		if (self.finaldest_x - self.lagcheck <= 5 )
 			self.lagcount = self.lagcount + 1;
 		if (self.lagcount > 2)
@@ -2251,7 +2275,7 @@ void () clanring_periodic_checks =
 		observer_find_teleport();
 		observer_check_size();
 				
-		if (self.oflags & OBSERVER_QUAKETV) //Sputnik: reset between map loads.
+		if (self.oflags & OBSERVER_QUAKETV) //Sputnik: reset autochase between map loads.
 		{
 			if (!(self.movetarget))
 			{		        
@@ -2291,8 +2315,9 @@ void () clanring_periodic_checks =
 			}
 		}
 	}
-	
-	self.ping_time = client_ping(self);//Fixme this wont work for Qrack clients; revert back to pq method for those clients.
+
+	self.ping_time = client_ping(self);
+	pqc_ping_times(); //r00k: get client ping and send to everyone on the server.
 
 	inactive = time - self.afk_time;//Seconds of inactivity
 	c = floor(inactive / 60);		//Minutes of inactivity (round down).
@@ -2333,7 +2358,8 @@ void () clanring_periodic_checks =
 		{
 			self.afk_time = time;
 			self.style = (self.style | CLANRING_AFK_CLIENT);
-			stuffcmd(self, "cmd setinfo afk yes\n");// woods
+			if ((infokey(self, "afk")) == "no")	// update the infokey once
+				stuffcmd(self, "cmd setinfo afk yes\n");// woods
 			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");			
 		}
 	}
@@ -2462,6 +2488,7 @@ void () clanring_start_frame =
 							msg_entity = player;
 							WriteByte(MSG_ONE, SVC_STUFFCMD);
 							WriteString(MSG_ONE, "impulse 39\n");
+							player.lagcheck = time;//time sent from server
 						}
 
 						if ((time >= player.finaldest_x + 15) && (time < player.finaldest_x + 16))
@@ -2500,8 +2527,8 @@ void () clanring_start_frame =
 				utils_make_scheduled_event(auto_chase, 0.3);
 				utils_make_scheduled_event(auto_camera, 0.6);				
 				
-				pqc_ping_times();
-
+//R00k: removed this.
+/*
 				if (clanring_levelcount > 0)
 				{
 					// Check for end of file in levels.cfg.  We assume end of file
@@ -2524,7 +2551,7 @@ void () clanring_start_frame =
 					}
 					clanring_lastcount = clanring_levelcount;
 				}
-														
+*/														
 				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 				{
 					if (rint(timelimit - time) == 300)

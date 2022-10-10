@@ -395,7 +395,26 @@ void() worldspawn =
 	
 	clanring_init_world ();    // ELOHIM_MOD - do server specific stuff
 };
+#ifdef antilag
+void antilag_restore_projectiles(string class)
+{
+	local entity projectile;
 
+	projectile = find(world, classname, class);
+
+	while (projectile)
+	{
+		if (projectile.think != ThinkMovetype_AntilagProjectile) {
+			projectile = find(projectile, classname, class);
+			continue;
+		}
+
+	    setorigin(projectile, projectile.hold_origin);
+
+		projectile = find(projectile, classname, class);
+	}
+}
+#endif
 void() StartFrame =
 {
 	local entity serverinactive;
@@ -422,6 +441,18 @@ void() StartFrame =
 	}
 	framecount = framecount + 1;
 	clanring_start_frame();
+	
+	#ifdef antilag
+	if (time > responsetimecheck)
+	{
+		responsetimecheck = (time + 10);
+		client_responsetime_get_all();
+	}
+
+	// Put projectiles back where they actually are before we do game things
+	antilag_restore_projectiles("missile");
+	antilag_restore_projectiles("spike");
+	#endif
 };
 
 

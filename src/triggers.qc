@@ -441,18 +441,18 @@ void() teleport_touch =
 
 	setorigin(other, t.origin);
 	other.angles = t.mangle;
-	
+
 	if (other.classname == "player")
 	{
 		other.fixangle 		= TRUE;		// turn this way immediately
-		other.teleport_time	= time + 0.7;
+		other.teleport_time	= time + 0.1;	//R00k: shortened this quite a bit...
 		
-		if (other.flags & FL_ONGROUND)
-			other.flags = other.flags - other.flags & FL_ONGROUND;
-		other.velocity 		= v_forward * 300;
+		if ((other.button2) || (!(other.flags & FL_ONGROUND)))//R00k: make this a trick jump (requires effort)
+			other.velocity = v_forward * 300 + v_up * 238;
+		else
+			other.velocity = v_forward * 300;
 	}
-	else
-		other.flags = other.flags - other.flags & FL_ONGROUND;	
+	other.flags = other.flags - other.flags & FL_ONGROUND;	
 };
 
 /*QUAKED info_teleport_destination (.5 .5 .5) (-8 -8 -8) (8 8 32)
@@ -460,14 +460,21 @@ This is the destination marker for a teleporter.  It should have a "targetname" 
 */
 void() info_teleport_destination =
 {
-// this does nothing, just serves as a target spot
-	tele_num_spawns += 1;
+	// this does nothing, just serves as a target spot
+
 	self.mangle = self.angles;
-	self.angles = '0 0 0';
-	self.model = "";
+
 	self.origin = self.origin + '0 0 27';
 	if (!self.targetname)
 		objerror ("no targetname");
+
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{		
+		self.alpha = 0.333;
+		self.mdl = "progs/v_spike.mdl";
+		self.effects = self.effects | EF_BRIGHTFIELD;
+		spawns_restore_model();
+	}	
 };
 
 void() teleport_use =
