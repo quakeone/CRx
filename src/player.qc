@@ -567,7 +567,7 @@ void() PlayerDead =
 		if (!gameover)			
 		{
 			self.think = respawn;
-			if (deathmatch == 4)
+			if ((deathmatch == 4) || (deathmatch == 5))
 			{
 				self.nextthink = time + 1;
 			}
@@ -702,12 +702,10 @@ void() PlayerDie =
 	{
 		im_dead_now_what();
 
-		if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.items & IT_QUAD))
+		if ((self.super_damage_finished > time) && (self.items & IT_QUAD))
 		{
-			boss.quadtime = 0;
-
-			if (self.super_damage_finished > time)
-				wipeout_drop_quad (self.super_damage_finished - time);
+			self.totalquad += (time - self.quadtime);
+			//wipeout_drop_quad (self.super_damage_finished - time);
 		}
 	}
 

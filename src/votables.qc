@@ -7,7 +7,7 @@
 //
 
 // global variables
-string request_mapname;     // Used for requesting a new level
+float request_mapnum;     	// Used for requesting a new level
 float request_timelimit;    // Used for requesting a new time limit
 float request_fraglimit;    // Used for requesting a new frag limit
 float request_overtime;		// Used for requesting a new overtime
@@ -101,8 +101,7 @@ void() votables_set_hook =
 	{
 		clanring_playmode = (clanring_playmode | CLANRING_NO_HOOK);
 
-		if (mode_is_arena())
-			clanring_state = clanring_state - (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM);
+		clanring_state = clanring_state - (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM);
 
 		p = find(world, classname, "player");
 
@@ -132,9 +131,18 @@ void() votables_set_hook =
 		if (clanring_playmode & CLANRING_NO_HOOK)
 		{
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NO_HOOK);
-			if (mode_is_arena())
-				clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
-			bprint("grappling hook has been \benabled\n");
+
+			if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && 
+				!(clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE))
+			{
+				bprint("grappling hook has been \benabled\n");
+			}
+			else
+			{
+				if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
+					clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
+				bprint("custom grappling hook has been \benabled\n");
+			}
 
 			p = find(world, classname, "player");
 			while (p)
@@ -195,6 +203,8 @@ void() votables_request_set_hook =
 //
 void () votables_change_level =
 {
+	local string request_mapname = warpmap[request_mapnum].name;
+
 	if (clanring_state & CLANRING_MATCH_STARTED)
 	return;
 
@@ -255,13 +265,13 @@ void() votables_request_change_level =
     // Do it right away if we're an administrator, otherwise vote
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
-		request_mapname = newmap;
+		request_mapnum = level;
 		votables_change_level();
 	}
 	else
-	if (vote_init("ãèáîçå ìåöåì ôï ", newmap, votables_change_level))
+	if (vote_init("\bchange level to\b ", newmap, votables_change_level))
 	{
-		request_mapname = newmap;
+		request_mapnum = level;
 		vote_yes();
 	}
 };
@@ -351,7 +361,8 @@ void() votables_set_gametype_mode_map =
 	if (clanring_state & CLANRING_MATCH_STARTED)
 		return;
 
-	local string newmapname = mapname;
+	local string newmapname = mapname, request_mapname = "";
+	local entity player;
 	if (request_gametype >= 0)
 	{
 		if (request_gametype == 0)
@@ -405,7 +416,7 @@ void() votables_set_gametype_mode_map =
 		{
 			votables_clear_playmode_flags();
 			clanring_playmode = (clanring_playmode | CLANRING_RA_MODE | CLANRING_NO_HOOK);
-			cvar_set("teamplay", "0");
+			cvar_set("teamplay", "2");
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Rocket Arena\n");
@@ -418,7 +429,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE | CLANRING_NO_HOOK);
 			cvar_set("timelimit", "3");
 			cvar_set("fraglimit", "0");
-			cvar_set("teamplay", "0");
+			cvar_set("teamplay", "2");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
 			bprint("gametype set to dmm4\n");
@@ -429,9 +440,9 @@ void() votables_set_gametype_mode_map =
 		{
 			votables_clear_playmode_flags();
 			clanring_playmode = (clanring_playmode | CLANRING_AIRSHOT_MODE | CLANRING_NO_HOOK);
-			cvar_set("timelimit", "3");
-			cvar_set("fraglimit", "0");
-			cvar_set("teamplay", "0");
+			cvar_set("timelimit", "0");
+			cvar_set("fraglimit", "10");
+			cvar_set("teamplay", "2");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
 			bprint("gametype set to Airshot\n");
@@ -524,8 +535,10 @@ void() votables_set_gametype_mode_map =
 		announce3("playmode set to '", mode, "'");
 		utils_set_cvar("samelevel", clanring_playmode);
 	}
-	if (request_mapname != "")
+	if (request_mapnum)
 	{
+		request_mapname = warpmap[request_mapnum].name;
+
 		utils_set_cvar("timelimit", clanring_timelimit);
 
 		if (request_mapname == "start0")
@@ -540,6 +553,17 @@ void() votables_set_gametype_mode_map =
 		}
 		else
 		newmapname = request_mapname;
+	}
+
+	player = find(world, classname, "player");
+	while (player)
+	{
+		if ((player.style & CLANRING_CONNECTED) && (player.style & CLANRING_OBSERVER) && (player.movetarget != world))
+		{
+			stuffcmd(player, "setinfo observing off\n");
+			dprint(sprintf("observer off to %s\n", player.netname));
+		}
+		player = find(player, classname, "player");
 	}
 
 	changelevel (newmapname);
@@ -562,9 +586,9 @@ void() votables_set_gametype_mode_map =
 //      0   -   normal
 //      1   -   practice
 //      2   -   match
-void(float newtype, float newmode, string newmap) votables_request_set_gametype_mode_map =
+void(float newtype, float newmode, float newmap) votables_request_set_gametype_mode_map =
 {
-	local string mode = "";
+	local string mode = "", request_mapname = "";
 
 	if (clanring_state & CLANRING_MATCH_STARTED)
 	{
@@ -596,37 +620,37 @@ void(float newtype, float newmode, string newmap) votables_request_set_gametype_
 		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) 
 			&& !(clanring_playmode & CLANRING_DMM4_MODE) && !(clanring_playmode & CLANRING_CA_MODE) 
 			&& !(clanring_playmode & CLANRING_RA_MODE) && !(clanring_playmode & CLANRING_AIRSHOT_MODE) 
-			&& newmode < 0 && newmap == "")
+			&& newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in DeathMatch mode\n");
 			return;
 		}
-		else if (newtype == 1 && clanring_playmode & CLANRING_CAPTURE_THE_FLAG && newmode < 0 && newmap == "")
+		else if (newtype == 1 && clanring_playmode & CLANRING_CAPTURE_THE_FLAG && newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in Capture The Flag mode\n");
 			return;
 		}
-		else if (newtype == 2 && (mode_clan_arena()) && newmode < 0 && newmap == "")
+		else if (newtype == 2 && (mode_clan_arena()) && newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in Clan Arena mode\n");
 			return;
 		}
-		else if (newtype == 3 && clanring_playmode & CLANRING_RA_MODE && newmode < 0 && newmap == "")
+		else if (newtype == 3 && clanring_playmode & CLANRING_RA_MODE && newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in Rocket Arena mode\n");
 			return;
 		}
-		else if (newtype == 4 && clanring_playmode & CLANRING_DMM4_MODE && newmode < 0 && newmap == "")
+		else if (newtype == 4 && clanring_playmode & CLANRING_DMM4_MODE && newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in 1v1 mode\n");
 			return;
 		}
-		else if (newtype == 5 && clanring_playmode & CLANRING_AIRSHOT_MODE && newmode < 0 && newmap == "")
+		else if (newtype == 5 && clanring_playmode & CLANRING_AIRSHOT_MODE && newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in airshot mode\n");
 			return;
 		}
-		else if (newtype == 6 && clanring_playmode & CLANRING_WIPEOUT_MODE && newmode < 0 && newmap == "")
+		else if (newtype == 6 && clanring_playmode & CLANRING_WIPEOUT_MODE && newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in wipeout mode\n");
 			return;
@@ -636,7 +660,7 @@ void(float newtype, float newmode, string newmap) votables_request_set_gametype_
 	if (newmode >= 0)
 	{
 		mode = strings_get_mode (newmode);
-		if ((newmode == options_get_mode()) && !(self.style & CLANRING_SETTING_OPTIONS) && newtype < 0 && newmap == "")
+		if ((newmode == options_get_mode()) && !(self.style & CLANRING_SETTING_OPTIONS) && newtype < 0 && !newmap)
 		{
 			if (self == world)
 				cprint3("Already in ", mode, " mode\n");
@@ -658,9 +682,10 @@ void(float newtype, float newmode, string newmap) votables_request_set_gametype_
 		mode = strings_get_mode (newmode);
 	}
 
-	if (newmap != "")
+	if (newmap)
 	{
 		self.use = SUB_Null;
+		request_mapname = warpmap[newmap].name;
 	}
 
 	//clear warp_flags;
@@ -671,7 +696,7 @@ void(float newtype, float newmode, string newmap) votables_request_set_gametype_
 	}
 	request_gametype = newtype;
 	request_mode = newmode;
-	request_mapname = newmap;
+	request_mapnum = newmap;
 
 	//If ya'll could pass my vote, thanks!
 	if (self.style & CLANRING_ADMINISTRATOR)
@@ -726,22 +751,22 @@ void(float newtype, float newmode, string newmap) votables_request_set_gametype_
 			if (request_gametype < 0 && request_mode < 0)
 			{
 				vote_title_string = "\bChange Map to\b ";
-				vote_string = newmap;
+				vote_string = request_mapname;
 			}
 			else if (request_mode < 0)
 			{
 				vote_title_string = "\bChange Gametype/Map to\b ";
-				vote_string = sprintf("%s \bon\b %s", gametype_string, newmap);
+				vote_string = sprintf("%s \bon\b %s", gametype_string, request_mapname);
 			}
 			else if (request_gametype < 0)
 			{
 				vote_title_string = "\bChange Mode/Map to\b ";
-				vote_string = sprintf("%s \bon\b %s", mode, newmap);
+				vote_string = sprintf("%s \bon\b %s", mode, request_mapname);
 			}
 			else
 			{
 				vote_title_string = "\bChange Gametype/Mode/Map to\b ";
-				vote_string = sprintf("%s %s \bon\b %s", gametype_string, mode, newmap);
+				vote_string = sprintf("%s %s \bon\b %s", gametype_string, mode, request_mapname);
 			}
 		}
 		else
@@ -965,6 +990,12 @@ void() votables_set_timelimit =
 	}
 	else
 	{
+		//set default time for arena modes
+		if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+		{
+			default_timelimit = request_timelimit;
+		}
+
 		timelimit = request_timelimit * 60;
 		utils_set_cvar("timelimit", request_timelimit);
 		temp = ftos(request_timelimit);
@@ -1018,7 +1049,7 @@ void() votables_get_timelimit =
 {
 	if (self.finaldest_z >= 1 && self.finaldest_z <= 6)
 		votables_request_set_timelimit(self.finaldest_z * 5);
-	else if (self.finaldest_z == 9)
+	else if (self.finaldest_z == 7)
 		votables_request_set_timelimit(3);
 	else if (self.finaldest_z == 10)
 		votables_request_set_timelimit(0);
@@ -1309,7 +1340,7 @@ void (float gibs) votables_request_set_gibs =
 		gibmode = "'low'";
 		else
 		gibmode = "'high'";
-		if (vote_init("??????�????�?? ", gibmode, votables_set_gibs))
+		if (vote_init("\bchange gibs to\b ", gibmode, votables_set_gibs))
 		{
 			request_gibs = gibs;
 			vote_yes();
@@ -1375,11 +1406,11 @@ void() votables_request_set_quad =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_QUAD)
-			newstate = "??????";
+			newstate = "\benable\b";
 		else
-			newstate = "???????";
+			newstate = "\bdisable\b";
 
-		if (vote_init(newstate, " ????", votables_set_quad))
+		if (vote_init(newstate, " \bquad\b", votables_set_quad))
 			vote_yes();
 	}
 };
@@ -1464,11 +1495,11 @@ void() votables_request_set_pent =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_PENT)
-			newstate = "??????";
+			newstate = "\benable\b";
 		else
-			newstate = "???????";
+			newstate = "\bdisable\b";
 
-		if (vote_init(newstate, " ?????????", votables_set_pent))
+		if (vote_init(newstate, " \bpentagram\b", votables_set_pent))
 			vote_yes();
 	}
 };
@@ -1517,11 +1548,11 @@ void() votables_request_set_ring =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_NO_RING)
-		newstate = "??????";
+		newstate = "\benable\b";
 		else
-		newstate = "???????";
+		newstate = "\bdisable\b";
 
-		if (vote_init(newstate, " ????�??�???????", votables_set_ring))
+		if (vote_init(newstate, " \bring of shadows\b", votables_set_ring))
 			vote_yes();
 	}
 };
@@ -1550,11 +1581,12 @@ void() votables_request_set_obits =
 	{
 		local string newstate;
 		if ((clanring_playmode & CLANRING_EXTENDED_OBITS))
-		newstate = "???????";
+		newstate = "\bdisable\b";
 		else
-		newstate = "??????";
+		newstate = "\benable\b";
 
-		if (vote_init(newstate, " ?????�??????????", votables_set_obits))
+								  
+		if (vote_init(newstate, " extra obituaries", votables_set_obits))
 			vote_yes();
 	}
 };
@@ -1585,11 +1617,11 @@ void() votables_request_set_autopause =
 	{
 		local string newstate;
 		if (clanring_playmode & CLANRING_AUTO_PAUSE)
-			newstate = "???????";
+			newstate = "\bdisable\b";
 		else
-			newstate = "??????";
+			newstate = "\benable\b";
 
-		if (vote_init(newstate, " ?????�?????????", votables_set_autopause))
+		if (vote_init(newstate, " \bmatch autopause\b", votables_set_autopause))
 			vote_yes();
 	}
 };
@@ -1635,7 +1667,7 @@ void() votables_request_set_runes =
 			newstate = "\bdisable\b";
 		}
 		
-		if (vote_init(newstate, " ?????", votables_set_runes))
+		if (vote_init(newstate, " \brunes\b", votables_set_runes))
 		{
 			vote_yes();
 		}

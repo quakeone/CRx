@@ -180,7 +180,7 @@ Killed
 */
 void(entity targ, entity attacker) Killed =
 {
-	local entity oself, e;
+	local entity oself;
 	local float rtime, prand, as_sound = 0;
 
 	oself = self;
@@ -202,7 +202,26 @@ void(entity targ, entity attacker) Killed =
 		targ.killed = TRUE;//R00k
 	
 	if (!(clanring_playmode & CLANRING_AIRSHOT_MODE))
+	{
 		ClientObituary (self, attacker);
+
+		if (self.killstreak > 5)
+		{
+			bprint4(self.netname, "'s \bkilling spree\b ended at ", ftos(self.killstreak), "\n");
+
+			//TODO: also check at match end
+			// new_player_record = 0;
+			// check_player_high_record2(self.killstreak, self.team, self.netname);
+			// if (new_player_record > 0)
+			// {
+			// 	if (new_player_record == 1)
+			// 	{
+			// 		sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
+			// 	}
+			// 	write_killstreak_stats();
+			// }
+		}
+	}
 	
 	self.takedamage = DAMAGE_NO;
 	
@@ -212,34 +231,10 @@ void(entity targ, entity attacker) Killed =
 
 	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
-		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
-		{
-			if (targ != attacker)
-			{
-				targ.next_team.losses += 1;
-				pqc_team_frags(targ.next_team.team2, targ.next_team.wins);
-			}
-			else
-			{
-				e = find(world, classname, "player");
-				while (e)
-				{
-					if ((e.next_team != world) && (e != targ) && (e.ca_player_flag != PF_WAITING))
-					{
-						e.next_team.losses -= 1;
-						pqc_team_frags(e.next_team.team2, e.next_team.wins);
-						break;
-					}
-					e = find(e, classname, "player");
-				}
-			}
-		}
 		if ((attacker != world) && (attacker.classname == "player") && (attacker.next_team != world))
 		{
 			if (targ != attacker)
 			{
-				attacker.next_team.wins += 1;
-
 				if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 				{
 					attacker.frags += 1;
@@ -282,18 +277,18 @@ void(entity targ, entity attacker) Killed =
 						write_airshot_height_stats();
 					}
 
-					// last 30 seconds
+					// only last 30 seconds if timelimit
 					if ((!clanring_timelimit) || ((boss.lip < 1) && (boss.count <= 30)))
 					{
 						if (attacker.super_damage_finished >= time)
 						{
-							attacker.fragstreak += 1;
-							if ((attacker.fragstreak % 2 == 0) || (as_sound == 0))
+							attacker.killstreak += 1;
+							if ((attacker.killstreak % 2 == 0) || (as_sound == 0))
 								as_sound = 1;
 						}
 						else
 						{
-							attacker.fragstreak = 1;
+							attacker.killstreak = 1;
 						}
 
 						attacker.super_time = 1;
@@ -303,18 +298,20 @@ void(entity targ, entity attacker) Killed =
 
 					if (as_sound == 1)
 					{
-						prand = floor(random() * 4) + 1;
+						prand = floor(random() * 5) + 1;
 						if (prand == 1)
 							sound (self, CHAN_VOICE, "crx/onemore.wav", 1, ATTN_NORM);
 						else if (prand == 2)
 							sound (self, CHAN_VOICE, "misc/power.wav", 1, ATTN_NORM);
 						else if (prand == 3)
 							sound (self, CHAN_VOICE, "crx/laugh6.wav", 1, ATTN_NORM);
+						else if (prand == 4)
+							sound (self, CHAN_VOICE, "crx/yeah.wav", 1, ATTN_NORM);
 						else
 							sound (self, CHAN_VOICE, "crx/onfire.wav", 1, ATTN_NORM);
 					}
 					else if (as_sound == 2)
-						sound (self, CHAN_VOICE, "crx/beyond.wav", 1, ATTN_NORM);
+						sound (self, CHAN_VOICE, "crx/space.wav", 1, ATTN_NORM);
 					else if (as_sound == 3)
 						sound (self, CHAN_VOICE, "crx/gasp.wav", 1, ATTN_NORM);
 					else if (as_sound == 4)
@@ -354,7 +351,6 @@ void(entity targ, entity attacker) Killed =
 			}
 			else
 			{
-				attacker.next_team.wins -= 1;
 				if (boss.suddendeath == TRUE)
 				{
 					boss.busy = TRUE;
@@ -363,7 +359,7 @@ void(entity targ, entity attacker) Killed =
 					arena_match_end();
 				}
 			}
-			pqc_team_frags(attacker.next_team.team2, attacker.next_team.wins);
+			pqc_team_frags(attacker.next_team.team2, attacker.frags);
 		}
 	}
 
@@ -399,7 +395,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 {
 	local	vector	dir;
 	local 	entity 	oldself;
-	local 	float 	save, overkill, take, teamdamage, old_damage = 0;
+	local 	float 	save, overkill, take, teamdamage, old_damage = 0, longrange;
 	local 	string 	temp;//R00k moved here (combat.qc:509: error: Type mismatch on redeclaration of temp. string, should be __variant)
 
 	if (!targ.takedamage)
@@ -778,6 +774,10 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	{
 		targ.dmg_taken = targ.dmg_taken + save + overkill;
 		attacker.dmg_given = attacker.dmg_given + save + overkill;
+		if ((targ.items & IT_ROCKET_LAUNCHER) || (targ.items & IT_LIGHTNING))
+		{
+			attacker.ewep = attacker.ewep + save + overkill;
+		}
 
 		if (clanring_playmode & CLANRING_CA_MODE)
 		{
@@ -813,6 +813,33 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 		}
 		// END_MOD
 		Killed (targ, attacker);
+
+		if (!(clanring_playmode & CLANRING_AIRSHOT_MODE))
+		{
+			if ((targ.classname == "player") && (inflictor != world) && (inflictor.classname == "missile"))
+			{
+				if (teamplay && targ.team == attacker.team)
+					return;
+
+				longrange = vlen(targ.origin - inflictor.dest1);
+				if (longrange >= 800)
+				{
+					bprint3("\bKill Distance:\b ", ftos(rint(longrange)), "\n");
+
+					new_player_record = 0;
+					check_player_high_record2(longrange, attacker.team, attacker.netname);
+					if (new_player_record > 0)
+					{
+						if (new_player_record == 1)
+						{
+							sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
+						}
+						write_longrange_stats();
+					}
+				}
+			}
+		}
+
 		return;
 	}
 // react to the damage

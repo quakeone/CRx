@@ -23,6 +23,7 @@ void() stats_reset_player =
 	self.dmg_taken	= 0;
 	self.dmg_given	= 0;
 	self.dmg_given_round = 0;
+	self.ewep = 0;
 	self.dmg_cache = 0;
 	self.dmg_tally = 0;
 	self.clanring_did_damage = 0; // CRMOD moved here from put_client_in_server
@@ -76,7 +77,7 @@ void() stats_show_badstats =
 		tot_done = tot_enemy + player.clanring_badstats_y + player.clanring_badstats_z;
 		if (player == self)
 		{
-			sprint(self, "\x90");
+			sprint(self, " \x90");
 			utils_print_int3(player.clanring_badstats_x);
 			sprint(self, "‘ü \x90");
 			stats_print_percent3(player.clanring_badstats_y, tot_done);
@@ -118,7 +119,7 @@ void() stats_show_quadstats =
 	sprint(self, "\n");
 	sprint(self, "\bquad damage\b\n");
 	sprint(self, "\n");
-	sprint(self, "quadsüeffüoppüslfütm ü     name\n");
+	sprint(self, "quadsütimeüeffüoppüslfütm ü     name\n");
 	sprint(self, "­­­­­«­­­«­­­«­­­«­­­«­­­­­­­­­­­­­­­\n");
 	player = clanring_sentinel.next_player;
 	pteam = player.next_team;
@@ -128,14 +129,16 @@ void() stats_show_quadstats =
 		{
 			sprint(self, "\x90");
 			utils_print_int3(player.clanring_qdwep_z);
-			sprint(self, "‘ü");
+			sprint(self, "‘ü ");
 		}
 		else
 		{
 			sprint(self, " ");
 			utils_print_int3(player.clanring_qdwep_z);
-			sprint(self, " ü");
+			sprint(self, " ü ");
 		}
+		utils_print_int3(player.totalquad);
+		sprint(self, "ü");
 		stats_print_percent3(player.clanring_qdwep_x, player.clanring_qdwep_y);
 		sprint(self, "ü");
 		utils_print_int3(player.clanring_qdkill_x);
@@ -149,7 +152,7 @@ void() stats_show_quadstats =
 		{
 			sprint(self, " ");
 			utils_print_int3_gold(pteam.dest2_x);
-			sprint3(self, " ü   ü   ü   ü   ü", pteam.mdl, "\n");
+			sprint3(self, " ü    ü   ü   ü   ü   ü", pteam.mdl, "\n");
 			pteam = player.next_team;
 		}
 	}
@@ -219,7 +222,7 @@ void() stats_show_killstats =
 	sprint(self, "\n");
 	sprint(self, "\bkills\b\n");
 	sprint(self, "\n");
-	sprint(self, "fragsüoppüslfütm ükldü dtk ü dgv ü     name\n");
+	sprint(self, "fragsüoppüslfütm ükldü dtk ü dgv ü ewp ü     name\n");
 	sprint(self, "­­­­­«­­­«­­­«­­­«­­­«­­­­­«­­­­­«­­­­­­­­­­­­­­­\n");
 
 	player = clanring_sentinel.next_player;
@@ -251,6 +254,8 @@ void() stats_show_killstats =
 		utils_print_damage_gold(player.dmg_taken);
 		sprint(self, "ü");
 		utils_print_damage_gold(player.dmg_given);
+		sprint(self, "ü");
+		utils_print_damage_gold(player.ewep);
 		sprint3(self, "ü", player.netname, "\n");
 		player = player.next_player;
 		c -= 1;
@@ -522,37 +527,55 @@ void () stats_show_summary =
 		sprint(self, "­­­­­«­­­­­«­­­­­­­­­­­­­­­\n");
 	}
 
-	player = clanring_sentinel.next_player;
+	if (mode_is_arena())
+	{
+		player = find(world,classname, "player");
+	}
+	else
+	{
+		player = clanring_sentinel.next_player;
+	}
 
 	while (player != world)
 	{
-		if (useteams)
+		if (!(mode_is_arena()) || ((mode_is_arena()) && player.next_team != world))
 		{
-			teamname = strings_get_teamname3(player.height);
-			sprint2(self, teamname, " ü");
+			if (useteams)
+			{
+				teamname = strings_get_teamname3(player.height);
+				sprint2(self, teamname, " ü");
+			}
+			kfrac = player.true_kills;
+			ktot = kfrac + player.mangle_z;
+			wtot = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x;
+			wfrac = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
+			if (player == self)
+			{
+				sprint(self, "\x90");
+				stats_print_percent3(kfrac, ktot);
+				sprint(self, "‘ü\x90");
+				stats_print_percent3(wfrac, wtot);
+				sprint(self, "‘ü");
+			}
+			else
+			{
+				sprint(self, " ");
+				stats_print_percent3(kfrac, ktot);
+				sprint(self, " ü ");
+				stats_print_percent3(wfrac, wtot);
+				sprint(self, " ü");
+			}
+			sprint2(self, player.netname, "\n");
 		}
-		kfrac = player.true_kills;
-		ktot = kfrac + player.mangle_z;
-		wtot = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x;
-		wfrac = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
-		if (player == self)
+
+		if (mode_is_arena())
 		{
-			sprint(self, "\x90");
-			stats_print_percent3(kfrac, ktot);
-			sprint(self, "‘ü\x90");
-			stats_print_percent3(wfrac, wtot);
-			sprint(self, "‘ü");
+			player = find(player,classname, "player");
 		}
 		else
 		{
-			sprint(self, " ");
-			stats_print_percent3(kfrac, ktot);
-			sprint(self, " ü ");
-			stats_print_percent3(wfrac, wtot);
-			sprint(self, " ü");
+			player = player.next_player;
 		}
-		sprint2(self, player.netname, "\n");
-		player = player.next_player;
 	}
 	sprint(self, "\n");
 };
@@ -806,13 +829,13 @@ void() stats_autodump =
 		stats_show_killstats();
 		//sprint(self, "\n");
 
-		if (!(clanring_playmode & CLANRING_NO_QUAD))//R00k -added-
+		if (!(clanring_playmode & CLANRING_NO_QUAD) && !(mode_is_arena()))//R00k -added-
 		{
 			stats_show_quadstats ();
 			//sprint(self, "\n");
 		}
 
-		if (!(clanring_playmode & CLANRING_NO_PENT))
+		if (!(clanring_playmode & CLANRING_NO_PENT) && !(mode_is_arena()))
 		{
 			stats_show_pentstats ();
 			//sprint(self, "\n");

@@ -262,6 +262,7 @@ void () RemoveFromTeam;//R00k: ca mode
 void () arena_client_disconnect;
 void () CaptureHighScores_sprint;
 void () AirshotHighScores_sprint;
+void () LongRangeGibs_sprint;
 void () Teamplay_Select_Team;
 //
 // C L E A R   A F K   S T A T U S
@@ -332,10 +333,24 @@ void () clanring_init_world =
 	precache_sound("ogre/ogwake.wav");
 	precache_sound("shambler/ssight.wav");
 	precache_sound("soldier/sight1.wav");
-	precache_sound ("crx/capreg.wav");
+	//precache_sound ("crx/capreg.wav");
 	precache_sound ("crx/goodstat.wav");
 	precache_sound ("crx/congrats.wav");
+	precache_sound ("crx/hiscore.wav");
+	precache_sound ("crx/laugh3.wav");
+	precache_sound ("crx/laugh6.wav");
 
+	//end
+	precache_sound ("ra/gong.wav");	
+	precache_sound ("crx/rematch1.wav");
+	precache_sound ("crx/rematch2.wav");
+	//precache_sound ("crx/wewin.wav");
+	//precache_sound ("crx/erased.wav");
+	precache_sound ("crx/gameover.wav");
+	precache_sound ("crx/giveup.wav");
+	precache_sound ("crx/thatgame.wav");
+	precache_sound ("crx/pathetic.wav");
+	
 	//	qsmack_init_server ();
 
 	// Check to see if we need to initialize the server
@@ -424,9 +439,11 @@ void () clanring_init_world =
 	if ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		clanring_timelimit = cvar("timelimit");
-		if (clanring_timelimit == 0)
+		if ((clanring_timelimit == 0) && (clanring_playmode & CLANRING_MATCH_MODE))
 			clanring_timelimit = 20;
-		if (clanring_timelimit < 2)
+		else if (clanring_timelimit == 0)
+			clanring_timelimit = 0;
+		else if (clanring_timelimit < 2)
 			clanring_timelimit = 2;
 		default_timelimit = clanring_timelimit;//R00k added
 		match_show_timelimit();
@@ -451,6 +468,11 @@ void () clanring_init_world =
 	{
 		cvar_set("teamplay","1");		
 		clanring_set_teamplay(1);
+		clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
+	}
+	else if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && !(clanring_playmode & CLANRING_NO_HOOK)
+		&&	!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
+	{
 		clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
 	}
 	
@@ -593,6 +615,31 @@ void (float value) clanring_set_fraglimit =
 
 		if (teamplay)
 			localcmd("Match\"\n");
+	}
+	else if (mode_is_arena())
+	{
+		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		{
+			localcmd3("fraglimit \"", temp, " : Airshot\"\n");
+		}
+		else if (clanring_playmode & CLANRING_DMM4_MODE)
+		{
+			localcmd3("fraglimit \"", temp, " : PovDuel\"\n");
+		}
+		else if (clanring_playmode & CLANRING_RA_MODE)
+		{
+			localcmd3("fraglimit \"", temp, " : RocketArena\"\n");
+		}
+		else if (clanring_playmode & CLANRING_CA_MODE)
+		{
+			localcmd3("fraglimit \"", temp, " : ClanArena");
+			if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+			{
+				localcmd("Wipeout\"\n");
+			}
+			else
+				localcmd("\"\n");
+		}
 	}
 	else
 	{
@@ -999,7 +1046,7 @@ void () find_pqc_teamscore_teams =
 {
 	local entity e;
 	
-	if (clanring_playmode & CLANRING_CA_MODE)
+	if (mode_is_arena())
 	{		
 		e = boss.next_team;
 
@@ -2030,7 +2077,10 @@ void () clanring_impulse =
 	{
 		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			AirshotHighScores_sprint();
-		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		else
+			LongRangeGibs_sprint();
+
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 			CaptureHighScores_sprint();
 	}
 	else if (self.impulse == 70)

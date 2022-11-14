@@ -40,13 +40,13 @@ string (float mode) options_szmode =
     if (self.t_length == 0)
     {
         if (mode == ADMIN_NORMAL_MODE)
-            return "Πςεσσ κυνπ το σεμεγτ¬\nατταγλ το γθαξηε®\n\nΝοδε       Ξοςναμ  \n";
+            return "Πςεσσ κυνπ το σεμεγτ¬\nατταγλ το γθαξηε®\n\nΝοδε      ÿ Ξοςναμ  \n";
         else if (mode == ADMIN_PRACTICE_MODE)
-            return "Πςεσσ κυνπ το σεμεγτ¬\nατταγλ το γθαξηε®\n\nΝοδε       Πςαγτιγε\n";
+            return "Πςεσσ κυνπ το σεμεγτ¬\nατταγλ το γθαξηε®\n\nΝοδε      ÿ Πςαγτιγε\n";
         else if (mode == ADMIN_MATCH_MODE)
-            return "Πςεσσ κυνπ το σεμεγτ¬\nατταγλ το γθαξηε®\n\nΝοδε       Νατγθ   \n";
+            return "Πςεσσ κυνπ το σεμεγτ¬\nατταγλ το γθαξηε®\n\nΝοδε      ÿ Νατγθ   \n";
         else
-            return "Πςεσσ κυνπ το σεμεγτ¬\nατταγλ το γθαξηε®\n\n  Νοδε       Ιξδιφιδυαμ\n";
+            return "Πςεσσ κυνπ το σεμεγτ¬\nατταγλ το γθαξηε®\n\n  Νοδε      ÿ Ιξδιφιδυαμ\n";
     }
     else
     {
@@ -71,25 +71,25 @@ string (float value) options_sztimelimit =
     if (self.t_length == 1)
     {
         if (value == 0)
-            return "Τινεμινιτ  °       \n";
+            return "Τινεμινιτ ÿ °       \n";
         else if (value <= 5)
-            return "Τινεμινιτ  µ       \n";
+            return "Τινεμινιτ ÿ µ       \n";
         else if (value <= 10)
-            return "Τινεμινιτ  ±°      \n";
+            return "Τινεμινιτ ÿ ±°      \n";
         else if (value <= 15)
-            return "Τινεμινιτ  ±µ      \n";
+            return "Τινεμινιτ ÿ ±µ      \n";
         else if (value <= 20)
-            return "Τινεμινιτ  ²°      \n";
+            return "Τινεμινιτ ÿ ²°      \n";
         else if (value <= 25)
-            return "Τινεμινιτ  ²µ      \n";
+            return "Τινεμινιτ ÿ ²µ      \n";
         else if (value <= 30)
-            return "Τινεμινιτ  ³°      \n";
+            return "Τινεμινιτ ÿ ³°      \n";
         else if (value <= 40)
-            return "Τινεμινιτ  ΄°      \n";
+            return "Τινεμινιτ ÿ ΄°      \n";
         else if (value <= 50)
-            return "Τινεμινιτ  µ°      \n";
+            return "Τινεμινιτ ÿ µ°      \n";
         else
-            return "Τινεμινιτ  ¶°      \n";
+            return "Τινεμινιτ ÿ ¶°      \n";
     }
     else
     {
@@ -126,17 +126,17 @@ string (float value) options_szfraglimit =
     if (self.t_length == 2)
     {
         if (value == 0)
-            return "Ζςαημινιτ  °       \n";
+            return "Ζςαημινιτ ÿ °       \n";
         else if (value <= 10)
-            return "Ζςαημινιτ  ±°      \n";
+            return "Ζςαημινιτ ÿ ±°      \n";
         else if (value <= 20)
-            return "Ζςαημινιτ  ²°      \n";
+            return "Ζςαημινιτ ÿ ²°      \n";
         else if (value <= 30)
-            return "Ζςαημινιτ  ³°      \n";
+            return "Ζςαημινιτ ÿ ³°      \n";
         else if (value <= 40)
-            return "Ζςαημινιτ  ΄°      \n";
+            return "Ζςαημινιτ ÿ ΄°      \n";
         else
-            return "Ζςαημινιτ  µ°      \n";
+            return "Ζςαημινιτ ÿ µ°      \n";
     }
     else
     {
@@ -165,21 +165,21 @@ string (float value) options_szovertime =
     if (self.t_length == 2)
     {
         if (value == -1)
-            return "    Οφεςτινε   Συδδεξ Δεατθ\n";
+            return "    Οφεςτινε  ÿ Συδδεξ Δεατθ\n";
         else if (value == 0)
-            return "Οφεςτινε   Δισαβμεδ\n";
+            return "Οφεςτινε  ÿ Δισαβμεδ\n";
         else if (value == 1)
-            return "Οφεςτινε   ±       \n";
+            return "Οφεςτινε  ÿ ±       \n";
         else if (value == 2)
-            return "Οφεςτινε   ²       \n";
+            return "Οφεςτινε  ÿ ²       \n";
         else if (value == 3)
-            return "Οφεςτινε   ³       \n";
+            return "Οφεςτινε  ÿ ³       \n";
         else if (value == 4)
-            return "Οφεςτινε   ΄       \n";
+            return "Οφεςτινε  ÿ ΄       \n";
         else if (value == 5)
-            return "Οφεςτινε   µ       \n";
+            return "Οφεςτινε  ÿ µ       \n";
         else if (value == 10)
-            return "Οφεςτινε   ±°      \n";
+            return "Οφεςτινε  ÿ ±°      \n";
     }
     else
     {
@@ -213,11 +213,11 @@ string (float gibs) options_szgibs =
     if (self.t_length == 3)
     {
         if (gibs == OPTIONS_NO_GIBS)
-            return "Ηιβσ       Δισαβμεδ\n";
+            return "Ηιβσ      ÿ Δισαβμεδ\n";
         else if (gibs == OPTIONS_LOW_GIBS)
-            return "Ηιβσ       Μοχ     \n";
+            return "Ηιβσ      ÿ Μοχ     \n";
         else
-            return "Ηιβσ       Θιηθ    \n";
+            return "Ηιβσ      ÿ Θιηθ    \n";
     }
     else
     {
@@ -241,11 +241,11 @@ string (float value) options_szteamplay =
     if (self.t_length == 4)
     {
         if (value == 0)
-            return "Τεανπμαω   °       \n";
+            return "Τεανπμαω  ÿ °       \n";
         else if (value == 1)
-            return "Τεανπμαω   ±       \n";
+            return "Τεανπμαω  ÿ ±       \n";
         else
-            return "Τεανπμαω   ²       \n";
+            return "Τεανπμαω  ÿ ²       \n";
     }
     else
     {
@@ -269,11 +269,11 @@ string (float value) options_sznoexit =
     if (self.t_length == 5)
     {
         if (value == 0)
-            return "Ξοεψιτ     °       \n";
+            return "Ξοεψιτ    ÿ °       \n";
         else if (value == 1)
-            return "Ξοεψιτ     ±       \n";
+            return "Ξοεψιτ    ÿ ±       \n";
         else
-            return "Ξοεψιτ     ²       \n";
+            return "Ξοεψιτ    ÿ ²       \n";
     }
     else
     {
@@ -299,23 +299,23 @@ string (float value) options_szpausable =
     if (self.t_length == 6)
     {
         if (value)
-            return "Παυσαβμε   Ωεσ     \nΝοςε®®              \n        Δοξε";
+            return "Παυσαβμε  ÿ Ωεσ     \nΝοςε®®              \n        Δοξε";
         else
-            return "Παυσαβμε   Ξο      \nΝοςε®®              \n        Δοξε";
+            return "Παυσαβμε  ÿ Ξο      \nΝοςε®®              \n        Δοξε";
     }
     else if (self.t_length == 7)
     {
         if (value)
-            return "Παυσαβμε    Ωεσ     \nΝοςε®®             \n        Δοξε";
+            return "Παυσαβμε    Ωεσ     \nΝοςε®®    ÿ         \n        Δοξε";
         else
-            return "Παυσαβμε    Ξο      \nΝοςε®®             \n        Δοξε";
+            return "Παυσαβμε    Ξο      \nΝοςε®®    ÿ         \n        Δοξε";
     }
     else if (self.t_length == 8)
     {
         if (value)
-            return "Παυσαβμε    Ωεσ     \nΝοςε®®              \n       Δοξε";
+            return "Παυσαβμε    Ωεσ     \nΝοςε®®              \n      ÿ Δοξε";
         else
-            return "Παυσαβμε    Ξο      \nΝοςε®®              \n       Δοξε";
+            return "Παυσαβμε    Ξο      \nΝοςε®®              \n      ÿ Δοξε";
     }
     else
     {
@@ -337,11 +337,11 @@ string (float value) options_szdeathmatch =
     if (self.t_length == 18)
     {
         if (value == 1)
-            return "Δεατθνατγθ  ±       \n";
+            return "Δεατθνατγθ ÿ ±       \n";
         else if (value == 2)
-            return "Δεατθνατγθ  ²       \n";
+            return "Δεατθνατγθ ÿ ²       \n";
         else if (value == 3)
-            return "Δεατθνατγθ  ³       \n";
+            return "Δεατθνατγθ ÿ ³       \n";
     }
     else
     {
@@ -365,17 +365,17 @@ string (float value) options_szticrate =
     if (self.t_length == 19)
     {
         if (value <= 0.05)
-            return "Τιγςατε     °®°µ    \n";
+            return "Τιγςατε    ÿ °®°µ    \n";
         else if (value <= 0.06)
-            return "Τιγςατε     °®°¶    \n";
+            return "Τιγςατε    ÿ °®°¶    \n";
         else if (value <= 0.07)
-            return "Τιγςατε     °®°·    \n";
+            return "Τιγςατε    ÿ °®°·    \n";
         else if (value <= 0.08)
-            return "Τιγςατε     °®°Έ    \n";
+            return "Τιγςατε    ÿ °®°Έ    \n";
         else if (value <= 0.09)
-            return "Τιγςατε     °®°Ή    \n";
+            return "Τιγςατε    ÿ °®°Ή    \n";
         else
-            return "Τιγςατε     °®±     \n";
+            return "Τιγςατε    ÿ °®±     \n";
     }
     else
     {
@@ -405,9 +405,9 @@ string (float value) options_szquad =
     if (self.t_length == 20)
     {
         if (!value)
-            return "Ρυαδ        Εξαβμεδ \n";
+            return "Ρυαδ       ÿ Εξαβμεδ \n";
         else
-            return "Ρυαδ        Δισαβμεδ\n";
+            return "Ρυαδ       ÿ Δισαβμεδ\n";
     }
     else
     {
@@ -429,9 +429,9 @@ string (float value) options_szpent =
     if (self.t_length == 21)
     {
         if (!value)
-            return "Πεξταηςαν   Εξαβμεδ \n";
+            return "Πεξταηςαν  ÿ Εξαβμεδ \n";
         else
-            return "Πεξταηςαν   Δισαβμεδ\n";
+            return "Πεξταηςαν  ÿ Δισαβμεδ\n";
     }
     else
     {
@@ -453,16 +453,16 @@ string (float value) options_szring =
     if (self.t_length == 22)
     {
         if (!value)
-            return "Òιξη        Εξαβμεδ \n";
+            return "ÿιξη       ÿ Εξαβμεδ \n";
         else
-            return "Òιξη        Δισαβμεδ\n";
+            return "ÿιξη       ÿ Δισαβμεδ\n";
     }
     else
     {
         if (!value)
-            return "Òιξη         Εξαβμεδ \n";
+            return "ÿιξη         Εξαβμεδ \n";
         else
-            return "Òιξη         Δισαβμεδ\n";
+            return "ÿιξη         Δισαβμεδ\n";
     }
     return "";    
 };
@@ -479,16 +479,16 @@ string (float value) options_szmode_vote =
     if (self.t_length == 23)
     {
         if (value)
-            return "Νοδε Φοτε   Εξαβμεδ \n         Βαγλ\n";
+            return "Νοδε Φοτε  ÿ Εξαβμεδ \n         Βαγλ\n";
         else
-            return "Νοδε Φοτε   Δισαβμεδ\n         Βαγλ\n";
+            return "Νοδε Φοτε  ÿ Δισαβμεδ\n         Βαγλ\n";
     }
     else if (self.t_length == 24)
     {
         if (value)
-            return "Νοδε Φοτε    Εξαβμεδ \n        Βαγλ\n";
+            return "Νοδε Φοτε    Εξαβμεδ \n       ÿ Βαγλ\n";
         else
-            return "Νοδε Φοτε    Δισαβμεδ\n        Βαγλ\n";
+            return "Νοδε Φοτε    Δισαβμεδ\n       ÿ Βαγλ\n";
     }
     else
     {
@@ -905,7 +905,7 @@ void () options_finish_setting =
     if ((self.aflag & CLANRING_MODE_VOTE) != (clanring_playmode & CLANRING_MODE_VOTE))
 		utils_toggle_sflag(CLANRING_MODE_VOTE, "Mode voting"); // mode vote has changed
     if (self.pos1_z != mode)
-        votables_request_set_gametype_mode_map(-1, self.pos1_z, "");
+        votables_request_set_gametype_mode_map(-1, self.pos1_z, 0);
 
     self.style = self.style - CLANRING_SETTING_OPTIONS;
     self.style = self.style - (self.style & CLANRING_OK_TO_SHOOT);

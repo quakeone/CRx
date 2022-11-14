@@ -20,7 +20,6 @@ void () clan_arena_init_world =
     boss.ammo_rockets	= 50;
     boss.ammo_cells  	= 30;
     boss.items = ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
-    boss.quadtime = 0;
     boss.weapon = IT_ROCKET_LAUNCHER;// W_BestWeapon();
 
 	boss.timetofight 	= FALSE;
@@ -50,7 +49,7 @@ void () arena_main_loop =
 	{
 		if (number_teams () > 1)
 		{
-			local float round_is_over = FALSE, spawn_quad = FALSE;
+			local float round_is_over = FALSE;
 			local float team_alive = 0;
 			local entity e;
 
@@ -63,8 +62,8 @@ void () arena_main_loop =
 					{
 						team_alive += 1;
 
-						if (e.teamalive == 1 && e.teamtotal > 1)
-							spawn_quad = TRUE;
+						// if (e.teamalive == 1 && e.teamtotal > 1)
+						// 	spawn_quad = TRUE;
 					}
 					e = e.next_team;
 				}
@@ -73,10 +72,7 @@ void () arena_main_loop =
 					round_is_over = TRUE;
 				else
 				{
-					if (spawn_quad == TRUE)
-						wipeout_try_spawn_quad();
-					else
-						wipeout_try_spawn_item();
+					wipeout_try_spawn_item();
 				}
 			}
 			else 
@@ -164,7 +160,7 @@ void () arena_main_loop =
 			{
 				if (boss.count == 0)
 				{
-					sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
+					sound (world, CHAN_ITEM, "crx/fight.wav", 1, ATTN_NONE);
 					//ctprint ("\bFIGHT!");
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
@@ -176,17 +172,17 @@ void () arena_main_loop =
 				if (boss.count == 1)
 				{
 					//ctprint ("1");
-					sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
+					sound (world, CHAN_ITEM, "crx/one.wav",1, ATTN_NONE);
 				}
 				else if (boss.count == 2)
 				{
 					//ctprint ("2");
-					sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
+					sound (world, CHAN_ITEM, "crx/two.wav", 1, ATTN_NONE);
 				}
 				else if (boss.count == 3)
 				{
 					//ctprint("3");
-					sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
+					sound(world, CHAN_ITEM, "crx/three.wav", 1, ATTN_NONE);
 				}
 				else if ((boss.count == 5) && (boss.round > 1))
 				{

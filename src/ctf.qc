@@ -275,9 +275,7 @@ void() TeamCaptureFlagTouch =
 						{
 							if (new_player_record == 1)
 								sound(world,CHAN_AUTO,"crx/congrats.wav",1,ATTN_NONE);
-							else if (new_player_record == 2)
-								sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
-							else if (new_player_record == 3)
+							else if ((new_player_record == 2) || (new_player_record == 3))
 								sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
 							write_capture_stats();
 						}

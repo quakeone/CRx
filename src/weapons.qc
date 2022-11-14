@@ -506,6 +506,7 @@ void() W_FireRocket =
 	missile.movetype = MOVETYPE_FLYMISSILE;
 	missile.solid = SOLID_BBOX;
 	missile.classname = "missile";
+	missile.dest1 = self.origin;
 
 // set missile speed		
 	makevectors (self.v_angle);

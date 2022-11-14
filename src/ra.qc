@@ -622,7 +622,7 @@ void () rocket_arena_main_loop =
 
 			if (boss.count == 0)
 			{					
-				sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
+				sound (world, CHAN_ITEM, "crx/fight.wav", 1, ATTN_NONE);
 				utils_do_arena_players(arena_fight_and_shoot);
 				boss.timetofight = TRUE;
 				boss.state = CA_MATCH_PLAYING;	
@@ -631,15 +631,15 @@ void () rocket_arena_main_loop =
 			}
 			else if (boss.count == 1)
 			{
-				sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
+				sound (world, CHAN_ITEM, "crx/one.wav",1, ATTN_NONE);
 			}
 			else if (boss.count == 2)
 			{
-				sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
+				sound (world, CHAN_ITEM, "crx/two.wav", 1, ATTN_NONE);
 			}
 			else if (boss.count == 3)
 			{
-				sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
+				sound(world, CHAN_ITEM, "crx/three.wav", 1, ATTN_NONE);
 			}
 			else if (boss.count == 4)
 			{
