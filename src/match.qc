@@ -1457,6 +1457,7 @@ void(entity ghostent) match_restore_ghost =
 		vote_yes();
 };
 
+float request_timelimit;
 //
 //  R E A D Y
 //
@@ -1497,6 +1498,16 @@ void() match_ready =
 
 	self.style = self.style | CLANRING_READY;
 
+	//R00k: adjust timelimit based on team size automatically.
+	if (!(clanring_state & CLANRING_MATCH_STARTED))
+	{
+		if (clanring_timelimit != request_timelimit)//hack to see if we already voted
+		{
+			match_get_maxsize();
+			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;
+			match_show_timelimit();
+		}
+	}
 	// check to see if we need to start the timer
 	if (clanring_numteams > 1 && !(clanring_state & CLANRING_TIMER_STARTED) && match_all_ready())
 	{
@@ -1542,6 +1553,16 @@ void(entity player) match_remove_player =
 		plast.next_team = player.next_team;
 		clanring_numteams = clanring_numteams - 1;
 	}
+	//R00k: adjust timelimit based on team size automatically.
+	if (!(clanring_state & CLANRING_MATCH_STARTED))
+	{
+		if (clanring_timelimit != request_timelimit)//hack to see if we already voted
+		{
+			match_get_maxsize();
+			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;
+			match_show_timelimit();
+		}
+	}	
 };
 
 //
@@ -1552,7 +1573,7 @@ void(entity pteam) match_remove_team =
 	local entity plast;
 
 	plast = clanring_sentinel;
-	while (plast.next_team != pteam) // findprevious team in list
+	while (plast.next_team != pteam) // find previous team in list
 		plast = plast.next_team;
 	plast.next_team = pteam.next_team;  // fix list
 	pqc_erase_team(pteam.height);

@@ -21,6 +21,7 @@ void() LinkPos =
 void() HookVanish =
 {
 	self.owner.hook_out = FALSE;
+	self.owner.hook2 = (self.owner.hook2 - (self.owner.hook2 & HOOK_OUT));	
 
 	if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
 	{

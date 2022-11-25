@@ -446,7 +446,9 @@ void() respawn =
 //	CreateDeadBody (self);//R00k new corpse routine.
 	SetNewParms2 ();
 
-	updatename(self, self.netname);	
+	if (self.style & CLANRING_CONNECTED)
+		updatename(self, self.netname);	//R00k: this is called in the next function; keep?
+
 	
 	PutClientInServer ();
 };
@@ -751,7 +753,8 @@ void() PutClientInServer =
 			
 	DecodeLevelParms ();	
 	
-	updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
+	if (self.style & CLANRING_CONNECTED)
+		updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
 	
 	//in classic mode auto join on connect
 	if (teamplay)
@@ -2014,6 +2017,7 @@ void() ClientDisconnect =
 	self.health 	= 0;
 	self.team 		= 0;
 	self.height 	= 0;
+	self.netname	= string_null;
 };
 
 //

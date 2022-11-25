@@ -179,8 +179,8 @@ void () observer_walk_start =
 	if (!(self.style & CLANRING_HEADS_UP))
 		sprint(self, "type 'headsup' for fullscreen display\n");
 */
-	stuffcmd(self, "setinfo observer walk\n");// woods
-	stuffcmd(self, "setinfo observing off\n");// woods
+	stuffcmd(self, "cmd setinfo observer walk\n");// woods
+	stuffcmd(self, "cmd setinfo observing off\n");// woods
 	if (mode_is_arena())
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
@@ -201,8 +201,8 @@ void () observer_fly_start =
 	self.view_ofs = '0 0 22';
 	self.flags = self.flags | FL_ONGROUND;
 	self.waterlevel = 0;
-	stuffcmd(self, "setinfo observer fly\n");// woods
-	stuffcmd(self, "setinfo observing off\n");// woods
+	stuffcmd(self, "cmd setinfo observer fly\n");// woods
+	stuffcmd(self, "cmd setinfo observing off\n");// woods
 /*
 	stuffcmd(self, "sm0\n");		// CRMOD - smoothing off
 	stuffcmd(self, "v_centerspeed 500\n");
@@ -310,7 +310,7 @@ void () observer_chase_start =
 	observer_set_chase_position();
 	stuffcmd(self, "v_centerspeed 0\n");
 	sprint(self, "chase mode - help-chase for help\n");
-	stuffcmd(self, "setinfo observer chase\n");// woods
+	stuffcmd(self, "cmd setinfo observer chase\n");// woods
 	// CRMOD - auto, tourney
 	if (self.oflags & OBSERVER_GO_AUTO)
 	{
@@ -383,7 +383,7 @@ void () observer_demo_start =
    // if (!(self.style & CLANRING_HEADS_UP))
         //sprint(self, "type 'headsup' for fullscreen display\n");
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
-	stuffcmd(self, "setinfo observer eyecam\n");// woods
+	stuffcmd(self, "cmd setinfo observer eyecam\n");// woods
 
 	self.nextthink = -1;
     self.think = SUB_Null;
@@ -604,8 +604,8 @@ void() observer_end =
 	observer_check_demo_end();
 //	stuffcmd(self, "sm0\n");// CRMOD - smoothing off
 //	stuffcmd(self, "v_centerspeed 500\n");
-	stuffcmd(self, "setinfo observer off\n");// woods
-	stuffcmd(self, "setinfo observing off\n");// woods
+	stuffcmd(self, "cmd setinfo observer off\n");// woods
+	stuffcmd(self, "cmd setinfo observing off\n");// woods
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 100\n");
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
@@ -724,7 +724,7 @@ entity (entity e) observer_find_target =
 	while (targ != e && (!targ || (targ.style & CLANRING_OBSERVER) || !(targ.style & CLANRING_CONNECTED)))
 		targ = find(targ, classname, "player");
 
-    stuffcmd(self, "setinfo observing \"");// woods
+    stuffcmd(self, "cmd setinfo observing \"");// woods
     stuffcmd(self, targ.netname);
     stuffcmd(self, "\"\n");
 
@@ -1982,6 +1982,11 @@ void () observer_post_think =
 			observer_update_display();
 	}
 
+	if (self.button0 || self.button2)
+	{
+		clear_afk_status(self);//R00k: this was missing? (6/27/2022)
+	}
+	
     if (self.impulse)
     {
 		self.finaldest_x = time;//R00k

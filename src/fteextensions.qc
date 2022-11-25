@@ -1939,8 +1939,8 @@ void(entity e) makestatic = #69; /*
 
 #endif
 #ifdef SSQC
-void(string mapname, optional string newmapstartspot) changelevel = #70; /*
-		Attempts to change the map to the named map. If 'newmapstartspot' is specified, the state of the current map will be preserved, and the argument will be passed to the next map in the 'startspot' global, and the next map will be loaded from archived state if it was previously visited. If not specified, all archived map states will be purged. */
+//void(string mapname, optional string newmapstartspot) changelevel = #70; /*
+//		Attempts to change the map to the named map. If 'newmapstartspot' is specified, the state of the current map will be preserved, and the argument will be passed to the next map in the 'startspot' global, and the next map will be loaded from archived state if it was previously visited. If not specified, all archived map states will be purged. */
 
 #endif
 #if defined(CSQC) || defined(SSQC)

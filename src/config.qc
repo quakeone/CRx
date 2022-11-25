@@ -415,6 +415,7 @@ void(string command, string value) config_command =
 
 				request_timelimit = console_timelimit;
 				votables_set_timelimit();
+				request_timelimit = 0;//R00k added.
 
 				clanring_set_fraglimit(console_fraglimit);
 				utils_set_cvar("pausable", console_pausable);//why again? we just set this 
