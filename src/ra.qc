@@ -341,7 +341,7 @@ void () ra_leave_queue =
 	remove_player_from_chain(self.next_team, self);
 	remove_player_from_stat_list(self.next_team, self);
 
-	pqc_erase_team(self.next_team.team2);
+	//pqc_erase_team(self.next_team.team2);
 	ra_leave_next_queue(self.next_team);
 	arena_remove_team(self.next_team);
 
@@ -689,8 +689,8 @@ void () rocket_arena_main_loop =
 				boss.state = CA_MATCH_ROUNDSTART;
 				ra_next_player_ready(COLOR_BLUE);
 				ra_next_player_ready(COLOR_RED);
-				pqc_match_reset();
-				find_pqc_teamscore_teams();
+				//pqc_match_reset();
+				//find_pqc_teamscore_teams();
 				announce("prepare to fight");		
 			}
 		}

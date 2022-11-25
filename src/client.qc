@@ -2241,7 +2241,7 @@ void(entity targ, entity attacker) ClientObituary =
 			}
 			else
 			{
-				if ((teamplay == 2) && (targ.team > 0) && (targ.team == attacker.team))
+				if ((teamplay == 2) && !(clanring_playmode & CLANRING_RA_MODE) && (targ.team > 0) && (targ.team == attacker.team))
 				{
 					attacker.mangle_y = attacker.mangle_y + 1;
 							
