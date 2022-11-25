@@ -231,3 +231,92 @@ void() SUB_UseTargets =
 		} while ( 1 );
 	}
 };
+
+/*
+================
+SUB_DislodgeRestingEntities
+
+This clears the FL_ONGROUND flag from any entities that are on top of
+self.
+
+The engine does not update the FL_ONGROUND flag automatically in some
+cases, with the result that certain types of entities can be left
+floating in mid-air if the entity they are resting on is removed from
+under them.  This function is intended to be called in the case where
+self is going to be removed, to ensure that other entities are not left
+floating.  -- iw
+================
+*/
+void() SUB_DislodgeRestingEntities =
+{
+	local entity e;
+
+	e = nextent (world);
+	while (e != world)
+	{
+		if ((e.flags & FL_ONGROUND) && e.groundentity == self)
+			e.flags = e.flags - (e.flags & FL_ONGROUND);
+		e = nextent (e);
+	}
+};
+//------------------------------------------------------------------------//
+//  Drake -- This makes an entity do a think function right now.
+//------------------------------------------------------------------------//
+void(entity ent, void() thinkst) SUB_Think =
+{
+    local   entity  swap;
+
+    swap = self;
+    self = ent;
+    thinkst ();
+    self = swap;
+};
+
+/// from Copper -- dumptruck_ds (orginally found in triggers.qc)
+/*
+================================
+CheckValidTouch
+health and playerhood checks were duplicated everywhere
+added noclip check because Quake's default still-touch-everything noclip is awful
+================================
+*/
+float() CheckValidTouch =
+{
+	if (other.classname != "player")
+		return FALSE;
+	if (other.health <= 0)
+		return FALSE;
+	if (other.movetype == MOVETYPE_NOCLIP)
+		return FALSE;
+	if (self.estate != STATE_ACTIVE)
+		return FALSE;
+	return TRUE;
+}
+float(float a, float b) not = { return a - (a & b); } // fix not issue in client.qc - Copper -- dumptruck_ds
+
+void() SUB_EndWaiting = {
+	self.is_waiting = 0;
+	self.estate = STATE_ACTIVE;
+	if (self.use == SUB_EndWaiting) self.use = self.dormant_use;
+
+	// special case for teleports, makes it ignore the fact that it has a targetname when touched
+	if (self.classname == "trigger_teleport") {
+		self.is_waiting = -1;
+	}
+};
+
+void() SUB_CheckWaiting = {
+	if (self.is_waiting > 0) {
+		self.dormant_use = self.use;
+		self.use = SUB_EndWaiting;
+		self.estate = STATE_INACTIVE;
+
+		dprint("Spawned a waiting ");
+		dprint(self.classname);
+		dprint(" with targetname ");
+		dprint(self.targetname);
+		dprint(" and target ");
+		dprint(self.target);
+		dprint("\n");
+	}
+};

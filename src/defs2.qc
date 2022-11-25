@@ -510,3 +510,26 @@ float CA_MATCH_OVER = 4;
 float CA_MATCH_CLEANUP = 5;
 .float ca_deathcamtime;
 .float arena_packs;
+.float color2; //since we already have .vector color
+
+// spawnflags for func_movewall
+float	MOVEWALL_VISIBLE		= 1;
+float	MOVEWALL_TOUCH			= 2;
+float	MOVEWALL_NONBLOCKING	= 4;
+
+.string targetname2;	// second name
+
+.float is_waiting;	// Supa, triggers, wait until activated before we can trigger?
+
+.string		mdl_debris; //dumptruck_ds
+
+.float		onladder;
+
+.vector mdlsz, centeroffset; // addition by bmFbr for custom model bounding box definition
+
+// entity state
+.float estate;
+.void() dormant_use;
+float STATE_ACTIVE      = 0;
+float STATE_INACTIVE    = 1;
+float STATE_INVISIBLE = 8;

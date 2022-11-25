@@ -442,7 +442,7 @@ entity  activator;              // the entity that activated a trigger or brush
 entity  damage_attacker;        // set by T_Damage
 float   framecount;
 
-// float       skill; // CLANRING_MOD - unused
+float       skill;
 
 //================================================
 
@@ -582,7 +582,7 @@ float   AS_MISSILE              = 4;
 //
 //.float      waitmin, waitmax; // CLANRING_MOD - unused
 //.float      distance;         // CLANRING_MOD - unused
-//.float      volume;           // CLANRING_MOD - unused
+.float      volume;
 
 .float	healamount, healtype; // CLANRING_MOD - moved from items.qc
 
