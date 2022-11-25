@@ -33,14 +33,48 @@ void () dmm4_init_world =
 	boss.busy			= FALSE;
 	boss.aborted 		= FALSE;
 	boss.suddendeath 	= FALSE;
+
+	default_timelimit	= cvar("timelimit"); //set default time for timed matches
 	ca_mvp_entity		= world;
+};
+
+void () dmm4_set_winning_team =
+{
+	local entity 	pteam;
+
+	team_first_place 	= boss;
+	team_second_place 	= boss;
+
+	pteam = boss.next_team;
+
+	while (pteam)
+	{
+		if (pteam.chain_gang)
+		{
+			pteam.wins = pteam.chain_gang.frags;
+
+			if ((team_first_place == boss) || (pteam.wins > team_first_place.wins))
+			{
+				team_second_place = team_first_place;
+				team_first_place = pteam;
+			}
+			else
+			{
+				if ((team_second_place == boss) || (pteam.wins > team_second_place.wins))
+				{
+					team_second_place = pteam;
+				}
+			}
+		}
+		pteam = pteam.next_team;
+	}
 };
 
 void () dmm4_report_winner =
 {
 	local string winnername = "";
 	local float winnerteam = 0;
-    arena_set_winning_team();
+    dmm4_set_winning_team();
 
 	if (team_first_place == world)
 		return;
@@ -170,13 +204,13 @@ void () dmm4_main_loop =
 				if (boss.count == 0)
 				{
 					utils_do_arena_players(arena_restart_player);
-					sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
+					sound (world, CHAN_ITEM, "crx/fight.wav", 1, ATTN_NONE);
 					//ctprint ("\bFIGHT!");
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
 					boss.suddendeath = FALSE;
 					boss.state = CA_MATCH_PLAYING;
-                    clanring_timelimit = cvar("timelimit");
+                    clanring_timelimit = default_timelimit;
                     boss.lip = clanring_timelimit;
                     boss.count = 0;
                     arena_show_timelimit();
@@ -188,24 +222,28 @@ void () dmm4_main_loop =
 				else if (boss.count == 1)
 				{
 					//ctprint ("1");
-					sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
+					sound (world, CHAN_ITEM, "crx/one.wav",1, ATTN_NONE);
 				}
 				else if (boss.count == 2)
 				{
 					//ctprint ("2");
-					sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
+					sound (world, CHAN_ITEM, "crx/two.wav", 1, ATTN_NONE);
 				}
 				else if (boss.count == 3)
 				{
 					//ctprint("3");
-					sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
+					sound(world, CHAN_ITEM, "crx/three.wav", 1, ATTN_NONE);
 				}
 				else if (boss.count == 5)
 				{
-					// respawn all items
+					// reset all items
 					utils_do_items(SUB_regen);
+					utils_do_weapons(SUB_Remove);
+					utils_do_ammo(SUB_Remove);
 					utils_do_item(match_reset_powerup, "item_artifact_invulnerability");
 					utils_do_item(match_reset_powerup, "item_artifact_super_damage");
+					utils_do_item(match_reset_powerup, "item_artifact_envirosuit");
+					utils_do_item(match_reset_powerup, "item_artifact_invisibility");
 
 					announce("prepare to fight");					
 				}
@@ -230,7 +268,7 @@ void () dmm4_main_loop =
 			boss.wait 	= 0;
 			boss.state 	= CA_MATCH_ROUNDSTART;
 
-			clanring_timelimit = cvar("timelimit");
+			clanring_timelimit = default_timelimit;
 
 			//sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
 			sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
@@ -245,7 +283,7 @@ void () dmm4_main_loop =
 				if (clanring_request.noise1 == "\bforce match start\b")
 				Request_Poll_Cleanup();
 
-				clanring_timelimit = cvar("timelimit");
+				clanring_timelimit = default_timelimit;
 
 				boss.wait = time + 5;
 				sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
@@ -406,7 +444,7 @@ void () arena_timer_think =
 	{
 		if (boss.count == 0)
 		{
-			arena_set_winning_team();
+			dmm4_set_winning_team();
 			if (team_first_place.wins == team_second_place.wins)
 			{
 				announce("Sudden Death!!");

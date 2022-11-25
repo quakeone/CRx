@@ -80,30 +80,30 @@ entity () find_item_spawn_spot =
 	return spot;
 };
 
-void (vector vspot) do_spawn_quad =
-{
-	local entity item;
-	item = spawn ();
-	item.origin = vspot;
-	item.classname = "item_artifact_super_damage";
-	item.velocity = '0 0 0';
-	item.noise = "items/damage.wav";
-	item.mdl = "progs/quaddama.mdl";
-	setmodel (item, item.mdl);
-	item.netname = "Quad Damage";
-	item.items = IT_QUAD;
-	setsize (item, '-16 -16 -24', '16 16 32');
-	item.count = item.cnt = 0;
-	item.owner = world;
-	item.height = 0;
-	item.flags = FL_ITEM;
-	item.solid = SOLID_TRIGGER;
-	item.movetype = MOVETYPE_TOSS;
-	item.touch = powerup_touch;
-	item.nextthink = time + 30;
-	item.think = SUB_Remove;
-	sound (item, CHAN_VOICE, "crx/itembk3.wav", 1, ATTN_NORM);
-};
+// void (vector vspot) do_spawn_quad =
+// {
+// 	local entity item;
+// 	item = spawn ();
+// 	item.origin = vspot;
+// 	item.classname = "item_artifact_super_damage";
+// 	item.velocity = '0 0 0';
+// 	item.noise = "items/damage.wav";
+// 	item.mdl = "progs/quaddama.mdl";
+// 	setmodel (item, item.mdl);
+// 	item.netname = "Quad Damage";
+// 	item.items = IT_QUAD;
+// 	setsize (item, '-16 -16 -24', '16 16 32');
+// 	item.count = item.cnt = 0;
+// 	item.owner = world;
+// 	item.height = 0;
+// 	item.flags = FL_ITEM;
+// 	item.solid = SOLID_TRIGGER;
+// 	item.movetype = MOVETYPE_TOSS;
+// 	item.touch = powerup_touch;
+// 	item.nextthink = time + 30;
+// 	item.think = SUB_Remove;
+// 	sound (item, CHAN_VOICE, "crx/itembk3.wav", 1, ATTN_NORM);
+// };
 
 void() BackpackTouch;
 void (vector vspot) do_spawn_pack =
@@ -111,7 +111,8 @@ void (vector vspot) do_spawn_pack =
 	local float rammo = 0;
 	local entity item;
 	item = spawn();
-	item.origin = vspot - '0 0 24';
+	item.origin = vspot;
+	item.origin_z = item.origin_z - 24;
     item.classname = "item_backpack";
 	rammo = (random() * 2) + 1;
 	if (rammo == 1)
@@ -178,38 +179,38 @@ void () wipeout_try_spawn_item =
 		spot = find_item_spawn_spot();
 		if (spot != world)
 		{
-			if (prnd == 30)
-				do_spawn_health(spot.origin);
-			else
+			// if (prnd == 30)
+			// 	do_spawn_health(spot.origin);
+			// else
 				do_spawn_pack(spot.origin);
 		}
 	}
 };
 
-void () wipeout_try_spawn_quad =
-{
-	local float prnd;
-	local entity spot;
+// void () wipeout_try_spawn_quad =
+// {
+// 	local float prnd;
+// 	local entity spot;
 
-	if (time > boss.quadtime)
-	{
-		prnd = random() * (5 - 0.001);
-		prnd = floor(prnd);
-		if (prnd == 3)
-		{
-			spot = find_item_spawn_spot();
-			if (spot != world)
-			{
-				do_spawn_quad(spot.origin);
-				boss.quadtime = time + 999;
-			}
-		}
-		else
-		{
-			wipeout_try_spawn_item();
-		}
-	}
-};
+// 	if (time > boss.quadtime)
+// 	{
+// 		prnd = random() * (5 - 0.001);
+// 		prnd = floor(prnd);
+// 		if (prnd == 3)
+// 		{
+// 			spot = find_item_spawn_spot();
+// 			if (spot != world)
+// 			{
+// 				do_spawn_quad(spot.origin);
+// 				boss.quadtime = time + 999;
+// 			}
+// 		}
+// 		else
+// 		{
+// 			wipeout_try_spawn_item();
+// 		}
+// 	}
+// };
 
 void () wipeout_init_teams =
 {
@@ -396,5 +397,5 @@ void (float finish_time) wipeout_drop_quad =
 	item.touch = wipeout_drop_quad_touch;
 	item.nextthink = time + finish_time;
 	item.think = SUB_Remove;
-	boss.quadtime = (item.nextthink + 5);
+	//boss.quadtime = (item.nextthink + 5);
 };

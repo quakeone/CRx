@@ -243,10 +243,17 @@ void() match_gib_player =
 			{
 				// start of match
 				self.frags = 0;
+				self.totalquad = 0;
 				stats_reset_player ();
 			}
 			else
 			{
+				//bucksh0t: add time if player had quad when match ended
+				if ((self.super_damage_finished >= time) && (self.items & IT_QUAD))
+				{
+					self.totalquad += (time - self.quadtime);
+				}
+
 				// end of match
 				remove(self.owner);
 				self.owner = world;
@@ -375,6 +382,72 @@ void() match_check_autoss =
 	clanring_match_timer.nextthink = time + 2;
 };
 
+// void() match_pregame_sound =
+// {
+// 	local float	prnd = floor(random() * 15) + 1;
+//  	if (clanring_maxsize == 1)
+// 	 {
+// 		 if (prnd > 8)
+// 		 	sound (world, CHAN_AUTO, "crx/title.wav", 1, ATTN_NONE);
+// 		return;
+// 	 }
+
+// 	if (prnd == 6)
+// 	{
+// 		sound (world, CHAN_AUTO, "crx/shrtgame.wav", 1, ATTN_NONE);
+// 	}
+// 	else if (prnd == 7)
+// 	{
+// 		sound (world, CHAN_AUTO, "crx/title.wav", 1, ATTN_NONE);
+// 	}
+// 	else if (prnd == 8)
+// 	{
+// 		sound (world, CHAN_AUTO, "crx/takeem.wav", 1, ATTN_NONE);
+// 	}
+// };
+
+void(float score_diff) match_postgame_sound =
+{
+	local float prnd;
+
+	prnd = random();
+	if (prnd < .5)
+	{
+		if (((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 200)) ||
+			(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 40)))
+		{
+			// prnd = random();
+			// if (prnd < .5)
+				sound (world, CHAN_AUTO, "crx/pathetic.wav", 1, ATTN_NONE);
+		}
+		else if (((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff < 50)) ||
+			(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff < 10)))
+		{
+			prnd = random();
+			if (prnd < .5)
+				sound (world, CHAN_AUTO, "crx/rematch1.wav", 1, ATTN_NONE);
+			else
+				sound (world, CHAN_AUTO, "crx/rematch2.wav", 1, ATTN_NONE);
+			// else
+			// 	sound (world, CHAN_AUTO, "crx/wewin.wav", 1, ATTN_NONE);
+		}
+		else
+		{
+			prnd = random();
+			if (prnd < .33)
+				sound (world, CHAN_AUTO, "crx/giveup.wav", 1, ATTN_NONE);
+			else if (prnd < .66)
+				sound (world, CHAN_AUTO, "crx/thatgame.wav", 1, ATTN_NONE);
+			else
+				sound (world, CHAN_AUTO, "crx/gameover.wav", 1, ATTN_NONE);
+		}
+	}
+	else
+	{
+		sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+	}
+};
+
 //
 //  E N D
 //
@@ -436,7 +509,12 @@ void() match_end =
 	if (clanring_first_place.frags == clanring_second_place.frags)
 		announce("Tie game!");
 	else
+	{
 		announce3(clanring_szthe, clanring_first_place.netname, " has won");
+
+		//play post-match sound sometimes
+		match_postgame_sound((clanring_first_place.frags - clanring_second_place.frags));
+	}
 
 	console_show_score();
 	clanring_match_timer.think = match_check_autoss;
@@ -761,7 +839,7 @@ void() match_timer_think1 =
 		if (self.count != 5)
 		{
 			match_bprint_timelimit();
-			bprint("Use 'ôéíåóåô' to change timelimit\n");
+			bprint("Use '\btimeset\b' to change timelimit\n");
 		}
 
 		// respawn all items; reset information
@@ -812,6 +890,11 @@ void() match_timer_think1 =
 						TeamCaptureRegenFlags();// respawn flags
 					
 					clanring_state = clanring_state | CLANRING_NULL_FLAG;
+				}
+				else if (self.count == 6)
+				{
+					//play pre-match sound sometimes
+					//match_pregame_sound();
 				}
 				if (self.count <= 3)
 					sound (world, CHAN_AUTO, "buttons/switch04.wav", 1, ATTN_NONE);
@@ -1255,6 +1338,7 @@ void(entity ghostent) match_restore_ghost =
 	self.captime = ghostent.captime;
 	self.dmg_taken = ghostent.dmg_taken;
 	self.dmg_given = ghostent.dmg_given;
+	self.ewep = ghostent.ewep;
 	self.fpickups = ghostent.fpickups;
 	self.fcaptures = ghostent.fcaptures;
 	self.fdefenses = ghostent.fdefenses;
@@ -2362,6 +2446,7 @@ void(entity player) match_disconnect_notify =
 				self.owner.captime 		= self.captime;
 				self.owner.dmg_taken	= self.dmg_taken;
                	self.owner.dmg_given	= self.dmg_given;
+				self.owner.ewep			= self.ewep;
 //     			self.owner.statstate 	= self.statstate;
                			
 				self.owner.clanring_badstats = self.clanring_badstats;

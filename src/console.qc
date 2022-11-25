@@ -386,7 +386,19 @@ void() console_show_killstats =
 	cprint("\"------------\"\n");
 	cprint("\" frags | enemies | self | teammates | killed | dtk | dgv |     name\"\n");
 	cprint(  "-------+---------+------+-----------+--------+-----+-----+-----------------\n");
-	player = clanring_sentinel.next_player;
+
+	if (mode_is_arena())
+	{
+		if (boss.next_team)
+			player = boss.next_team.next_player;
+		else
+			player = world;
+	}
+	else
+	{
+		player = clanring_sentinel.next_player;
+	}
+
 	while (player)
 	{
 		if (c < 1)
@@ -406,7 +418,21 @@ void() console_show_killstats =
 		localcmd("|");
 		utils_cprint_damage(player.dmg_given);      		
 		localcmd3("| ", player.netname, "\"\n");
-		player = player.next_player;
+
+		if (mode_is_arena())
+		{
+			if (player.next_player)
+				player = player.next_player;
+			else if (boss.next_team)
+				player = boss.next_team.next_player;
+			else
+				player = world;
+		}
+		else
+		{
+			player = player.next_player;
+		}
+
 		c = c - 1;
 	}
 	cprint("\n");
@@ -1744,7 +1770,7 @@ void(float command) console_command =
 		case 14: console_show_pentstats();	break;
 		case 15:
 		{
-			votables_request_set_gametype_mode_map(-1, command - 12, "");
+			votables_request_set_gametype_mode_map(-1, command - 12, 0);
 			break;
 		}
 		case 16: console_show_quadstats();	break;
@@ -2115,5 +2141,31 @@ void () AirshotHighScores_sprint =
 		s4 = "No height records set";
 	}
 	sprint(self, "\bAir Gib Streak Leaders\b:\n", s1, s2, s3, "\bHighest Air Gibs\b:\n", s4, "\n");
+	return;
+};
+
+void () LongRangeGibs_sprint =
+{
+	local string s1="",s2="",s3="",s4="";
+
+	//TODO: update for higher PLAYER_RECORDS_MAX_COUNT?
+	if (playerrecord2[0].statvalue > 0)
+	{
+		s1 = sprintf("\1  %-3s %-16s\n", ftos(rint(playerrecord2[0].statvalue)), playerrecord2[0].player);
+		if (playerrecord2[1].statvalue > 0)
+		{
+			s2 = sprintf("\2  %-3s %-16s\n", ftos(rint(playerrecord2[1].statvalue)), playerrecord2[1].player);
+			if (playerrecord2[2].statvalue > 0)
+			{
+				s3 = sprintf("\3  %-3s %-16s\n", ftos(rint(playerrecord2[2].statvalue)), playerrecord2[2].player);
+			}
+		}
+		s4 = sprintf("%s%s%s",s1,s2,s3);
+	}
+	else
+	{
+		s4 = "No long range records set";
+	}
+	sprint(self, "\bFurthest Rocket Gibs\b:\n", s4, "\n");
 	return;
 };

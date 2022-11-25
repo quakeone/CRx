@@ -823,6 +823,9 @@ void() PutClientInServer =
 	self.watertype 				= CONTENT_EMPTY;
 	self.waterlevel 			= 0;
 	self.velocity 				= '0 0 0';
+	self.killstreak				= 0;
+	self.combo_frags 			= 0;
+	self.combo_time 			= 0;
 	
 	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
@@ -1605,6 +1608,7 @@ void() CheckPowerups =
 				self.items = self.items - (self.items & IT_QUAD);
 				self.super_damage_finished = 0;
 				self.super_time = 0;
+				self.totalquad += (time - self.quadtime);
 				if (!self.invincible_finished)
 				{
 					self.effects = self.effects - (self.effects & EF_DIMLIGHT);
@@ -1614,7 +1618,7 @@ void() CheckPowerups =
 				if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 				{
 					new_player_record = 0;
-					check_player_high_record(self.fragstreak, self.team2, self.netname);
+					check_player_high_record(self.killstreak, self.team2, self.netname);
 					if (new_player_record > 0)
 					{
 						if (new_player_record == 1)
@@ -1681,6 +1685,22 @@ void() CheckPowerups =
 		}
 	}
 };
+
+void () CheckCombos =
+{
+	//local float rnum;
+	if ((self.combo_time) && (time > (self.combo_time + 1)))
+	{
+		if (self.combo_frags > 1)
+		{
+			bprint3("\x90", ftos(self.combo_frags), "-kill combo\x91\n");
+			//no more sounds here
+		}
+
+		self.combo_time = 0;
+		self.combo_frags = 0;
+	}
+}
 
 /*
 ================
@@ -1799,6 +1819,8 @@ void() PlayerPostThink =
 		else
 			self.delayed_impulse = self.impulse;
 	}
+
+	CheckCombos();
 
 	// ELOHIM_NO_POST_THINK is set for gameover, deadflag,
 	// setting options and match paused
@@ -2083,6 +2105,7 @@ void(entity targ, entity attacker) ClientObituary =
 	local float rnum;
 	local string deathstring = "";
 	local string deathstring2 = "";
+	local string deathstring3 = "";
 
 	rnum = random ();
 	if (targ.classname == "player")
@@ -2211,11 +2234,18 @@ void(entity targ, entity attacker) ClientObituary =
 					}
 				}
 				announce2(targ.netname, "  becomes bored with quake");
+				if ((self.super_damage_finished > time) && (self.items & IT_QUAD))
+				{
+					if (rnum < 0.5)
+						sound (world, CHAN_VOICE, "crx/laugh3.wav", 1, ATTN_NONE);
+					else
+						sound (world, CHAN_VOICE, "crx/laugh6.wav", 1, ATTN_NONE);
+				}
 				return;
 			}
 			else
 			{
-				if ((teamplay == 2) && (targ.team > 0) && (targ.team == attacker.team))
+				if ((teamplay == 2) && !(clanring_playmode & CLANRING_RA_MODE) && (targ.team > 0) && (targ.team == attacker.team))
 				{
 					attacker.mangle_y = attacker.mangle_y + 1;
 							
@@ -2511,7 +2541,52 @@ void(entity targ, entity attacker) ClientObituary =
 							}
 						}
 					}
-					announce4(targ.netname, deathstring, attacker.netname, deathstring2);
+					//bucksh0t: add to combo
+					attacker.combo_frags += 1;
+					attacker.combo_time = time;
+
+					//bucksh0t: kill streak
+					if (!(mode_is_arena()))
+					{
+						attacker.killstreak += 1;
+
+						//show quad kill streak instead
+						// if (attacker.killstreak > 1)
+						// 	deathstring3 = sprintf(" (%s)", strings_ftos_gold(attacker.killstreak));
+						// else
+							deathstring3 = "";
+
+						announce5(targ.netname, deathstring, attacker.netname, deathstring2, deathstring3);
+
+						if (attacker.killstreak == 5)
+						{
+							bprint2(attacker.netname, " is on a \bkilling spree\b! \5 kills in a row!\n");
+						}
+						// else if (attacker.killstreak == 10)
+						// {
+						// 	bprint2(attacker.netname, " is \bunstoppable\b! \1\0 kills in a row!\n");
+						// 	//sound(world,CHAN_AUTO,"crx/nostop1.wav",1,ATTN_NONE);
+						// 	//sound (self, CHAN_VOICE, "crx/onfire.wav", 1, ATTN_NORM);
+						// }
+						// else if (attacker.killstreak == 10)
+						// {
+						// 	bprint2(attacker.netname, " has \1\5 kills in a row!\n");
+						// 	//sound(world,CHAN_AUTO,"crx/noenter.wav",1,ATTN_NONE);
+						// }
+						// else if (attacker.killstreak == 20)
+						// {
+						// 	bprint2(attacker.netname, " is \bdominating\b! \2\0 kills in a row!\n");
+						// 	//sound(world,CHAN_AUTO,"crx/king.wav",1,ATTN_NONE);
+						// }
+						else if (attacker.killstreak % 5 == 0)
+						{
+							bprint4(attacker.netname, " has ", strings_ftos_gold(attacker.killstreak), " kills in a row!\n");
+						}
+					}
+					else
+					{
+						announce4(targ.netname, deathstring, attacker.netname, deathstring2);
+					}
 				}
 			}
 			return;
@@ -2594,7 +2669,7 @@ void(entity targ, entity attacker) ClientObituary =
 
 void(string cmd) SV_ParseClientCommand =
 {
-    local float args, modecmd;
+    local float args, modecmd, mapnumber=0;
     local string arg0 = "", arg1 = "", arg2 = "";
 
     args = tokenize(cmd);
@@ -2617,17 +2692,19 @@ void(string cmd) SV_ParseClientCommand =
 					return;
 				}
 
-				if (found_in_warp_list(arg2))
-					votables_request_set_gametype_mode_map(0, modecmd, arg2);
+				mapnumber = found_in_warp_list(arg2);
+				if (mapnumber)
+					votables_request_set_gametype_mode_map(0, modecmd, mapnumber);
 				else
 					sprint2(self, arg2, " is not a recognized map.\n");
 				return;
 			}
 			else if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)
 				{
-					votables_request_set_gametype_mode_map(0, -1, arg1);
+					votables_request_set_gametype_mode_map(0, -1, mapnumber);
 				}
 				else
 				{
@@ -2637,18 +2714,19 @@ void(string cmd) SV_ParseClientCommand =
 						sprint2(self, arg1, " is not a recognized map or mode.\n");
 						return;
 					}
-					votables_request_set_gametype_mode_map(0, modecmd, "");
+					votables_request_set_gametype_mode_map(0, modecmd, 0);
 				}
 				return;
 			}
-			votables_request_set_gametype_mode_map(0, -1, "");
+			votables_request_set_gametype_mode_map(0, -1, 0);
 			return;
 		case "ffa":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)
 				{
-					votables_request_set_gametype_mode_map(0, 0, arg1);
+					votables_request_set_gametype_mode_map(0, 0, mapnumber);
 				}
 				else
 				{
@@ -2656,7 +2734,7 @@ void(string cmd) SV_ParseClientCommand =
 				}
 				return;
 			}
-			votables_request_set_gametype_mode_map(0, 0, "");
+			votables_request_set_gametype_mode_map(0, 0, 0);
 			return;
     	case "ctf":
 			if (arg2 != "")
@@ -2668,17 +2746,19 @@ void(string cmd) SV_ParseClientCommand =
 					return;
 				}
 
-				if (found_in_warp_list(arg2))
-					votables_request_set_gametype_mode_map(1, modecmd, arg2);
+				mapnumber = found_in_warp_list(arg2);
+				if (mapnumber)
+					votables_request_set_gametype_mode_map(1, modecmd, mapnumber);
 				else
 					sprint2(self, arg2, " is not a recognized map.\n");
 				return;
 			}
 			else if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)
 				{
-					votables_request_set_gametype_mode_map(1, -1, arg1);
+					votables_request_set_gametype_mode_map(1, -1, mapnumber);
 				}
 				else
 				{
@@ -2688,105 +2768,117 @@ void(string cmd) SV_ParseClientCommand =
 						sprint2(self, arg1, " is not a recognized map or mode.\n");
 						return;
 					}
-					votables_request_set_gametype_mode_map(1, modecmd, "");
+					votables_request_set_gametype_mode_map(1, modecmd, 0);
 				}
 				return;
 			}
-			votables_request_set_gametype_mode_map(1, -1, "");
+			votables_request_set_gametype_mode_map(1, -1, 0);
 			return;
 		case "normal":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))	
-					votables_request_set_gametype_mode_map(-1, 0, arg1);
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(-1, 0, mapnumber);
 				else
 					sprint2(self, arg1, " is not a recognized map.\n");
 				return;
 			}
-			votables_request_set_gametype_mode_map(-1, 0, "");
+			votables_request_set_gametype_mode_map(-1, 0, 0);
 			return;
 		case "practice":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))	
-					votables_request_set_gametype_mode_map(-1, 1, arg1);
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(-1, 1, mapnumber);
 				else
 					sprint2(self, arg1, " is not a recognized map.\n");
 				return;
 			}
-			votables_request_set_gametype_mode_map(-1, 1, "");
+			votables_request_set_gametype_mode_map(-1, 1, 0);
 			return;
 		case "match":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))	
-					votables_request_set_gametype_mode_map(-1, 2, arg1);
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(-1, 2, mapnumber);
 				else
 					sprint2(self, arg1, " is not a recognized map.\n");
 				return;
 			}
-			votables_request_set_gametype_mode_map(-1, 2, "");
+			votables_request_set_gametype_mode_map(-1, 2, 0);
 			return;
 		case "dmm4":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))	
-					votables_request_set_gametype_mode_map(4, -1, arg1);
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(4, -1, mapnumber);
 				else
 					sprint2(self, arg1, " is not a recognized map.\n");
 				return;
 			}
-			votables_request_set_gametype_mode_map(4, -1, "");
+			votables_request_set_gametype_mode_map(4, -1, 0);
 			return;
 		case "airshot":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))	
-					votables_request_set_gametype_mode_map(5, -1, arg1);
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(5, -1, mapnumber);
 				else
 					sprint2(self, arg1, " is not a recognized map.\n");
 				return;
 			}
-			votables_request_set_gametype_mode_map(5, -1, "");
+			votables_request_set_gametype_mode_map(5, -1, 0);
 			return;
 		case "wipeout":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))	
-					votables_request_set_gametype_mode_map(6, -1, arg1);
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(6, -1, mapnumber);
 				else
 					sprint2(self, arg1, " is not a recognized map.\n");
 				return;
 			}
-			votables_request_set_gametype_mode_map(6, -1, "");
+			votables_request_set_gametype_mode_map(6, -1, 0);
 			return;
 		case "ca":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))	
-					votables_request_set_gametype_mode_map(2, -1, arg1);
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(2, -1, mapnumber);
 				else
 					sprint2(self, arg1, " is not a recognized map.\n");
 				return;
 			}
-			votables_request_set_gametype_mode_map(2, -1, "");
+			votables_request_set_gametype_mode_map(2, -1, 0);
 			return;
 		case "ra":
 			if (arg1 != "")
 			{
-				if (found_in_warp_list(arg1))	
-					votables_request_set_gametype_mode_map(3, -1, arg1);
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(3, -1, mapnumber);
 				else
 					sprint2(self, arg1, " is not a recognized map.\n");
 				return;
 			}
-			votables_request_set_gametype_mode_map(3, -1, "");
+			votables_request_set_gametype_mode_map(3, -1, 0);
 			return;
 		default:
-			if (found_in_warp_list(arg0))
+			if (arg0 != "")
 			{
-				votables_request_set_gametype_mode_map(-1, -1, arg0);
-				return;
+				mapnumber = found_in_warp_list(arg0);
+				if (mapnumber)
+				{
+					votables_request_set_gametype_mode_map(-1, -1, mapnumber);
+					return;
+				}
 			}
 			break;
 	}

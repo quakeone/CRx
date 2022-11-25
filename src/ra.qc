@@ -341,7 +341,7 @@ void () ra_leave_queue =
 	remove_player_from_chain(self.next_team, self);
 	remove_player_from_stat_list(self.next_team, self);
 
-	pqc_erase_team(self.next_team.team2);
+	//pqc_erase_team(self.next_team.team2);
 	ra_leave_next_queue(self.next_team);
 	arena_remove_team(self.next_team);
 
@@ -622,7 +622,7 @@ void () rocket_arena_main_loop =
 
 			if (boss.count == 0)
 			{					
-				sound (world, CHAN_ITEM, "ra/fight.wav", 1, ATTN_NONE);
+				sound (world, CHAN_ITEM, "crx/fight.wav", 1, ATTN_NONE);
 				utils_do_arena_players(arena_fight_and_shoot);
 				boss.timetofight = TRUE;
 				boss.state = CA_MATCH_PLAYING;	
@@ -631,15 +631,15 @@ void () rocket_arena_main_loop =
 			}
 			else if (boss.count == 1)
 			{
-				sound (world, CHAN_ITEM, "ra/1.wav",1, ATTN_NONE);
+				sound (world, CHAN_ITEM, "crx/one.wav",1, ATTN_NONE);
 			}
 			else if (boss.count == 2)
 			{
-				sound (world, CHAN_ITEM, "ra/2.wav", 1, ATTN_NONE);
+				sound (world, CHAN_ITEM, "crx/two.wav", 1, ATTN_NONE);
 			}
 			else if (boss.count == 3)
 			{
-				sound(world, CHAN_ITEM, "ra/3.wav", 1, ATTN_NONE);
+				sound(world, CHAN_ITEM, "crx/three.wav", 1, ATTN_NONE);
 			}
 			else if (boss.count == 4)
 			{
@@ -689,8 +689,8 @@ void () rocket_arena_main_loop =
 				boss.state = CA_MATCH_ROUNDSTART;
 				ra_next_player_ready(COLOR_BLUE);
 				ra_next_player_ready(COLOR_RED);
-				pqc_match_reset();
-				find_pqc_teamscore_teams();
+				//pqc_match_reset();
+				//find_pqc_teamscore_teams();
 				announce("prepare to fight");		
 			}
 		}

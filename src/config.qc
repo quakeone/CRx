@@ -602,6 +602,10 @@ void () read_capture_stats =
 {
 	read_player_stats(sprintf("%s_captimes.crx", mapname), RECORD_LOW, 0);
 };
+void () read_longrange_stats =
+{
+	read_player_stats("longrange.crx", RECORD_HIGH, 2);
+};
 void () read_airshot_stats =
 {
 	read_player_stats("airshot_streak.crx", RECORD_HIGH, 0);
@@ -662,6 +666,10 @@ void (string filename, float recordset) write_player_stats =
 void () write_capture_stats =
 {
 	write_player_stats(sprintf("%s_captimes.crx", mapname), 0);
+};
+void () write_longrange_stats =
+{
+	write_player_stats("longrange.crx", 2);
 };
 void () write_airshot_height_stats =
 {
@@ -725,16 +733,21 @@ void() clanring_exec_configs =
 
 	clanring_main_config();
 	clanring_warp_config();
-//	clanring_map_config();//(FIXME)
+	clanring_map_config();
 //	clanring_ent_config();//(FIXME)
 //	clanring_cam_config();//(FIXME)
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
 		read_capture_stats();
 	}
-	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	
+	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
 		read_airshot_stats();
+	}
+	else
+	{
+		read_longrange_stats();
 	}
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))

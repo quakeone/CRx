@@ -89,11 +89,87 @@ string (float t_teamcolor) get_team_letter =
 	return " ";
 };
 
-void() TeamCapturePlayerUpdate =
+string() TeamCaptureFlagStatusString =
 {
 	local entity e;
-	local string n="";
-	local string t="";
+	local string s2="";
+	local string s3="";
+
+	e = find(world, classname, "item_flag_team1");
+	if ((e.cnt == FLAG_AT_BASE))
+	{
+		s2 = " ";
+	}
+	else
+	{
+		if ((e.cnt == FLAG_CARRIED))
+		{
+			s2 = "r";
+		}
+		else
+		{
+			s2 = "ò";
+		}
+	}
+	e = find(world, classname, "item_flag_team2");
+	if ((e.cnt == FLAG_AT_BASE))
+	{
+		s3 = " Ÿ";
+	}
+	else
+	{
+		if ((e.cnt == FLAG_CARRIED))
+		{
+			s3 = "bŸ";
+		}
+		else
+		{
+			s3 = "âŸ";
+		}
+	}
+
+	return sprintf("%s%s", s2, s3);
+};
+
+string() TeamCaptureScoreString =
+{
+	local string t="",n="";
+
+	if (((teamscr1 == 0) && (teamscr2 == 0)))
+	{
+		return "                              ";
+	}
+
+	if ((teamscr1 > teamscr2))
+	{
+		if ((teamscr1 - teamscr2) > 99)
+			t = "                   òåä ";
+		else
+			t = "                    òåä ";
+		n = ftos((teamscr1 - teamscr2));
+	}
+	else
+	{
+		if ((teamscr1 < teamscr2))
+		{
+			if ((teamscr2 - teamscr1) > 99)
+				t = "                  âìõå ";
+			else
+				t = "                   âìõå ";
+			n = ftos((teamscr2 - teamscr1));
+		}
+		else
+		{
+			t = "                   tied ";
+			n = "";
+		}
+	}
+
+	return sprintf("%s%s", t, n);
+};
+
+void() TeamCapturePlayerUpdate =
+{
 	local string s1="";
 	local string s2="";
 	local string s3="";
@@ -121,6 +197,7 @@ void() TeamCapturePlayerUpdate =
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
 
+	//avoid printing flag status while captimes are displayed with centerprint
 	if (self.leaderboardtime > time)
 	{
 		if ((clanring_state & CLANRING_MATCH_STARTED) || (clanring_state & CLANRING_TIMER_STARTED))
@@ -157,96 +234,39 @@ void() TeamCapturePlayerUpdate =
 
 	if ((self.player_flag & ITEM_RUNE1_FLAG))
 	{
-		s1 = "òåóéóô   ";
+		s1 = "òåóéóô   ";
 	}
 	else
 	{
 		if ((self.player_flag & ITEM_RUNE2_FLAG))
 		{
-			s1 = "óôòåîçôè ";
+			s1 = "óôòåîçôè ";
 		}
 		else
 		{
 			if ((self.player_flag & ITEM_RUNE3_FLAG))
 			{
-				s1 = "èáóôå    ";
+				s1 = "èáóôå    ";
 			}
 			else
 			{
 				if ((self.player_flag & ITEM_RUNE4_FLAG))
 				{
-					s1 = "òåçåî    ";
+					s1 = "òåçåî    ";
 				}
 				else
 				{
-					s1 = "         ";
+					s1 = "         ";
 				}
 			}
 		}
 	}
-	e = find(world, classname, "item_flag_team1");
-	if ((e.cnt == FLAG_AT_BASE))
-	{
-		s2 = " ";
-	}
-	else
-	{
-		if ((e.cnt == FLAG_CARRIED))
-		{
-			s2 = "r";
-		}
-		else
-		{
-			s2 = "ò";
-		}
-	}
-	e = find(world, classname, "item_flag_team2");
-	if ((e.cnt == FLAG_AT_BASE))
-	{
-		s3 = " Ÿ";
-	}
-	else
-	{
-		if ((e.cnt == FLAG_CARRIED))
-		{
-			s3 = "bŸ";
-		}
-		else
-		{
-			s3 = "âŸ";
-		}
-	}
-	if (((teamscr1 == 0) && (teamscr2 == 0)))
-	{
-		centerprint (self, res, s1, s2, s3, "                              ");
-		return;
-	}
 
-	if ((teamscr1 > teamscr2))
-	{
-		if ((teamscr1 - teamscr2) > 99)
-			t = "                   òåä ";
-		else
-			t = "                    òåä ";
-		n = ftos((teamscr1 - teamscr2));
-	}
-	else
-	{
-		if ((teamscr1 < teamscr2))
-		{
-			if ((teamscr2 - teamscr1) > 99)
-				t = "                  âìõå ";
-			else
-				t = "                   âìõå ";
-			n = ftos((teamscr2 - teamscr1));
-		}
-		else
-		{
-			t = "                   tied ";
-			n = "";
-		}
-	}
-	centerprint (self, res, s1, s2, s3, t, n);
+	s2 = TeamCaptureFlagStatusString();
+
+	s3 = TeamCaptureScoreString();
+
+	centerprint (self, res, s1, s2, s3);
 };
 
 string (float nexttime) get_nextspawn_string =

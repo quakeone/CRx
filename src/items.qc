@@ -281,15 +281,20 @@ void() health_touch =
 			other.items = other.items | IT_SUPERHEALTH;
 	
 			//Set this megahealth's respawn to default 125 seconds.
-			if (deathmatch != 2 && deathmatch != 4)	// deathmatch 2 is silly old rules
+			if (deathmatch != 2 && deathmatch != 4 && deathmatch != 5)	// deathmatch 2 is silly old rules
 			{
 				self.nextthink = time + self.healamount + 25;	// delay (5) + health + respawn wait (20)
+				self.think = SUB_regen;
+			}
+			else if (deathmatch == 4 && mapname == "ctf8dmm4")
+			{
+				self.nextthink = time + 25;	//bucksh0t: trying this out
 				self.think = SUB_regen;
 			}
 		}
 		else
 		{
-			if (deathmatch != 2)
+			if (deathmatch != 2 && deathmatch != 4 && deathmatch != 5)
 			{
 				self.nextthink = time + 20;
 				self.think = SUB_regen;
@@ -403,7 +408,7 @@ void() armor_touch =
 		self.solid 			= SOLID_NOT;
 		self.model 			= string_null;
 
-		if (deathmatch != 2 && deathmatch != 4)
+		if (deathmatch != 2 && deathmatch != 4 && deathmatch != 5)
 			self.nextthink = time + 20;
 		
 		self.think= SUB_regen;
@@ -1078,14 +1083,7 @@ void() powerup_touch =
 	sprint(other,"\n");
 	stuffcmd(other, "bf\n");
 
-	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-	{
-		if ((self.items == IT_QUAD) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0))
-			boss.quadtime = time + 35;
-		else
-			return;
-	}
-	else if (deathmatch != 2 && deathmatch != 4)	// R00k
+	if (deathmatch != 2 && deathmatch != 4 && deathmatch != 5)	// R00k
 	{
 		self.mdl = self.model;
 		
@@ -1174,6 +1172,7 @@ void() powerup_touch =
 
 		// CRMOD - stats
 		other.clanring_qdwep_z = other.clanring_qdwep_z + 1;
+		other.quadtime = time;
 		if (other.next_team != world)
 		{
 			other.next_team.dest2_x = other.next_team.dest2_x + 1;
@@ -1274,7 +1273,7 @@ PLAYER BACKPACKS
 void() BackpackTouch =
 {
 	local string s;
-	local float best, new, acount, rnd;
+	local float best, new, acount;
 	local entity stemp;
 
 	if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
@@ -1291,21 +1290,10 @@ void() BackpackTouch =
 
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
-		rnd = floor((random() * 8) + 1);
-		if (rnd == 5)
+		other.arena_packs += 1;
+		if (other.arena_packs == 5)
 		{
-			bprint(other.netname);
-			bprint(" got pent protection\n");
-			stuffcmd(other, "bf\n");
-			sound (other, CHAN_ITEM, "items/protect.wav", 1, ATTN_NORM);
-			other.invincible_time = 1;
-			other.invincible_finished = time + 15;
-			other.effects = other.effects | EF_DIMLIGHT;
-			other.effects = other.effects | EF_RED;
-			other.items = other.items | IT_INVULNERABILITY;
-		}
-		else if (rnd > 5)
-		{
+			other.arena_packs = 0;
 			bprint(other.netname);
 			bprint(" is invisible\n");
 			stuffcmd(other, "bf\n");
@@ -1322,7 +1310,6 @@ void() BackpackTouch =
 			if (other.health > 300)
 				other.health = 300;
 		}
-		//other.arenapacks += 1;
 		// remove the backpack, change self to the player
 		remove(self);
 		self = other;

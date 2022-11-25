@@ -192,6 +192,7 @@ float intermission_exittime;        // moved here from Client.qc
 .float teamalive;
 .float teamtotal;
 .float quadtime;
+.float totalquad;
 
 entity 	clanring_best_chase_target;		// calculated every second who is the best target to chase // CRMOD - auto
 entity 	clanring_current_chase_target;
@@ -440,13 +441,16 @@ entity boss;
 .float dmg_given;
 .float dmg_given_round;
 .float dmg_cache;
+.float ewep;
 .float round;
 .float max_rounds;
 .float max_players;
 .float start_players;
 .float ca_player_flag;
 .float airborn_pos;
-.float fragstreak;
+.float killstreak;
+.float combo_time;
+.float combo_frags;
 
 .float busy;
 .float aborted;
@@ -505,3 +509,4 @@ float CA_MATCH_PLAYING = 3;
 float CA_MATCH_OVER = 4;
 float CA_MATCH_CLEANUP = 5;
 .float ca_deathcamtime;
+.float arena_packs;

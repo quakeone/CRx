@@ -1121,6 +1121,14 @@ void (void () dofunc) utils_do_weapons =
     utils_do_item(dofunc, "weapon_lightning");
 };
 
+void (void () dofunc) utils_do_ammo =
+{
+    utils_do_item(dofunc, "item_shells");
+    utils_do_item(dofunc, "item_spikes");
+    utils_do_item(dofunc, "item_rockets");
+    utils_do_item(dofunc, "item_cells");
+}
+
 //
 //  D O  P R O J E C T I L E S
 //
@@ -1425,6 +1433,10 @@ vector (vector m1, vector m2) Rvec =
 float(string maparg) found_in_warp_list =
 {
 	local float ep_index, index, n, mapfound = FALSE;
+
+	if (maparg == "")
+		return FALSE;
+
 	for (ep_index = 1; ep_index < 16; ep_index += 1)
 	{
 		for (index = 1 ; index < 16 ; index += 1)
@@ -1432,7 +1444,7 @@ float(string maparg) found_in_warp_list =
 			n = (ep_index * 15) + index;
 			if (warpmap[n].name != "" && warpmap[n].name == maparg)
 			{
-				mapfound = TRUE;
+				mapfound = n;
 				break;
 			}
 		}
