@@ -22,7 +22,7 @@ float DOOR_DONT_LINK  	= 4;
 float DOOR_GOLD_KEY		= 8;
 float DOOR_SILVER_KEY   = 16;
 float DOOR_TOGGLE 		= 32;
-
+float DOOR_DOOM_STYLE_UNLOCK = 64;
 /*
 
 Doors are similar to buttons, but can spawn a fat trigger field around them
@@ -492,39 +492,20 @@ Key doors are allways wait -1.
 
 void() func_door =
 {
-	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
-		return;
+	// if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+	// 	return;
+
+	if (self.targetname)
+		dprint(sprintf("MAP DEBUG: spawn func_door with targetname %s\n", self.targetname));
 
 	local string default_noise1;
 	local string default_noise2;
 	entity shadow;
 	entity oldself;
 
-	if (world.worldtype == WORLDTYPE_MEDIEVAL)
-	{
-		precache_sound ("doors/medtry.wav");
-		precache_sound ("doors/meduse.wav");
-		self.noise3 = "doors/medtry.wav";
-		self.noise4 = "doors/meduse.wav";
-	}
-	else if (world.worldtype == WORLDTYPE_METAL)
-	{
-		precache_sound ("doors/runetry.wav");
-		precache_sound ("doors/runeuse.wav");
-		self.noise3 = "doors/runetry.wav";
-		self.noise4 = "doors/runeuse.wav";
-	}
-	else if (world.worldtype == WORLDTYPE_BASE)
-	{
-		precache_sound ("doors/basetry.wav");
-		precache_sound ("doors/baseuse.wav");
-		self.noise3 = "doors/basetry.wav";
-		self.noise4 = "doors/baseuse.wav";
-	}
-	else
-	{
-		dprint ("no worldtype set!\n");
-	}
+// self.noise3 and self.noise4 can now be overridden by the mapper, but
+// will be set to default values in keylock_init if necessary -- iw
+	keylock_init ();
 
 // self.noise1 and self.noise2 can now be overridden by the mapper -- iw
 	default_noise1 = "misc/null.wav";
@@ -570,10 +551,29 @@ void() func_door =
 	self.blocked = door_blocked;
 	self.use = door_use;
 	
-	if (self.spawnflags & DOOR_SILVER_KEY)
-		self.items = IT_KEY1;
-	if (self.spawnflags & DOOR_GOLD_KEY)
-		self.items = IT_KEY2;
+	if (self.spawnflags & DOOR_SILVER_KEY){
+		keylock_set_silver_key ();
+		
+		if (self.keyname != "") {
+			self.netname = self.keyname;
+			self.keyname = "";
+		}
+	}
+	if (self.spawnflags & DOOR_GOLD_KEY){
+		keylock_set_gold_key ();
+
+		if (self.keyname != "") {
+			self.netname = self.keyname;
+			self.keyname = "";
+		}
+	}
+
+// support for item_key_custom -- iw
+	if (self.keyname != "")
+	{
+		keylock_set_custom_key (self.keyname);
+		self.keyname = "";  // this should not be referenced again
+	}
 	
 	if (!self.speed)
 		self.speed = 100;
@@ -604,8 +604,16 @@ void() func_door =
 		self.th_die = door_killed;
 	}
 	
-	if (self.items)
-		self.wait = -1;
+	if (self.spawnflags & DOOR_DOOM_STYLE_UNLOCK)
+		self.cnt = 1;
+
+	if (keylock_has_key_set ())
+	{
+		if (!(self.spawnflags & DOOR_DOOM_STYLE_UNLOCK))
+		{
+			self.wait = -1;
+		}
+	}
 		
 	self.touch = door_touch;
 

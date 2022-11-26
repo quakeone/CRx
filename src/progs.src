@@ -35,6 +35,9 @@ vote.qc
 match.qc
 votables.qc
 admin.qc
+keydata.qc
+customsounds.qc //mapper-settable custom sound effects for monsters - iw
+custom_mdls.qc //mapper-settable custom models for monsters - iw
 items.qc
 console.qc
 config.qc
@@ -48,6 +51,7 @@ world.qc
 client.qc
 player.qc
 monsters.qc
+keylock.qc
 doors.qc
 buttons.qc
 triggers.qc

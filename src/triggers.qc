@@ -100,6 +100,13 @@ void() multi_touch =
 	if (other.classname != "player")
 		return;
 
+	// from Copper -- dumptruck_ds
+	if (other.movetype == MOVETYPE_NOCLIP)
+		return;
+
+	if (self.estate != STATE_ACTIVE)
+		return;
+
 // if the trigger has an angles field, check player's facing direction
 	if (self.movedir != '0 0 0')
 	{
@@ -183,6 +190,9 @@ set "message" to text string
 */
 void() trigger_once =
 {
+	if (self.target)
+		dprint(sprintf("MAP DEBUG: spawn trigger_once with target %s\n", self.target));
+
 	self.wait = -1;
 	trigger_multiple();
 };

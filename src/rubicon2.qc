@@ -354,7 +354,7 @@ void () func_breakable_die = {
 	} else {
 		self.origin = ((self.absmin + self.absmax) * 0.5);
 		setorigin (self, self.origin);
-		//DropStuff();  //TODO: bucksh0t, fix?
+		DropStuff();
 		if (self.spawnflags & BREAK_CUSTOM) {
 			if (self.switchshadstyle) lightstyle(self.switchshadstyle, "m");
 			make_breakable_templates_debris ();

@@ -136,6 +136,54 @@ void() DelayThink =
 	remove(self);
 };
 
+/* ### (added targets, killtargets, and targetnames)
+==============================
+SUB_UseTargets
+
+the global "activator" should be set to the entity that initiated the firing.
+
+If self.delay is set, a DelayedUse entity will be created that will actually
+do the SUB_UseTargets after that many seconds have passed.
+
+Centerprints any self.message to the activator.
+
+Removes all entities with a targetname that match self.killtarget,
+or killtarget2, so some events can remove other triggers.
+
+Search for (string)targetname, targetname2, targetname3, and targetname 4
+in all entities that match (string)self.target, self.target2, self.target3,
+or self.target4 and use their .use function.
+==============================
+*/
+void(string matchstring, .string matchfield) SUB_UseSpecificTarget =
+{
+	local entity t, stemp, otemp, act;
+
+	dprint(sprintf("MAP DEBUG: SUB_UseSpecificTarget for %s\n", matchstring));
+
+	act = activator;
+	t = find (world, matchfield, matchstring);
+	while ( t != world )
+	{
+		stemp = self;
+		otemp = other;
+		self = t;
+		other = stemp;
+		if (self.use != SUB_Null)
+		{
+			if (self.use)
+			{
+				lastnameused = matchstring;
+				self.use ();
+			}
+		}
+		self = stemp;
+		other = otemp;
+		activator = act;
+		t = find (t, matchfield, matchstring);
+	}
+};
+
 /*
 ==============================
 SUB_UseTargets
@@ -157,7 +205,7 @@ match (string)self.target and call their .use function
 */
 void() SUB_UseTargets =
 {
-	local entity t, stemp, otemp, act;
+	local entity t;//, stemp, otemp, act;
 
 	if (self.estate != STATE_ACTIVE) return;
 //
@@ -173,7 +221,11 @@ void() SUB_UseTargets =
 		t.enemy = activator;
 		t.message = self.message;
 		t.killtarget = self.killtarget;
+		t.killtarget2 = self.killtarget2;
 		t.target = self.target;
+		t.target2 = self.target2;
+		t.target3 = self.target3;
+		t.target4 = self.target4;
 		return;
 	}
 	
@@ -191,17 +243,6 @@ void() SUB_UseTargets =
 //
 // kill the killtagets
 //
-	// if (self.killtarget)
-	// {
-	// 	t = world;
-	// 	do
-	// 	{
-	// 		t = find (t, targetname, self.killtarget);
-	// 		if (!t)
-	// 			return;
-	// 		remove (t);
-	// 	} while ( 1 );
-	// }
 	if (self.killtarget != "")
 	{
 		t = find(world, targetname, self.killtarget);
@@ -218,20 +259,20 @@ void() SUB_UseTargets =
 			remove(t);
 			t = find(t, targetname2, self.killtarget);
 		}
-		// t = find(world, targetname3, self.killtarget);
-		// while(t != world)
-		// {
-		// 	if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
-		// 	remove(t);
-		// 	t = find(t, targetname3, self.killtarget);
-		// }
-		// t = find(world, targetname4, self.killtarget);
-		// while(t != world)
-		// {
-		// 	if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
-		// 	remove(t);
-		// 	t = find(t, targetname4, self.killtarget);
-		// }
+		t = find(world, targetname3, self.killtarget);
+		while(t != world)
+		{
+			if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+			remove(t);
+			t = find(t, targetname3, self.killtarget);
+		}
+		t = find(world, targetname4, self.killtarget);
+		while(t != world)
+		{
+			if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+			remove(t);
+			t = find(t, targetname4, self.killtarget);
+		}
 	}
 
 //
@@ -253,50 +294,90 @@ void() SUB_UseTargets =
 			remove(t);
 			t = find(t, targetname2, self.killtarget2);
 		}
-		// t = find(world, targetname3, self.killtarget2);
-		// while(t != world)
-		// {
-		// 	if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
-		// 	remove(t);
-		// 	t = find(t, targetname3, self.killtarget2);
-		// }
-		// t = find(world, targetname4, self.killtarget2);
-		// while(t != world)
-		// {
-		// 	if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
-		// 	remove(t);
-		// 	t = find(t, targetname4, self.killtarget2);
-		// }
+		t = find(world, targetname3, self.killtarget2);
+		while(t != world)
+		{
+			if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+			remove(t);
+			t = find(t, targetname3, self.killtarget2);
+		}
+		t = find(world, targetname4, self.killtarget2);
+		while(t != world)
+		{
+			if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+			remove(t);
+			t = find(t, targetname4, self.killtarget2);
+		}
 	}
 
 //
 // fire targets
 //
-	if (self.target)
+// target 1
+	if (self.target != "")
 	{
-		act = activator;
-		t = world;
-		do
-		{
-			t = find (t, targetname, self.target);
-			if (!t)
-			{
-				return;
-			}
-			stemp = self;
-			otemp = other;
-			self = t;
-			other = stemp;
-			if (self.use != SUB_Null)
-			{
-				if (self.use)
-					self.use ();
-			}
-			self = stemp;
-			other = otemp;
-			activator = act;
-		} while ( 1 );
+		SUB_UseSpecificTarget(self.target, targetname);
+		SUB_UseSpecificTarget(self.target, targetname2);
+		SUB_UseSpecificTarget(self.target, targetname3);
+		SUB_UseSpecificTarget(self.target, targetname4);
 	}
+
+// target 2
+	if (self.target2 != "")
+	{
+		SUB_UseSpecificTarget(self.target2, targetname);
+		SUB_UseSpecificTarget(self.target2, targetname2);
+		SUB_UseSpecificTarget(self.target2, targetname3);
+		SUB_UseSpecificTarget(self.target2, targetname4);
+	}
+
+// target 3
+	if (self.target3 != "")
+	{
+		SUB_UseSpecificTarget(self.target3, targetname);
+		SUB_UseSpecificTarget(self.target3, targetname2);
+		SUB_UseSpecificTarget(self.target3, targetname3);
+		SUB_UseSpecificTarget(self.target3, targetname4);
+	}
+
+// target 4
+	if (self.target4 != "")
+	{
+		SUB_UseSpecificTarget(self.target4, targetname);
+		SUB_UseSpecificTarget(self.target4, targetname2);
+		SUB_UseSpecificTarget(self.target4, targetname3);
+		SUB_UseSpecificTarget(self.target4, targetname4);
+	}
+};
+
+/*
+================
+SUB_UseAndForgetTargets
+
+This calls SUB_UseTargets, then clears all of self's fields that cause
+SUB_UseTargets to do things.  The intention is that if SUB_UseTargets
+gets called again in the future, it won't do anything.  Call this
+function if you want an entity to fire its targets just this once, and
+never again.
+
+Note that this function relies on the fact that SUB_UseTargets has
+already been modified to work around the engine bug involving tests of
+the form 'if (string)', i.e. that the tests in SUB_UseTargets are now of
+the form 'if (string != "")'.  -- iw
+================
+*/
+void() SUB_UseAndForgetTargets =
+{
+	SUB_UseTargets ();
+
+	self.delay = 0;
+	self.killtarget = "";
+	self.killtarget2 = "";
+	self.message = "";
+	self.target = "";
+	self.target2 = "";
+	self.target3 = "";
+	self.target4 = "";
 };
 
 /*

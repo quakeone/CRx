@@ -524,9 +524,20 @@ float	MOVEWALL_NONBLOCKING	= 4;
 
 .string		origmodel; // addition by bmFbr for switchable brushes
 
+//
+// support for item_key_custom -- iw
+//
+.string keyname;
+.float customkeys;
+
 .string target2;		// second target's name
+.string target3;		// third target's name
+.string target4;		// fourth target's name
 .string targetname2;	// second name
+.string targetname3;	// third name
+.string targetname4;	// fourth name
 .string killtarget2;	// second target to kill
+string lastnameused;	// the targetname that was last used to trigger somthing
 
 //
 // switchable shadow
@@ -558,7 +569,41 @@ float HEAL_START_ON	= 1;
 float HEAL_PLAYER_ONLY	= 2;
 float HEAL_MONSTER_ONLY	= 4;
 
+// Custom Monster Sounds START -- dumptruck_ds
+
+.string snd_death;
+.string snd_pain;
+.string snd_sight;
+.string snd_attack;
+.string snd_hit;
+.string snd_idle;
+.string snd_land;
+.string snd_move;
+.string snd_misc;
+.string snd_misc1;
+.string snd_misc2;
+.string snd_misc3;
+
+// Custom Monster Sounds END -- dumptruck_ds
+
+// Custom Model Start -- dumptruck_ds
+
+.string mdl_head;
+.string mdl_body;
+.string mdl_proj;
+.string mdl_exproj;
+.float skin_head;
+.float skin_proj;
+.float skin_exproj;
+.string mdl_gib1;
+.string mdl_gib2;
+.string mdl_gib3;
+
 .vector mdlsz, centeroffset; // addition by bmFbr for custom model bounding box definition
+
+// Custom Model End -- dumptruck_ds
+
+.float drop_item; // key DropStuff
 
 // entity state
 .float estate;
@@ -566,3 +611,7 @@ float HEAL_MONSTER_ONLY	= 4;
 float STATE_ACTIVE      = 0;
 float STATE_INACTIVE    = 1;
 float STATE_INVISIBLE = 8;
+
+// worldspawn default mdls
+.string h_vial_mdl;
+.string a_shr_mdl;
