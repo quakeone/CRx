@@ -159,6 +159,7 @@ void() SUB_UseTargets =
 {
 	local entity t, stemp, otemp, act;
 
+	if (self.estate != STATE_ACTIVE) return;
 //
 // check for a delay
 //
@@ -190,18 +191,84 @@ void() SUB_UseTargets =
 //
 // kill the killtagets
 //
-	if (self.killtarget)
+	// if (self.killtarget)
+	// {
+	// 	t = world;
+	// 	do
+	// 	{
+	// 		t = find (t, targetname, self.killtarget);
+	// 		if (!t)
+	// 			return;
+	// 		remove (t);
+	// 	} while ( 1 );
+	// }
+	if (self.killtarget != "")
 	{
-		t = world;
-		do
+		t = find(world, targetname, self.killtarget);
+		while(t != world)
 		{
-			t = find (t, targetname, self.killtarget);
-			if (!t)
-				return;
-			remove (t);
-		} while ( 1 );
+			if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+			remove(t);
+			t = find(t, targetname, self.killtarget);
+		}
+		t = find(world, targetname2, self.killtarget);
+		while(t != world)
+		{
+			if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+			remove(t);
+			t = find(t, targetname2, self.killtarget);
+		}
+		// t = find(world, targetname3, self.killtarget);
+		// while(t != world)
+		// {
+		// 	if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+		// 	remove(t);
+		// 	t = find(t, targetname3, self.killtarget);
+		// }
+		// t = find(world, targetname4, self.killtarget);
+		// while(t != world)
+		// {
+		// 	if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+		// 	remove(t);
+		// 	t = find(t, targetname4, self.killtarget);
+		// }
 	}
-	
+
+//
+// kill the killtaget2 entities
+//
+	if (self.killtarget2 != "")
+	{
+		t = find(world, targetname, self.killtarget2);
+		while(t != world)
+		{
+			if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+			remove(t);
+			t = find(t, targetname, self.killtarget2);
+		}
+		t = find(world, targetname2, self.killtarget2);
+		while(t != world)
+		{
+			if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+			remove(t);
+			t = find(t, targetname2, self.killtarget2);
+		}
+		// t = find(world, targetname3, self.killtarget2);
+		// while(t != world)
+		// {
+		// 	if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+		// 	remove(t);
+		// 	t = find(t, targetname3, self.killtarget2);
+		// }
+		// t = find(world, targetname4, self.killtarget2);
+		// while(t != world)
+		// {
+		// 	if(t.switchshadstyle) lightstyle(t.switchshadstyle, "m");
+		// 	remove(t);
+		// 	t = find(t, targetname4, self.killtarget2);
+		// }
+	}
+
 //
 // fire targets
 //

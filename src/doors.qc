@@ -88,6 +88,9 @@ void() door_hit_bottom =
 
 void() door_go_down =
 {
+	entity shadow;
+	entity oldself;
+
 	sound (self, CHAN_VOICE, self.noise2, 1, ATTN_NORM);
 	if (self.max_health)
 	{
@@ -96,10 +99,30 @@ void() door_go_down =
 	}
 	self.state = STATE_DOWN;
 	SUB_CalcMove (self.pos1, self.speed, door_hit_bottom);
+
+	if(self.switchshadstyle) {
+		shadow = self.shadowcontroller;
+		oldself = self;
+		self = shadow;
+		
+		if(oldself.spawnflags & DOOR_START_OPEN) {
+			shadow_fade_out();
+			shadow.shadowoff = 1;
+		} else {
+			shadow_fade_in();
+			shadow.shadowoff = 0;
+		}
+		
+		self = oldself;
+		
+	}
 };
 
 void() door_go_up =
 {
+	entity shadow;
+	entity oldself;
+
 	if (self.state == STATE_UP)
 		return;		// allready going up
 
@@ -114,6 +137,22 @@ void() door_go_up =
 	SUB_CalcMove (self.pos2, self.speed, door_hit_top);
 
 	SUB_UseTargets();
+
+	if(self.switchshadstyle) {
+		shadow = self.shadowcontroller;
+		oldself = self;
+		self = shadow;
+		
+		if(oldself.spawnflags & DOOR_START_OPEN) {
+			shadow_fade_in();
+			shadow.shadowoff = 0;
+		} else {
+			shadow_fade_out();
+			shadow.shadowoff = 1;
+		}
+		
+		self = oldself;
+	}
 };
 
 
@@ -452,9 +491,22 @@ Key doors are allways wait -1.
 */
 
 void() func_door =
-
 {
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
 
+	local string default_noise1;
+	local string default_noise2;
+	entity shadow;
+	entity oldself;
+
+// self.noise3 and self.noise4 can now be overridden by the mapper, but
+// will be set to default values in keylock_init if necessary -- iw
+	keylock_init ();
+
+// self.noise1 and self.noise2 can now be overridden by the mapper -- iw
+	default_noise1 = "misc/null.wav";
+	default_noise2 = "misc/null.wav";
 	if (world.worldtype == 0)
 	{
 		precache_sound ("doors/medtry.wav");
@@ -516,6 +568,13 @@ void() func_door =
 		self.noise2 = "doors/ddoor1.wav";
 	}
 
+	if (self.noise1 == "")
+		self.noise1 = default_noise1;
+	if (self.noise2 == "")
+		self.noise2 = default_noise2;
+
+	precache_sound (self.noise1);
+	precache_sound (self.noise2);
 
 	SetMovedir ();
 
@@ -572,6 +631,29 @@ void() func_door =
 // the sizes can be detected properly.
 	self.think = LinkDoors;
 	self.nextthink = self.ltime + 0.1;
+
+	// creates a shadow controller entity for the door if it has switchable shadows
+	if(self.switchshadstyle) {
+		
+		shadow = spawn();
+		
+		self.shadowcontroller = shadow;
+		
+		shadow.classname = "misc_shadowcontroller";
+		shadow.switchshadstyle = self.switchshadstyle;
+		shadow.speed = vlen(self.pos2 - self.pos1) / self.speed;
+		
+		if(self.spawnflags & DOOR_START_OPEN) shadow.spawnflags = 1;
+		else shadow.spawnflags = 0;
+		
+		
+		oldself = self;
+		
+		self = shadow;
+		misc_shadowcontroller();
+		
+		self = oldself;
+	}
 };
 
 /*

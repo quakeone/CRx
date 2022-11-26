@@ -356,11 +356,11 @@ void () func_breakable_die = {
 		setorigin (self, self.origin);
 		//DropStuff();  //TODO: bucksh0t, fix?
 		if (self.spawnflags & BREAK_CUSTOM) {
-			//if (self.switchshadstyle) lightstyle(self.switchshadstyle, "m");  //TODO: support switchable shadow?
+			if (self.switchshadstyle) lightstyle(self.switchshadstyle, "m");
 			make_breakable_templates_debris ();
 			remove (self);
 		} else {
-			//if (self.switchshadstyle) lightstyle(self.switchshadstyle, "m");  //TODO: support switchable shadow?
+			if (self.switchshadstyle) lightstyle(self.switchshadstyle, "m");
 			make_breakable_debris ();
 			remove (self);
 		}
@@ -534,7 +534,7 @@ void () func_breakable = {
 		self.th_die = func_breakable_killed;
 	}
 
-	//if (self.switchshadstyle) lightstyle(self.switchshadstyle, "a");  //TODO: support switchable shadow?
+	if (self.switchshadstyle) lightstyle(self.switchshadstyle, "a");
 };
 
 /*

@@ -512,18 +512,41 @@ float CA_MATCH_CLEANUP = 5;
 .float arena_packs;
 .float color2; //since we already have .vector color
 
+// worldtype values
+float	WORLDTYPE_MEDIEVAL		= 0;
+float	WORLDTYPE_METAL			= 1;
+float	WORLDTYPE_BASE			= 2;
+
 // spawnflags for func_movewall
 float	MOVEWALL_VISIBLE		= 1;
 float	MOVEWALL_TOUCH			= 2;
 float	MOVEWALL_NONBLOCKING	= 4;
 
+.string		origmodel; // addition by bmFbr for switchable brushes
+
+.string target2;		// second target's name
 .string targetname2;	// second name
+.string killtarget2;	// second target to kill
+
+//
+// switchable shadow
+//
+.float		switchshadstyle;
+.float		shadowoff;
+.entity shadowcontroller;
+.float speed2;
 
 .float is_waiting;	// Supa, triggers, wait until activated before we can trigger?
 
 .string		mdl_debris; //dumptruck_ds
 
 .float		onladder;
+
+string(float num) lightstyle_fade_lookup; //addition by bmFbr for switchable shadows
+void() misc_shadowcontroller;
+void() misc_shadowcontroller_use;
+void() shadow_fade_in;
+void() shadow_fade_out;
 
 // from Custents
 // variable for healing trigger
