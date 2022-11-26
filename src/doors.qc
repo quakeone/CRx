@@ -492,11 +492,8 @@ Key doors are allways wait -1.
 
 void() func_door =
 {
-	// if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
-	// 	return;
-
-	if (self.targetname)
-		dprint(sprintf("MAP DEBUG: spawn func_door with targetname %s\n", self.targetname));
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
 
 	local string default_noise1;
 	local string default_noise2;

@@ -2078,8 +2078,8 @@ void () clanring_impulse =
 	{
 		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			AirshotHighScores_sprint();
-		else
-			LongRangeGibs_sprint();
+		// else
+		// 	LongRangeGibs_sprint();
 
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 			CaptureHighScores_sprint();

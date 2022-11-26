@@ -159,8 +159,6 @@ void(string matchstring, .string matchfield) SUB_UseSpecificTarget =
 {
 	local entity t, stemp, otemp, act;
 
-	dprint(sprintf("MAP DEBUG: SUB_UseSpecificTarget for %s\n", matchstring));
-
 	act = activator;
 	t = find (world, matchfield, matchstring);
 	while ( t != world )

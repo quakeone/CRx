@@ -190,9 +190,6 @@ set "message" to text string
 */
 void() trigger_once =
 {
-	if (self.target)
-		dprint(sprintf("MAP DEBUG: spawn trigger_once with target %s\n", self.target));
-
 	self.wait = -1;
 	trigger_multiple();
 };
