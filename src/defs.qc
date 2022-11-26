@@ -580,7 +580,7 @@ float   AS_MISSILE              = 4;
 //
 // sounds
 //
-//.float      waitmin, waitmax; // CLANRING_MOD - unused
+.float		waitmin /*, waitmax*/;
 //.float      distance;         // CLANRING_MOD - unused
 .float      volume;
 

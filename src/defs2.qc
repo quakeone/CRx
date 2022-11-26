@@ -525,6 +525,16 @@ float	MOVEWALL_NONBLOCKING	= 4;
 
 .float		onladder;
 
+// from Custents
+// variable for healing trigger
+.float	heal_timer;
+.float	heal_amount;
+.float	health_max;
+// Constants for the healing trigger
+float HEAL_START_ON	= 1;
+float HEAL_PLAYER_ONLY	= 2;
+float HEAL_MONSTER_ONLY	= 4;
+
 .vector mdlsz, centeroffset; // addition by bmFbr for custom model bounding box definition
 
 // entity state
