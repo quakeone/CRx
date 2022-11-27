@@ -793,6 +793,8 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias vote-exit impulse 220\n");
 	stuffcmd(self, "alias faststart impulse 209\n");		
 	stuffcmd(self, "alias afk impulse 57\n");
+	stuffcmd(self, "alias afkon cmd afkon\n");
+	stuffcmd(self, "alias afkoff cmd afkoff\n");
 	stuffcmd(self, "alias captimes impulse 58\n");
 	stuffcmd(self, "alias highscores impulse 58\n");
 	stuffcmd(self, "alias modes impulse 181\n");

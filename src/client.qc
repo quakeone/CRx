@@ -2667,6 +2667,26 @@ void(entity targ, entity attacker) ClientObituary =
 	}
 };
 
+void () client_afk_on =
+{
+	if (!(self.style & CLANRING_AFK_CLIENT))
+	{
+		sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
+		afk_name();
+		stuffcmd(self, "cmd setinfo afk yes\n");// woods
+		self.style = self.style | CLANRING_AFK_CLIENT;
+		self.afk_time = time;
+	}
+};
+
+void () client_afk_off =
+{
+	if (self.style & CLANRING_AFK_CLIENT)
+	{
+		clear_afk_status(self);
+	}
+};
+
 void(string cmd) SV_ParseClientCommand =
 {
     local float args, modecmd, mapnumber=0;
@@ -2682,6 +2702,12 @@ void(string cmd) SV_ParseClientCommand =
 
     switch (arg0)
     {
+		case "afkon":
+			client_afk_on();
+			return;
+		case "afkoff":
+			client_afk_off();
+			return;
 		case "dm":
 			if (arg2 != "")
 			{
