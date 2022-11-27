@@ -553,6 +553,8 @@ string lastnameused;	// the targetname that was last used to trigger somthing
 
 .float		onladder;
 
+.float style2; //c0burn's switchable lights
+
 string(float num) lightstyle_fade_lookup; //addition by bmFbr for switchable shadows
 void() misc_shadowcontroller;
 void() misc_shadowcontroller_use;

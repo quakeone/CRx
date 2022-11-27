@@ -715,21 +715,16 @@ void () func_laser =
 
 	if (self.spawnflags & START_OFF)
 		setorigin(self, '0 0 9000');
-		{
-		if (self.noise != "") precache_sound(self.noise);
 
-		else
-			(self.noise = "buttons/switch02.wav");
-		}
-		{
-		if (self.noise1 != "") precache_sound(self.noise1);
+    if (self.noise != "") 
+        precache_sound(self.noise);
+    else 
+        self.noise = "buttons/switch02.wav";
 
-		else
-			(self.noise1 = "buttons/switch04.wav");
-		}
-
-
-
+    if (self.noise1 != "") 
+        precache_sound(self.noise1);
+    else 
+        self.noise1 = "buttons/switch04.wav";
 
 	//spawn a second entity to handle alpha changes, since MOVETYPE_PUSH doesn't support think functions
 	helper = spawn();

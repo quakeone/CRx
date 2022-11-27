@@ -6,6 +6,9 @@ void() event_lightning =
 
 // END_MOD
 
+float START_OFF		= 1;
+float FADE_IN_OUT	= 2;
+
 /*QUAKED info_null (0 0.5 0) (-4 -4 -4) (4 4 4)
 Used as a positional target for spotlights, etc.
 */
@@ -67,7 +70,85 @@ void() info_notnull =
 {
 };
 
-//============================================================================
+/*==========
+lightstyle_lookup
+==========*/
+string(float num) lightstyle_lookup =
+{
+	switch (num)
+	{
+		// 0 normal
+		case 0:
+			return "m";
+			break;
+		// 1 FLICKER (first variety)
+		case 1:
+			return "mmnmmommommnonmmonqnmmo";
+			break;
+		// 2 SLOW STRONG PULSE
+		case 2:
+			return "abcdefghijklmnopqrstuvwxyzyxwvutsrqponmlkjihgfedcba";
+			break;
+		// 3 CANDLE (first variety)
+		case 3:
+			return "mmmmmaaaaammmmmaaaaaabcdefgabcdefg";
+			break;
+		// 4 FAST STROBE
+		case 4:
+			return "mamamamamama";
+			break;
+		// 5 GENTLE PULSE 1
+		case 5:
+			return "jklmnopqrstuvwxyzyxwvutsrqponmlkj";
+			break;
+		// 6 FLICKER (second variety)
+		case 6:
+			return "nmonqnmomnmomomno";
+			break;
+		// 7 CANDLE (second variety)
+		case 7:
+			return "mmmaaaabcdefgmmmmaaaammmaamm";
+			break;
+		// 8 CANDLE (third variety)
+		case 8:
+			return "mmmaaammmaaammmabcdefaaaammmmabcdefmmmaaaa";
+			break;
+		// 9 SLOW STROBE (fourth variety)
+		case 9:
+			return "aaaaaaaazzzzzzzz";
+			break;
+		// 10 FLUORESCENT FLICKER
+		case 10:
+			return "mmamammmmammamamaaamammma";
+			break;
+		// 11 SLOW PULSE NOT FADE TO BLACK
+		case 11:
+			return "abcdefghijklmnopqrrqponmlkjihgfedcba";
+			break;
+		// 12 BLINK OFF / ON (can be synced with animated textures, e.g. +0light and +1light)
+		case 12:
+			return "aamm";	// textures animate at 5fps but lights are 10fps...
+			break;
+		// DEFAULT
+		default:
+			return "a";
+			break;
+	}
+};
+
+/*==========
+setup_lightstyles
+
+Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
+Styles 32+ are assigned by the light program for switchable lights.
+==========*/
+void() setup_lightstyles =
+{
+	for (float i = 0; i <= 12; i++)
+	{
+		lightstyle(i, lightstyle_lookup(i));
+	}
+};
 
 /*==========
 lightstyle_fade_lookup
@@ -121,19 +202,61 @@ string(float num) lightstyle_fade_lookup =
 	}
 };
 
-float START_OFF    = 1;
+/*==========
+light_fade_in
+==========*/
+void() light_fade_in =
+{
+	if (self.count < 0)
+		self.count = 0;
+	if (self.count > 12)
+		self.count = 12;
+
+	lightstyle(self.style, lightstyle_fade_lookup(self.count));
+	self.count = self.count + 1;
+	if (self.count > 12)
+		return;
+
+	self.think = light_fade_in;
+	self.nextthink = time + self.speed;
+};
+
+/*==========
+light_fade_out
+==========*/
+void() light_fade_out =
+{
+	if (self.count < 0)
+		self.count = 0;
+	if (self.count > 12)
+		self.count = 12;
+
+	lightstyle(self.style, lightstyle_fade_lookup(self.count));
+	self.count = self.count - 1;
+	if (self.count < 0)
+		return;
+
+	self.think = light_fade_out;
+	self.nextthink = time + self.speed;
+};
 
 void() light_use =
 {
 	if (self.spawnflags & START_OFF)
 	{
-		lightstyle(self.style, "m");
 		self.spawnflags = self.spawnflags - START_OFF;
+		if (self.spawnflags & FADE_IN_OUT && !self.style2)
+			light_fade_in();
+		else
+			lightstyle(self.style, lightstyle_lookup(self.style2));
 	}
 	else
 	{
-		lightstyle(self.style, "a");
 		self.spawnflags = self.spawnflags + START_OFF;
+		if (self.spawnflags & FADE_IN_OUT && !self.style2)
+			light_fade_out();
+		else
+			lightstyle(self.style, "a");
 	}
 };
 
@@ -145,6 +268,10 @@ If targeted, it will toggle between on or off.
 */
 void() light =
 {
+	// default speed for fading in/out
+	if (self.speed <= 0)
+		self.speed = 0.1;
+
 	if (!self.targetname)
 	{	// inert light
 		remove(self);
@@ -155,9 +282,15 @@ void() light =
 	{
 		self.use = light_use;
 		if (self.spawnflags & START_OFF)
+		{
+			self.count = 0;
 			lightstyle(self.style, "a");
+		}
 		else
-			lightstyle(self.style, "m");
+		{
+			self.count = 12;
+			lightstyle(self.style, lightstyle_lookup(self.style2));
+		}
 	}
 };
 
