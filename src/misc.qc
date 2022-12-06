@@ -348,8 +348,7 @@ void() light_globe =
 void() FireAmbient =
 {
 	precache_sound ("ambience/fire1.wav");
-// attenuate fast
-	ambientsound (self.origin, "ambience/fire1.wav", 0.5, ATTN_STATIC);
+	ambientsound (self.origin, "ambience/fire1.wav", 0.2, ATTN_STATIC);
 };
 
 /*QUAKED light_torch_small_walltorch (0 .5 0) (-10 -10 -20) (10 10 20)

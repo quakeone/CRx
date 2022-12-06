@@ -603,18 +603,26 @@ float LASER_SOLID = 2;
 
 void() laser_helper_think =
 {
+	if (!(self.owner.spawnflags & START_OFF))
+		self.owner.alpha = self.alpha * 0.8 + self.alpha * random() * 0.4;
+
+	self.nextthink = time + 0.05;
+};
+
+void() init_laser_noise = 
+{
 	if (!self.owner || self.owner.classname != "func_laser")
 	{
 		remove(self);
 		return;
 	}
 
+  sound (self.owner, CHAN_VOICE, self.owner.noise, 1, ATTN_IDLE);
 
-	if (!(self.owner.spawnflags & START_OFF))
-		self.owner.alpha = self.alpha * 0.8 + self.alpha * random() * 0.4;
+  self.think = laser_helper_think;
+  self.nextthink = time + 0.05;
 
-	self.nextthink = time + 0.05;
-};
+}
 
 void() func_laser_touch =
 {
@@ -625,7 +633,9 @@ void() func_laser_touch =
 	if (other.takedamage && self.attack_finished < time)
 	{
 		T_Damage (other, self, self, self.dmg);
-		self.attack_finished = time + 0.1;
+		// add "zap" sound when damage is dealt
+		sound (self, CHAN_WEAPON, self.noise2, 1, ATTN_NORM);
+		self.attack_finished = time + 0.333;
 	}
 
 };
@@ -639,7 +649,7 @@ void () func_laser_use =
 
 		// changed for progs_dump: the laser sound is now emitted from
 		// the func_laser itself instead of from the activator -- iw
-		sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM);
+		sound (self, CHAN_VOICE, self.noise, 1, ATTN_IDLE);
 
 		if (activator.classname == "player" && self.message != "")
 		{
@@ -650,7 +660,7 @@ void () func_laser_use =
 	{
 		// changed for progs_dump: the laser sound is now emitted from
 		// the func_laser itself instead of from the activator -- iw
-		sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
+		sound (self, CHAN_VOICE, self.noise1, 1, ATTN_IDLE);
 
 		setorigin(self, '0 0 9000');
 		self.spawnflags = self.spawnflags + START_OFF;
@@ -692,6 +702,7 @@ void () func_laser =
 
 	precache_sound ("buttons/switch02.wav");
 	precache_sound ("buttons/switch04.wav");
+	precache_sound ("misc/null.wav");
 
 	if (self.spawnflags & LASER_SOLID)
 	{
@@ -716,22 +727,27 @@ void () func_laser =
 	if (self.spawnflags & START_OFF)
 		setorigin(self, '0 0 9000');
 
-    if (self.noise != "") 
-        precache_sound(self.noise);
-    else 
-        self.noise = "buttons/switch02.wav";
+	if (self.noise != "") 
+			precache_sound(self.noise);
+	else 
+			self.noise = "buttons/switch02.wav";
 
-    if (self.noise1 != "") 
-        precache_sound(self.noise1);
-    else 
-        self.noise1 = "buttons/switch04.wav";
+	if (self.noise1 != "") 
+			precache_sound(self.noise1);
+	else 
+			self.noise1 = "buttons/switch04.wav";
+
+	if (self.noise2 != "") 
+			precache_sound(self.noise2);
+	else 
+			self.noise2 = "misc/null.wav";
 
 	//spawn a second entity to handle alpha changes, since MOVETYPE_PUSH doesn't support think functions
 	helper = spawn();
 	helper.alpha = self.alpha;
 	helper.owner = self;
-	helper.nextthink = 0.05;
-	helper.think = laser_helper_think;
+	helper.nextthink = time + 2;
+	helper.think = init_laser_noise;
 };
 
 /*
