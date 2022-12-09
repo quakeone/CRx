@@ -617,7 +617,7 @@ void() init_laser_noise =
 		return;
 	}
 
-  sound (self.owner, CHAN_VOICE, self.owner.noise, 1, ATTN_IDLE);
+  sound (self.owner, CHAN_VOICE, self.owner.noise, 1, ATTN_NORM);
 
   self.think = laser_helper_think;
   self.nextthink = time + 0.05;
@@ -649,7 +649,7 @@ void () func_laser_use =
 
 		// changed for progs_dump: the laser sound is now emitted from
 		// the func_laser itself instead of from the activator -- iw
-		sound (self, CHAN_VOICE, self.noise, 1, ATTN_IDLE);
+		sound (self, CHAN_VOICE, self.noise, 1, ATTN_NORM);
 
 		if (activator.classname == "player" && self.message != "")
 		{
@@ -660,7 +660,7 @@ void () func_laser_use =
 	{
 		// changed for progs_dump: the laser sound is now emitted from
 		// the func_laser itself instead of from the activator -- iw
-		sound (self, CHAN_VOICE, self.noise1, 1, ATTN_IDLE);
+		sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
 
 		setorigin(self, '0 0 9000');
 		self.spawnflags = self.spawnflags + START_OFF;
