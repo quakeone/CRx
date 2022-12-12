@@ -382,70 +382,52 @@ void() match_check_autoss =
 	clanring_match_timer.nextthink = time + 2;
 };
 
-// void() match_pregame_sound =
-// {
-// 	local float	prnd = floor(random() * 15) + 1;
-//  	if (clanring_maxsize == 1)
-// 	 {
-// 		 if (prnd > 8)
-// 		 	sound (world, CHAN_AUTO, "crx/title.wav", 1, ATTN_NONE);
-// 		return;
-// 	 }
-
-// 	if (prnd == 6)
-// 	{
-// 		sound (world, CHAN_AUTO, "crx/shrtgame.wav", 1, ATTN_NONE);
-// 	}
-// 	else if (prnd == 7)
-// 	{
-// 		sound (world, CHAN_AUTO, "crx/title.wav", 1, ATTN_NONE);
-// 	}
-// 	else if (prnd == 8)
-// 	{
-// 		sound (world, CHAN_AUTO, "crx/takeem.wav", 1, ATTN_NONE);
-// 	}
-// };
-
 void(float score_diff) match_postgame_sound =
 {
 	local float prnd;
-
 	prnd = random();
-	if (prnd < .5)
+	if (prnd < .8)
 	{
 		if (((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 200)) ||
 			(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 40)))
 		{
-			// prnd = random();
-			// if (prnd < .5)
-				sound (world, CHAN_AUTO, "crx/pathetic.wav", 1, ATTN_NONE);
+			if (clanring_matchsound_blowout_count)
+			{
+				prnd = floor(random() * clanring_matchsound_blowout_count);
+				if (matchsound_blowout[prnd] != "")
+				{
+					sound (world, CHAN_AUTO, matchsound_blowout[prnd], 1, ATTN_NONE);
+					return;
+				}
+			}
 		}
 		else if (((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff < 50)) ||
 			(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff < 10)))
 		{
-			prnd = random();
-			if (prnd < .5)
-				sound (world, CHAN_AUTO, "crx/rematch1.wav", 1, ATTN_NONE);
-			else
-				sound (world, CHAN_AUTO, "crx/rematch2.wav", 1, ATTN_NONE);
-			// else
-			// 	sound (world, CHAN_AUTO, "crx/wewin.wav", 1, ATTN_NONE);
+			if (clanring_matchsound_rematch_count)
+			{
+				prnd = floor(random() * clanring_matchsound_rematch_count);
+				if (matchsound_rematch[prnd] != "")
+				{
+					sound (world, CHAN_AUTO, matchsound_rematch[prnd], 1, ATTN_NONE);
+					return;
+				}
+			}
 		}
 		else
 		{
-			prnd = random();
-			if (prnd < .33)
-				sound (world, CHAN_AUTO, "crx/giveup.wav", 1, ATTN_NONE);
-			else if (prnd < .66)
-				sound (world, CHAN_AUTO, "crx/thatgame.wav", 1, ATTN_NONE);
-			else
-				sound (world, CHAN_AUTO, "crx/gameover.wav", 1, ATTN_NONE);
+			if (clanring_matchsound_count)
+			{
+				prnd = floor(random() * clanring_matchsound_count);
+				if (matchsound[prnd] != "")
+				{
+					sound (world, CHAN_AUTO, matchsound[prnd], 1, ATTN_NONE);
+					return;
+				}
+			}
 		}
 	}
-	else
-	{
-		sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
-	}
+	sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
 };
 
 //
@@ -735,6 +717,7 @@ void() match_begin =
 
 	utils_do_projectiles(SUB_Remove);
 	utils_do_players(match_gib_player);//3.19k : placed before rune remove
+	utils_do_item(SUB_Remove, "item_backpack");
 
 	if (clanring_playmode & CLANRING_RUNES)
 	{

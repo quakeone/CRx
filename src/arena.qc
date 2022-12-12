@@ -1590,21 +1590,6 @@ void () report_mvp_game =
 	announce4(name," was the \bmatch\b MVP with ",smvp," points of damage given.");
 };
 
-void() do_sound_owned =
-{
-	sound(world, CHAN_AUTO, "crx/gameover.wav", 1, ATTN_NONE);
-	remove(self);
-};
-void() do_sound_sweep =
-{
-	local float prnd = floor(random() * 2) + 1;
-	if (prnd == 1)
-		sound (world, CHAN_VOICE, "crx/pathetic.wav", 1, ATTN_NONE);
-	// else
-	// 	sound(world, CHAN_AUTO, "crx/helpyou.wav", 1, ATTN_NONE);
-	remove(self);
-};
-
 void () arena_match_end =
 {
 	local string temp, t2="";//, mc;
@@ -1672,14 +1657,14 @@ void () arena_match_end =
 
 	sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
 
-	if ((boss.round == 5) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
-	{
-		utils_make_scheduled_event(do_sound_sweep, 2);
-	}
-	else if ((boss.round == 6) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
-	{
-		utils_make_scheduled_event(do_sound_owned, 2);
-	}
+	// if ((boss.round == 5) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
+	// {
+	// 	utils_make_scheduled_event(do_sound_sweep, 2);
+	// }
+	// else if ((boss.round == 6) && (clanring_playmode & CLANRING_CA_MODE) && (team_first_place != world) && (team_first_place.wins == 5))
+	// {
+	// 	utils_make_scheduled_event(do_sound_owned, 2);
+	// }
 
 	boss.round 		 = 1;
 	boss.count 		 = 10;

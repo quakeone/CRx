@@ -51,10 +51,10 @@ void() Request_Poll_Cleanup =
 	}
 };
 
-float(float ballot) Request_Poll_Tally =
+float(float ballot) Request_Poll_Votes_Needed =
 {
-	local entity	bingo;
-	local float	vcount = 0, pcount = 0;
+	local entity bingo;
+	local float	vcount = 0, pcount = 0, votes_needed = 99;
 
 	bingo = find(world, classname, "player");
 
@@ -68,18 +68,17 @@ float(float ballot) Request_Poll_Tally =
 	{
 		while (bingo)
 		{
-			pcount += 1;
+			if ((bingo.style & CLANRING_CONNECTED) && !(bingo.style & CLANRING_AFK_CLIENT))
+			{
+				pcount += 1;
 
-			if ((bingo.vote == ballot) || (bingo == clanring_request.owner))
-				vcount += 1;
-
+				if ((bingo.vote == ballot) || (bingo == clanring_request.owner))
+					vcount += 1;
+			}
 			bingo = find(bingo, classname, "player");
 		}
 
-		if (vcount >= (pcount * 0.51))
-		{
-			return TRUE;
-		}
+		votes_needed = ceil((pcount * 0.51) - vcount);
 	}
 	else
 	{
@@ -87,27 +86,30 @@ float(float ballot) Request_Poll_Tally =
 		{
 			while (bingo)
 			{
-				pcount += 1;
+				if ((bingo.style & CLANRING_CONNECTED) && !(bingo.style & CLANRING_AFK_CLIENT))
+				{
+					pcount += 1;
 
-				if (bingo.vote == ballot)
-					vcount += 1;
-
+					if (bingo.vote == ballot)
+						vcount += 1;
+				}
 				bingo = find(bingo, classname, "player");
 			}
 
-			if (vcount >= (pcount * 0.51))
-			{
-				return TRUE;
-			}
+			votes_needed = ceil((pcount * 0.51) - vcount);
 		}
 		else
-			bprint("Request_Poll_Tally: Invalid Ballot\n");
+			bprint("Request_Poll_Votes_Needed: Invalid Ballot\n");
 	}
-	return FALSE;
+	if (votes_needed < 1)
+		return 0;
+	else
+		return votes_needed;
 };
 
 void(entity player, float cast) Request_Poll_Vote =
 {
+	local float votes_needed = 99;
 	clear_afk_status(player);	//R00k
 
 	if (clanring_request == world)
@@ -143,23 +145,52 @@ void(entity player, float cast) Request_Poll_Vote =
 	player.vote = cast;
 
 	if (player != clanring_request.owner)
-		bprint(player.netname, " voted.\n");
-
-	if ((cast == 1) && ((Request_Poll_Tally(cast) == TRUE)||(player.style & CLANRING_ADMINISTRATOR))) // majority YES
 	{
-		clanring_request.touch();
-		sound(world, CHAN_AUTO, "misc/runekey.wav", 1, ATTN_NONE);
-		Request_Poll_Cleanup();
+		if (cast == 1)
+			bprint(player.netname, " voted \byes\b.");
+		else if (cast == 2)
+			bprint(player.netname, " voted \bno\b.");
+	}
+
+	if (cast == 1)
+	{
+		votes_needed = Request_Poll_Votes_Needed(cast);
+
+		if ((votes_needed == 0)||(player.style & CLANRING_ADMINISTRATOR)) // majority YES
+		{
+			bprint("\n");
+			clanring_request.touch();
+			sound(world, CHAN_AUTO, "misc/runekey.wav", 1, ATTN_NONE);
+			Request_Poll_Cleanup();
+		}
+		else
+		{
+			if (player != clanring_request.owner)
+			{
+				if (votes_needed == 1)
+					bprint(" \1 vote needed to \bpass\b.\n");
+				else
+					bprint3(" ", strings_ftos_gold(votes_needed), " votes needed to \bpass\b.\n");
+			}
+			return;
+		}
 	}
 	else
 	{
-		if ((cast == 2) && ((Request_Poll_Tally(cast) == TRUE)||(player.style & CLANRING_ADMINISTRATOR))) // majority NO
+		if (cast == 2)
 		{
-			sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
-			bprint("The request was declined.\n");
-			Request_Poll_Cleanup();
+			votes_needed = Request_Poll_Votes_Needed(cast);
+		
+			if ((votes_needed == 0)||(player.style & CLANRING_ADMINISTRATOR)) // majority NO
+			{
+				bprint("\n");
+				sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
+				bprint("The request was declined.\n");
+				Request_Poll_Cleanup();
+			}
 		}
 	}
+	bprint("\n");
 };
 
 void() Request_Poll_Announce =
@@ -215,7 +246,7 @@ float (string captiona, string captionb, void() passfunc, optional string pollna
 	clanring_request.health = 50;					// This will be the time-limit for how long to wait for everyone to cast a vote.
 	clanring_request.touch = passfunc;				// Call this function if the poll is positive
 
-	if ((Request_Poll_Tally(1) == FALSE))					// if there is only one player on the server then there is no need to announce the vote.
+	if ((Request_Poll_Votes_Needed(1) > 0))					// if there is only one player on the server then there is no need to announce the vote.
 	{
 		sound(world, CHAN_AUTO, "misc/menu1.wav", 1, ATTN_NONE);
 		bprint(clanring_request.owner.netname, " requests to ", clanring_request.noise1, clanring_request.noise2, "\n");

@@ -1933,6 +1933,11 @@ void() ClientConnect =
 	self.finaldest_x = time;//lagout timer
 
 	clanring_client_connect ();
+
+	//remove this - bucksh0t
+	bprint (self.netname);
+	bprint (" entered the game\n");
+
 	if (stof(infokey(self, "csqcactive")))
 	{				
 		self.csqc_enabled = TRUE;

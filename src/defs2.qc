@@ -420,6 +420,14 @@ string warpmenutop[15]; // Customizable map categories for the warp menu content
 
 string default_nextmap;
 
+float MAX_CUSTOM_MATCH_SOUNDS = 10;
+float clanring_matchsound_count;
+float clanring_matchsound_rematch_count;
+float clanring_matchsound_blowout_count;
+string matchsound[MAX_CUSTOM_MATCH_SOUNDS];
+string matchsound_rematch[MAX_CUSTOM_MATCH_SOUNDS];
+string matchsound_blowout[MAX_CUSTOM_MATCH_SOUNDS];
+
 typedef struct
 {
 	string player;
