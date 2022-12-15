@@ -440,6 +440,7 @@ float PLAYER_RECORDS_MAX_COUNT = 3;
 playerrecord_t playerrecord[PLAYER_RECORDS_MAX_COUNT];
 playerrecord_t playerrecord2[PLAYER_RECORDS_MAX_COUNT];
 float new_player_record;
+float new_player_record_match;
 float RECORD_LOW = 0;
 float RECORD_HIGH = 1;
 

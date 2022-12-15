@@ -498,6 +498,11 @@ void() match_end =
 		match_postgame_sound((clanring_first_place.frags - clanring_second_place.frags));
 	}
 
+	if (new_player_record_match == 1)
+	{
+		bprint("\bNew match captime record was set!\b\n");
+	}
+
 	console_show_score();
 	clanring_match_timer.think = match_check_autoss;
 	clanring_match_timer.nextthink = time + 3;
@@ -709,7 +714,10 @@ void() match_begin =
 	utils_do_match_spawns(spawns_remove_model);
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+	{
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
+		new_player_record_match = 0;
+	}
 
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
 

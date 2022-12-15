@@ -585,7 +585,12 @@ void (string filename, optional float desc = 0, optional float recordset = 0) re
 		if (tt_statvalue > 0)
 		{
 			if (desc == RECORD_LOW)
-				check_player_low_record(tt_statvalue, tt_teamcolor, tt_player);
+			{
+				if (recordset == 2)
+					check_player_low_record2(tt_statvalue, tt_teamcolor, tt_player);
+				else
+					check_player_low_record(tt_statvalue, tt_teamcolor, tt_player);
+			}
 			else
 			{
 				if (recordset == 2)
@@ -601,6 +606,7 @@ void (string filename, optional float desc = 0, optional float recordset = 0) re
 void () read_capture_stats =
 {
 	read_player_stats(sprintf("%s_captimes.crx", mapname), RECORD_LOW, 0);
+	read_player_stats(sprintf("%s_captimes_match.crx", mapname), RECORD_LOW, 2);
 };
 void () read_longrange_stats =
 {
@@ -666,6 +672,10 @@ void (string filename, float recordset) write_player_stats =
 void () write_capture_stats =
 {
 	write_player_stats(sprintf("%s_captimes.crx", mapname), 0);
+};
+void () write_capture_stats_match =
+{
+	write_player_stats(sprintf("%s_captimes_match.crx", mapname), 2);
 };
 void () write_longrange_stats =
 {
@@ -740,15 +750,14 @@ void() clanring_exec_configs =
 	{
 		read_capture_stats();
 	}
-	
-	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
 		read_airshot_stats();
 	}
-	else
-	{
-		read_longrange_stats();
-	}
+	// else
+	// {
+	// 	read_longrange_stats();
+	// }
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
@@ -797,7 +806,7 @@ void (float soundtype) clanring_read_matchsounds =
 		return;
 	}
 
-	while ((line = fgets(f)) && (i < 15))
+	while ((line = fgets(f)) && (i < MAX_CUSTOM_MATCH_SOUNDS))
 	{
 		float argc = tokenize(line);
 		if (!argc)

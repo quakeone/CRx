@@ -2074,13 +2074,12 @@ void () clanring_impulse =
 	}
 	else if (self.impulse == 58)
 	{
-		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			CaptureHighScores_sprint();
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			AirshotHighScores_sprint();
 		// else
 		// 	LongRangeGibs_sprint();
-
-		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			CaptureHighScores_sprint();
 	}
 	else if (self.impulse == 70)
 			self.statstate = -1;

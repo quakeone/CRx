@@ -6,7 +6,9 @@ void() votables_disable_item;
 void() hurt_touch;
 void(entity client, float fragval) client_frag;
 void () write_capture_stats;
+void () write_capture_stats_match;
 void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record;
+void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record2;
 
 void(entity flg) RegenFlag =
 {
@@ -267,19 +269,31 @@ void() TeamCaptureFlagTouch =
 					bprint("\x91\n");					
 					if (compare < other.captime) other.captime = compare;
 
-					if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+					if (clanring_playmode & CLANRING_MATCH_MODE)
 					{
 						new_player_record = 0;
-						check_player_low_record(compare, other.team, other.netname);
-						if (new_player_record > 0)
+						if (!(clanring_state & CLANRING_MATCH_STARTED))
 						{
-							if (new_player_record == 1)
-								sound(world,CHAN_AUTO,"crx/congrats.wav",1,ATTN_NONE);
-							else if ((new_player_record == 2) || (new_player_record == 3))
-								sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
-							write_capture_stats();
+							check_player_low_record(compare, other.team, other.netname);
+							if (new_player_record > 0)
+							{
+								if (new_player_record == 1)
+									sound(world,CHAN_AUTO,"crx/congrats.wav",1,ATTN_NONE);
+								else if ((new_player_record == 2) || (new_player_record == 3))
+									sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
+								write_capture_stats();
+							}
+							//else sound(world,CHAN_AUTO,"crx/capreg.wav",1,ATTN_NONE);
 						}
-						//else sound(world,CHAN_AUTO,"crx/capreg.wav",1,ATTN_NONE);
+						else
+						{
+							check_player_low_record2(compare, other.team, other.netname);
+							if (new_player_record > 0)
+							{
+								new_player_record_match = new_player_record;
+								write_capture_stats_match();
+							}
+						}
 					}
 				}
 				other.fctime += (time - other.flag_since);

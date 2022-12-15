@@ -1065,6 +1065,44 @@ void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_re
 	new_player_record = tmp;
 	//return tmp;
 };
+void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record2 =
+{
+	local float i=0,j=0, tmp = 0;
+	while ((i < PLAYER_RECORDS_MAX_COUNT) && (tmp == 0))
+	{
+		if (playerrecord2[i].statvalue == 0)
+		{
+			playerrecord2[i].statvalue = t_statvalue;
+			playerrecord2[i].teamcolor = t_teamcolor;
+			playerrecord2[i].player = strzone(t_player);
+			tmp = (i+1);
+			break;
+		}
+		else if ((playerrecord2[i].statvalue > 0) && (t_statvalue < playerrecord2[i].statvalue))
+		{
+			j = (PLAYER_RECORDS_MAX_COUNT - 1);
+			while (j > i)
+			{
+				playerrecord2[j].statvalue = playerrecord2[(j-1)].statvalue;
+				playerrecord2[j].teamcolor = playerrecord2[(j-1)].teamcolor;
+				playerrecord2[j].player = playerrecord2[(j-1)].player;
+				j -= 1;
+			}
+			playerrecord2[i].statvalue = t_statvalue;
+			playerrecord2[i].teamcolor = t_teamcolor;
+			playerrecord2[i].player = strzone(t_player);
+			tmp = (i+1);
+			break;
+		}
+		i += 1;
+	}
+	if (tmp > 0)
+	{
+		//strunzone(tt_netname);
+	}
+	new_player_record = tmp;
+	//return tmp;
+};
 void (float t_statvalue, float t_teamcolor, string t_player) check_player_high_record =
 {
 	local float i=0,j=0, tmp = 0;
