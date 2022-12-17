@@ -826,16 +826,16 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				{
 					bprint3("\bKill Distance:\b ", ftos(rint(longrange)), "\n");
 
-					new_player_record = 0;
-					check_player_high_record2(longrange, attacker.team, attacker.netname);
-					if (new_player_record > 0)
-					{
-						if (new_player_record == 1)
-						{
-							sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
-						}
-						write_longrange_stats();
-					}
+					// new_player_record = 0;
+					// check_player_high_record2(longrange, attacker.team, attacker.netname);
+					// if (new_player_record > 0)
+					// {
+					// 	if (new_player_record == 1)
+					// 	{
+					// 		sound (self, CHAN_VOICE, "crx/hiscore.wav", 1, ATTN_NORM);
+					// 	}
+					// 	write_longrange_stats();
+					// }
 				}
 			}
 		}

@@ -2877,6 +2877,18 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			votables_request_set_gametype_mode_map(6, -1, 0);
 			return;
+		case "ctfdmm4":
+			if (arg1 != "")
+			{
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(7, -1, mapnumber);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(7, -1, 0);
+			return;
 		case "ca":
 			if (arg1 != "")
 			{

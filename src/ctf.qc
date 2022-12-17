@@ -287,11 +287,14 @@ void() TeamCaptureFlagTouch =
 						}
 						else
 						{
-							check_player_low_record2(compare, other.team, other.netname);
-							if (new_player_record > 0)
+							if (clanring_maxsize > 1)
 							{
-								new_player_record_match = new_player_record;
-								write_capture_stats_match();
+								check_player_low_record2(compare, other.team, other.netname);
+								if (new_player_record > 0)
+								{
+									new_player_record_match = new_player_record;
+									write_capture_stats_match();
+								}
 							}
 						}
 					}
@@ -612,11 +615,11 @@ void() TeamFlagStatusReport =
 	{                		
 		if (flag1.team == BLUE)
 		{
-			sprint(self,"ùblue flagë \b: carried by ");		                             
+			sprint(self,"\x90blue flag\x91 \b: carried by ");		                             
 		}
 		else
 		{
-			sprint(self,"ùred flagë  \b: carried by ");
+			sprint(self,"\x90red flag\x91  \b: carried by ");
 		}                 
 		sprint2(self, flag1.owner.netname,"\n");	
 	}
@@ -624,11 +627,11 @@ void() TeamFlagStatusReport =
 	{
 		if (flag1.team == BLUE)
 		{
-			sprint(self,"ùblue flagë \b:");
+			sprint(self,"\x90blue flag\x91 \b:");
 		}                 
 		else
 		{
-			sprint(self,"ùred flagë  \b:");
+			sprint(self,"\x90red flag\x91  \b:");
 		} 		     
 		
 		if (flag1 == world)
