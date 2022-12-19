@@ -143,6 +143,8 @@ void(entity flg) TeamDropFlag =
 	flg.solid      	= SOLID_TRIGGER;
 	flg.movetype   	= MOVETYPE_TOSS;
 
+	sound(flg, CHAN_AUTO, "misc/basekey.wav", 1, ATTN_NONE);
+
 	if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
 	{
 		flg.angles = flg.angles + '0 0 180';
@@ -267,7 +269,7 @@ void() TeamCaptureFlagTouch =
 					bprint("\x91\n");					
 					if (compare < other.captime) other.captime = compare;
 
-					if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
+					if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))//fixme record match captimes?
 					{
 						new_player_record = 0;
 						check_player_low_record(compare, other.team, other.netname);

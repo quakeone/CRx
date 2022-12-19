@@ -9,8 +9,9 @@ string (entity e) ident_get_weapon_in_hand =
 	if (e.weapon == IT_NAILGUN) 			return "ng";
 	if (e.weapon == IT_SHOTGUN) 			return "sg";
 	if (e.weapon == IT_AXE) 				return "axe";
-	if (e.weapon == IT_HOOK)				return "hook";
-											return "fist";
+//	if (e.weapon == IT_HOOK)				return "hook";
+//											return "fist";
+	return "";
 }
 
 string (entity e) ident_get_other_weapons =
@@ -54,49 +55,117 @@ string (entity e) ident_get_armor_type =
 	return "";
 };
 
-void() ident_update_display =
-{
-	//avoid centerprint war
-	if (prematch_rules())
-		return;
+void(entity who, float b) ident_update_display =
+{	
+	string rname = who.netname;
 
+	if (prematch_rules())//avoid centerprint war
+		return;
+/*
+	woods — in prewar it should identify everyone with only name
+*/
+	if (clanring_playmode & CLANRING_MATCH_MODE && (!(clanring_state & CLANRING_MATCH_STARTED)))
+	{
+		if (b)
+		{
+			rname = redify(who.netname);	//R00k: display teammates out of pov in red.
+			centerprint(self, rname, "\n\n\n\n\n\n");
+		}
+		else
+			centerprint(self, who.netname, "\n\n\n\n\n\n");	//otherwise white for in pov.
+		return;
+	}
+//FIXME: stzone these???
 	local string armour;
 	local string aval, hval, rtype, weap, ammo, it; 
 	local string line1 = "", line2 = "";
 	
-	armour	= ident_get_armor_type(trace_ent);
-
-	aval 	= strings_ftos_gold(trace_ent.armorvalue);
-	hval	= ftos(trace_ent.health);                  
-	rtype	= ident_get_rune_type(trace_ent);
-	weap 	= ident_get_weapon_in_hand(trace_ent);
-	ammo 	= ftos(trace_ent.currentammo);
-	it		= ident_get_other_weapons(trace_ent);
+	armour	= ident_get_armor_type(who);
+	aval 	= strings_ftos_gold(who.armorvalue);
+	hval	= ftos(who.health);                  
+	rtype	= ident_get_rune_type(who);
+	weap 	= ident_get_weapon_in_hand(who);
+	ammo 	= ftos(who.currentammo);
+	it		= ident_get_other_weapons(who);
 	
 	line1 = sprintf("\n\b[\b%s%s\.%s%s\b]", armour, aval, hval, rtype);
 
-	if (trace_ent.currentammo)
+	if (who.currentammo)
 		line2 = sprintf("\[%s\.%s\]%s", weap, ammo, it);
 	else
-		line2 = sprintf("\[%s\]%s", weap, it);
+	{
+		if (weap && it)//don't show empty brackets.
+			line2 = sprintf("\[%s\]%s", weap, it);
+	}
+ 
+	if (b)
+	{
+		rname = redify(who.netname);
+		centerprint(self, rname, line1, line2, "\n\n\n\n\n");
+	}
+	else
+		centerprint(self, who.netname, line1, line2, "\n\n\n\n\n");
+};
 
-	centerprint(self, trace_ent.netname, line1, line2, "\n\n\n\n\n");//fixme move the position down or up?
+/*
+=============
+infront
+
+returns 1 if the entity is in front (in sight) of self
+=============
+from ai.qc
+*/
+float(entity targ) infront =
+{
+	local vector	vec;
+	local float		dot;
+	
+	makevectors (self.angles);
+	vec = normalize (targ.origin - self.origin);
+	dot = vec * v_forward;
+	
+	if (dot > 0.33)
+	{
+		return TRUE;
+	}
+	return FALSE;
 };
 
 void() ident_get_target =
 {
-	makevectors (self.v_angle);
-
-	traceline (self.origin, self.origin + v_forward * 1200 + '0 0 16', FALSE, self);
-	
-	if (trace_fraction < 1) 
+	local entity tm = world;
+	tm = findradius(self.origin, 2048);	//R00k: find nearby teammates, same distance as a shotgun blast
+	while (tm)
 	{
-		if ((trace_ent.classname == "player") && (trace_ent.style & CLANRING_CONNECTED)) 
+		if ((tm.classname == "player") && (tm.style & CLANRING_CONNECTED) && (tm.team == self.team) && (tm != self))
 		{
-			if (trace_ent.team == self.team)
+			if (infront(tm))
 			{
-				ident_update_display();
-			}			        			
-		}		
+				if (utils_visible(self, tm)) //can we actually see them; clips against walls
+				{
+					ident_update_display(tm, FALSE);
+				}
+				makevectors (self.v_angle);
+				traceline (self.origin, self.origin + v_forward * 2048 + '0 0 32', FALSE, self);
+
+				if (trace_fraction < 1)
+				{
+					if ((trace_ent.classname == "player") && (trace_ent.style & CLANRING_CONNECTED))
+					{
+						if ((trace_ent.team == self.team) || (match_prewar()))
+							ident_update_display(trace_ent, FALSE);
+						break;//if we are aiming directly at someone, then don't continue to find others.
+					}
+				}				
+			}
+/*			else		//Disabling this as it might provide too much info/centerprint war
+			{
+				if (utils_visible(self, tm)) // visible within radius
+				{
+					ident_update_display(tm, TRUE);
+				}
+			}*/
+		}
+		tm = tm.chain;
 	}
 };

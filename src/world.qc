@@ -165,9 +165,6 @@ void() worldspawn =
 	team2_lastspawn = world;
 	ra_lastspawn = world;
 
-//	InternalInit();
-//	InitSearchHunk();
-	//InitBodyQue ();
 // custom map attributes
 	if ((self.model == "maps/e1m8.bsp"))
 	{
@@ -345,7 +342,7 @@ void() worldspawn =
 
 	precache_sound ("boss1/sight1.wav"); //haste
 	precache_sound ("hknight/slash1.wav"); //rune toss
-
+	precache_sound ("misc/basekey.wav"); //flag dropped notification
 	precache_sound("buttons/switch04.wav"); //match timer countdown
 
 	//
@@ -395,7 +392,26 @@ void() worldspawn =
 	
 	clanring_init_world ();    // ELOHIM_MOD - do server specific stuff
 };
+#ifdef antilag
+void antilag_restore_projectiles(string class)
+{
+	local entity projectile;
 
+	projectile = find(world, classname, class);
+
+	while (projectile)
+	{
+		if (projectile.think != ThinkMovetype_AntilagProjectile) {
+			projectile = find(projectile, classname, class);
+			continue;
+		}
+
+	    setorigin(projectile, projectile.hold_origin);
+
+		projectile = find(projectile, classname, class);
+	}
+}
+#endif
 void() StartFrame =
 {
 	local entity serverinactive;
@@ -422,6 +438,18 @@ void() StartFrame =
 	}
 	framecount = framecount + 1;
 	clanring_start_frame();
+	
+	#ifdef antilag
+	if (time > responsetimecheck)
+	{
+		responsetimecheck = (time + 10);
+		client_responsetime_get_all();
+	}
+
+	// Put projectiles back where they actually are before we do game things
+	antilag_restore_projectiles("missile");
+	antilag_restore_projectiles("spike");
+	#endif
 };
 
 

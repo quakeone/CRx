@@ -268,8 +268,8 @@ void() debug_client_flags =
         sprint(self, "CLANRING_HEADS_UP\n");
     if (self.movetarget.style & CLANRING_SETTING_OPTIONS)
         sprint(self, "CLANRING_SETTING_OPTIONS\n");
-    if (self.movetarget.style & CLANRING_MOTD)
-        sprint(self, "CLANRING_MOTD\n");
+    if (self.movetarget.style & CLANRING_MENU)
+        sprint(self, "CLANRING_MENU\n");
     if (self.movetarget.style & CLANRING_OK_TO_SHOOT)
         sprint(self, "CLANRING_OK_TO_SHOOT\n");
     if (self.movetarget.style & CLANRING_KICK_CONFIRM)

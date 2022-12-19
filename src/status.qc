@@ -191,7 +191,7 @@ void() TeamCapturePlayerUpdate =
 		return;
 	}
 
-	if ((self.style & CLANRING_MOTD) && (time >= self.leaderboardtime)) //r00k v3.21
+	if ((self.style & CLANRING_MENU) && (time >= self.leaderboardtime)) //r00k v3.21
 		return;
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
@@ -342,13 +342,13 @@ void () WipeoutModePlayerUpdate =
 		return;
 	}
 
-	if (self.style & CLANRING_MOTD)//r00k v3.21
+	if (self.style & CLANRING_MENU)//r00k v3.21
 		return;
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
 
-	self.laststattime = (time + .5);
+	self.laststattime = (time + 1.25);//R00k: testing lower intervals
 
 	e = boss.next_team;
 

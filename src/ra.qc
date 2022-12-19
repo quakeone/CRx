@@ -11,7 +11,7 @@ void () rocket_arena_init_world =
 	boss.wait 			= 0;
 	boss.maprecycle		= 0;
 		
-    boss.items = ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
+    boss.items = IT_SHOTGUN | IT_AXE | IT_ROCKET_LAUNCHER | IT_ARMOR3 | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_GRENADE_LAUNCHER | IT_LIGHTNING | IT_SUPER_NAILGUN;
 
 	boss.health      	= 100;
 	boss.armorvalue  	= 200;
@@ -216,7 +216,6 @@ entity() SelectRASpawnPoint =
 		if (spot == world)
 		{
 			spot = find(world, classname, "info_teleport_destination");
-			spot.origin = spot.origin + '64 64 64';
 		}
 	}
 
@@ -284,7 +283,7 @@ void() ra_join_queue =
 	boss.next_team    	= pteam;
 
 	announce2 (self.netname, " has joined the queue");
-	//pqc_new_team (pteam.team2);
+//	pqc_new_team (pteam.team2);
 
 	self.team2  	= whichteam;
 	self.next_team 	= pteam;
@@ -307,8 +306,8 @@ void() ra_join_queue =
 
 	ready_name();
 
-	motd_top5 = string_null;
-	motd_top6 = string_null;
+	menu_text[5] = string_null;
+	menu_text[6] = string_null;
 	stats_reset_player (); //BAM MOVED
 };
 
@@ -341,7 +340,7 @@ void () ra_leave_queue =
 	remove_player_from_chain(self.next_team, self);
 	remove_player_from_stat_list(self.next_team, self);
 
-	//pqc_erase_team(self.next_team.team2);
+//	pqc_erase_team(self.next_team.team2);
 	ra_leave_next_queue(self.next_team);
 	arena_remove_team(self.next_team);
 
@@ -379,7 +378,7 @@ void () ra_select_team =
 		ra_join_queue ();
 	}
 
-	if (self.impulse == 2)
+	if (self.impulse == 5)
 	{
 		if ((self.ca_player_flag == PF_WAITING) && (self.next_team != world))
 		{
@@ -609,8 +608,8 @@ void () rocket_arena_main_loop =
 	{
 		local string temp;
 		
-		motd_top5 = string_null;
-		motd_top6 = string_null;
+		menu_text[5] = string_null;
+		menu_text[6] = string_null;
 
 		if (number_teams () > 1)
 		{
@@ -619,7 +618,6 @@ void () rocket_arena_main_loop =
 			if (clanring_request.noise1 == "\bforce match start\b")	//cancel Vote to force
 				Request_Poll_Cleanup();
 			
-
 			if (boss.count == 0)
 			{					
 				sound (world, CHAN_ITEM, "crx/fight.wav", 1, ATTN_NONE);
@@ -627,7 +625,9 @@ void () rocket_arena_main_loop =
 				boss.timetofight = TRUE;
 				boss.state = CA_MATCH_PLAYING;	
 				if (boss.round == 1)
+				{
 					announce("The match has begun!");
+				}
 			}
 			else if (boss.count == 1)
 			{

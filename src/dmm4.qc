@@ -166,8 +166,8 @@ void () dmm4_main_loop =
 	{
 		// local string temp;
 
-		motd_top5 = string_null;
-		motd_top6 = string_null;
+		menu_text[5] = string_null;
+		menu_text[6] = string_null;
 
 		if (number_teams () > 1)
 		{

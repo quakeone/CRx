@@ -1,4 +1,4 @@
-//Originally from Zoid's 3Wave
+//Originally from Zoid
 
 /*********\
 * LinkPos *
@@ -6,7 +6,8 @@
 void() LinkPos =
 {
 	//R00k added
-	local vector dir;
+	local vector dir = '0 0 0';
+
 	dir = self.owner.origin - (self.owner.owner.origin + '0 0 16');  
   	self.angles = vectoangles(dir);
 
@@ -21,7 +22,7 @@ void() LinkPos =
 void() HookVanish =
 {
 	self.owner.hook_out = FALSE;
-	self.owner.hook2 = (self.owner.hook2 - (self.owner.hook2 & HOOK_OUT));	
+	self.owner.hook2 = (self.owner.hook2 - (self.owner.hook2 & HOOK_OUT));	//stupid off-hand hook calls this function too :|
 
 	if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
 	{
@@ -40,14 +41,14 @@ void() HookVanish =
 
 void() UnHookPlayer =
 {
-	local entity oself;
+	local entity unhook_self;
 
 	if (self.hook_out)
 	{
-		oself = self;
+		unhook_self = self;
 		self = self.hookentity;
 		HookVanish ();
-		self = oself;
+		self = unhook_self;
 	}
 };
 
@@ -143,18 +144,24 @@ void() HookPull =
 	}
 
 	makevectors (self.owner.v_angle);
-	vel = self.origin - ( self.owner.origin + (v_up * 16 * (!self.owner.button2)) + (v_forward * 16));
+	vel = self.origin - ( self.owner.origin + (v_up * 16  * (!self.owner.button2)) + (v_forward * 16));
 
 	v = vlen (vel);
 
 	if (hookspeedpull < 600)
 		hookspeedpull = 850;
 
-	if ( v > 100 ) //R00k: we're hitting this 90% of the time
-		vel = normalize(vel) * hookspeedpull;
+	if ( v > 100 )
+	{
+		vel = (normalize(vel) * hookspeedpull);
+	}
 	else
-		vel = normalize(vel) * v * 10;
-
+	{
+		if (v <= 100)
+		{			
+				vel = ((normalize(vel) * v) * 10);
+		}
+	}
 
 	self.owner.velocity = vel;
 	
@@ -254,7 +261,7 @@ void() T_HookTouch =
 					sound (self.owner, CHAN_WEAPON, "weapons/chain2.wav", 1, ATTN_NORM);
 				}
 
-				self.style = 3;//was 2 R00k:10-02-07
+				self.style = 3;//was 2 R00k:10-02-07 (if (dorg > 10 && self.style == 3)) occurs more often; initial sound gets stomped
 				self.enemy = other;
 				self.owner.ltime = (time + 0.5);
 				self.nextthink = (time + sys_ticrate);
@@ -345,7 +352,7 @@ void() W_FireHook =
 		sound (self, CHAN_WEAPON, "weapons/chain1.wav", 1, ATTN_NORM);
 	}
 
-	linknum = 5;
+	linknum = 15;
 	prevlink = world;
 	while (linknum)
 	{
@@ -355,7 +362,8 @@ void() W_FireHook =
 		prevlink = link;
 		link.owner = hook;
 		link.enemy = self;
-		link.weapon = (linknum / 6); 
+		link.weapon = (linknum / 16); 
+		link.alpha = (1 / link.weapon) / 4;
 		link.movetype = MOVETYPE_NOCLIP;
 		link.solid = SOLID_NOT;
 		link.angles = vectoangles(hook.velocity);

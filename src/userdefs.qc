@@ -7,8 +7,6 @@
 // All code by J.P. Grossman unless otherwise commented.
 //
 
-// Maximum number of suicides allowed per level in normal and match modes
-float CLANRING_MAX_SUICIDES = 5;
 
 //
 //  I N I T  W O R L D

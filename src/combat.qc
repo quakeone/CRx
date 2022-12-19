@@ -568,7 +568,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	if ((attacker.super_damage_finished > time) && (inflictor.classname != "door"))	//R00k - doors no quad power fix
 	{
-		damage = (damage * 4);
+		damage = damage * 4;
 		if ((((attacker.classname == "player") && (targ != attacker)) && (inflictor.classname != "grenade")))
 		{
 			if ((((targ.classname != "player") || (attacker.team != targ.team)) || !teamplay))

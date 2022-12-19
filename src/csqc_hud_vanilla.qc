@@ -754,13 +754,17 @@ void () CSQC_Parse_Event =
 			cl_teamoverlay[teammate].weapon = readshort();
 			cl_teamoverlay[teammate].ammo = readshort();
 			cl_teamoverlay[teammate].powerup = readshort();
+			cl_teamoverlay[teammate].flagcarrier = readbyte();
 			break;			
+
+		case PQC_FLAG_STATUS:
+			break;
 */
 		case PQC_TEAM_FRAGS:
 			local float frags;
 			team = readbyte();
-			if (team < 0 || team > 15) return;
 			frags = readshort();
+			if (team < 0 || team > 15) return;
 			cl_teamscores[team].frags = frags;
 			break;			
 			

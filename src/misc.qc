@@ -6,6 +6,9 @@ void() event_lightning =
 
 // END_MOD
 
+float START_OFF		= 1;
+float FADE_IN_OUT	= 2;
+
 /*QUAKED info_null (0 0.5 0) (-4 -4 -4) (4 4 4)
 Used as a positional target for spotlights, etc.
 */
@@ -67,21 +70,193 @@ void() info_notnull =
 {
 };
 
-//============================================================================
+/*==========
+lightstyle_lookup
+==========*/
+string(float num) lightstyle_lookup =
+{
+	switch (num)
+	{
+		// 0 normal
+		case 0:
+			return "m";
+			break;
+		// 1 FLICKER (first variety)
+		case 1:
+			return "mmnmmommommnonmmonqnmmo";
+			break;
+		// 2 SLOW STRONG PULSE
+		case 2:
+			return "abcdefghijklmnopqrstuvwxyzyxwvutsrqponmlkjihgfedcba";
+			break;
+		// 3 CANDLE (first variety)
+		case 3:
+			return "mmmmmaaaaammmmmaaaaaabcdefgabcdefg";
+			break;
+		// 4 FAST STROBE
+		case 4:
+			return "mamamamamama";
+			break;
+		// 5 GENTLE PULSE 1
+		case 5:
+			return "jklmnopqrstuvwxyzyxwvutsrqponmlkj";
+			break;
+		// 6 FLICKER (second variety)
+		case 6:
+			return "nmonqnmomnmomomno";
+			break;
+		// 7 CANDLE (second variety)
+		case 7:
+			return "mmmaaaabcdefgmmmmaaaammmaamm";
+			break;
+		// 8 CANDLE (third variety)
+		case 8:
+			return "mmmaaammmaaammmabcdefaaaammmmabcdefmmmaaaa";
+			break;
+		// 9 SLOW STROBE (fourth variety)
+		case 9:
+			return "aaaaaaaazzzzzzzz";
+			break;
+		// 10 FLUORESCENT FLICKER
+		case 10:
+			return "mmamammmmammamamaaamammma";
+			break;
+		// 11 SLOW PULSE NOT FADE TO BLACK
+		case 11:
+			return "abcdefghijklmnopqrrqponmlkjihgfedcba";
+			break;
+		// 12 BLINK OFF / ON (can be synced with animated textures, e.g. +0light and +1light)
+		case 12:
+			return "aamm";	// textures animate at 5fps but lights are 10fps...
+			break;
+		// DEFAULT
+		default:
+			return "a";
+			break;
+	}
+};
 
-float START_OFF    = 1;
+/*==========
+setup_lightstyles
+
+Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
+Styles 32+ are assigned by the light program for switchable lights.
+==========*/
+void() setup_lightstyles =
+{
+	for (float i = 0; i <= 12; i++)
+	{
+		lightstyle(i, lightstyle_lookup(i));
+	}
+};
+
+/*==========
+lightstyle_fade_lookup
+==========*/
+string(float num) lightstyle_fade_lookup =
+{
+	switch (num)
+	{
+		case 0:
+			return "a";
+			break;
+		case 1:
+			return "b";
+			break;
+		case 2:
+			return "c";
+			break;
+		case 3:
+			return "d";
+			break;
+		case 4:
+			return "e";
+			break;
+		case 5:
+			return "f";
+			break;
+		case 6:
+			return "g";
+			break;
+		case 7:
+			return "h";
+			break;
+		case 8:
+			return "i";
+			break;
+		case 9:
+			return "j";
+			break;
+		case 10:
+			return "k";
+			break;
+		case 11:
+			return "l";
+			break;
+		case 12:
+			return "m";
+			break;
+		default:
+			error("count out of range\n");
+			break;
+	}
+};
+
+/*==========
+light_fade_in
+==========*/
+void() light_fade_in =
+{
+	if (self.count < 0)
+		self.count = 0;
+	if (self.count > 12)
+		self.count = 12;
+
+	lightstyle(self.style, lightstyle_fade_lookup(self.count));
+	self.count = self.count + 1;
+	if (self.count > 12)
+		return;
+
+	self.think = light_fade_in;
+	self.nextthink = time + self.speed;
+};
+
+/*==========
+light_fade_out
+==========*/
+void() light_fade_out =
+{
+	if (self.count < 0)
+		self.count = 0;
+	if (self.count > 12)
+		self.count = 12;
+
+	lightstyle(self.style, lightstyle_fade_lookup(self.count));
+	self.count = self.count - 1;
+	if (self.count < 0)
+		return;
+
+	self.think = light_fade_out;
+	self.nextthink = time + self.speed;
+};
 
 void() light_use =
 {
 	if (self.spawnflags & START_OFF)
 	{
-		lightstyle(self.style, "m");
 		self.spawnflags = self.spawnflags - START_OFF;
+		if (self.spawnflags & FADE_IN_OUT && !self.style2)
+			light_fade_in();
+		else
+			lightstyle(self.style, lightstyle_lookup(self.style2));
 	}
 	else
 	{
-		lightstyle(self.style, "a");
 		self.spawnflags = self.spawnflags + START_OFF;
+		if (self.spawnflags & FADE_IN_OUT && !self.style2)
+			light_fade_out();
+		else
+			lightstyle(self.style, "a");
 	}
 };
 
@@ -93,6 +268,10 @@ If targeted, it will toggle between on or off.
 */
 void() light =
 {
+	// default speed for fading in/out
+	if (self.speed <= 0)
+		self.speed = 0.1;
+
 	if (!self.targetname)
 	{	// inert light
 		remove(self);
@@ -103,9 +282,15 @@ void() light =
 	{
 		self.use = light_use;
 		if (self.spawnflags & START_OFF)
+		{
+			self.count = 0;
 			lightstyle(self.style, "a");
+		}
 		else
-			lightstyle(self.style, "m");
+		{
+			self.count = 12;
+			lightstyle(self.style, lightstyle_lookup(self.style2));
+		}
 	}
 };
 
@@ -163,8 +348,7 @@ void() light_globe =
 void() FireAmbient =
 {
 	precache_sound ("ambience/fire1.wav");
-// attenuate fast
-	ambientsound (self.origin, "ambience/fire1.wav", 0.5, ATTN_STATIC);
+	ambientsound (self.origin, "ambience/fire1.wav", 0.2, ATTN_STATIC);
 };
 
 /*QUAKED light_torch_small_walltorch (0 .5 0) (-10 -10 -20) (10 10 20)
@@ -719,3 +903,236 @@ void() misc_noisemaker =
 	self.think = noise_think;
 };
 
+/*****************
+func_togglevisiblewall
+
+A bmodel which you can toggle its visibility. Behaves much like a traditional func_wall in any other way,
+but you can target it to toggle visible/invisible.
+If the entity has a switchable shadow it also toggles.
+
+spawnflag 1: starts invisible
+spawnflag 2: set brush as non-solid
+
+******************/
+
+float TOGGLEVISWALL_STARTOFF = 1;
+float TOGGLEVISWALL_NOTSOLID = 2;
+
+void() func_togglevisiblewall_use =
+{
+	if(!self.state) {
+		if(!(self.spawnflags & TOGGLEVISWALL_NOTSOLID)) {
+			self.solid = SOLID_BSP;
+			self.movetype = MOVETYPE_PUSH;
+		}
+		setmodel (self, self.origmodel);
+		if(self.switchshadstyle) lightstyle(self.switchshadstyle, "a");
+		self.state = 1;
+	} else {
+
+		self.solid = SOLID_NOT;
+		self.movetype = MOVETYPE_NONE;
+		setmodel (self, "");
+		if(self.switchshadstyle) lightstyle(self.switchshadstyle, "m");
+		self.state = 0;
+	}
+
+};
+
+void() func_togglevisiblewall =
+{
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
+
+	self.angles = '0 0 0';
+	self.use = func_togglevisiblewall_use;
+
+	self.origmodel = self.model;
+
+	if(self.spawnflags & TOGGLEVISWALL_STARTOFF) self.state = 1;
+	else self.state = 0;
+
+	if(self.spawnflags & TOGGLEVISWALL_NOTSOLID) {
+		self.solid = SOLID_NOT;
+		self.movetype = MOVETYPE_NONE;
+	}
+
+	func_togglevisiblewall_use();
+
+};
+
+/*****************
+func_shadow
+
+An invisible bmodel that can be used to only cast shadows.
+
+******************/
+
+void() func_shadow = {
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
+
+	self.angles = '0 0 0';
+	self.movetype = MOVETYPE_NONE;
+	self.solid = SOLID_NOT;
+
+	self.modelindex = 0;
+	self.model = "";
+
+}
+
+/********************
+misc_shadowcontroller
+
+Controls switchable shadows on any bmodel entity (except doors).
+Target entity must have set _switchableshadow set to 1.
+
+speed: Controls the time in seconds it takes to fade the shadow in. Default is 0.5, and setting it to -1 disables fading.
+speed2: Same as 'speed' but for the fade out animation. If unset it's the same value as 'speed'.
+spawnflag 1: target shadow starts as disabled
+
+*********************/
+
+float SHADOWCONTROLLER_STARTOFF = 1;
+
+void() shadow_fade_out =
+{
+	if (self.count < 0)
+		self.count = 0;
+	if (self.count > 12)
+		self.count = 12;
+
+	dprint(ftos(self.count));dprint("\n");
+
+	lightstyle(self.switchshadstyle, lightstyle_fade_lookup(self.count));
+	self.count = self.count + self.dmg;
+	if (self.count > 12)
+		return;
+
+	self.think = shadow_fade_out;
+	self.nextthink = time + self.delay;
+};
+
+void() shadow_fade_in =
+{
+	if (self.count < 0)
+		self.count = 0;
+	if (self.count > 12)
+		self.count = 12;
+
+	dprint(ftos(self.count));dprint("\n");
+
+	lightstyle(self.switchshadstyle, lightstyle_fade_lookup(self.count));
+	self.count = self.count - self.dmg;
+	if (self.count < 0)
+		return;
+
+	self.think = shadow_fade_in;
+	self.nextthink = time + self.delay;
+
+};
+
+void(float speed) misc_shadowcontroller_setsteps = {
+	// self.delay -> time between steps
+	// self.dmg -> step size
+	if(speed >= 0.24) {
+		self.delay = (speed/12);
+		self.dmg = 1;
+	}
+	else if(speed >= 0.12) {
+		self.delay = (speed/6);
+		self.dmg = 2;
+	}
+	else if(speed >= 0.06) {
+		self.delay = (speed/3);
+		self.dmg = 4;
+	}
+	else if(speed >= 0.04) {
+		self.delay = (speed/2);
+		self.dmg = 6;
+	}
+	else {
+		self.delay = 0;
+		self.dmg = 12;
+	}
+
+}
+
+void() misc_shadowcontroller_use = {
+
+	if(self.shadowoff) {
+		dprint("Fade in:\n");
+
+		misc_shadowcontroller_setsteps(self.speed);
+
+		shadow_fade_in();
+
+		self.shadowoff = 0;
+	} else {
+		dprint("Fade out:\n");
+
+		misc_shadowcontroller_setsteps(self.speed2);
+
+		shadow_fade_out();
+
+		self.shadowoff = 1;
+	}
+}
+
+void() misc_shadowcontroller = {
+	entity t1;
+
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
+
+
+	// doesn't search for a target if switchshadstyle is already set
+	// used for built-in shadow controllers
+	if(!self.switchshadstyle) {
+
+		// we need to find only the first target entity with switchable shadows set, since shadow lightstyles are bound by targetname
+
+
+		t1 = find(world, targetname2, self.target);
+
+		while(t1 != world && !t1.switchshadstyle) {
+			t1 = find(t1, targetname2, self.target);
+		}
+
+		if(t1 == world) {
+			t1 = find(world, targetname, self.target);
+
+			while(t1 != world && !t1.switchshadstyle) {
+				t1 = find(t1, targetname, self.target);
+			}
+		}
+
+
+		if(t1 == world) {
+			dprint("\b[misc_shadowcontroller]\b _switchableshadow not set in target ");dprint(self.target);dprint("\n");
+			return;
+		}
+
+		self.switchshadstyle = t1.switchshadstyle;
+	}
+
+	if(!self.speed) self.speed = 0.5;
+	if(!self.speed2) self.speed2 = self.speed;
+
+	if(self.spawnflags & SHADOWCONTROLLER_STARTOFF) {
+		lightstyle(self.switchshadstyle, "m");
+
+		self.shadowoff = 1;
+		self.count = 12;
+
+		misc_shadowcontroller_setsteps(self.speed2);
+	}
+	else {
+		lightstyle(self.switchshadstyle, "a");
+		self.shadowoff = 0;
+		self.count = 0;
+		misc_shadowcontroller_setsteps(self.speed);
+	}
+
+	self.use = misc_shadowcontroller_use;
+}

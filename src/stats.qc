@@ -119,8 +119,8 @@ void() stats_show_quadstats =
 	sprint(self, "\n");
 	sprint(self, "\bquad damage\b\n");
 	sprint(self, "\n");
-	sprint(self, "quadsütimeüeffüoppüslfütm ü     name\n");
-	sprint(self, "­­­­­«­­­«­­­«­­­«­­­«­­­­­­­­­­­­­­­\n");
+	sprint(self,   "quadsütimeüeffüoppüslfütm ü     name\n");
+	sprint(self, "\b-----+----+---+---+---+---+---------------­­­­\n");
 	player = clanring_sentinel.next_player;
 	pteam = player.next_team;
 	while (player)

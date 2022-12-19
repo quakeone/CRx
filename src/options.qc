@@ -510,7 +510,7 @@ void () options_display =
 {
     self.delay = time + 0.5;
 
-    if ((clanring_state & CLANRING_MATCH_PAUSED) || (self.style & CLANRING_MOTD))
+	if ((clanring_state & CLANRING_MATCH_PAUSED) || (self.style & CLANRING_MENU))
         return;
 
     if ((self.t_length & 127) < 10)
@@ -575,8 +575,6 @@ float () options_get_mode =
         return ADMIN_AIRSHOT_MODE;
     if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
         return ADMIN_CTF_MODE;
-    if (clanring_playmode & CLANRING_PRACTICE_MODE)
-        return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_PRACTICE_MODE)
         return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_MATCH_MODE)

@@ -9,7 +9,7 @@ void () stats_team_stats;
 void () RemoveFromTeam;
 void () ra_select_team;
 void() Request_Poll_Cleanup;
-float (string captiona, string captionb, void() passfunc, optional string pollname = "") vote_init;
+float (string captiona, string captionb, void() passfunc, string pollname = "") vote_init;
 float () W_BestWeapon;
 void () score_update_time;
 void () SUB_regen;
@@ -140,7 +140,7 @@ float (entity e) IS_CA_OBSERVER
      else
         return FALSE;
 }
-  
+
 float (entity team1) number_teammates =
 {
 	local entity e;
@@ -298,7 +298,7 @@ void (string msg) ctprint =
 // Add player to the beginning of the chain
 void(entity list, entity player) add_player_to_chain_pre =
 {
-	//??? if (list == world) return;
+	if (list == world) return;//Avoid assignment to world entity errors, has happened before, still needed?
 	
 	player.chain_gang = list.chain_gang;
 	list.chain_gang = player;
@@ -357,7 +357,7 @@ float (entity list, entity player) ca_check_player_in_list =
 
 void (entity list, entity player) add_player_to_stat_list =
 {
-	if (ca_check_player_in_list(list, player) == FALSE)// just incase
+	if (ca_check_player_in_list(list, player) == FALSE)// just in case
 	{
 		player.next_player = list.next_player;
 		list.next_player = player;
@@ -1041,8 +1041,8 @@ void(float whichteam) Join_Team =
 
 	ready_name();
 
-	motd_top5 = string_null;
-	motd_top6 = string_null;
+	menu_text[5] = string_null;
+	menu_text[6] = string_null;
 	stats_reset_player (); //BAM MOVED
 };
 
@@ -1098,8 +1098,8 @@ float (float n) join_team2 =
 	stuffcmd(self,tmp);
 	stuffcmd(self," 0;\n");
 
-	motd_top5 = string_null;
-	motd_top6 = string_null;
+	menu_text[5] = string_null;
+	menu_text[6] = string_null;
 	stats_reset_player ();
 	return TRUE;
 };
@@ -1225,20 +1225,20 @@ void (float whichteam) Request_Join_Team =
 	}*/
 };
 //---------------------------------------------------------------------------------------------
-void () Teamplay_Select_Team =
+void () Arena_Select_Team =
 {
 	if (clanring_playmode & CLANRING_RA_MODE)
 	{
 		ra_select_team();
 		return;
 	}
-
+/*
 	if (!(clanring_playmode & CLANRING_CA_MODE))
 	{
 		// Teamplay_Join_Queue();
 		// return;
 
-		if (self.impulse == 1)
+		if (self.impulse == 1)	
 		{
 			if (number_teams() < 1)
 				self.impulse = 1;
@@ -1250,17 +1250,13 @@ void () Teamplay_Select_Team =
 					self.impulse = 1;
 			}
 		}
-		else if (self.impulse == 2)
-		{
-			self.impulse = 5;
-		}
 		else
 		{
 			self.impulse = 0;
 			return;
 		}
 	}
-
+*/
 	if (boss.busy == TRUE)
 	{
 		sprint(self,"Cleaning up match end. Try again in a few seconds...\n");
@@ -1302,7 +1298,7 @@ void () Teamplay_Select_Team =
 	// We don't want this team anymore
 	if (self.impulse == 5)
 	{
-		motd_arena_start();	//r00k
+		self.style = self.style | CLANRING_MENU;
 		if (self.cc_queue_vote)
 		{
 			if (/*(clanring_request.classname == "cc_vote") && */(clanring_request.owner == self))//FIXME: clanring_request doesnt have a dynamic classname; this will always be false.
@@ -1313,7 +1309,7 @@ void () Teamplay_Select_Team =
 		}
 
 		//allow player to leave team when they are waiting or between rounds
-		if ((self.ca_player_flag == PF_WAITING) || (boss.state == CA_MATCH_ROUNDSTART))
+		if (boss.state == CA_MATCH_WAITING)
 		{
 			if (self.next_team != world)
 			RemoveFromTeam ();
@@ -1427,7 +1423,7 @@ void () arena_fight_and_shoot =
 {
 	if (!(self.style & CLANRING_OK_TO_SHOOT))
 		self.style = self.style | CLANRING_OK_TO_SHOOT;
-
+		
 	self.killstreak = 0;
 	self.combo_frags = 0;
 	self.combo_time = 0;
@@ -1584,7 +1580,7 @@ void () report_mvp_game =
 		current_player = find(current_player, classname, "player");
 	}
 
-	ca_mvp_entity = current_player;//R00k added for MVP Intermission
+//	ca_mvp_entity = current_player;//R00k added for MVP Intermission
 
 	smvp = ftos(mvp);
 	announce4(name," was the \bmatch\b MVP with ",smvp," points of damage given.");
@@ -1685,6 +1681,7 @@ void () arena_match_end =
 	boss.count 		 = 10;
 	boss.wait 		 = 0;
 	boss.timetofight = FALSE;
+//	boss.quadtime = 0;
 	boss.state 		 = CA_MATCH_CLEANUP;
 
     gameover = FALSE;
@@ -1719,7 +1716,7 @@ void() arena_refresh_player =
 	}
 	self.model  = string_null;
 	self.mdl = string_null;
-	self.killed	 = FALSE;
+	self.killed	 = FALSE;//needed?
 	self.respawntime = 0;
 	self.rounddeaths = 0;
 
@@ -1744,6 +1741,7 @@ void() reset_round =
 		utils_do_item(votables_disable_item, "item_artifact_super_damage");
 
 	boss.timetofight = FALSE;
+//	boss.quadtime = 0;
 	boss.wait   = 0;
 	boss.count  = (clanring_playmode & CLANRING_RA_MODE) ? 6 : 10;
 	boss.round  = boss.round + 1;
@@ -1853,7 +1851,6 @@ void() round_end =
 		if (wteam != world)//ugh lagouts cause all hell
 		{
 			wteam.wins = wteam.wins + 1;//up team rounds won
-			//pqc_team_frags(wteam.team2, wteam.wins);
 
 			bprint ("\n");
 			if (wteam.chain_gang != world)
@@ -2045,8 +2042,8 @@ void(float whichteam) Join_Queue =
 	// stuffcmd(self,tmp);
 	// stuffcmd(self,";\n");
 
-	motd_top5 = string_null;
-	motd_top6 = string_null;
+	menu_text[5] = string_null;
+	menu_text[6] = string_null;
 	stats_reset_player (); //BAM MOVED
 };
 

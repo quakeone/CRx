@@ -24,7 +24,7 @@
 // Prototypes:
 void() observer_chase_start;
 void() observer_camera_start;
-
+void() observer_demo_start;
 
 // CRMOD
 // A U T O  C O M P U T E  S C O R E
@@ -244,6 +244,18 @@ void() auto_chase_start =
 	self.oflags = self.oflags | OBSERVER_QUAKETV;//R00k added OBSERVER_QUAKETV
 	self.oflags = self.oflags | OBSERVER_GO_AUTO;
 	observer_chase_start ();
+};
+
+// CRMOD
+//  A U T O  P O V  S T A R T
+//    not by Paul Baker
+//
+//  start autoeyecam from anywhere
+void() auto_pov_start =
+{
+	self.oflags = self.oflags | OBSERVER_QUAKETV;//R00k added OBSERVER_QUAKETV
+	self.oflags = self.oflags | OBSERVER_GO_AUTO;
+	observer_demo_start ();
 };
 
 // CRMOD

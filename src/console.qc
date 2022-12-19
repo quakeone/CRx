@@ -386,7 +386,6 @@ void() console_show_killstats =
 	cprint("\"------------\"\n");
 	cprint("\" frags | enemies | self | teammates | killed | dtk | dgv |     name\"\n");
 	cprint(  "-------+---------+------+-----------+--------+-----+-----+-----------------\n");
-
 	if (mode_is_arena())
 	{
 		if (boss.next_team)
@@ -418,7 +417,6 @@ void() console_show_killstats =
 		localcmd("|");
 		utils_cprint_damage(player.dmg_given);      		
 		localcmd3("| ", player.netname, "\"\n");
-
 		if (mode_is_arena())
 		{
 			if (player.next_player)
@@ -432,6 +430,7 @@ void() console_show_killstats =
 		{
 			player = player.next_player;
 		}
+
 
 		c = c - 1;
 	}
@@ -474,7 +473,7 @@ void() console_show_quadstats =
 	local float useteams;
 //	local string teamname;
 
-	if ((clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)) && teamplay)
+	if (teamplay && (clanring_state & CLANRING_MATCH_STARTED))
 		useteams = TRUE;
 	else
 		useteams = FALSE;
@@ -1058,8 +1057,8 @@ void() console_client_flags =
 		cprint("CLANRING_HEADS_UP\n");
 	if (clanring_debug_client.style & CLANRING_SETTING_OPTIONS)
 		cprint("CLANRING_SETTING_OPTIONS\n");
-	if (clanring_debug_client.style & CLANRING_MOTD)
-		cprint("CLANRING_MOTD\n");
+	if (clanring_debug_client.style & CLANRING_MENU)
+		cprint("CLANRING_MENU\n");
 	if (clanring_debug_client.style & CLANRING_OK_TO_SHOOT)
 		cprint("CLANRING_OK_TO_SHOOT\n");
 	if (clanring_debug_client.style & CLANRING_KICK_CONFIRM)
@@ -1229,13 +1228,14 @@ void() console_version_info =
 //
 //  Check to see if we've found the next level in levels.cfg
 //
+/*
 void(float newlevel) console_check_level =
 {
 	local string s;
 	
 	s = strings_get_mapname (newlevel);
 
-	// if clanring_levelcount == -1 then we haven't executed levels.cfg, so
+	// if clanring_levelcount == -1 then we HAVE executed levels.cfg, so
 	// change levels immediately.
 	if (clanring_levelcount == -1)
 	{
@@ -1273,7 +1273,7 @@ void() console_get_user_nextlevel =
 	clanring_nextcheck = 0;
 	remove(self);
 };
-
+*/
 //
 //  G E T  O R I G I N
 //
@@ -1721,13 +1721,13 @@ void(float command) console_command =
 			return;
 		}
 	}
-
+/*
 	if (command >= 100 && command < 200)
 	{
 		console_check_level(command - 100);
 		return;
 	}
-
+*/
 	if (command >= 80 && command <= 89)
 	{
 		arg = cvar("skill");
@@ -2143,7 +2143,6 @@ void () AirshotHighScores_sprint =
 	sprint(self, "\bAir Gib Streak Leaders\b:\n", s1, s2, s3, "\bHighest Air Gibs\b:\n", s4, "\n");
 	return;
 };
-
 void () LongRangeGibs_sprint =
 {
 	local string s1="",s2="",s3="",s4="";

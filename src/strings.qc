@@ -218,6 +218,23 @@ string (entity e) strings_get_weapon =
     }
 };
 
+//
+//	G E T  W E A P O N  N A M E 
+//
+//	returns the name of the weapon
+//
+string (float w) strings_get_weaponname =
+{
+	if (w == 32) 	return "Rocket Launcher";
+	if (w == 64) 	return "Lightning Gun";
+	if (w == 16) 	return "Grenade Launcher";
+	if (w == 8) 	return "Super Nailgun";
+	if (w == 2) 	return "Super Shotgun";
+	if (w == 4)		return "Nailgun";
+	if (w == 1)		return "Shotgun";
+	if (w == 4096) 	return "Axe";
+					return "Fist";
+}
 
 //
 //  G E T  H E A L T H  A M M O
@@ -229,6 +246,8 @@ string (entity e) strings_get_weapon =
 //
 string (entity e) strings_get_health_ammo =
 {
+	local string temp;
+/*	TODO: remove this...
 	if (e.health <= 125)
 	{
 		if (e.health <= 65)
@@ -367,6 +386,10 @@ string (entity e) strings_get_health_ammo =
 			}
 		}
 	}
+*/
+	temp = sprintf("  Èåáìôèº %03g  Áííïº", e.health);
+	return temp;
+
 };
 
 //
@@ -734,7 +757,9 @@ string (float mode) strings_get_mode =
 		case 5: return "RA";
 		case 6: return "Airshot";
 		case 7: return "DMM4";
-		case 8: return "Wipeout";		
+		case 8: return "Wipeout";
+		//case 9: return "Freezetag";
+		//case 10: return "SpeedBall";		
 	}
 	return "";
 };
@@ -752,6 +777,8 @@ string (float mode) strings_get_mode_gold =
 		case 6: return "\bAirshot";
 		case 7: return "\bDMM4";
 		case 8: return "\bWipeout";
+		//case 9: return "Freezetag";
+		//case 10: return "SpeedBall";
 	}
 	return "";
 };
@@ -764,7 +791,7 @@ string (float mode) strings_get_mode_gold =
 //
 string (float n) strings_szplural =
 {
-    if (n == 1)
-        return "";
+    if ((n == 1)||(n == -1))
+        return "";	
     return "s";
 };

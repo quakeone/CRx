@@ -503,6 +503,7 @@ void() observerforce =
 		bprint(self.netname);
 		bprint(" was forced \bobserver\b because of inactivity.\n");
 		respawn();//required?
+
 		observer_start();
 	}
 };
@@ -567,7 +568,7 @@ void() PlayerDead =
 		if (!gameover)			
 		{
 			self.think = respawn;
-			if ((deathmatch == 4) || (deathmatch == 5))
+			if (deathmatch == 4)
 			{
 				self.nextthink = time + 1;
 			}
@@ -702,11 +703,13 @@ void() PlayerDie =
 	{
 		im_dead_now_what();
 
-		if ((self.super_damage_finished > time) && (self.items & IT_QUAD))
-		{
-			self.totalquad += (time - self.quadtime);
-			//wipeout_drop_quad (self.super_damage_finished - time);
-		}
+//		if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.items & IT_QUAD))
+//		{
+//			boss.quadtime = 0;
+//
+//			if (self.super_damage_finished > time)
+//				wipeout_drop_quad (self.super_damage_finished - time);
+//		}
 	}
 
 	self.items 					= self.items - (self.items & (IT_INVISIBILITY | IT_INVULNERABILITY | IT_SUIT | IT_QUAD| IT_SUPERHEALTH));	

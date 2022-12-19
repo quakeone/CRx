@@ -133,6 +133,9 @@ void () quaketv_check_control =
 //
 void (entity player) quaketv_obtained_rl = 
 {
+	if (match_prewar()) //Just in case.
+		return;
+
 	if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))
 	{
 		player.next_team.ammo_rockets = player.next_team.ammo_rockets + 1;
@@ -161,7 +164,10 @@ void (entity player) quaketv_obtained_rl =
 //
 void (entity player) quaketv_lost_rl = 
 {
-	if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))
+	if (match_prewar())
+		return;
+
+	if ((teamplay && (clanring_playmode & CLANRING_MATCH_MODE))&&(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))//R00k: only annouce this during TeamDeathMatch
 	{
 		player.next_team.ammo_rockets = player.next_team.ammo_rockets - 1;
 		clanring_sentinel.ammo_rockets = clanring_sentinel.ammo_rockets - 1;

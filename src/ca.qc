@@ -19,9 +19,9 @@ void () clan_arena_init_world =
     boss.ammo_nails  	= 100;
     boss.ammo_rockets	= 50;
     boss.ammo_cells  	= 30;
-    boss.items = ((((((((IT_SHOTGUN | IT_AXE) | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_SUPER_SHOTGUN) | IT_NAILGUN) | IT_GRENADE_LAUNCHER) | IT_LIGHTNING) | IT_SUPER_NAILGUN);
-    boss.weapon = IT_ROCKET_LAUNCHER;// W_BestWeapon();
-
+    boss.items 			= IT_SHOTGUN | IT_AXE | IT_ROCKET_LAUNCHER | IT_ARMOR3 | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_GRENADE_LAUNCHER | IT_LIGHTNING | IT_SUPER_NAILGUN;
+//    boss.quadtime 		= 0;
+    boss.weapon 		= IT_ROCKET_LAUNCHER;// W_BestWeapon();
 	boss.timetofight 	= FALSE;
 	boss.next_team 		= world;
 	boss.busy			= FALSE;
@@ -63,7 +63,7 @@ void () arena_main_loop =
 						team_alive += 1;
 
 						// if (e.teamalive == 1 && e.teamtotal > 1)
-						// 	spawn_quad = TRUE;
+						//	spawn_quad = TRUE;
 					}
 					e = e.next_team;
 				}
@@ -115,8 +115,8 @@ void () arena_main_loop =
 	{
 		local string temp;
 
-		motd_top5 = string_null;
-		motd_top6 = string_null;
+		menu_text[5] = string_null;
+		menu_text[6] = string_null;
 
 		if (number_teams () > 1)
 		{

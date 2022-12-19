@@ -95,43 +95,43 @@ void (string s1, string s2, string s3, string s4, string s5, string s6, string s
 
 void (string s1) cprint =
 {
-	localcmd2("echo ", s1);
+	localcmd2(";echo ", s1);
 };
 
 void (string s1, string s2) cprint2 =
 {
-	localcmd3("echo ", s1, s2);
+	localcmd3(";echo ", s1, s2);
 };
 
 void (string s1, string s2, string s3) cprint3 =
 {
-	localcmd4("echo ", s1, s2, s3);
+	localcmd4(";echo ", s1, s2, s3);
 };
 
 void (string s1, string s2, string s3, string s4) cprint4 =
 {
-	localcmd5("echo ", s1, s2, s3, s4);
+	localcmd5(";echo ", s1, s2, s3, s4);
 };
 
 void (string s1, string s2, string s3, string s4, string s5) cprint5 =
 {
-	localcmd6("echo ", s1, s2, s3, s4, s5);
+	localcmd6(";echo ", s1, s2, s3, s4, s5);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6) cprint6 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+	localcmd7(";echo ", s1, s2, s3, s4, s5, s6);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6, string s7) cprint7 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+	localcmd7(";echo ", s1, s2, s3, s4, s5, s6);
 	localcmd(s7);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6, string s7, string s8) cprint8 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+	localcmd7(";echo ", s1, s2, s3, s4, s5, s6);
 	localcmd2(s7, s8);
 };
 
@@ -250,11 +250,7 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 	if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);
-		if ((client > 16)||(client < 0))
-		{
-			cprint("ERROR: setcolour: invalid client slot\n"); //output to console for debugging.
-			return;
-		}
+		bound (0, client, 15);
 		msg_entity = ent;
 		WriteByte(MSG_ALL, SVC_UPDATECOLORS);
 		WriteByte(MSG_ALL, client);
@@ -278,15 +274,12 @@ void (entity ent, string c_name) updatename =
 {
 	local float client;
 
-	//if (ent.style & CLANRING_CONNECTED)
+	if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);
 
-		if ((client > 16)||(client < 0))
-		{
-			cprint("ERROR: updatename: invalid client slot\n"); //output to console for debugging.
-			return;
-		}
+		bound (0, client, 15);
+
 		msg_entity	= ent;
 		WriteByte	(MSG_ALL, SVC_UPDATENAME);
 		WriteByte	(MSG_ALL, client);
@@ -327,19 +320,35 @@ void () ready_name =
 
 void () afk_name =
 {
-	local string text;
+	local string text, tm = "";
+	local float t, m;
+
+	t = (time - self.afk_time);
+	m = (floor( t / 60 ));
+	tm = ftos(m);
 
 	if ((self.style & CLANRING_READY) && (!(clanring_state & CLANRING_MATCH_STARTED)) && (!(clanring_state & CLANRING_MATCH_OVER)))
+	{
 		text = "\bReady AFK\b";
+	}
 	else
+	{
 		if (self.health < 1)
 			text = "\bdead\b \bAFK\b";		
 		else
-			text = "\bAFK\b";
-	
+		{
+			if (t < clanring_afk_check)	//If someone manually typed 'afk' then indicate now.
+				text = "\bAFK\b brb";
+			else
+			{
+				if (((clanring_afk_timeout/60) - m) < 2)	//Display time as RED if less than two minutes left before being kicked...
+					tm = redify(tm);
+				text = sprintf("\bAFK\b %sm",tm);
+			}
+		}
+	}
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
-	stuffcmd(self, "cmd setinfo afk yes\n");// woods
 };
 
 void () dead_name =
@@ -356,19 +365,47 @@ void () dead_name =
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
 };
-//FIXME: need to fix levels.cfg
+
+float(string maparg) found_in_warp_list;
+
 void (string s) changelevel =
-{/*
-	if (clanring_levelcount != -1)
+{	
+	if (!(found_in_warp_list(s)))//This is in case the variable 'nextmap' got corrupted. :|
 	{
-		cprint("changelevel: still checking levels.cfg\n");
-		return;
+		cprint(sprintf("**WARNING** Invalid nextmap(%s) Loading default map(%s)\n",nextmap,default_nextmap));//print out a warning with the value of 'nextmap'...
+		s = default_nextmap;
 	}
-	if (s == "")
-		localcmd("changelevel e4m3\n");
-	else*/
-		localcmd3("changelevel ", s, "\n");
+	bprint(sprintf("\nLoading map %s, please wait...\n",s));	//added this so the [.] icon doesnt freak people out...
+	localcmd3(";changelevel ", s, "\n");
 };
+
+/*
+//R00k: simpler implementation to format a string of time
+//t is in seconds the return string is as MM:SS
+string (float t) utils_format_time_from_seconds =
+{
+	local string text, tm = "";
+	local float t, m, s;
+
+	tm = "00:00";
+
+	m = (floor( t / 60 ));
+	s = floor((( t / 60 ) - m)*60);
+	//todo: add centiseconds for hundreth of a second 
+	c = floor((((((t/60)-m)*60)-s)*100));
+
+	if (m < 10)
+		tm = strreplace("0:", strcat(ftos(m),":"), tm);
+	else
+	 	tm = strreplace("00:", strcat(ftos(m),":"), tm);
+
+	if (s < 10)
+	  	tm = strreplace(":00", strcat(":0",ftos(s)), tm);
+	else
+		tm = strreplace(":00", strcat(":",ftos(s)), tm);
+	return tm;
+}
+*/
 
 void (entity client, float x) utils_sprint_time =
 {
@@ -449,7 +486,7 @@ void (float t) utils_cprint_time =
 	
 	minutes = floor((t/60));
 	seconds = floor((((t/60)-minutes)*60));
-	csec    = floor((((((t/60)-minutes)*60)-seconds)*100));
+	csec    = floor((((((t/60)-minutes)*60)-seconds)*100));//centisecond 
 	//--------------------
 	utils_cprint_int2 (minutes);
 	//--------------------
@@ -578,7 +615,6 @@ string (float t) utils_get_time =
 
 	return sprintf("%s:%s.%s",tmin,tsec,tcsec);
 };
-
 //
 //  B P R I N T  F L O A T
 //
@@ -707,16 +743,6 @@ void (float f) utils_print_int3_gold =
 	sprint(self, s);
 };
 
-/*
-float () get_top_color =
-{
-	local float tc;
-
-	tc = floor((self.cl[CL_COLORS] / %1) / 16);
-
-	return tc;
-};
-*/
 void (float f) utils_print_damage_gold =
 {
    	local float n;
@@ -1153,13 +1179,13 @@ void (void () dofunc) utils_do_flags =
 	utils_do_item(dofunc, "item_flag_team2");
 };
 
-void (void () dofunc) utils_do_match_spawns =
+void (void () dofunc) utils_do_match_markers =
 {
     utils_do_item(dofunc, "info_player_deathmatch");
     utils_do_item(dofunc, "info_player_team1");
     utils_do_item(dofunc, "info_player_team2");
+	utils_do_item(dofunc, "info_teleport_destination");
 };
-
 void () reset_frags =
 {
 	if (self.next_team == world)
@@ -1183,6 +1209,11 @@ void (void () dofunc) utils_do_arena_players =
 	self = oldself;
 };
 
+void () utils_remove_ok_to_shoot =
+{
+	self.style = self.style - (self.style & CLANRING_OK_TO_SHOOT);
+}
+
 //
 //  D O  P L A Y E R S
 //
@@ -1204,22 +1235,6 @@ void (void () dofunc) utils_do_players =
     self = oldself;
 };
 
-/*
-void (void () dofunc) utils_do_players_event =
-{
-    local entity oldself;
-
-    oldself = self;
-    self = find(world, classname, "player");
-    while (self)
-    {
-        if (self.style & CLANRING_CONNECTED)
-		utils_make_scheduled_event(dofunc,0.1);
-        self = find(self, classname, "player");
-    }
-    self = oldself;
-};
-*/
 //
 //  S T O F
 //
@@ -1666,32 +1681,40 @@ float (entity e) client_ping =
 {	
 	local float ping;
 
-	ping = stof(infokey(e,INFOKEY_P_PING));
+	ping = stof(infokey(e,INFOKEY_P_PING));//Check for infokey first
+
+	if (ping <= 2) 
+	{
+		ping = e.ping_time;
+	}
+	
 	return ping;
 };
 
+//
+//  S E N D  P I N G  T I M E S
+//
+
 void ()pqc_ping_times =
 {	
-	local entity e;
-	local float i, ping;
+	local float ping, i;
 
 	WriteByte(MSG_ALL, SVC_STUFFCMD);
 	WriteByte(MSG_ALL, MOD_PROQUAKE);
 	WriteByte(MSG_ALL, PQC_PING_TIMES);
 
-	e = world;
-	for (i = 0; i < 16; i = i + 1)
-	{		
-		e = nextent (e);
-		
-		if ((e.style & CLANRING_CONNECTED) && e.ping_time)
+	i = 0;
+
+	for(entity client = findflags(world, flags, FL_CLIENT); client; client = findflags(client, flags, FL_CLIENT))
+	{
+		if (client.style & CLANRING_CONNECTED)
 		{
-			ping = e.ping_time;
+			ping = client_ping(client);
 			WriteShortPQ (MSG_ALL, ping + (i * 4096));
+			i += 1;
 		}
 	}
-
-	WriteShortPQ (MSG_ALL, 0);
+	WriteShortPQ(MSG_ALL, 0);
 	WriteString(MSG_ALL, string_null);
 };
 

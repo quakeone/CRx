@@ -69,7 +69,6 @@ void() match_init_world =
 float() match_prewar =
 {
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//Fixed non matchmode unlimited ammo
-	
 		return FALSE;
 
 	if ((clanring_playmode & CLANRING_MATCH_MODE)&&((clanring_state & CLANRING_MATCH_STARTED)))
@@ -220,8 +219,16 @@ void() match_gib_player =
 {
 	if (self.style & CLANRING_OBSERVER)
 	{
-		stuffcmd(self, "color 0\n");
-		clear_name();
+		if (self.style & CLANRING_READY)
+		{
+			self.style = self.style - (self.style & CLANRING_MENU);
+			observer_end();	// This does the same thing as non-observers below. Clear name, set frags to 0, reset stats; just no gib-fountain.
+		}
+		else
+		{
+			stuffcmd(self, "color 0\n");
+			clear_name();
+		}
 	}
 	else
 	{
@@ -356,13 +363,19 @@ void() match_sprint_status =
 	{
 		score = ftos(clanring_first_place.frags);
 		temp = strings_szplural(clanring_first_place.frags);
-		sprint7(self, clanring_szthe, clanring_first_place.netname, " has ", score, " frag", temp, "\n");
+		if (!(clanring_state & CLANRING_MATCH_OVER))
+			sprint7(self, clanring_szthe, clanring_first_place.netname, " has ", score, " frag", temp, "\n");
+		else
+			sprint7(self, clanring_szthe, clanring_first_place.netname, " had ", score, " frag", temp, "\n");
 	}
 	if (clanring_second_place != clanring_sentinel)
 	{
 		score = ftos(clanring_second_place.frags);
 		temp = strings_szplural(clanring_second_place.frags);
-		sprint7(self, clanring_szthe, clanring_second_place.netname, " has ", score, " frag", temp, "\n");
+		if (!(clanring_state & CLANRING_MATCH_OVER))
+			sprint7(self, clanring_szthe, clanring_second_place.netname, " has ", score, " frag", temp, "\n");
+		else
+			sprint7(self, clanring_szthe, clanring_second_place.netname, " had ", score, " frag", temp, "\n");
 	}
 };
 
@@ -382,70 +395,52 @@ void() match_check_autoss =
 	clanring_match_timer.nextthink = time + 2;
 };
 
-// void() match_pregame_sound =
-// {
-// 	local float	prnd = floor(random() * 15) + 1;
-//  	if (clanring_maxsize == 1)
-// 	 {
-// 		 if (prnd > 8)
-// 		 	sound (world, CHAN_AUTO, "crx/title.wav", 1, ATTN_NONE);
-// 		return;
-// 	 }
-
-// 	if (prnd == 6)
-// 	{
-// 		sound (world, CHAN_AUTO, "crx/shrtgame.wav", 1, ATTN_NONE);
-// 	}
-// 	else if (prnd == 7)
-// 	{
-// 		sound (world, CHAN_AUTO, "crx/title.wav", 1, ATTN_NONE);
-// 	}
-// 	else if (prnd == 8)
-// 	{
-// 		sound (world, CHAN_AUTO, "crx/takeem.wav", 1, ATTN_NONE);
-// 	}
-// };
-
 void(float score_diff) match_postgame_sound =
 {
 	local float prnd;
-
 	prnd = random();
-	if (prnd < .5)
+	if (prnd < .8)
 	{
 		if (((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 200)) ||
 			(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 40)))
 		{
-			// prnd = random();
-			// if (prnd < .5)
-				sound (world, CHAN_AUTO, "crx/pathetic.wav", 1, ATTN_NONE);
+			if (clanring_matchsound_blowout_count)
+			{
+				prnd = floor(random() * clanring_matchsound_blowout_count);
+				if (matchsound_blowout[prnd] != "")
+				{
+					sound (world, CHAN_AUTO, matchsound_blowout[prnd], 1, ATTN_NONE);
+					return;
+				}
+			}
 		}
 		else if (((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff < 50)) ||
 			(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff < 10)))
 		{
-			prnd = random();
-			if (prnd < .5)
-				sound (world, CHAN_AUTO, "crx/rematch1.wav", 1, ATTN_NONE);
-			else
-				sound (world, CHAN_AUTO, "crx/rematch2.wav", 1, ATTN_NONE);
-			// else
-			// 	sound (world, CHAN_AUTO, "crx/wewin.wav", 1, ATTN_NONE);
+			if (clanring_matchsound_rematch_count)
+			{
+				prnd = floor(random() * clanring_matchsound_rematch_count);
+				if (matchsound_rematch[prnd] != "")
+				{
+					sound (world, CHAN_AUTO, matchsound_rematch[prnd], 1, ATTN_NONE);
+					return;
+				}
+			}
 		}
 		else
 		{
-			prnd = random();
-			if (prnd < .33)
-				sound (world, CHAN_AUTO, "crx/giveup.wav", 1, ATTN_NONE);
-			else if (prnd < .66)
-				sound (world, CHAN_AUTO, "crx/thatgame.wav", 1, ATTN_NONE);
-			else
-				sound (world, CHAN_AUTO, "crx/gameover.wav", 1, ATTN_NONE);
+			if (clanring_matchsound_count)
+			{
+				prnd = floor(random() * clanring_matchsound_count);
+				if (matchsound[prnd] != "")
+				{
+					sound (world, CHAN_AUTO, matchsound[prnd], 1, ATTN_NONE);
+					return;
+				}
+			}
 		}
 	}
-	else
-	{
-		sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
-	}
+	sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
 };
 
 //
@@ -502,6 +497,9 @@ void() match_end =
 	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
 	clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
 	clanring_state = ((clanring_state | CLANRING_MATCH_OVER) | CLANRING_MATCH_WAIT);
+	
+	// Dump statistics for anyone who has autostats set
+	utils_do_players(stats_autodump);//R00k: had to move this up here because players go observer immediately at match end; and the stats dont have a copy.(FIXME:)
 	utils_do_players(match_gib_player);
 	match_show_timelimit();
 	match_bprint_score();
@@ -522,13 +520,11 @@ void() match_end =
 	clanring_numteams = 0;
 	clanring_sentinel.movetarget = world;
 	score_update_time();
-	// Dump statistics for anyone who has autostats set
-	utils_do_players(stats_autodump);
 	console_autodump();//fixme
 	announce("The match is over");//used for cl_autodemo 2, stop the demo after stats_autodump.
 	// Backup all statistics so that they don't go away
 	//stats_copy_statistics();
-	utils_do_match_spawns(spawns_restore_model);
+	utils_do_match_markers(spawns_restore_model);
 };
 
 //
@@ -550,8 +546,7 @@ void() match_timer_think2 =
 		self.lip -= 1;
 	}
 
-	if (!(clanring_state & CLANRING_MATCH_PAUSED))
-		pqc_match_time(self.lip, self.count);
+	pqc_match_time(self.lip, self.count);
 
 	self.nextthink = time + 1;
 	score_update_time();
@@ -703,15 +698,20 @@ void() spawns_remove_model =
 {
 	self.model = string_null;
 	self.modelindex = 0;
+	//self.effects = 0;
 }
 
 void() spawns_restore_model =
 {
-	setmodel (self, "progs/player.mdl");
-	self.frame = 13;
-	self.alpha = 0.6;
+	setmodel (self, self.mdl);
+	setsize(self,'-16 -16 -24','16 16 24');
+	//if (self.classname == "info_teleport_destination") //now that i think about it, this is kinda obnoxious
+	//	self.effects |= EF_BRIGHTFIELD;
 };
 
+void() match_unpause_player;
+void() match_pause_player;
+void() match_pause_item;
 //
 //  B E G I N
 //
@@ -724,17 +724,19 @@ void() match_begin =
 	clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
 
 	// Remove the spawnpoints' visible models
-	utils_do_match_spawns(spawns_remove_model);
+	utils_do_match_markers(spawns_remove_model);
+
+	find_pqc_teamscore_teams();// R00k: make sure everyone has the teamscores teams.
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
 
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
-
 	announce("The match has begun!");//Moved up here for autodemo
-
 	utils_do_projectiles(SUB_Remove);
 	utils_do_players(match_gib_player);//3.19k : placed before rune remove
+	utils_do_item(SUB_Remove, "item_backpack");	// Bucksh0t
+	utils_do_arena_players(arena_fight_and_shoot);
 
 	if (clanring_playmode & CLANRING_RUNES)
 	{
@@ -750,7 +752,7 @@ void() match_begin =
 
 	temp = ftos(clanring_timelimit);
 	announce2(temp, " minutes remaining");
-
+	forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 	stats_matchtype = clanring_maxsize;	//3/6/2017 6:14AM added for stats header output, this will be incorrect if the game is unlocked.(fixme)
 	stats_timelimit = clanring_timelimit;
 	
@@ -758,6 +760,7 @@ void() match_begin =
 	self.nextthink = time + 1;
 	self.lip = clanring_timelimit;
 	self.count = 0;
+	pqc_match_time(self.lip, self.count);
 	match_show_timelimit();//This updates the server's TIMELIMIT cvar with match information that is used on the CCREQ_RULE_INFO for the web server browser.
 
 	// reset rocket launcher count
@@ -779,7 +782,7 @@ void() match_begin =
 	score_resend_scoreboard();
 	// Initialize the score module
 	score_init();
-//	stats_delete_copies();//(todo)
+	//stats_delete_copies();
 };
 
 //
@@ -792,7 +795,7 @@ void() match_bprint_timelimit =
 	local string digit;
 	local float temp;
 
-	bprint("Ôéíåìéíéô éó ");
+	bprint("\bTimelimit is\b ");
 	temp = floor(clanring_timelimit / 10);
 	if (temp)
 	{
@@ -814,6 +817,7 @@ void () match_reset_powerup =
 	self.height = 0;				
 };
 
+void() votables_starve_player;
 //
 //  T I M E R  T H I N K 1
 //
@@ -824,6 +828,7 @@ void () match_reset_powerup =
 void() match_timer_think1 =
 {
 	//local string temp;
+	pqc_match_time(clanring_timelimit, +1);//lol this is a hack!
 
 	self.count -= 1;
 	if (self.count < 0)
@@ -832,7 +837,7 @@ void() match_timer_think1 =
 		self.lip -= 1;
 	}
 	self.nextthink = time + 1;
-	pqc_match_time(self.lip, self.count);
+
 	score_update_time();
 	if (self.count == self.dest_x)
 	{
@@ -1057,7 +1062,7 @@ float () match_put_player_in_team =
 	pteam.count 					= 1; 
 	pteam.height 					= self.height;
 	
-	//setcolour(self, pteam.height, pteam.height);//Teams, are solid pants and shirts... fixme?
+	setcolour(self, pteam.height, pteam.height);//Teams, are solid pants and shirts... fixme?
 
 	//refresh skins
 	if ((self.height + 1) == RED)
@@ -1100,6 +1105,7 @@ float () match_put_player_in_team =
 //
 //  Returns TRUE if all non-observers are ready, FALSE otherwise.
 //
+
 float () match_all_ready =
 {
     local entity player;
@@ -1108,6 +1114,8 @@ float () match_all_ready =
     while (player)
     {
         if (!(player.style & (CLANRING_OBSERVER | CLANRING_READY)) && (player.style & CLANRING_CONNECTED))
+            return FALSE;
+		if ((player.style & CLANRING_READY) && (player.style & CLANRING_AFK_CLIENT) && (player.style & CLANRING_CONNECTED))//R00k: dont start if a ready player is AFK.
             return FALSE;
         player = find(player, classname, "player");
     }
@@ -1180,7 +1188,7 @@ void () match_send_ghost_aliases =
 	stuffcmd(self, "alias ghostcode echo Your ghost code is ");
 	stuffcmd(self, temp);
 	stuffcmd(self, "\n");
-    stuffcmd(self, "alias ghost \"impulse 127;w5;impulse ");
+    stuffcmd(self, "alias ghost \";impulse 127;w5;impulse ");
 	digit = floor(self.owner.count / 10);
 	temp = ftos(digit + 230);
 	stuffcmd(self, temp);
@@ -1217,7 +1225,7 @@ void () match_make_ghost =
 	self.owner.height = self.height;
 	self.owner.count = ghostcode;
 	self.owner.state = 0;
-//	self.owner.statstate = self.statstate;
+	self.owner.statstate = self.statstate;
 	self.owner.mangle = self.mangle;	// killstats
 	self.owner.movetype = MOVETYPE_NONE;
 	self.owner.finaldest_y = MOVETYPE_NONE;
@@ -1322,7 +1330,7 @@ void(entity ghostent) match_restore_ghost =
 	self.dest1 = ghostent.dest1;
 	self.dest2 = ghostent.dest2;
 	self.mangle = ghostent.mangle;
-//	self.statstate = ghostent.statstate;
+	self.statstate = ghostent.statstate;
 	self.clanring_badstats = ghostent.clanring_badstats;
 	self.clanring_qdwep	= ghostent.clanring_qdwep;
 	self.clanring_qdkill = ghostent.clanring_qdkill;
@@ -1458,12 +1466,13 @@ void(entity ghostent) match_restore_ghost =
 };
 
 float request_timelimit;
+
 //
 //  R E A D Y
 //
 //  Called when a player enters 'ready' in the console.
 //
-void() match_ready =
+void(float warmup) match_ready =
 {
 	if (clanring_state & CLANRING_MATCH_WAIT)
 	{
@@ -1508,6 +1517,7 @@ void() match_ready =
 			match_show_timelimit();
 		}
 	}
+
 	// check to see if we need to start the timer
 	if (clanring_numteams > 1 && !(clanring_state & CLANRING_TIMER_STARTED) && match_all_ready())
 	{
@@ -1517,7 +1527,9 @@ void() match_ready =
 	match_make_ghost ();
 
 	self.oflags = self.oflags - (self.oflags & OBSERVER_QUAKETV);	//Sputnik
-	observer_end ();
+	if (warmup == TRUE)
+		observer_end (); 
+	self.frags = 0; //Oddly people associate -99 frags as not ready...
 	ready_name();
 };
 
@@ -1543,8 +1555,9 @@ void(entity player) match_remove_player =
 			player.next_team.next_player = player.next_player;
 
 		if (player.next_team != world)
-			player.next_team.count = player.next_team.count - 1;
-
+		{
+			player.next_team.count = player.next_team.count - 1;			
+		}
 		if ((player.items & IT_ROCKET_LAUNCHER) && (clanring_state & CLANRING_MATCH_STARTED) && (!(player.deadflag)))
 			quaketv_lost_rl (player);
 	}
@@ -1553,6 +1566,7 @@ void(entity player) match_remove_player =
 		plast.next_team = player.next_team;
 		clanring_numteams = clanring_numteams - 1;
 	}
+
 	//R00k: adjust timelimit based on team size automatically.
 	if (!(clanring_state & CLANRING_MATCH_STARTED))
 	{
@@ -1598,6 +1612,7 @@ void() match_notready =
 		sprint(self, "You have not yet committed\n");
 		return;
 	}
+
 	if (clanring_state & CLANRING_MATCH_STARTED)
 	{
 		sprint(self, "Cannot uncommit during match\n");
@@ -1613,7 +1628,7 @@ void() match_notready =
 	clear_name();
 
 	announce2(self.netname, " is not ready");
-	
+
 	// He was ready but the match hadn't started, so remove his ghost
 	remove(self.owner);
 	self.owner = world;
@@ -1622,9 +1637,12 @@ void() match_notready =
 	stuffcmd(self, "alias ghost impulse 127\n");
 	
 	match_remove_player(self);
-	
-	if (teamplay && !self.next_team.count)
+
+	if (teamplay && !(self.next_team.count))
 		match_remove_team(self.next_team);
+	
+	self.next_team = world;//R00k: (11/14/2022)
+	self.frags = -99;//Oddly, people associate -99 frags as not ready...
 	
 	if (clanring_numteams == 1)
 		announce3("Only one ", clanring_szteam, " present");
@@ -1643,6 +1661,58 @@ void() match_notready =
 		score_resend_scoreboard();
 	}
 };
+
+// Called when a player selects a team from the centerpint menu in match mode.
+void () Match_Select_Team =
+{
+	if (self.impulse == 6)	//warmup!
+	{		
+		if (self.next_team != world)
+		{
+			observer_end ();
+			self.style = self.style - (self.style & CLANRING_MENU);
+		}
+		self.impulse = 0;
+		return;
+	}
+	else if (self.impulse == 5)
+	{		
+		if (self.next_team != world)
+		{
+			match_notready();
+			self.style = self.style | CLANRING_MENU;
+		}
+		self.impulse = 0;
+		return;
+	}
+
+	if (self.impulse == 1)
+    {
+		self.team = BLUE; self.height = self.team - 1;
+		stuffcmd(self,";color 13;\n");			
+    }
+    else if (self.impulse == 2)
+    {
+		self.team = RED; self.height = self.team - 1;
+		stuffcmd(self,";color 4;\n");	
+	}
+    else if (self.impulse == 3)
+    {
+		self.team = YELLOW; self.height = self.team - 1;
+		stuffcmd(self,";color 12;\n");	
+    }
+    else if (self.impulse == 4)
+    {
+		self.team = GREEN; self.height = self.team - 1;
+		stuffcmd(self,";color 3;\n");	
+    }
+
+	if (self.next_team == world)
+	{		
+		match_ready(FALSE);//Join the team but do not spawn into warmup.
+	}
+	self.impulse = 0;
+}
 
 //
 //  U N L O C K
@@ -1835,8 +1905,9 @@ void() match_pause_player =
 		self.clanring_old_velocity = '0 0 0';
 		return;
 	}
-	self.movetype = MOVETYPE_FLY;
-	self.finaldest_y = MOVETYPE_FLY;
+	self.style = self.style - (self.style & CLANRING_OK_TO_SHOOT);
+	self.movetype = MOVETYPE_NONE;
+	self.finaldest_y = MOVETYPE_NONE;
 	self.clanring_old_velocity = self.velocity;
 	self.velocity = VEC_ORIGIN;
 	if (self.nextthink == -1)
@@ -1959,7 +2030,9 @@ void() match_unpause_player =
 
 	if ((self.style & CLANRING_OBSERVER) || self.deadflag)
 		return;
-
+	
+	self.style = self.style | CLANRING_OK_TO_SHOOT;
+		
 	//R00k ADDED...
 	self.lefty 				= (self.lefty + clanring_match_pause_time);				// paused match reset captime
 	self.last_hurt_carrier 	= (self.last_hurt_carrier + clanring_match_pause_time);	// paused match reset last hurt flag carrier
@@ -2171,46 +2244,6 @@ void() match_impulse =
 	{
 		switch (self.impulse)
 		{
-//TODO: arena_match_impulse();
-			case (120):
-			{
-				//TODO: allow any mode to choose color and set team size to 1
-				if (clanring_playmode & CLANRING_CA_MODE)
-				{
-					if (self.team == 14)
-						self.impulse = 1;
-					else if (self.team == 5)
-						self.impulse = 2;
-					else if (self.team == 13)
-						self.impulse = 3;
-					else if (self.team == 3)
-						self.impulse = 4;
-					else
-					{
-						sprint(self, "Invalid pants color\n");
-						self.impulse = 0;
-						break;
-					}
-				}
-				else
-				{
-					self.impulse = 1;
-				}
-				Teamplay_Select_Team();
-
-				self.impulse = 0;
-				break;
-			}
-			case (121):
-			{
-				if (clanring_playmode & CLANRING_CA_MODE)
-					self.impulse = 5;
-				else
-					self.impulse = 2;
-				Teamplay_Select_Team();
-				self.impulse = 0;
-				break;
-			}
 			case (124):
 			{
 				match_request_pause();
@@ -2224,7 +2257,6 @@ void() match_impulse =
 		}
 		return;
 	}
-
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
 		if (self.impulse == 120)
@@ -2258,7 +2290,7 @@ void() match_impulse =
 	{
 		case (120):
 		{
-			match_ready();
+			match_ready(TRUE);	//new parameter to spawn into warmup
 			break;
 		}
 		case (121):
@@ -2328,13 +2360,6 @@ void() match_verify_team =
 {
 	local string temp;
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE))
-	{
-		if (teamplay)
-			teamplay_verify_team();
-		return;
-	}
-
 	if (!(self.style & CLANRING_CONNECTED))
 	{
 		self.height	= 0;
@@ -2342,14 +2367,16 @@ void() match_verify_team =
 		return;
 	}
 
+	self.team = self.height + 1;
+	self.height = (self.team - 1);
+
 	if (!(self.style & CLANRING_READY))
 	{
-		self.height = (self.team - 1);
 		//R00k Feeble attempt to deter observers using teamcolors to send mm2 messages
 		//to playing clients. IE Coaching
 		if (clanring_state & CLANRING_MATCH_STARTED)
 		{
-			if (clanring_maxsize != 16)
+			if (clanring_maxsize != 16)//FFA
 			{
 				setcolour(self,0,0);
 				stuffcmd(self,";color 0;\n");
@@ -2371,7 +2398,6 @@ void() match_verify_team =
 	stuffcmd(self, temp);
 	stuffcmd(self, "\n");
 
-	self.team = self.height + 1;
 	if (clanring_state & CLANRING_MATCH_STARTED)
 		announce2(self.netname, " tried to change color");
 	else
@@ -2393,7 +2419,6 @@ void(entity player) match_disconnect_notify =
 
 	//A player readies up, types notready, then disconnects; which causes the match_start_timer to halt.
 	//We want to proceed with match_start_timer if there are enough players.
-	
 	if (!(player.style & CLANRING_READY))
 	{
 		// Check to see if we need to start the timer
@@ -2447,7 +2472,7 @@ void(entity player) match_disconnect_notify =
 				self.owner.dmg_taken	= self.dmg_taken;
                	self.owner.dmg_given	= self.dmg_given;
 				self.owner.ewep			= self.ewep;
-//     			self.owner.statstate 	= self.statstate;
+     			self.owner.statstate 	= self.statstate;
                			
 				self.owner.clanring_badstats = self.clanring_badstats;
 				
@@ -2561,6 +2586,7 @@ void(entity player) match_disconnect_notify =
 			clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
 			match_show_timelimit();
 			score_resend_scoreboard();
+			utils_do_match_markers(spawns_restore_model);	//R00k
 		}
 		return;
 	}

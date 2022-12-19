@@ -1,4 +1,4 @@
-void() powerup_touch;
+//void() powerup_touch;
 
 float (float numdeaths) wipeout_get_respawn =
 {
@@ -79,7 +79,7 @@ entity () find_item_spawn_spot =
 	}
 	return spot;
 };
-
+/*Maybe Make this a config setting?
 // void (vector vspot) do_spawn_quad =
 // {
 // 	local entity item;
@@ -104,7 +104,7 @@ entity () find_item_spawn_spot =
 // 	item.think = SUB_Remove;
 // 	sound (item, CHAN_VOICE, "crx/itembk3.wav", 1, ATTN_NORM);
 // };
-
+*/
 void() BackpackTouch;
 void (vector vspot) do_spawn_pack =
 {
@@ -189,9 +189,9 @@ void () wipeout_try_spawn_item =
 
 // void () wipeout_try_spawn_quad =
 // {
-// 	local float prnd;
-// 	local entity spot;
-
+//	local float prnd;
+//	local entity spot;
+//
 // 	if (time > boss.quadtime)
 // 	{
 // 		prnd = random() * (5 - 0.001);

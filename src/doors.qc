@@ -22,7 +22,7 @@ float DOOR_DONT_LINK  	= 4;
 float DOOR_GOLD_KEY		= 8;
 float DOOR_SILVER_KEY   = 16;
 float DOOR_TOGGLE 		= 32;
-
+float DOOR_DOOM_STYLE_UNLOCK = 64;
 /*
 
 Doors are similar to buttons, but can spawn a fat trigger field around them
@@ -88,6 +88,9 @@ void() door_hit_bottom =
 
 void() door_go_down =
 {
+	entity shadow;
+	entity oldself;
+
 	sound (self, CHAN_VOICE, self.noise2, 1, ATTN_NORM);
 	if (self.max_health)
 	{
@@ -96,10 +99,30 @@ void() door_go_down =
 	}
 	self.state = STATE_DOWN;
 	SUB_CalcMove (self.pos1, self.speed, door_hit_bottom);
+
+	if(self.switchshadstyle) {
+		shadow = self.shadowcontroller;
+		oldself = self;
+		self = shadow;
+		
+		if(oldself.spawnflags & DOOR_START_OPEN) {
+			shadow_fade_out();
+			shadow.shadowoff = 1;
+		} else {
+			shadow_fade_in();
+			shadow.shadowoff = 0;
+		}
+		
+		self = oldself;
+		
+	}
 };
 
 void() door_go_up =
 {
+	entity shadow;
+	entity oldself;
+
 	if (self.state == STATE_UP)
 		return;		// allready going up
 
@@ -114,6 +137,22 @@ void() door_go_up =
 	SUB_CalcMove (self.pos2, self.speed, door_hit_top);
 
 	SUB_UseTargets();
+
+	if(self.switchshadstyle) {
+		shadow = self.shadowcontroller;
+		oldself = self;
+		self = shadow;
+		
+		if(oldself.spawnflags & DOOR_START_OPEN) {
+			shadow_fade_in();
+			shadow.shadowoff = 0;
+		} else {
+			shadow_fade_out();
+			shadow.shadowoff = 1;
+		}
+		
+		self = oldself;
+	}
 };
 
 
@@ -452,70 +491,50 @@ Key doors are allways wait -1.
 */
 
 void() func_door =
-
 {
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
 
-	if (world.worldtype == 0)
-	{
-		precache_sound ("doors/medtry.wav");
-		precache_sound ("doors/meduse.wav");
-		self.noise3 = "doors/medtry.wav";
-		self.noise4 = "doors/meduse.wav";
-	}
-	else if (world.worldtype == 1)
-	{
-		precache_sound ("doors/runetry.wav");
-		precache_sound ("doors/runeuse.wav");
-		self.noise3 = "doors/runetry.wav";
-		self.noise4 = "doors/runeuse.wav";
-	}
-	else if (world.worldtype == 2)
-	{
-		precache_sound ("doors/basetry.wav");
-		precache_sound ("doors/baseuse.wav");
-		self.noise3 = "doors/basetry.wav";
-		self.noise4 = "doors/baseuse.wav";
-	}
-	else
-	{
-		dprint ("no worldtype set!\n");
-	}
-	if (self.sounds == 0)
-	{
-		precache_sound ("misc/null.wav");
-		precache_sound ("misc/null.wav");
-		self.noise1 = "misc/null.wav";
-		self.noise2 = "misc/null.wav";
-	}
+	local string default_noise1;
+	local string default_noise2;
+	entity shadow;
+	entity oldself;
+
+// self.noise3 and self.noise4 can now be overridden by the mapper, but
+// will be set to default values in keylock_init if necessary -- iw
+	keylock_init ();
+
+// self.noise1 and self.noise2 can now be overridden by the mapper -- iw
+	default_noise1 = "misc/null.wav";
+	default_noise2 = "misc/null.wav";
 	if (self.sounds == 1)
 	{
-		precache_sound ("doors/drclos4.wav");
-		precache_sound ("doors/doormv1.wav");
-		self.noise1 = "doors/drclos4.wav";
-		self.noise2 = "doors/doormv1.wav";
+		default_noise1 = "doors/drclos4.wav";
+		default_noise2 = "doors/doormv1.wav";
 	}
 	if (self.sounds == 2)
 	{
-		precache_sound ("doors/hydro1.wav");
-		precache_sound ("doors/hydro2.wav");
-		self.noise2 = "doors/hydro1.wav";
-		self.noise1 = "doors/hydro2.wav";
+		default_noise1 = "doors/hydro2.wav";
+		default_noise2 = "doors/hydro1.wav";
 	}
 	if (self.sounds == 3)
 	{
-		precache_sound ("doors/stndr1.wav");
-		precache_sound ("doors/stndr2.wav");
-		self.noise2 = "doors/stndr1.wav";
-		self.noise1 = "doors/stndr2.wav";
+		default_noise1 = "doors/stndr2.wav";
+		default_noise2 = "doors/stndr1.wav";
 	}
 	if (self.sounds == 4)
 	{
-		precache_sound ("doors/ddoor1.wav");
-		precache_sound ("doors/ddoor2.wav");
-		self.noise1 = "doors/ddoor2.wav";
-		self.noise2 = "doors/ddoor1.wav";
+		default_noise1 = "doors/ddoor2.wav";
+		default_noise2 = "doors/ddoor1.wav";
 	}
 
+	if (self.noise1 == "")
+		self.noise1 = default_noise1;
+	if (self.noise2 == "")
+		self.noise2 = default_noise2;
+
+	precache_sound (self.noise1);
+	precache_sound (self.noise2);
 
 	SetMovedir ();
 
@@ -529,10 +548,29 @@ void() func_door =
 	self.blocked = door_blocked;
 	self.use = door_use;
 	
-	if (self.spawnflags & DOOR_SILVER_KEY)
-		self.items = IT_KEY1;
-	if (self.spawnflags & DOOR_GOLD_KEY)
-		self.items = IT_KEY2;
+	if (self.spawnflags & DOOR_SILVER_KEY){
+		keylock_set_silver_key ();
+		
+		if (self.keyname != "") {
+			self.netname = self.keyname;
+			self.keyname = "";
+		}
+	}
+	if (self.spawnflags & DOOR_GOLD_KEY){
+		keylock_set_gold_key ();
+
+		if (self.keyname != "") {
+			self.netname = self.keyname;
+			self.keyname = "";
+		}
+	}
+
+// support for item_key_custom -- iw
+	if (self.keyname != "")
+	{
+		keylock_set_custom_key (self.keyname);
+		self.keyname = "";  // this should not be referenced again
+	}
 	
 	if (!self.speed)
 		self.speed = 100;
@@ -563,8 +601,16 @@ void() func_door =
 		self.th_die = door_killed;
 	}
 	
-	if (self.items)
-		self.wait = -1;
+	if (self.spawnflags & DOOR_DOOM_STYLE_UNLOCK)
+		self.cnt = 1;
+
+	if (keylock_has_key_set ())
+	{
+		if (!(self.spawnflags & DOOR_DOOM_STYLE_UNLOCK))
+		{
+			self.wait = -1;
+		}
+	}
 		
 	self.touch = door_touch;
 
@@ -572,6 +618,29 @@ void() func_door =
 // the sizes can be detected properly.
 	self.think = LinkDoors;
 	self.nextthink = self.ltime + 0.1;
+
+	// creates a shadow controller entity for the door if it has switchable shadows
+	if(self.switchshadstyle) {
+		
+		shadow = spawn();
+		
+		self.shadowcontroller = shadow;
+		
+		shadow.classname = "misc_shadowcontroller";
+		shadow.switchshadstyle = self.switchshadstyle;
+		shadow.speed = vlen(self.pos2 - self.pos1) / self.speed;
+		
+		if(self.spawnflags & DOOR_START_OPEN) shadow.spawnflags = 1;
+		else shadow.spawnflags = 0;
+		
+		
+		oldself = self;
+		
+		self = shadow;
+		misc_shadowcontroller();
+		
+		self = oldself;
+	}
 };
 
 /*

@@ -22,7 +22,7 @@ float CLANRING_READY 			= 16;           // ready to play in match
 float CLANRING_YES 				= 32;           // used for voting
 float CLANRING_HEADS_UP 		= 64;          	// enable heads up display
 float CLANRING_SETTING_OPTIONS 	= 128;  		// set when setting options
-float CLANRING_MOTD 			= 256;          // showing MOTD
+float CLANRING_MENU 			= 256;          // showing menu
 float CLANRING_OK_TO_SHOOT 		= 512;      	// don't fire after options/respawn
 float CLANRING_KICK_CONFIRM 	= 1024;    		// used to confirm a kick
 float CLANRING_CONFIRM_LEAVE 	= 2048;   		// confirmation for leaving match
@@ -82,13 +82,15 @@ float CLANRING_AIRSHOT_MODE			= 65536;
 float CLANRING_AUTO_PAUSE    		= 131072;
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
-//float CLANRING_CA_CC_VOTE			= 1048576;//removed; ALWAYS create a vote when a player wants to join the match
-float CLANRING_SPAWNFRAG_PROTECTION	= 1048576;
-//float UNUSED			= 1048576;
+//float CLANRING_CA_CC_VOTE			= 0;
+//float CLANRING_FREEZETAG			= 0;
+//float CLANRING_SPEEDBALL			= 0;
+//float CLANRING_SPAWNFRAG_PROTECTION = 0;
+//float UNUSED						= 1048576;
+float CLANRING_DMM4_MODE			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
 float CLANRING_CA_MODE				= 4194304;
 float CLANRING_RA_MODE				= 8388608;
-float CLANRING_DMM4_MODE			= 16777216;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
@@ -121,6 +123,8 @@ float ADMIN_RA_MODE    		= 5;
 float ADMIN_AIRSHOT_MODE    = 6;
 float ADMIN_DMM4_MODE    	= 7;
 float ADMIN_WIPEOUT_MODE	= 8;
+//float ADMIN_FREEZETAG_MODE	= 9;
+//float ADMIN_SPEEDBALL_MODE	= 10;
 
 // entity constants
 float CLANRING_MANUAL_SPAWN = 1;
@@ -139,11 +143,11 @@ entity  clanring_request;           // used to control voting
 float   clanring_level;             // number of current level in user level order
 float   clanring_levelcount;        // used to scan through list in levels.cfg
 float   clanring_lastcount;         // used to detect end-of-file in levels.cfg
-string  clanring_firstlevel;        // used to remember the name of the first level in levels.cfg
+
 float   dm_num_spawns;              // number of deathmatch spawn points (as opposed to ctf spawn points)
 float   clanring_num_starts;        // number of match extra start points
 float   clanring_num_cameras;       // number of cameras
-string  clanring_version;           // used for motd and help-server
+string  clanring_version;           // used for menu and help-server
 string  clanring_version_info;      // text info including rev. and compile time
 string  clanring_version_number;    // text info storing version number (ie "4.0")
 entity  clanring_debug_client;      // used for debugging
@@ -226,9 +230,27 @@ vector 	clanring_angle;					// used for both autoss and intermission
 
 float 	CLANRING_ANGLE_SMOOTHING    = 0.6; // CRMOD use this instead of typing the number a billion times (actually 6 times in observer.qc ;) )
 
+// Maximum number of suicides allowed per level in normal and match modes
+float CLANRING_MAX_SUICIDES = 5;
+
+// Used to collect a list of players that can be kicked
+entity array_kick[255];			// (.colormap) network precision allows 255 players. colourmap 0 is invalid in places, hence 255 instead of 256
+
+// Used to set admin passcodes
+float array_password[10];		// 10
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------------------------------------------
+/*
+ * helpers. -- from cspreee
+ */
+ #define redify(s) strconv(0,2,2,s)
+ #define alternate(s) strconv(0,5 + ((time*4)&1), 5 + ((time*4)&1),s)
+ #define flash(s) strconv(0,1 + ((time*4)&1), 1 + ((time*4)&1),s)
+ #define goldnmbr(s) strconv(0,3,3,s)
+ #define lowrcase(s) strconv(1,0,0,s)
+ #define brackets(s) sprintf("%s%s%s", chr2str(0x90), s, chr2str(0x91))
+ #define disconnected(s) sprintf("%s %s", chr2str(0x87), s)
+//---------------------------------------------------------- 
 void(string s1, ...) cprint;
 void(string s1, string s2) cprint2;
 void(string s1, string s2, string s3) cprint3;
@@ -266,9 +288,12 @@ float 	TEAM_CAPTURE_FRAG_CARRIER_ASSIST_TIMEOUT   	= 6;
 float 	TEAM_CAPTURE_RETURN_FLAG_ASSIST_TIMEOUT   	= 4;
 float 	TEAM_CAPTURE_UPDATE_TIME  			        = 120;
 float 	TEAM_UPDATE_DELAY  				            = 0.1;
-//ctf variables--------------
+//color values (ie self.team = self.height + 1)
 float 	RED            		= 5;
 float 	BLUE          		= 14;
+float 	YELLOW            	= 13;
+float 	GREEN          		= 4;
+
 float 	FLAG_AT_BASE  		= 0;
 float 	FLAG_CARRIED  		= 1;
 float 	FLAG_DROPPED  		= 2;
@@ -339,6 +364,8 @@ float 	lastteamscrtime;
 float 	TEAMSCRTIME    = 1;
 float 	PLAYERSTATTIME    = 1.75;
 
+.float spamtime;// increasingly limit the duration between able to join a team then go observer.
+
 entity  runespawn;
 float   runespawned     = 0;
 float   ITEM_RUNE1_FLAG = 1;
@@ -367,6 +394,7 @@ float 	debug = 0;
 .float 	ctime;
 string	clanring_version_red;
 .entity hookentity;
+.string client;
 
 //---custom 'server modules' off-hand hook added for pub mode. (FIXME: remove this shit)
 .float 	hook_out;
@@ -417,8 +445,15 @@ typedef struct
 servermap_t warpmap[250];
 
 string warpmenutop[15]; // Customizable map categories for the warp menu contents.
-
 string default_nextmap;
+
+float MAX_CUSTOM_MATCH_SOUNDS = 10;
+float clanring_matchsound_count;
+float clanring_matchsound_rematch_count;
+float clanring_matchsound_blowout_count;
+string matchsound[MAX_CUSTOM_MATCH_SOUNDS];
+string matchsound_rematch[MAX_CUSTOM_MATCH_SOUNDS];
+string matchsound_blowout[MAX_CUSTOM_MATCH_SOUNDS];
 
 typedef struct
 {
@@ -462,7 +497,6 @@ entity boss;
 .float timetofight;
 .float maprecycle;
 .float weaponlevel;
-.float motd_delay;
 
 .entity chain_gang;
 .entity next_queue;
@@ -483,7 +517,7 @@ float clanring_rulescheck;
 .float max_teams;
 float ra_wins;
 entity ra_lastspawn;
-float tele_num_spawns;
+//float tele_num_spawns;
 .float nextspawn;
 
 float COLOR_BLUE = 13;
@@ -510,3 +544,110 @@ float CA_MATCH_OVER = 4;
 float CA_MATCH_CLEANUP = 5;
 .float ca_deathcamtime;
 .float arena_packs;
+.float color2; //since we already have .vector color
+
+// worldtype values
+float	WORLDTYPE_MEDIEVAL		= 0;
+float	WORLDTYPE_METAL			= 1;
+float	WORLDTYPE_BASE			= 2;
+
+// spawnflags for func_movewall
+float	MOVEWALL_VISIBLE		= 1;
+float	MOVEWALL_TOUCH			= 2;
+float	MOVEWALL_NONBLOCKING	= 4;
+
+.string		origmodel; // addition by bmFbr for switchable brushes
+
+//
+// support for item_key_custom -- iw
+//
+.string keyname;
+.float customkeys;
+
+.string target2;		// second target's name
+.string target3;		// third target's name
+.string target4;		// fourth target's name
+.string targetname2;	// second name
+.string targetname3;	// third name
+.string targetname4;	// fourth name
+.string killtarget2;	// second target to kill
+string lastnameused;	// the targetname that was last used to trigger somthing
+
+//
+// switchable shadow
+//
+.float		switchshadstyle;
+.float		shadowoff;
+.entity shadowcontroller;
+.float speed2;
+
+.float is_waiting;	// Supa, triggers, wait until activated before we can trigger?
+
+.string		mdl_debris; //dumptruck_ds
+
+.float		onladder;
+
+.float style2; //c0burn's switchable lights
+
+string(float num) lightstyle_fade_lookup; //addition by bmFbr for switchable shadows
+void() misc_shadowcontroller;
+void() misc_shadowcontroller_use;
+void() shadow_fade_in;
+void() shadow_fade_out;
+
+// from Custents
+// variable for healing trigger
+.float	heal_timer;
+.float	heal_amount;
+.float	health_max;
+// Constants for the healing trigger
+float HEAL_START_ON	= 1;
+float HEAL_PLAYER_ONLY	= 2;
+float HEAL_MONSTER_ONLY	= 4;
+
+// Custom Monster Sounds START -- dumptruck_ds
+
+.string snd_death;
+.string snd_pain;
+.string snd_sight;
+.string snd_attack;
+.string snd_hit;
+.string snd_idle;
+.string snd_land;
+.string snd_move;
+.string snd_misc;
+.string snd_misc1;
+.string snd_misc2;
+.string snd_misc3;
+
+// Custom Monster Sounds END -- dumptruck_ds
+
+// Custom Model Start -- dumptruck_ds
+
+.string mdl_head;
+.string mdl_body;
+.string mdl_proj;
+.string mdl_exproj;
+.float skin_head;
+.float skin_proj;
+.float skin_exproj;
+.string mdl_gib1;
+.string mdl_gib2;
+.string mdl_gib3;
+
+.vector mdlsz, centeroffset; // addition by bmFbr for custom model bounding box definition
+
+// Custom Model End -- dumptruck_ds
+
+.float drop_item; // key DropStuff
+
+// entity state
+.float estate;
+.void() dormant_use;
+float STATE_ACTIVE      = 0;
+float STATE_INACTIVE    = 1;
+float STATE_INVISIBLE = 8;
+
+// worldspawn default mdls
+.string h_vial_mdl;
+.string a_shr_mdl;

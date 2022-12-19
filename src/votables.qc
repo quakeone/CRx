@@ -7,7 +7,7 @@
 //
 
 // global variables
-float request_mapnum;     	// Used for requesting a new level
+float request_mapnum;		// Used for requesting a new level
 float request_timelimit;    // Used for requesting a new time limit
 float request_fraglimit;    // Used for requesting a new frag limit
 float request_overtime;		// Used for requesting a new overtime
@@ -29,7 +29,6 @@ void() votables_send_aliases =
 
 	temp = self;
 	self = self.owner;
-	stuffcmd(self, "alias w5 \"wait;wait;wait;wait;wait\"\n");
 	stuffcmd(self, "alias sethook impulse 202\n");
 	stuffcmd(self, "alias setrunes impulse 203\n");
 	stuffcmd(self, "alias abortmatch impulse 214\n");
@@ -89,9 +88,7 @@ void() votables_send_aliases =
 //----------------------------------------------------------------
 //	V O T A B L E S  S E T  H O O K
 //
-//	R00K: Enable or disable the hook, only for ctf
-//	(TODO): allow in pub-tdm?
-//			voteable speeds for QW players
+//	Enable or disable the hook
 //----------------------------------------------------------------
 void() votables_set_hook =
 {
@@ -100,7 +97,6 @@ void() votables_set_hook =
 	if (!(clanring_playmode & CLANRING_NO_HOOK))
 	{
 		clanring_playmode = (clanring_playmode | CLANRING_NO_HOOK);
-
 		clanring_state = clanring_state - (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM);
 
 		p = find(world, classname, "player");
@@ -118,8 +114,7 @@ void() votables_set_hook =
 					self = tmp;
 					p.weapon = IT_AXE;
 				}			
-				//self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));
-				p.hook2 = (p.hook2 - (p.hook2 & HOOK_OUT)); //not this?
+				p.hook2 = (p.hook2 - (p.hook2 & HOOK_OUT)); //REMOVE HOOK2!!
 				p.items = p.items - (p.items & IT_HOOK);
 			}
 			p= find(p ,classname , "player");			
@@ -132,7 +127,7 @@ void() votables_set_hook =
 		{
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NO_HOOK);
 
-			if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && 
+			if (((clanring_playmode & CLANRING_CAPTURE_THE_FLAG)||(clanring_playmode & CLANRING_NORMAL_MODE)) && 
 				!(clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE))
 			{
 				bprint("grappling hook has been \benabled\n");
@@ -204,7 +199,6 @@ void() votables_request_set_hook =
 void () votables_change_level =
 {
 	local string request_mapname = warpmap[request_mapnum].name;
-
 	if (clanring_state & CLANRING_MATCH_STARTED)
 	return;
 
@@ -250,7 +244,7 @@ void() votables_request_change_level =
 	}
 
 	level = (self.warp_episode * 15) + (self.warp_map);//new r00k
-	newmap = warpmap[level].name;
+	newmap = sprintf("%s (%s)", warpmap[level].name, warpmap[level].title);
 
 	//clear warp_flags;
 	self.warp_episode=0;
@@ -293,7 +287,7 @@ void(float episode) votables_init_warp =
 void() votables_starve_player =
 {
 	self.items = 0;
-	self.items = (IT_SHOTGUN | IT_AXE);
+	self.items = IT_AXE;
 
 	if (!(clanring_playmode & CLANRING_NO_HOOK))
 		self.items = (self.items | IT_HOOK);
@@ -304,9 +298,10 @@ void() votables_starve_player =
 	self.ammo_nails = 0;
 	self.ammo_rockets = 0;
 	self.ammo_cells = 0;
-	self.weapon = 1;
+	self.weapon = IT_AXE;
 	self.armortype = 0;
-	self.weaponmodel = "progs/v_shot.mdl";
+	self.currentammo = 0;
+	self.weaponmodel = "progs/v_axe.mdl";
 	self.weaponframe = 0;
 };
 
@@ -362,7 +357,7 @@ void() votables_set_gametype_mode_map =
 		return;
 
 	local string newmapname = mapname, request_mapname = "";
-	local entity player;
+
 	if (request_gametype >= 0)
 	{
 		if (request_gametype == 0)
@@ -382,7 +377,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
 
-			newmapname = "dm3";
+			//newmapname = "dm3";
 		}
 		else if (request_gametype == 1)
 		{
@@ -399,7 +394,7 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Capture The Flag\n");
 
-			newmapname = "ctf1";
+			//newmapname = "ctf1";
 		}
 		else if (request_gametype == 2)
 		{
@@ -410,17 +405,16 @@ void() votables_set_gametype_mode_map =
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena\n");
 
-			newmapname = "dm3";
+			//newmapname = "dm3";
 		}
 		else if (request_gametype == 3)
 		{
 			votables_clear_playmode_flags();
 			clanring_playmode = (clanring_playmode | CLANRING_RA_MODE | CLANRING_NO_HOOK);
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "0");
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Rocket Arena\n");
-
 			newmapname = ra_get_next_map();
 		}
 		else if (request_gametype == 4)
@@ -429,7 +423,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE | CLANRING_NO_HOOK);
 			cvar_set("timelimit", "3");
 			cvar_set("fraglimit", "0");
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "0");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
 			bprint("gametype set to dmm4\n");
@@ -442,7 +436,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = (clanring_playmode | CLANRING_AIRSHOT_MODE | CLANRING_NO_HOOK);
 			cvar_set("timelimit", "0");
 			cvar_set("fraglimit", "10");
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "0");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
 			bprint("gametype set to Airshot\n");
@@ -538,7 +532,6 @@ void() votables_set_gametype_mode_map =
 	if (request_mapnum)
 	{
 		request_mapname = warpmap[request_mapnum].name;
-
 		utils_set_cvar("timelimit", clanring_timelimit);
 
 		if (request_mapname == "start0")
@@ -554,6 +547,7 @@ void() votables_set_gametype_mode_map =
 		else
 		newmapname = request_mapname;
 	}
+	local entity player;
 
 	player = find(world, classname, "player");
 	while (player)
@@ -685,7 +679,7 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 	if (newmap)
 	{
 		self.use = SUB_Null;
-		request_mapname = warpmap[newmap].name;
+		request_mapname = sprintf("%s (%s)",warpmap[newmap].name,warpmap[newmap].title);
 	}
 
 	//clear warp_flags;
@@ -995,7 +989,6 @@ void() votables_set_timelimit =
 		{
 			default_timelimit = request_timelimit;
 		}
-
 		timelimit = request_timelimit * 60;
 		utils_set_cvar("timelimit", request_timelimit);
 		temp = ftos(request_timelimit);
@@ -1418,12 +1411,13 @@ void() votables_request_set_quad =
 void() GotoNextMap;
 void() votables_vote_exit =
 {
-	if ((clanring_levelcount == -1))
+	if (clanring_levelcount == -1)
 	{
 		GotoNextMap();
 	}
 };
 
+//Vote to exit to next map in levels.cfg
 void() votables_request_vote_exit =
 {
 	if (clanring_levelcount != -1)
@@ -1432,9 +1426,9 @@ void() votables_request_vote_exit =
 		return;
 	}
 	
-	if (clanring_playmode & CLANRING_MATCH_MODE)
+	if (!(clanring_playmode & CLANRING_NORMAL_MODE))
 	{
-		sprint(self,"Command not allowed in match mode.\n");
+		sprint(self,"Command not allowed in current gamemode.\n");
 		return;
 	}
 
@@ -1584,7 +1578,6 @@ void() votables_request_set_obits =
 		newstate = "\bdisable\b";
 		else
 		newstate = "\benable\b";
-
 								  
 		if (vote_init(newstate, " extra obituaries", votables_set_obits))
 			vote_yes();
