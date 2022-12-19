@@ -196,6 +196,7 @@
 void () clanring_remove_start_teleport;
 void () clanring_find_powerups;
 void () clanring_exec_configs;
+void () clanring_precache_matchsounds;
 void (float value) clanring_set_teamplay;
 void (float value) clanring_set_fraglimit;
 void () stats_reset_player;
@@ -333,7 +334,6 @@ void () clanring_init_world =
 	precache_sound("ogre/ogwake.wav");
 	precache_sound("shambler/ssight.wav");
 	precache_sound("soldier/sight1.wav");
-	//precache_sound ("crx/capreg.wav");
 	precache_sound ("crx/goodstat.wav");
 	precache_sound ("crx/congrats.wav");
 	precache_sound ("crx/hiscore.wav");
@@ -342,15 +342,7 @@ void () clanring_init_world =
 
 	//end
 	precache_sound ("ra/gong.wav");	
-	precache_sound ("crx/rematch1.wav");
-	precache_sound ("crx/rematch2.wav");
-	//precache_sound ("crx/wewin.wav");
-	//precache_sound ("crx/erased.wav");
-	precache_sound ("crx/gameover.wav");
-	precache_sound ("crx/giveup.wav");
-	precache_sound ("crx/thatgame.wav");
-	precache_sound ("crx/pathetic.wav");
-	
+
 	//	qsmack_init_server ();
 
 	// Check to see if we need to initialize the server
@@ -491,6 +483,10 @@ void () clanring_init_world =
 		arena_precache();
 
 		arena_init_world();
+	}
+	else
+	{
+		clanring_precache_matchsounds();
 	}
 
 	// schedule the config files for a bit later so that they don't
@@ -793,6 +789,8 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias vote-exit impulse 220\n");
 	stuffcmd(self, "alias faststart impulse 209\n");		
 	stuffcmd(self, "alias afk impulse 57\n");
+	stuffcmd(self, "alias afkon cmd afkon\n");
+	stuffcmd(self, "alias afkoff cmd afkoff\n");
 	stuffcmd(self, "alias captimes impulse 58\n");
 	stuffcmd(self, "alias highscores impulse 58\n");
 	stuffcmd(self, "alias modes impulse 181\n");
@@ -2076,13 +2074,12 @@ void () clanring_impulse =
 	}
 	else if (self.impulse == 58)
 	{
-		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-			AirshotHighScores_sprint();
-		else
-			LongRangeGibs_sprint();
-
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 			CaptureHighScores_sprint();
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+			AirshotHighScores_sprint();
+		// else
+		// 	LongRangeGibs_sprint();
 	}
 	else if (self.impulse == 70)
 			self.statstate = -1;

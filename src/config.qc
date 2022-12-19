@@ -585,7 +585,12 @@ void (string filename, optional float desc = 0, optional float recordset = 0) re
 		if (tt_statvalue > 0)
 		{
 			if (desc == RECORD_LOW)
-				check_player_low_record(tt_statvalue, tt_teamcolor, tt_player);
+			{
+				if (recordset == 2)
+					check_player_low_record2(tt_statvalue, tt_teamcolor, tt_player);
+				else
+					check_player_low_record(tt_statvalue, tt_teamcolor, tt_player);
+			}
 			else
 			{
 				if (recordset == 2)
@@ -601,6 +606,7 @@ void (string filename, optional float desc = 0, optional float recordset = 0) re
 void () read_capture_stats =
 {
 	read_player_stats(sprintf("%s_captimes.crx", mapname), RECORD_LOW, 0);
+	read_player_stats(sprintf("%s_captimes_match.crx", mapname), RECORD_LOW, 2);
 };
 void () read_longrange_stats =
 {
@@ -666,6 +672,10 @@ void (string filename, float recordset) write_player_stats =
 void () write_capture_stats =
 {
 	write_player_stats(sprintf("%s_captimes.crx", mapname), 0);
+};
+void () write_capture_stats_match =
+{
+	write_player_stats(sprintf("%s_captimes_match.crx", mapname), 2);
 };
 void () write_longrange_stats =
 {
@@ -740,15 +750,14 @@ void() clanring_exec_configs =
 	{
 		read_capture_stats();
 	}
-	
-	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
+	else if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
 		read_airshot_stats();
 	}
-	else
-	{
-		read_longrange_stats();
-	}
+	// else
+	// {
+	// 	read_longrange_stats();
+	// }
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
@@ -774,4 +783,99 @@ void() clanring_exec_configs =
 
 	remove(self);//scheduled_event_entity
 	sys_ready = TRUE;
+};
+
+// 0 - normal match end sounds
+// 1 - rematch sounds
+// 2 - blowout sounds
+void (float soundtype) clanring_read_matchsounds =
+{
+	string line;
+	filestream f;
+	float i = 0;
+
+	if (soundtype == 1)
+		f = fopen("configs/matchsounds_rematch.cfg", FILE_READ);
+	else if (soundtype == 2)
+		f = fopen("configs/matchsounds_blowout.cfg", FILE_READ);
+	else
+		f = fopen("configs/matchsounds.cfg", FILE_READ);
+
+	if (f < 0)
+	{
+		return;
+	}
+
+	while ((line = fgets(f)) && (i < MAX_CUSTOM_MATCH_SOUNDS))
+	{
+		float argc = tokenize(line);
+		if (!argc)
+			continue;		
+		if (argv(0) == "//" || argv(0) == "#") continue;
+
+		if (soundtype == 1)
+			matchsound_rematch[i] = strzone(line);
+		else if (soundtype == 2)
+			matchsound_blowout[i] = strzone(line);
+		else
+			matchsound[i] = strzone(line);
+		i++;
+	}
+	strunzone(line);
+	fclose(f);
+
+	if (soundtype == 1)
+		clanring_matchsound_rematch_count = i;
+	else if (soundtype == 2)
+		clanring_matchsound_blowout_count = i;
+	else
+		clanring_matchsound_count = i;
+};
+
+void () clanring_precache_matchsounds =
+{
+	clanring_read_matchsounds(0);
+	if (clanring_matchsound_count)
+	{
+		dprint("precaching ");
+		dprint(ftos(clanring_matchsound_count));
+		dprint(" match end sounds.\n");
+		for (float i = 0; i < clanring_matchsound_count; i++)
+		{
+			// dprint("precache sound: ");
+			// dprint(matchsound[i]);
+			// dprint("\n");
+			precache_sound(matchsound[i]);
+		}
+	}
+	else
+		dprint("no match end sounds found.\n");
+
+	clanring_read_matchsounds(1);
+	if (clanring_matchsound_rematch_count)
+	{
+		dprint("precaching ");
+		dprint(ftos(clanring_matchsound_rematch_count));
+		dprint(" reamtch sounds.\n");
+		for (float i = 0; i < clanring_matchsound_rematch_count; i++)
+		{
+			precache_sound(matchsound_rematch[i]);
+		}
+	}
+	else
+		dprint("no rematch sounds found.\n");
+
+	clanring_read_matchsounds(2);
+	if (clanring_matchsound_blowout_count)
+	{
+		dprint("precaching ");
+		dprint(ftos(clanring_matchsound_blowout_count));
+		dprint(" blowout sounds.\n");
+		for (float i = 0; i < clanring_matchsound_blowout_count; i++)
+		{
+			precache_sound(matchsound_blowout[i]);
+		}
+	}
+	else
+		dprint("no blowout sounds found.\n");
 };

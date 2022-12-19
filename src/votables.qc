@@ -62,6 +62,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias ca cmd ca\n");
 	stuffcmd(self, "alias ra cmd ra\n");
 	stuffcmd(self, "alias dmm4 cmd dmm4\n");
+	stuffcmd(self, "alias ctfdmm4 cmd ctfdmm4\n");
 	stuffcmd(self, "alias airshot cmd airshot\n");
 	// number aliases
 	stuffcmd(self, "alias 0 impulse 230\n");
@@ -370,7 +371,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_CAPTURE_THE_FLAG);
 			if (!(clanring_playmode & CLANRING_NORMAL_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE)
 				 && !(clanring_playmode & CLANRING_MATCH_MODE))
-				clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;
+				clanring_playmode = clanring_playmode | CLANRING_MATCH_MODE;
 			clanring_playmode = clanring_playmode | CLANRING_NO_HOOK;
 			cvar_set("timelimit", "0");
 			votables_clear_arena_playmode_flags();
@@ -391,7 +392,7 @@ void() votables_set_gametype_mode_map =
 				clanring_playmode = (clanring_playmode | CLANRING_CAPTURE_THE_FLAG);
 			if (!(clanring_playmode & CLANRING_NORMAL_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE)
 				 && !(clanring_playmode & CLANRING_MATCH_MODE))
-			{clanring_playmode = clanring_playmode | CLANRING_NORMAL_MODE;}
+			{clanring_playmode = clanring_playmode | CLANRING_MATCH_MODE;}
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NO_HOOK);
 			cvar_set("timelimit", "0");
 			cvar_set("teamplay", "1");
@@ -460,6 +461,19 @@ void() votables_set_gametype_mode_map =
 			bprint("gametype set to Clan Arena Wipeout\n");
 
 			newmapname = "dm3";
+		}
+		else if (request_gametype == 7)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE);
+			cvar_set("timelimit", "3");
+			cvar_set("fraglimit", "0");
+			cvar_set("teamplay", "2");
+			cvar_set("deathmatch", "4");
+			cvar_set ("scratch2", "0");//overtime
+			bprint("gametype set to ctf dmm4\n");
+
+			newmapname = "ctf8dmm4";
 		}
 
 		utils_set_cvar ("samelevel", clanring_playmode);
@@ -580,6 +594,8 @@ void() votables_set_gametype_mode_map =
 //		3	-	ra
 //		4	-	1v1
 //		5	-	airshot
+//		6	-	wipeout
+//		7	-	ctfdmm4
 //
 // newmode		(dm/ctf)
 //	   -1	-	no change
@@ -640,11 +656,12 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 			sprint(self, "Already in Rocket Arena mode\n");
 			return;
 		}
-		else if (newtype == 4 && clanring_playmode & CLANRING_DMM4_MODE && newmode < 0 && !newmap)
-		{
-			sprint(self, "Already in 1v1 mode\n");
-			return;
-		}
+		//allow switch to dmm4 from ctfdmm4.  combine with ctf mode to distinguish?
+		// else if (newtype == 4 && clanring_playmode & CLANRING_DMM4_MODE && newmode < 0 && !newmap)
+		// {
+		// 	sprint(self, "Already in 1v1 mode\n");
+		// 	return;
+		// }
 		else if (newtype == 5 && clanring_playmode & CLANRING_AIRSHOT_MODE && newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in airshot mode\n");
@@ -744,6 +761,10 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 		else if (request_gametype == 6)
 		{
 			gametype_string = "Wipeout";
+		}
+		else if (request_gametype == 7)
+		{
+			gametype_string = "CTF Duel";
 		}
 
 		if (request_mapname != "")

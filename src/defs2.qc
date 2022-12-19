@@ -420,6 +420,14 @@ string warpmenutop[15]; // Customizable map categories for the warp menu content
 
 string default_nextmap;
 
+float MAX_CUSTOM_MATCH_SOUNDS = 10;
+float clanring_matchsound_count;
+float clanring_matchsound_rematch_count;
+float clanring_matchsound_blowout_count;
+string matchsound[MAX_CUSTOM_MATCH_SOUNDS];
+string matchsound_rematch[MAX_CUSTOM_MATCH_SOUNDS];
+string matchsound_blowout[MAX_CUSTOM_MATCH_SOUNDS];
+
 typedef struct
 {
 	string player;
@@ -432,6 +440,7 @@ float PLAYER_RECORDS_MAX_COUNT = 3;
 playerrecord_t playerrecord[PLAYER_RECORDS_MAX_COUNT];
 playerrecord_t playerrecord2[PLAYER_RECORDS_MAX_COUNT];
 float new_player_record;
+float new_player_record_match;
 float RECORD_LOW = 0;
 float RECORD_HIGH = 1;
 
@@ -510,3 +519,110 @@ float CA_MATCH_OVER = 4;
 float CA_MATCH_CLEANUP = 5;
 .float ca_deathcamtime;
 .float arena_packs;
+.float color2; //since we already have .vector color
+
+// worldtype values
+float	WORLDTYPE_MEDIEVAL		= 0;
+float	WORLDTYPE_METAL			= 1;
+float	WORLDTYPE_BASE			= 2;
+
+// spawnflags for func_movewall
+float	MOVEWALL_VISIBLE		= 1;
+float	MOVEWALL_TOUCH			= 2;
+float	MOVEWALL_NONBLOCKING	= 4;
+
+.string		origmodel; // addition by bmFbr for switchable brushes
+
+//
+// support for item_key_custom -- iw
+//
+.string keyname;
+.float customkeys;
+
+.string target2;		// second target's name
+.string target3;		// third target's name
+.string target4;		// fourth target's name
+.string targetname2;	// second name
+.string targetname3;	// third name
+.string targetname4;	// fourth name
+.string killtarget2;	// second target to kill
+string lastnameused;	// the targetname that was last used to trigger somthing
+
+//
+// switchable shadow
+//
+.float		switchshadstyle;
+.float		shadowoff;
+.entity shadowcontroller;
+.float speed2;
+
+.float is_waiting;	// Supa, triggers, wait until activated before we can trigger?
+
+.string		mdl_debris; //dumptruck_ds
+
+.float		onladder;
+
+.float style2; //c0burn's switchable lights
+
+string(float num) lightstyle_fade_lookup; //addition by bmFbr for switchable shadows
+void() misc_shadowcontroller;
+void() misc_shadowcontroller_use;
+void() shadow_fade_in;
+void() shadow_fade_out;
+
+// from Custents
+// variable for healing trigger
+.float	heal_timer;
+.float	heal_amount;
+.float	health_max;
+// Constants for the healing trigger
+float HEAL_START_ON	= 1;
+float HEAL_PLAYER_ONLY	= 2;
+float HEAL_MONSTER_ONLY	= 4;
+
+// Custom Monster Sounds START -- dumptruck_ds
+
+.string snd_death;
+.string snd_pain;
+.string snd_sight;
+.string snd_attack;
+.string snd_hit;
+.string snd_idle;
+.string snd_land;
+.string snd_move;
+.string snd_misc;
+.string snd_misc1;
+.string snd_misc2;
+.string snd_misc3;
+
+// Custom Monster Sounds END -- dumptruck_ds
+
+// Custom Model Start -- dumptruck_ds
+
+.string mdl_head;
+.string mdl_body;
+.string mdl_proj;
+.string mdl_exproj;
+.float skin_head;
+.float skin_proj;
+.float skin_exproj;
+.string mdl_gib1;
+.string mdl_gib2;
+.string mdl_gib3;
+
+.vector mdlsz, centeroffset; // addition by bmFbr for custom model bounding box definition
+
+// Custom Model End -- dumptruck_ds
+
+.float drop_item; // key DropStuff
+
+// entity state
+.float estate;
+.void() dormant_use;
+float STATE_ACTIVE      = 0;
+float STATE_INACTIVE    = 1;
+float STATE_INVISIBLE = 8;
+
+// worldspawn default mdls
+.string h_vial_mdl;
+.string a_shr_mdl;

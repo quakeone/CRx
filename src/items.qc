@@ -20,12 +20,47 @@
 /* ALL LIGHTS SHOULD BE 0 1 0 IN COLOR ALL OTHER ITEMS SHOULD
 BE .8 .3 .4 IN COLOR */
 
+float ITEM_RESPAWNDM = 16384;
+
+.vector particles_offset;
+
 void() SUB_regen =
 {
 	self.model = self.mdl;		// restore original model
 	self.solid = SOLID_TRIGGER;	// allow it to be touched again
-	sound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);	// play respawn sound
+	if (deathmatch || (self.spawnflags & ITEM_RESPAWNDM))	// Respawn with DM effects
+		sound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);	// play respawn sound
+	else
+		spawn_tfog (self.origin + self.particles_offset);	// play teleport sound and display particles
 	setorigin(self, self.origin);
+};
+
+// Supa, Quoth respawning items support Respawn item like in DM if 'ritem' TRUE,
+// override respawn time with 'respawndelay' if set, inc 'cnt' with each respawn
+// and if 'respawncount' is set we'll remove the item if cnt > respawncount
+// remember that SUB_Regen is already set on every item that can respawn, all we
+// need to do is give a nextthink time in order to trigger it
+.float	ritem,
+		respawndelay,
+		respawncount;
+
+void(entity whatitem, float defaultdelay) CheckItemRespawn =
+{
+	if (!whatitem.ritem)	// respawn item if true, otherwise abort
+		return;
+
+	whatitem.cnt = whatitem.cnt + 1;	// inc before check to account for zero indexing
+
+	if (whatitem.respawncount)	// limited respawns
+	if (whatitem.respawncount < whatitem.cnt)
+		return;
+
+	// okay, we're clear to set up a respawn
+
+	if (whatitem.respawndelay)	// custom respawn delay?
+		whatitem.nextthink = time + whatitem.respawndelay;
+	else
+		whatitem.nextthink = time + defaultdelay;
 };
 
 /*QUAKED noclass (0 0 0) (-8 -8 -8) (8 8 8)
@@ -90,6 +125,8 @@ void() PlaceItem =
 void() weapon_touch;
 void() ammo_touch;
 // END_MOD
+float() CheckValidTouch;
+void() SUB_UseAndForgetTargets;
 
 /*
 ============
@@ -192,6 +229,8 @@ void() item_health =
 		self.noise = "items/r_item1.wav";
 		self.healamount = 15;
 		self.healtype = 0;
+		if !(self.particles_offset)
+			self.particles_offset = '16 16 8'; // dumptruck_ds custom health models and sounds END
 	}
 	else
 	{
@@ -201,6 +240,8 @@ void() item_health =
 			self.noise = "items/r_item2.wav";
 			self.healamount = 100;
 			self.healtype = H_MEGA;
+			if !(self.particles_offset)
+				self.particles_offset = '16 16 16';
 		}
 		else
 		{
@@ -208,6 +249,8 @@ void() item_health =
 			self.noise = "items/health1.wav";
 			self.healamount = 25;
 			self.healtype = H_ROTTEN;
+			if !(self.particles_offset)
+				self.particles_offset = '16 16 8'; // dumptruck_ds custom health models and sounds END
 		}
 	}
 	
@@ -226,6 +269,33 @@ void(entity rotowner, entity mega) MakeHealthRot =
 	rot.owner = mega;	
 	rot.enemy = rotowner;
 	rot.enemy.rotthink = time + 5;//delay
+};
+
+void() item_health_vial =
+{
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
+
+	self.touch = health_touch;
+
+	if (!self.mdl_body && world.h_vial_mdl)
+	{
+	  self.mdl_body = world.h_vial_mdl;
+	}
+
+	precache_body_model ("progs/h_mdls/pd_vial.mdl"); // model from Hexen 2 -- dumptruck_ds
+	body_model("progs/h_mdls/pd_vial.mdl");
+	precache_sound_misc("items/r_item1.wav");
+	if !(self.snd_misc) //set the custom noise in editor -- dumptruck_ds
+	self.snd_misc = "items/r_item1.wav";
+	self.noise = self.snd_misc;
+
+	self.healamount = 5;
+	self.healtype = 2; // over heal and count down like mega health -- dumptruck_ds
+	setsize (self, '-16 -16 0', '16 16 56');
+	if !(self.particles_offset)
+	self.particles_offset = '0 0 0';
+	StartItem ();
 };
 
 void() health_touch =
@@ -349,6 +419,67 @@ ARMOR
 
 ===============================================================================
 */
+void() shard_touch = // this from RMQ shard_touch
+{
+	// from Copper -- dumptruck_ds
+	if (!CheckValidTouch()) return;
+
+	local	float	bit;
+
+	if ((other.items & IT_ARMOR1)	||
+	(other.items & IT_ARMOR2)	||
+	(other.items & IT_ARMOR3)	)	// has armor
+	{
+		// Supa, check bounds, original armourvalue + 25
+		if (other.items & IT_ARMOR1 && other.armorvalue >= 125)	return;
+		if (other.items & IT_ARMOR2 && other.armorvalue >= 175)	return;
+		if (other.items & IT_ARMOR3 && other.armorvalue >= 225)	return;
+
+		other.armorvalue = other.armorvalue + 5;	// was 2, RMQ team
+
+		// Supa, now cap armourvalue to bounds
+		if		(other.items & IT_ARMOR1 && other.armorvalue >= 125)	other.armorvalue = 125;
+		else if (other.items & IT_ARMOR2 && other.armorvalue >= 175)	other.armorvalue = 175;
+		else if (other.items & IT_ARMOR3 && other.armorvalue >= 225)	other.armorvalue = 225;
+	}
+	else
+	{
+		other.armortype = 0.3;	// shard = Green armor level
+		other.armorvalue = 5;
+		bit = IT_ARMOR1;
+		other.items = other.items - (other.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + bit;
+	}
+	self.solid = SOLID_NOT;
+	self.model = string_null;
+
+	// Supa, SP respawning items support
+	if (!deathmatch)
+	CheckItemRespawn(self, 30);
+	else if (deathmatch == 1)  // doesn't respawn in "deathmatch 2"
+	self.nextthink = time + 20;
+	self.think = SUB_regen;
+
+	// if (self.obit_name != "")
+	// {
+	// 	sprint (other, "You got ");
+	// 	sprint (other, self.obit_name); // custom armor name
+	// 	sprint (other, "\n");
+	// }
+	// else
+	if (self.armorvalue > 5) //bucksh0t: dont print text for shards
+	sprint(other, "You got armor\n");
+	// armor touch sound
+	// sound(other, CHAN_ITEM, "items/armor1.wav", 1, ATTN_NORM); // dumptruck_ds custom models and sounds START
+	if (self.snd_misc != "")
+	sound_misc(other, CHAN_AUTO, self.snd_misc, 1, ATTN_NORM);
+	else
+	sound_misc(other, CHAN_AUTO,"dump/armsh1.wav", 1, ATTN_NORM); // dumptruck_ds custom models and sounds END
+	stuffcmd (other, "bf\n");
+
+	activator = other;
+	SUB_UseTargets();				// fire all targets / killtargets
+};
+
 void() armor_touch =
 {
 	local	float	type=0, value=0, bit=0;
@@ -419,6 +550,28 @@ void() armor_touch =
 	}
 	activator = other;
 	SUB_UseTargets();
+};
+
+void() item_armor_shard =
+{
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
+
+	if (!self.mdl_body && world.a_shr_mdl)
+	{
+	  self.mdl_body = world.a_shr_mdl;
+	}
+
+	self.touch = shard_touch;
+	precache_model ("progs/armshr.mdl"); // dumptruck_ds custom models and sounds START
+	//precache_body_model ("progs/armshr.mdl");
+	// setmodel (self, "progs/armor.mdl");
+	body_model ("progs/armshr.mdl");
+	precache_sound_misc ("dump/armsh1.wav");
+	if !(self.skin) // dumptruck_ds custom models and sounds END
+	self.skin = 0;
+	setsize (self, '-16 -16 0', '16 16 56');
+	StartItem ();
 };
 
 /*QUAKED item_armor1 (0 .5 .8) (-16 -16 0) (16 16 32)
@@ -699,6 +852,7 @@ void() weapon_supershotgun =
 	self.netname = "Double-barrelled Shotgun";
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.particles_offset = '0 0 33';
 	StartItem ();
 };
 
@@ -711,6 +865,7 @@ void() weapon_nailgun =
 	self.netname = "Nailgun";
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.particles_offset = '0 0 31';
 	StartItem ();
 };
 
@@ -723,6 +878,7 @@ void() weapon_supernailgun =
 	self.netname = "Super Nailgun";
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.particles_offset = '0 0 34';
 	StartItem ();
 };
 
@@ -735,6 +891,7 @@ void() weapon_grenadelauncher =
 	self.netname = "Grenade Launcher";
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.particles_offset = '0 0 28';
 	StartItem ();
 };
 
@@ -747,6 +904,7 @@ void() weapon_rocketlauncher =
 	self.netname = "Rocket Launcher";
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.particles_offset = '0 0 32';
 	StartItem ();
 };
 
@@ -759,6 +917,7 @@ void() weapon_lightning =
 	self.netname = "Thunderbolt";
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.particles_offset = '0 0 31';
 	StartItem ();
 };
 
@@ -889,12 +1048,16 @@ void() item_shells =
 	{
 		// precache_model ("maps/b_shell1.bsp");  CLANRING_MOD - moved to world.qc
 		setmodel (self, "maps/b_shell1.bsp");
+		if !(self.particles_offset)
+			self.particles_offset = '16 16 16';
 		self.aflag = 40;
 	}
 	else
 	{
 		// precache_model ("maps/b_shell0.bsp");  CLANRING_MOD - moved to world.qc
 		setmodel (self, "maps/b_shell0.bsp");
+		if !(self.particles_offset)
+			self.particles_offset = '12 12 12';
 		self.aflag = 20;
 	}
 	self.weapon = 1;
@@ -913,12 +1076,16 @@ void() item_spikes =
 	{
 		// precache_model ("maps/b_nail1.bsp");  CLANRING_MOD - moved to world.qc
 		setmodel (self, "maps/b_nail1.bsp");
+		if !(self.particles_offset)
+			self.particles_offset = '16 16 16';
 		self.aflag = 50;
 	}
 	else
 	{
 		// precache_model ("maps/b_nail0.bsp");  CLANRING_MOD - moved to world.qc
 		setmodel (self, "maps/b_nail0.bsp");
+		if !(self.particles_offset)
+			self.particles_offset = '12 12 12';
 		self.aflag = 25;
 	}
 	self.weapon = 2;
@@ -937,12 +1104,15 @@ void() item_rockets =
 	{
 		// precache_model ("maps/b_rock1.bsp");  CLANRING_MOD - moved to world.qc
 		setmodel (self, "maps/b_rock1.bsp");
+		self.particles_offset = '16 8 16';
 		self.aflag = 10;
 	}
 	else
 	{
 		// precache_model ("maps/b_rock0.bsp");  CLANRING_MOD - moved to world.qc
 		setmodel (self, "maps/b_rock0.bsp");
+		if !(self.particles_offset)
+			self.particles_offset = '8 8 16';
 		self.aflag = 5;
 	}
 	self.weapon = 3;
@@ -961,6 +1131,8 @@ void() item_cells =
 	{
 		// precache_model ("maps/b_batt1.bsp");  CLANRING_MOD - moved to world.qc
 		setmodel (self, "maps/b_batt1.bsp");
+		if !(self.particles_offset)
+			self.particles_offset = '16 16 16';
 		self.aflag = 12;
 	}
 	else
@@ -972,6 +1144,8 @@ void() item_cells =
 	self.weapon = 4;
 	self.netname = "cells";
 	setsize (self, '0 0 0', '32 32 56');
+	if !(self.particles_offset)
+		self.particles_offset = '12 12 12';
 	StartItem ();
 };
 
@@ -1030,14 +1204,241 @@ KEYS
 ===============================================================================
 */
 
+/*
+===============================================================================
+
+KEYS
+
+===============================================================================
+*/
+
+
+void() key_touch =
+{
+	// from Copper -- dumptruck_ds
+	if (!CheckValidTouch()) return;
+
+// support for item_key_custom -- iw
+	if (HasKeys (other, self.items, self.customkeys))
+		return;
+
+	sprint (other, "You got the ");
+	sprint (other, self.netname);
+	sprint (other,"\n");
+
+	sound (other, CHAN_ITEM, self.noise, 1, ATTN_NORM);
+	stuffcmd (other, "bf\n");
+
+// support for item_key_custom -- iw
+	GiveKeys (other, self.items, self.customkeys);
+
+	if (!coop)
+	{
+		self.solid = SOLID_NOT;
+		self.model = string_null;
+	}
+
+	activator = other;
+// fix key items firing their targets multiple times in coop -- iw
+//	SUB_UseTargets();				// fire all targets / killtargets
+	SUB_UseAndForgetTargets();
+};
+
+
+void() key_setsounds =
+{
+// support for item_key_custom -- iw
+	if (self.noise != "")
+	{
+		precache_sound (self.noise);
+		return;
+	}
+
+	if (world.worldtype == WORLDTYPE_MEDIEVAL)
+	{
+		precache_sound ("misc/medkey.wav");
+		self.noise = "misc/medkey.wav";
+	}
+	if (world.worldtype == WORLDTYPE_METAL)
+	{
+		precache_sound ("misc/runekey.wav");
+		self.noise = "misc/runekey.wav";
+	}
+	if (world.worldtype == WORLDTYPE_BASE)
+	{
+		precache_sound2 ("misc/basekey.wav");
+		self.noise = "misc/basekey.wav";
+	}
+};
+
+
+/*
+============
+key_start
+
+Finish initializing self as a key item.  -- iw
+============
+*/
+void() key_start =
+{
+	key_setsounds ();
+	self.particles_offset = '0 0 18';
+	self.touch = key_touch;
+	setsize (self, '-16 -16 -24', '16 16 32');
+	StartItem ();
+};
+
+
+/*QUAKED item_key1 (0 .5 .8) (-16 -16 -24) (16 16 32) X X X X X SPAWN_SILENT TRIGGER_SPAWNED SUSPENDED_IN_AIR NOT_ON_EASY NOT_ON_NORMAL NOT_ON_HARD_OR_NIGHTMARE NOT_IN_DEATHMATCH NOT_IN_COOP NOT_IN_SINGLEPLAYER X NOT_ON_HARD_ONLY NOT_ON_NIGHTMARE_ONLY
+{	model("progs/w_s_key.mdl");	}
+SILVER key
+In order for keys to work you MUST set your map's worldtype to one of the following:
+0: medieval
+1: metal
+2: base
+*/
+
 void() item_key1 =
 {
-	remove(self);
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
+
+	if (world.worldtype == WORLDTYPE_MEDIEVAL)
+	{
+		precache_body_model ("progs/w_s_key.mdl");
+		body_model ("progs/w_s_key.mdl");
+	}
+	else if (world.worldtype == WORLDTYPE_METAL)
+	{
+		precache_body_model ("progs/m_s_key.mdl");
+		body_model ("progs/m_s_key.mdl");
+	}
+	else if (world.worldtype == WORLDTYPE_BASE)
+	{
+		precache_body_model2 ("progs/b_s_key.mdl");
+		body_model ("progs/b_s_key.mdl");
+	}
+
+	if (self.keyname != "") self.netname = self.keyname;
+	else self.netname = SilverKeyName ();
+
+	self.items = IT_KEY1;
+
+// support for item_key_custom -- iw
+	self.customkeys = 0;  // ignore any mapper-set value
+	self.noise = "";  // ignore any mapper-set value
+
+	key_start ();
 };
+
+
+/*QUAKED item_key2 (0 .5 .8) (-16 -16 -24) (16 16 32) X X X X X SPAWN_SILENT TRIGGER_SPAWNED SUSPENDED_IN_AIR NOT_ON_EASY NOT_ON_NORMAL NOT_ON_HARD_OR_NIGHTMARE NOT_IN_DEATHMATCH NOT_IN_COOP NOT_IN_SINGLEPLAYER X NOT_ON_HARD_ONLY NOT_ON_NIGHTMARE_ONLY
+{
+	model ("progs/w_g_key.mdl");
+}
+GOLD key
+In order for keys to work you MUST set your map's worldtype to one of the following:
+0: medieval
+1: metal
+2: base
+*/
 
 void() item_key2 =
 {
-	remove(self);
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
+
+	if (world.worldtype == WORLDTYPE_MEDIEVAL)
+	{
+		precache_body_model ("progs/w_g_key.mdl");
+		body_model ("progs/w_g_key.mdl");
+	}
+	if (world.worldtype == WORLDTYPE_METAL)
+	{
+		precache_body_model ("progs/m_g_key.mdl");
+		body_model ("progs/m_g_key.mdl");
+	}
+	if (world.worldtype == WORLDTYPE_BASE)
+	{
+		precache_body_model2 ("progs/b_g_key.mdl");
+		body_model ("progs/b_g_key.mdl");
+	}
+
+	if (self.keyname != "") self.keyname = "";
+	else self.netname = GoldKeyName ();
+
+	self.items = IT_KEY2;
+
+// support for item_key_custom -- iw
+	self.customkeys = 0;  // ignore any mapper-set value
+	self.noise = "";  // ignore any mapper-set value
+
+	key_start ();
+};
+
+
+// item_key_custom is a brand-spanking-new entity class created for
+// progs_dump -- iw
+
+/*QUAKED item_key_custom (0 .5 .8) (-16 -16 -24) (16 16 32) X X X X X SPAWN_SILENT TRIGGER_SPAWNED SUSPENDED_IN_AIR NOT_ON_EASY NOT_ON_NORMAL NOT_ON_HARD_OR_NIGHTMARE NOT_IN_DEATHMATCH NOT_IN_COOP NOT_IN_SINGLEPLAYER X NOT_ON_HARD_ONLY NOT_ON_NIGHTMARE_ONLY
+{
+	model ({"path" : "progs/pd_w_key.mdl", "skin" : 1});
+}
+A customizable key item.
+
+"keyname"  name of the key, e.g. "bronze key" (required)
+"mdl"      model file (required)
+"noise"    sound file for the pickup sound (default is per worldtype)
+"skin"     skin index (default 0)
+
+The "keyname" value is used both for the pickup message and to associate
+the key with the entity that it unlocks.
+
+To make a func_door or trigger_usekey require this key, set the
+"keyname" value of that entity so that it matches the "keyname" value of
+the key.
+
+If different item_key_custom entities have the same "keyname" value,
+they will be treated as different copies of the same key and may be used
+interchangeably.
+
+A map may have a maximum of 23 unique "keyname" values across all
+entities.
+
+The behavior of an item_key_custom should be as the player expects
+(based on the behavior of the silver and gold keys), except for the fact
+that it will not appear as an icon in the player's status bar when
+picked up.  This is a limitation of the engine.
+*/
+
+void() item_key_custom =
+{
+	if (SUB_Inhibit ())  // new spawnflags for all entities -- iw
+		return;
+
+	if (self.keyname == "")
+	{
+		objerror ("no keyname specified");
+		return;
+	}
+
+	if (self.mdl == "")
+	{
+		objerror ("no mdl specified");
+		return;
+	}
+
+	precache_model (self.mdl);
+	setmodel (self, self.mdl);
+	self.mdl = "";  // this should not be referenced again
+
+	self.netname = self.keyname;
+	self.keyname = "";  // this should not be referenced again
+
+	self.items = 0;  // ignore any mapper-set value
+	self.customkeys = CustomKeyFlag (self.netname);
+
+	key_start ();
 };
 
 /*
@@ -1194,6 +1595,8 @@ void() item_artifact_invulnerability =
 	self.netname = "Pentagram of Protection";
 	self.items = IT_INVULNERABILITY;
 	setsize (self, '-16 -16 -24', '16 16 32');
+	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
+		self.particles_offset = '0 0 16';
 
 	// ELOHIM_MOD - keep track of who got it
 	self.noise3 = " got the pentagram";
@@ -1217,6 +1620,8 @@ void() item_artifact_envirosuit =
 	self.netname = "Biosuit";
 	self.items = IT_SUIT;
 	setsize (self, '-16 -16 -24', '16 16 32');
+	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
+		self.particles_offset = '0 0 32';
 	StartItem ();
 };
 
@@ -1233,6 +1638,8 @@ void() item_artifact_invisibility =
 	self.netname = "Ring of Shadows";
 	self.items = IT_INVISIBILITY;
 	setsize (self, '-16 -16 -24', '16 16 32');
+	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
+		self.particles_offset = '0 0 0';
 	self.noise3 = " is invisible";			// ELOHIM_MOD
 	self.noise4 = " is ŽInvisibleŽ\n";		// ELOHIM_MOD
 	StartItem ();
@@ -1251,6 +1658,8 @@ void() item_artifact_super_damage =
 	self.netname = "Quad Damage";
 	self.items = IT_QUAD;
 	setsize (self, '-16 -16 -24', '16 16 32');
+	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
+		self.particles_offset = '0 0 16';
 
 	// ELOHIM_MOD - keep track of who gets it
 	self.noise3 = " got the quad";
@@ -1981,4 +2390,196 @@ void() TossAmmo =
 	W_SetCurrentAmmo();
 };
 
+/*
+===============
+DropStuff -- dumptruck_ds
 
+set drops_item on a monster to a number:
+
+1 = Silver Key
+2 = Gold Key
+3 = Health Vial
+4 = Armor Shard
+5 = Health Vial & Armor Shard
+6 = random combination of 3 Vials and/or Shards
+===============
+*/
+
+void() DropKey1 =
+{
+	local entity	item;
+
+	item = spawn();
+	item.origin = self.origin - '0 0 24';
+
+	item.velocity_z = 300;
+	item.velocity_x = -100 + (random() * 200);
+	item.velocity_y = -100 + (random() * 200);
+
+	if (world.worldtype == WORLDTYPE_MEDIEVAL)
+	{
+		precache_model ("progs/w_s_key.mdl");
+		setmodel (item, "progs/w_s_key.mdl");
+		item.noise = "misc/medkey.wav";
+	}
+	else if (world.worldtype == WORLDTYPE_METAL)
+	{
+		precache_model ("progs/m_s_key.mdl");
+		setmodel (item, "progs/m_s_key.mdl");
+		item.noise = "misc/runekey.wav";
+	}
+	else if (world.worldtype == WORLDTYPE_BASE)
+	{
+		precache_model2 ("progs/b_s_key.mdl");
+		setmodel (item, "progs/b_s_key.mdl");
+		item.noise = "misc/basekey.wav";
+	}
+	item.netname = SilverKeyName ();
+	item.effects = 8;
+	item.flags = FL_ITEM;
+	item.items = IT_KEY1;
+	item.solid = SOLID_TRIGGER;
+	item.movetype = MOVETYPE_TOSS;
+	setsize (item, '-16 -16 0', '16 16 56');
+	item.touch = key_touch;
+};
+
+void() DropKey2 =
+{
+	local entity	item;
+
+	item = spawn();
+	item.origin = self.origin - '0 0 24';
+
+	item.velocity_z = 300;
+	item.velocity_x = -100 + (random() * 200);
+	item.velocity_y = -100 + (random() * 200);
+
+	if (world.worldtype == WORLDTYPE_MEDIEVAL)
+	{
+		precache_model ("progs/w_g_key.mdl");
+		setmodel (item, "progs/w_g_key.mdl");
+		item.noise = "misc/medkey.wav";
+	}
+	else if (world.worldtype == WORLDTYPE_METAL)
+	{
+		precache_model ("progs/m_g_key.mdl");
+		setmodel (item, "progs/m_g_key.mdl");
+		item.noise = "misc/runekey.wav";
+	}
+	else if (world.worldtype == WORLDTYPE_BASE)
+	{
+		precache_model ("progs/b_g_key.mdl");
+		setmodel (item, "progs/b_g_key.mdl");
+		item.noise = "misc/basekey.wav";
+	}
+	item.netname = GoldKeyName ();
+	item.effects = 8;
+	item.flags = FL_ITEM;
+	item.items = IT_KEY2;
+	item.solid = SOLID_TRIGGER;
+	item.movetype = MOVETYPE_TOSS;
+	setsize (item, '-16 -16 0', '16 16 56');
+	item.touch = key_touch;
+};
+
+void() DropVial = //
+{
+	local entity	item;
+
+	item = spawn();
+	item.origin = self.origin - '0 0 24';
+
+	item.velocity_z = 300;
+	item.velocity_x = -100 + (random() * 200);
+	item.velocity_y = -100 + (random() * 200);
+
+	precache_model("progs/h_mdls/pd_vial.mdl");
+	setmodel(item, "progs/h_mdls/pd_vial.mdl");
+	item.solid = SOLID_TRIGGER;
+	item.movetype = MOVETYPE_TOSS;
+	setsize (item, '-16 -16 0', '16 16 56');
+	item.touch = health_touch;
+	item.healamount = 5;
+	item.healtype = 0;
+	item.noise = "items/r_item1.wav";
+
+	StartItem ();
+};
+
+void() DropShard = //
+{
+	local entity	item;
+
+	item = spawn();
+	item.origin = self.origin - '0 0 24';
+
+	item.velocity_z = 300;
+	item.velocity_x = -100 + (random() * 200);
+	item.velocity_y = -100 + (random() * 200);
+
+	setmodel(item, "progs/armshr.mdl");
+	item.solid = SOLID_TRIGGER;
+	item.movetype = MOVETYPE_TOSS;
+	setsize (item, '-16 -16 0', '16 16 56');
+	item.touch = shard_touch;
+	item.snd_misc = "dump/armsh1.wav";
+
+	StartItem ();
+};
+
+void() DropStuff =
+{
+	local float	rand_drop;
+
+	if (self.drop_item == 1)
+		{
+			DropKey1();
+		}
+	if (self.drop_item == 2)
+		{
+			DropKey2();
+		}
+	if (self.drop_item == 3)
+		{
+			DropVial();
+		}
+	if (self.drop_item == 4)
+		{
+			DropShard();
+		}
+	if (self.drop_item == 5)
+		{
+			DropVial();
+			DropShard();
+		}
+	else if (self.drop_item == 6)
+	{
+		rand_drop = rint(random() * 3);
+		if (rand_drop == 1)
+			{
+				DropShard();
+				DropVial();
+				DropVial();
+			}
+		else if (rand_drop == 2)
+			{
+				DropShard();
+				DropShard();
+				DropVial();
+			}
+		else if (rand_drop == 0)
+			{
+				DropShard();
+				DropShard();
+				DropShard();
+			}
+		else
+			{
+				DropVial();
+				DropVial();
+				DropVial();
+			}
+	}
+	return;
+};

@@ -100,6 +100,13 @@ void() multi_touch =
 	if (other.classname != "player")
 		return;
 
+	// from Copper -- dumptruck_ds
+	if (other.movetype == MOVETYPE_NOCLIP)
+		return;
+
+	if (self.estate != STATE_ACTIVE)
+		return;
+
 // if the trigger has an angles field, check player's facing direction
 	if (self.movedir != '0 0 0')
 	{
@@ -484,35 +491,22 @@ If the trigger_teleport has a targetname, it will only teleport entities when it
 */
 void() trigger_teleport =
 {
-	local vector o;
-	
-	// remove bogus teleporters, some of which have no destination.
-	if ((mapname == "e4m5" && self.target == "t178")
-		|| (mapname == "e4m8" && self.target == "t273")
-		|| (mapname == "start" && self.target == "t11")
-		|| (mapname == "e1m7" && self.target != "t2") // && self.target == "t15")
-		|| (mapname == "e2m6" && self.target == "t88"))
-	{
-		remove(self);
-		return;
-	}
+    local vector o;
 
-	InitTrigger ();
-	self.touch = teleport_touch;
-	// find the destination 
-	if (!self.target)
-//		objerror ("no target");//R00k: dont crash just remove the teleporter
-	{
-		remove(self);
-		return;
-	}
-	self.use = teleport_use;
-	if (!(self.spawnflags & SILENT))
-	{
-		precache_sound ("ambience/hum1.wav");
-        o = (self.mins + self.maxs) * 0.5;
-        ambientsound (self.origin, "ambience/hum1.wav",0.5 , ATTN_STATIC);
-	}
+    InitTrigger ();
+    self.touch = teleport_touch;
+
+    // find the destination 
+    if (!self.target)
+        objerror ("no target");
+    self.use = teleport_use;
+
+    if (!(self.spawnflags & SILENT))
+    {
+        precache_sound ("ambience/hum1.wav");
+        o = (self.mins + self.maxs)*0.5;
+        ambientsound (o, "ambience/hum1.wav",0.5 , ATTN_STATIC);
+    }
 };
 
 

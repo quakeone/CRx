@@ -5,6 +5,8 @@ fteextensions.qc
 #pragma warning disable F301 //there's lots of non-utf-8 strings. we're not really aiming for forwards compatibility here, but fteextensions.qc kinda assumes you are
 defs.qc
 defs2.qc
+newflags.qc
+math.qc
 array.qc
 userdefs.qc
 strings.qc
@@ -33,6 +35,9 @@ vote.qc
 match.qc
 votables.qc
 admin.qc
+keydata.qc
+customsounds.qc //mapper-settable custom sound effects for monsters - iw
+custom_mdls.qc //mapper-settable custom models for monsters - iw
 items.qc
 console.qc
 config.qc
@@ -46,6 +51,7 @@ world.qc
 client.qc
 player.qc
 monsters.qc
+keylock.qc
 doors.qc
 buttons.qc
 triggers.qc
@@ -53,3 +59,8 @@ plats.qc
 misc.qc
 fnstrings.qc
 hook.qc
+dtmisc.qc
+misc_model.qc
+rubicon2.qc
+rotate.qc
+func_bob.qc

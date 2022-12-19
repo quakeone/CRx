@@ -2096,9 +2096,26 @@ void () CaptureHighScores_sprint =
 	}
 	else
 	{
-		s1 = "No capture times set";
+		s1 = "No capture times set\n";
 	}
-	sprint(self, sprintf("\bTime Trial Leaders\b for %s:\n", mapname), s1, s2, s3);
+	if (playerrecord2[0].statvalue > 0)
+	{
+		ts1 = sprintf("\1  %s %s %-16s\n", utils_get_time(playerrecord2[0].statvalue), get_team_letter(playerrecord2[0].teamcolor), playerrecord2[0].player);
+		if (playerrecord2[1].statvalue > 0)
+		{
+			ts2 = sprintf("\2  %s %s %-16s\n", utils_get_time(playerrecord2[1].statvalue), get_team_letter(playerrecord2[1].teamcolor), playerrecord2[1].player);
+			if (playerrecord2[2].statvalue > 0)
+			{
+				ts3 = sprintf("\3  %s %s %-16s\n", utils_get_time(playerrecord2[2].statvalue), get_team_letter(playerrecord2[2].teamcolor), playerrecord2[2].player);
+			}
+		}
+		s4 = sprintf("%s%s%s",ts1,ts2,ts3);
+	}
+	else
+	{
+		s4 = "No match capture times set\n";
+	}
+	sprint(self, sprintf("\bTime Trial Leaders\b for %s:\n", mapname), s1, s2, s3, "\bMatch Times\b:\n", s4, "\n");
 	return;
 };
 
@@ -2138,11 +2155,13 @@ void () AirshotHighScores_sprint =
 	}
 	else
 	{
-		s4 = "No height records set";
+		s4 = "No height records set\n";
 	}
 	sprint(self, "\bAir Gib Streak Leaders\b:\n", s1, s2, s3, "\bHighest Air Gibs\b:\n", s4, "\n");
 	return;
 };
+
+//TODO: kill streaks?
 
 void () LongRangeGibs_sprint =
 {
@@ -2164,7 +2183,7 @@ void () LongRangeGibs_sprint =
 	}
 	else
 	{
-		s4 = "No long range records set";
+		s4 = "No long range records set\n";
 	}
 	sprint(self, "\bFurthest Rocket Gibs\b:\n", s4, "\n");
 	return;

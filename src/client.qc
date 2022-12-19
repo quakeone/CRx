@@ -1933,6 +1933,11 @@ void() ClientConnect =
 	self.finaldest_x = time;//lagout timer
 
 	clanring_client_connect ();
+
+	//remove this - bucksh0t
+	bprint (self.netname);
+	bprint (" entered the game\n");
+
 	if (stof(infokey(self, "csqcactive")))
 	{				
 		self.csqc_enabled = TRUE;
@@ -2667,6 +2672,26 @@ void(entity targ, entity attacker) ClientObituary =
 	}
 };
 
+void () client_afk_on =
+{
+	if (!(self.style & CLANRING_AFK_CLIENT))
+	{
+		sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
+		afk_name();
+		stuffcmd(self, "cmd setinfo afk yes\n");// woods
+		self.style = self.style | CLANRING_AFK_CLIENT;
+		self.afk_time = time;
+	}
+};
+
+void () client_afk_off =
+{
+	if (self.style & CLANRING_AFK_CLIENT)
+	{
+		clear_afk_status(self);
+	}
+};
+
 void(string cmd) SV_ParseClientCommand =
 {
     local float args, modecmd, mapnumber=0;
@@ -2682,6 +2707,12 @@ void(string cmd) SV_ParseClientCommand =
 
     switch (arg0)
     {
+		case "afkon":
+			client_afk_on();
+			return;
+		case "afkoff":
+			client_afk_off();
+			return;
 		case "dm":
 			if (arg2 != "")
 			{
@@ -2845,6 +2876,18 @@ void(string cmd) SV_ParseClientCommand =
 				return;
 			}
 			votables_request_set_gametype_mode_map(6, -1, 0);
+			return;
+		case "ctfdmm4":
+			if (arg1 != "")
+			{
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)	
+					votables_request_set_gametype_mode_map(7, -1, mapnumber);
+				else
+					sprint2(self, arg1, " is not a recognized map.\n");
+				return;
+			}
+			votables_request_set_gametype_mode_map(7, -1, 0);
 			return;
 		case "ca":
 			if (arg1 != "")
