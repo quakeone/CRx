@@ -251,7 +251,7 @@ void() votables_request_change_level =
 	}
 
 	level = (self.warp_episode * 15) + (self.warp_map);//new r00k
-	newmap = warpmap[level].name;
+	newmap = sprintf("%s (%s)", warpmap[level].name, warpmap[level].title);
 
 	//clear warp_flags;
 	self.warp_episode=0;
@@ -702,7 +702,7 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 	if (newmap)
 	{
 		self.use = SUB_Null;
-		request_mapname = warpmap[newmap].name;
+		request_mapname = sprintf("%s (%s)",warpmap[newmap].name,warpmap[newmap].title);
 	}
 
 	//clear warp_flags;

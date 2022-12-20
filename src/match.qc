@@ -712,6 +712,8 @@ void() match_begin =
 	// Remove the spawnpoints' visible models
 	utils_do_match_spawns(spawns_remove_model);
 
+	find_pqc_teamscore_teams();// R00k: make sure everyone has the teamscores teams.
+	
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
 		TeamCaptureRegenFlags ();// respawn flags just to make sure
@@ -719,13 +721,12 @@ void() match_begin =
 	}
 
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
-
 	announce("The match has begun!");//Moved up here for autodemo
-
 	utils_do_projectiles(SUB_Remove);
 	utils_do_players(match_gib_player);//3.19k : placed before rune remove
 	utils_do_item(SUB_Remove, "item_backpack");
-
+	utils_do_arena_players(arena_fight_and_shoot);
+	
 	if (clanring_playmode & CLANRING_RUNES)
 	{
 		utils_do_item(SUB_Remove, "item_rune");

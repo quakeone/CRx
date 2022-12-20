@@ -492,7 +492,11 @@ void() ClientKill =
 	{
 		DropBackpack();
 	}
-	TeamCaptureDropFlagOfPlayer (self, 1);
+	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_MATCH_STARTED)))
+		TeamCaptureDropFlagOfPlayer (self, 1);	//During Capture Time Trials (prematch); a suicide will return the flag back to base.
+	else
+		TeamCaptureDropFlagOfPlayer (self, 0);	//During a match or pickup mode, drop flag at origin of suicide.
+
 	UnHookPlayer();
 	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));//added for server mod hook
 	self.modelindex = modelindex_player;
@@ -1822,6 +1826,9 @@ void() PlayerPostThink =
 
 		if ((self.impulse >= 19) && (self.impulse != 22))
 		{
+			if (self.impulse != 39) //Remove afk status when the client issues an impulse command, *except* 39, which is our (automated) lag-out checker.
+				clear_afk_status(self);
+
 			if (self.impulse <= 250)
 				clanring_impulse ();
 		}
@@ -1989,8 +1996,13 @@ void() ClientDisconnect =
 	{
 		if (self.frags > 0)
 			announce5(self.netname, " left the game with ", s, " frag", pl);
-		else
-			announce2(self.netname, " disconnected.");
+		else 
+		{
+			if ((self.frags < 1) && (self.frags > -99))
+				announce5(self.netname, " rage-quit with ", s, " frag", pl);
+			else
+				announce2(self.netname, " disconnected.");	//observers
+		}
 	}
 	// ELOHIM_MOD - play gib sound if client was kicked for suiciding
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) || !(clanring_state & CLANRING_MATCH_STARTED) || !(self.style & CLANRING_OBSERVER))//R00k: dont make a sound when match is going, unless a player disconnected.

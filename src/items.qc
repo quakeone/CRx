@@ -702,6 +702,9 @@ void() weapon_touch =
 	if (!(other.flags & FL_CLIENT))
 		return;
 
+	if (other.health < 1)
+		return;
+
 // if the player was using his best weapon, change up to the new one if better		
 	stemp = self;
 	self = other;
