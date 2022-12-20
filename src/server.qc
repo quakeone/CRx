@@ -232,7 +232,7 @@ void () NextLevel;
 void (vector org, entity death_owner) spawn_tdeath;
 void () player_stand1;
 void (vector org) spawn_tfog;
-void () console_get_user_nextlevel;
+
 void () observer_start;
 void () W_ChangeWeapon;
 void () W_SetCurrentAmmo;
@@ -393,14 +393,14 @@ void () clanring_init_world =
 	clanring_level 			= cvar("scratch1");
 	clanring_overtime 		= cvar("scratch2");
 	clanring_maxteams 		= cvar("scratch3");
-	clanring_levelcount 	= 0;
-
+	clanring_levelcount 	= 0; // - This is used throughout to check that levels.cfg has been read...
+	clanring_lastcount 		= 0; // - used to count how many maps are listed in levels.cfg so we know when to recycle.
 //	clanring_player_ids 	= 1;
 	clanring_devparam 		= 0;
 	clanring_nextcheck 		= time;
 	clanring_nextcheck2 	= time;
 	clanring_request 		= world;
-	clanring_lastcount 		= 0;
+
 	clanring_state 			= 0;
 	//dm_num_spawns 	= 0;//R00k: Why reset this? the spawns are counted at map load before this init is called?
 	clanring_num_starts 	= 0;
