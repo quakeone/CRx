@@ -932,6 +932,9 @@ void() info_player_deathmatch =
 	dm_num_spawns = dm_num_spawns + 1.00;	
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
+		self.mdl = "progs/player.mdl";
+		self.frame = 6;
+		self.alpha = 0.4;
 		spawns_restore_model();
 	}
 };
@@ -940,6 +943,9 @@ void() info_player_team1 =
 {
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
+		self.mdl = "progs/player.mdl";
+		self.frame = 17;
+		self.alpha = 0.4;
 		spawns_restore_model();
 	}
 };
@@ -948,6 +954,9 @@ void() info_player_team2 =
 {
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
+		self.mdl = "progs/player.mdl";
+		self.frame = 17;
+		self.alpha = 0.4;
 		spawns_restore_model();
 	}
 };

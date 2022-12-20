@@ -406,6 +406,10 @@ void() teleport_touch =
 		if (other.classname != "player")
 			return;
 	}
+    // ELOHIM_MOD - this was meant to be here, but ID left it out
+    if (time < self.teleport_time)
+        return;
+    // END_MOD
 
 // only teleport living creatures
 	if (other.health <= 0 || other.solid != SOLID_SLIDEBOX)
@@ -455,8 +459,8 @@ void() teleport_touch =
 		other.teleport_time	= time + 0.7;
 		
 		if (other.flags & FL_ONGROUND)
-			other.flags = other.flags - other.flags & FL_ONGROUND;
-		other.velocity 		= v_forward * 300;
+			other.flags = other.flags - FL_ONGROUND;
+		other.velocity = v_forward * 300;
 	}
 	else
 		other.flags = other.flags - other.flags & FL_ONGROUND;	
@@ -468,13 +472,18 @@ This is the destination marker for a teleporter.  It should have a "targetname" 
 void() info_teleport_destination =
 {
 // this does nothing, just serves as a target spot
-	tele_num_spawns += 1;
 	self.mangle = self.angles;
-	self.angles = '0 0 0';
-	self.model = "";
+//	self.angles = '0 0 0'; //for some reason, when we give this entity a model, setting this changes the direction we face after spawning.
+//	self.model = "";
 	self.origin = self.origin + '0 0 27';
 	if (!self.targetname)
 		objerror ("no targetname");
+
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{		
+		self.mdl = "progs/v_spike.mdl";
+		spawns_restore_model();
+	}	
 };
 
 void() teleport_use =
@@ -503,10 +512,10 @@ void() trigger_teleport =
 
     if (!(self.spawnflags & SILENT))
     {
-        precache_sound ("ambience/hum1.wav");
-        o = (self.mins + self.maxs)*0.5;
-        ambientsound (o, "ambience/hum1.wav",0.5 , ATTN_STATIC);
-    }
+		precache_sound ("ambience/suck1.wav");//R00k: quieter sound
+		o = (self.mins + self.maxs)*0.5;
+		ambientsound (o, "ambience/suck1.wav",0.5 , ATTN_STATIC);
+	}
 };
 
 

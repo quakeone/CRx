@@ -1158,6 +1158,7 @@ void (void () dofunc) utils_do_match_spawns =
     utils_do_item(dofunc, "info_player_deathmatch");
     utils_do_item(dofunc, "info_player_team1");
     utils_do_item(dofunc, "info_player_team2");
+	utils_do_item(dofunc, "info_teleport_destination");
 };
 
 void () reset_frags =
