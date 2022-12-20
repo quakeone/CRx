@@ -694,9 +694,8 @@ void() spawns_remove_model =
 
 void() spawns_restore_model =
 {
-	setmodel (self, "progs/player.mdl");
-	self.frame = 13;
-	self.alpha = 0.6;
+	setmodel (self, self.mdl);
+	setsize(self,'-16 -16 -24','16 16 24'); // Must call setsize after setmodel
 };
 
 //
