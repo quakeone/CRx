@@ -145,6 +145,8 @@ void(entity flg) TeamDropFlag =
 	flg.solid      	= SOLID_TRIGGER;
 	flg.movetype   	= MOVETYPE_TOSS;
 
+	sound(flg, CHAN_AUTO, "misc/basekey.wav", 1, ATTN_NONE);
+	
 	if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
 	{
 		flg.angles = flg.angles + '0 0 180';

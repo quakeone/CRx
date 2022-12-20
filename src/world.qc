@@ -345,7 +345,7 @@ void() worldspawn =
 
 	precache_sound ("boss1/sight1.wav"); //haste
 	precache_sound ("hknight/slash1.wav"); //rune toss
-
+	precache_sound ("misc/basekey.wav"); //flag dropped notification
 	precache_sound("buttons/switch04.wav"); //match timer countdown
 
 	//

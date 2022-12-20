@@ -1637,6 +1637,12 @@ void() W_WeaponFrame =
 	if (((mode_is_arena() == TRUE) && (boss.timetofight == FALSE)))
 		return;
 
+	//BuckSh0t: stop firing during timer countdown
+	if ((match_prewar()) && (clanring_state & CLANRING_TIMER_STARTED))
+	{
+		return;
+	}
+
 // check for attack
     // ELOHIM_MOD - don't fire unless ELOHIM_OK_TO_SHOOT is set
 	if (self.button0)
