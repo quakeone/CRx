@@ -1439,12 +1439,13 @@ void() votables_request_set_quad =
 void() GotoNextMap;
 void() votables_vote_exit =
 {
-	if ((clanring_levelcount == -1))
+	if (clanring_levelcount == -1)
 	{
 		GotoNextMap();
 	}
 };
 
+//Vote to exit to next map in levels.cfg
 void() votables_request_vote_exit =
 {
 	if (clanring_levelcount != -1)
@@ -1453,9 +1454,9 @@ void() votables_request_vote_exit =
 		return;
 	}
 	
-	if (clanring_playmode & CLANRING_MATCH_MODE)
+	if (!(clanring_playmode & CLANRING_NORMAL_MODE))
 	{
-		sprint(self,"Command not allowed in match mode.\n");
+		sprint(self,"Command not allowed in current gamemode.\n");
 		return;
 	}
 

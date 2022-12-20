@@ -492,7 +492,7 @@ float clanring_rulescheck;
 .float max_teams;
 float ra_wins;
 entity ra_lastspawn;
-float tele_num_spawns;
+//float tele_num_spawns;
 .float nextspawn;
 
 float COLOR_BLUE = 13;

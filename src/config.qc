@@ -481,7 +481,7 @@ void () exec_warp_main_menu =
 		warpmenutop[i] = strzone(line);
 		i++;
 	}
-	strunzone(line);
+
 	fclose(f);
 }
 //TODO: Maybe build the warp menu based on the gametype?
@@ -523,6 +523,90 @@ void() exec_warp_cfg =
 	fclose(f);
 }
 
+//
+//	N E X T  L E V E L   C O N F I G 
+//
+// 	Reading the levels.cfg file and setting the nextmap variable to the next map in the list.
+//
+//  clanring_level		- number of current level in user level order
+//  clanring_levelcount	- This is used throughout to check that levels.cfg has been read...
+//  clanring_lastcount	- used to count how many maps are listed in levels.cfg so we know when to recycle.
+
+void() clanring_nextlevel_config =
+{
+	string 	line = "";
+	float 	i = 1;
+	
+	nextmap = "";
+
+	filestream f = fopen("configs/levels.cfg", FILE_READ);
+	cprint("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
+
+	if (f < 0)
+	{
+		nextmap = strzone(default_nextmap);
+		clanring_levelcount	= -1;	// This is used throughout to check that levels.cfg has been read...
+									// just disable nextlevel but allow the mod to run.
+		cprint("levels.cfg not found.\n");								
+		return;
+	}
+
+	// Count installed maps so we know when to recycle
+	while ((line = fgets(f)))
+	{
+		float argc = tokenize(line);
+
+		if (!argc) continue;		
+		if (argv(0) == "//" || argv(0) == "#") continue;
+
+		if (found_in_warp_list(line))
+			clanring_lastcount++;
+	}
+	fclose(f);
+
+	f = fopen("configs/levels.cfg", FILE_READ);
+
+	while ((line = fgets(f)))
+	{
+		argc = tokenize(line);
+
+		if (!argc) continue;		
+		if (argv(0) == "//" || argv(0) == "#") continue;
+
+		if (found_in_warp_list(line))
+		{
+			if (i == clanring_level)
+			{
+				nextmap = strzone(line);//strzone is required for qss, not FTE ... (Nextmap is dm6. Host_Error: cannot find map maps/6.bsp)				
+				break;
+			}
+			i++;
+		}
+	}
+	fclose(f);
+
+	if (nextmap == "")
+	{
+		strunzone(nextmap);
+		nextmap = strzone(mapname);	// Ugh, just reload the current map...
+		bprint("Nextmap not found, reloading \b", nextmap, "\b.\n");
+	}
+	else
+	{
+		bprint(sprintf("Nextmap is %s.\n", nextmap));
+		cprint(sprintf("Nextmap is %s.\n", nextmap));
+		clanring_level++;
+		if (clanring_level > clanring_lastcount)
+			clanring_level = 1;
+		utils_set_cvar ("scratch1", clanring_level);	// save out the next map to load.
+	}
+
+	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (cvar("noexit") != 1))
+		bprint("Exits activated\n");
+
+	clanring_levelcount	= -1;	// This is used throughout to check that levels.cfg has been read...
+}
+
 void(string cfg) exec_clanring_cfg =
 {
 	filestream f = fopen(cfg, FILE_READ);
@@ -556,7 +640,7 @@ void() clanring_warp_config =
 }
 
 //desc = 0 descending false, so lowest is first
-void (string filename, optional float desc = 0, optional float recordset = 0) read_player_stats =
+void (string filename, float desc = 0, float recordset = 0) read_player_stats =
 {
 	string line;
 	string tt_player = "";
@@ -579,9 +663,9 @@ void (string filename, optional float desc = 0, optional float recordset = 0) re
 		if (!argc)
 			continue;
 		if (argv(0) == "//" || argv(0) == "#" ) continue;	// Skip comments
-		tt_player = strtrim(strzone(line));
-		tt_teamcolor = stof(strzone(fgets(f)));
-		tt_statvalue = stof(strzone(fgets(f)));
+		tt_player 	 = strtrim(line);
+		tt_teamcolor = stof(fgets(f));
+		tt_statvalue = stof(fgets(f));
 		if (tt_statvalue > 0)
 		{
 			if (desc == RECORD_LOW)
@@ -600,7 +684,8 @@ void (string filename, optional float desc = 0, optional float recordset = 0) re
 			}
 		}
 	}
-	if (new_player_record == 0) strunzone(line);
+//r00k unzoning the wrong variable. required to use strzone?
+//	if (new_player_record == 0) strunzone(line);
 	fclose(f);
 }
 void () read_capture_stats =
@@ -714,7 +799,7 @@ void() clanring_cam_config =
 void() clanring_map_config =
 {
 	//Map specific settings
-	cprint("Loading Map Configuration File: \"configs/", mapname, ".cfg\"\n");
+	cprint(sprintf("Loading Map Configuration File: \"configs/%s.cfg\n", mapname));
 	cprint("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("configs/", mapname, ".cfg")));
 };
@@ -761,7 +846,7 @@ void() clanring_exec_configs =
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
-		utils_make_scheduled_event(console_get_user_nextlevel, 5);
+		clanring_nextlevel_config();
 	}
 	else
 	{
@@ -821,7 +906,7 @@ void (float soundtype) clanring_read_matchsounds =
 			matchsound[i] = strzone(line);
 		i++;
 	}
-	strunzone(line);
+//	strunzone(line);//R00k: strunzone the matchsound but not until we dont need it anymore
 	fclose(f);
 
 	if (soundtype == 1)

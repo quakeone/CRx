@@ -1229,6 +1229,7 @@ void() console_version_info =
 //
 //  Check to see if we've found the next level in levels.cfg
 //
+/*
 void(float newlevel) console_check_level =
 {
 	local string s;
@@ -1273,7 +1274,7 @@ void() console_get_user_nextlevel =
 	clanring_nextcheck = 0;
 	remove(self);
 };
-
+*/
 //
 //  G E T  O R I G I N
 //
@@ -1721,13 +1722,13 @@ void(float command) console_command =
 			return;
 		}
 	}
-
+/*R00k: removed. replaced in config.qc
 	if (command >= 100 && command < 200)
 	{
 		console_check_level(command - 100);
 		return;
 	}
-
+*/
 	if (command >= 80 && command <= 89)
 	{
 		arg = cvar("skill");

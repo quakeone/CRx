@@ -1071,7 +1071,7 @@ void() NextLevel =
 	gameover = TRUE;
 
     // check to see if there is a user-specified level sequence
-    console_get_user_nextlevel();
+    //	console_get_user_nextlevel();	//removed, we already loaded levels.cfg at startup
 
     o.think = execute_changelevel;
     o.nextthink = time + 0.1;
