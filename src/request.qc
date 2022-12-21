@@ -219,7 +219,7 @@ void() Request_Poll_Announce =
 	}
 };
 
-float (string captiona, string captionb, void() passfunc, optional string pollname = "") vote_init =
+float (string captiona, string captionb, void() passfunc, string pollname = "") vote_init =
 {
     clear_afk_status(self);	//R00k: (1/3/2022 12:54pm)
 

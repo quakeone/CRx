@@ -292,11 +292,11 @@ void () clanring_init_world =
 	local string szmode;
 	local float temp;
 
-	clanring_version = "ClanRing Mod v3.6";
-	clanring_version_info = "ClanRing Mod v3.6";
-	clanring_version_number = "3.6";	// CRMOD - string to be used throughout
-				    					//         code to show version number.
-	clanring_version_red = "\bClanRing Mod v3.6";
+
+	clanring_version = "crx v1.23.01nq";
+	clanring_version_info = "crx v1.23.01";
+	clanring_version_number = "1.23.01";	//version.year.month.day CRMOD - string to be used throughout code to show version number.
+	clanring_version_red = "\bcrx v1.23.01nq";
 	// Initialize sentinel
 	clanring_sentinel = spawn();
 	banent = spawn();
@@ -304,6 +304,7 @@ void () clanring_init_world =
 	clanring_playmode = cvar("samelevel");
 	
 	clanring_sentinel.next_player = world;
+	clanring_sentinel.next_team = world;
 	clanring_sentinel.next_camera = world;
 	clanring_sentinel.clanring_chase_score = CLANRING_NEGINF;
 
@@ -513,27 +514,7 @@ void () clanring_init_world =
 		forceinfokey(world, "playmode", "match");
 
 	// woods lets set serverinfo to current mode set in mod
-
-	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-		forceinfokey(world, "mode", "airshot");
-
-	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-		forceinfokey(world, "mode", "wipeout");
-
-	else if (clanring_playmode & CLANRING_CA_MODE)
-		forceinfokey(world, "mode", "ca");	
-
-	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		forceinfokey(world, "mode", "ctf");
-
-	else if (clanring_playmode & CLANRING_DMM4_MODE)
-		forceinfokey(world, "mode", "dmm4");
-
-	else if (clanring_playmode & CLANRING_RA_MODE)
-		forceinfokey(world, "mode", "ra");
-
-	else
-		forceinfokey(world, "mode", "dm");	
+	forceinfokey(world, "mode", szmode);
 };
 
 //
@@ -581,7 +562,7 @@ void (float value) clanring_set_teamplay =
 	if (value != -1)
 		teamplay = value;
 	temp = ftos(teamplay);
-	localcmd5("teamplay \"", temp, "?ClanRing v", clanring_version_number, "\"\n");
+	localcmd5("teamplay \"", temp, "?CRx v", clanring_version_number, "\"\n");
 };
 
 //
@@ -1089,7 +1070,7 @@ void () clanring_client_connect =
 		// Get rid of the new client flag
 		parm10	= parm10 - (parm10 & CLANRING_NEW_CLIENT);
 		// Set default observer flags
-		parm12 = /*OBSERVER_TOURNEY |*/ OBSERVER_WALK | OBSERVER_COMMENTARY;
+		parm12 = OBSERVER_FLY |  OBSERVER_COMMENTARY;
 
 		parm13 = 0;
 		
@@ -1098,6 +1079,7 @@ void () clanring_client_connect =
 		utils_make_scheduled_event(find_pqc_teamscore_teams, 1.25);//R00k
 		self.afk_time = time + 20;
 	}
+	else self.afk_time = time;
 
 	// send aliases if necessary
 	utils_make_scheduled_event(clanring_send_ignore_this, 1);
@@ -1113,7 +1095,7 @@ void () clanring_client_connect =
 	utils_make_scheduled_event(clanring_show_mode, 0.5);
     self.cnt = CLANRING_MAX_SUICIDES;  // numer of suicides allowed
 	self.clanring_hack_count = -1;  // count of admin code attempts
-	self.finaldest_y = MOVETYPE_WALK;
+//	self.finaldest_y = MOVETYPE_WALK;
 	self.killed = 0;
 	self.owner = world;      // no ghost
 	self.trigger_field = world; // last spawn point
@@ -1141,7 +1123,6 @@ void () clanring_client_connect =
 		self.frags          = 0;
 		self.trigger_field  = world;
 		self.skin	     	= 0;
-		self.afk_time 	    = time;
 		self.ca_player_flag	= PF_WAITING;
 	}
 };
@@ -2548,29 +2529,6 @@ void () clanring_start_frame =
 				utils_make_scheduled_event(auto_camera, 0.6);				
 				
 				pqc_ping_times();
-
-				if (clanring_levelcount > 0)
-				{
-					// Check for end of file in levels.cfg.  We assume end of file
-					// if it's been 5 seconds since the last update to levelcount.
-					// When end of file is detected, levelcount is set to -1 to
-					// indicate that levels.cfg is finished.
-					if (clanring_levelcount == clanring_lastcount)
-					{
-						cprint("levels.cfg: finished\n");
-						if (nextmap == "")
-							nextmap = clanring_firstlevel;
-						if (nextmap == "")
-							cprint("no nextmap found\n");
-						else
-							bprint("nextmap is \b", nextmap, "\b.\n");
-
-						clanring_levelcount = -1;
-						if (!(clanring_playmode & CLANRING_MATCH_MODE) && (cvar("noexit") != 1))
-							bprint("Exits activated\n");
-					}
-					clanring_lastcount = clanring_levelcount;
-				}
 														
 				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 				{

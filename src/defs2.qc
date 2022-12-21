@@ -82,13 +82,15 @@ float CLANRING_AIRSHOT_MODE			= 65536;
 float CLANRING_AUTO_PAUSE    		= 131072;
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
-//float CLANRING_CA_CC_VOTE			= 1048576;//removed; ALWAYS create a vote when a player wants to join the match
-float CLANRING_SPAWNFRAG_PROTECTION	= 1048576;
-//float UNUSED			= 1048576;
+//float CLANRING_CA_CC_VOTE			= 0;
+//float CLANRING_FREEZETAG			= 0;
+//float CLANRING_SPEEDBALL			= 0;
+//float CLANRING_SPAWNFRAG_PROTECTION = 0;
+//float UNUSED						= 1048576;
+float CLANRING_DMM4_MODE			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
 float CLANRING_CA_MODE				= 4194304;
 float CLANRING_RA_MODE				= 8388608;
-float CLANRING_DMM4_MODE			= 16777216;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
@@ -139,7 +141,7 @@ entity  clanring_request;           // used to control voting
 float   clanring_level;             // number of current level in user level order
 float   clanring_levelcount;        // used to scan through list in levels.cfg
 float   clanring_lastcount;         // used to detect end-of-file in levels.cfg
-string  clanring_firstlevel;        // used to remember the name of the first level in levels.cfg
+
 float   dm_num_spawns;              // number of deathmatch spawn points (as opposed to ctf spawn points)
 float   clanring_num_starts;        // number of match extra start points
 float   clanring_num_cameras;       // number of cameras
@@ -266,9 +268,12 @@ float 	TEAM_CAPTURE_FRAG_CARRIER_ASSIST_TIMEOUT   	= 6;
 float 	TEAM_CAPTURE_RETURN_FLAG_ASSIST_TIMEOUT   	= 4;
 float 	TEAM_CAPTURE_UPDATE_TIME  			        = 120;
 float 	TEAM_UPDATE_DELAY  				            = 0.1;
-//ctf variables--------------
+//color values (ie self.team = self.height + 1)
 float 	RED            		= 5;
 float 	BLUE          		= 14;
+float 	YELLOW            	= 13;
+float 	GREEN          		= 4;
+
 float 	FLAG_AT_BASE  		= 0;
 float 	FLAG_CARRIED  		= 1;
 float 	FLAG_DROPPED  		= 2;
@@ -367,6 +372,7 @@ float 	debug = 0;
 .float 	ctime;
 string	clanring_version_red;
 .entity hookentity;
+.string client;
 
 //---custom 'server modules' off-hand hook added for pub mode. (FIXME: remove this shit)
 .float 	hook_out;

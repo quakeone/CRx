@@ -6,7 +6,8 @@
 void() LinkPos =
 {
 	//R00k added
-	local vector dir;
+	local vector dir = '0 0 0';
+
 	dir = self.owner.origin - (self.owner.owner.origin + '0 0 16');  
   	self.angles = vectoangles(dir);
 

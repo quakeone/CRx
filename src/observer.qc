@@ -228,7 +228,10 @@ void () observer_camera_start =
 		if (!self.movetarget)
 		{
 			sprint(self, "no cameras found\n");
-			observer_walk_start();
+			if (self.oflags & OBSERVER_QUAKETV) //R00k: the show must go on!
+				observer_chase_start();
+			else
+				observer_fly_start();
 			return;
 		}
 		self.delay = 0;
@@ -242,7 +245,11 @@ void () observer_camera_start =
 			if (!self.movetarget)
 			{
 				sprint(self, "no cameras found\n");
-				observer_walk_start();
+				if (self.oflags & OBSERVER_QUAKETV) //R00k: the show must go on!
+					observer_chase_start();
+				else
+					observer_fly_start();
+
 				return;
 			}
 			self.delay = 0;
@@ -364,7 +371,7 @@ void () observer_demo_start =
         if (!self.movetarget)
         {
             sprint(self, "no chase target found\n");
-            observer_walk_start();
+			observer_fly_start();
             return;
         }
         self.delay = 0;
@@ -520,7 +527,7 @@ void () observer_start =
 	//setcolor (self, 0,0);
 	if (mode_is_arena() == FALSE)
 		stuffcmd(self, ";color 0;\n");
-	self.height = 0;// fixed observer color cheat?
+	self.height = TEAM_SPECTATOR;// fixed observer color cheat?
 
 	if (self.oflags & OBSERVER_FLY)
 		observer_fly_start();
@@ -619,6 +626,7 @@ void() observer_end =
 	self.movetarget = world;
 	if (!mode_is_arena())
 		stats_reset_player();
+	clear_afk_status(self);		//R00k: added (12/7/2022)
 	SetNewParms2();	
 	PutClientInServer();
 };
@@ -1975,7 +1983,8 @@ void () observer_post_think =
 		//         to see if movetarget was damaged
         
 		// Update the status bar every frame
-		observer_update_status_bar();
+		if (!(self.style & CLANRING_HEADS_UP))
+			observer_update_status_bar();
 
 		// Update the heads up display every 0.5 seconds
 		if (time > self.delay)

@@ -593,7 +593,7 @@ void() clanring_nextlevel_config =
 	}
 	else
 	{
-		bprint(sprintf("Nextmap is %s.\n", nextmap));
+	//	bprint(sprintf("Nextmap is %s.\n", nextmap));
 		cprint(sprintf("Nextmap is %s.\n", nextmap));
 		clanring_level++;
 		if (clanring_level > clanring_lastcount)
@@ -683,9 +683,10 @@ void (string filename, float desc = 0, float recordset = 0) read_player_stats =
 					check_player_high_record(tt_statvalue, tt_teamcolor, tt_player);
 			}
 		}
+		tt_player = "";
+		tt_statvalue = 0,tt_teamcolor = 0; //reset
 	}
-//r00k unzoning the wrong variable. required to use strzone?
-//	if (new_player_record == 0) strunzone(line);
+
 	fclose(f);
 }
 void () read_capture_stats =
@@ -860,9 +861,13 @@ void() clanring_exec_configs =
 	}
 
 	//R00k: ticrate defaults for different modes :|
-	local string useTicrate = ftos(clanring_tdm_ticrate);
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		useTicrate = ftos(clanring_ctf_ticrate);
+	local string useTicrate;
+
+	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
+		useTicrate = ftos(clanring_tdm_ticrate);
+	else
+		useTicrate = ftos(clanring_ctf_ticrate);//use the faster ticrate for everything else...
+
 	dprint("setting sys_ticrate to ", useTicrate, "\n");
 	cvar_set("sys_ticrate", useTicrate);
 

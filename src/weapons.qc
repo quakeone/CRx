@@ -506,7 +506,7 @@ void() W_FireRocket =
 	missile.movetype = MOVETYPE_FLYMISSILE;
 	missile.solid = SOLID_BBOX;
 	missile.classname = "missile";
-	missile.dest1 = self.origin;
+	missile.dest1 = self.origin;	//Starting point for rockets shot for distance stats
 
 // set missile speed		
 	makevectors (self.v_angle);
@@ -746,6 +746,7 @@ void() W_FireGrenade =
 			self.weapon = W_BestWeapon ();
 			W_SetCurrentAmmo ();
 			sprint(self, "\b\< Grenade spam protection activated \>\n");
+			return;
 		}
 	}
     // END_MOD
