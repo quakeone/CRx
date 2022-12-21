@@ -1066,7 +1066,8 @@ void() NextLevel =
 
 	if (clanring_playmode & CLANRING_RA_MODE)
 		nextmap = ra_get_next_map();
-		
+	else
+		nextmap = o.map;
 	gameover = TRUE;
 
     // check to see if there is a user-specified level sequence
@@ -2711,8 +2712,11 @@ void(string cmd) SV_ParseClientCommand =
     local string arg0 = "", arg1 = "", arg2 = "";
 
 	if (!(self.style & CLANRING_CONNECTED))
+	{
+		clientcommand(self, cmd); //just passing by...
 		return;
-		
+	}
+
     args = tokenize(cmd);
 	if (args > 0)
     	arg0 = argv(0);
