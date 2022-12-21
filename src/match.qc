@@ -2562,7 +2562,7 @@ void(entity player) match_disconnect_notify =
 			clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
 			match_show_timelimit();
 			score_resend_scoreboard();
-			utils_do_match_markers(spawns_restore_model);	//R00k
+			utils_do_match_spawns(spawns_restore_model);	//R00k
 		}
 		return;
 	}
