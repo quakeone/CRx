@@ -281,19 +281,12 @@ entity () FindIntermission =
 void() GotoNextMap =
 {
 	if (nextmap == "")
-		nextmap = default_nextmap;
-	/*if ((cvar ("samelevel") & 1))
 	{
-
-	bprint("\nRestarting Map...Please Wait.\n");
-	changelevel (mapname);
+		strunzone(nextmap);
+		nextmap = mapname;
+		bprint("\nMap not found. Reloading Current Map...Please Wait.\n");
 	}
-	else
-	*/
-	{
-		bprint("\nLoading Map...Please Wait.\n");
-		changelevel (nextmap);
-	}
+	changelevel (nextmap);
 };
 
 /*
@@ -1001,81 +994,83 @@ only called if a time or frag limit has expired
 */
 void() NextLevel =
 {
-	local entity o;
+	local entity o = world;
 
-	if (mapname == "start")
+	o = spawn();
+
+	if (clanring_levelcount != -1) //if levels.cfg wasnt found, fallback
 	{
-		if (!cvar("registered"))
+		if (mapname == "start")
 		{
-			mapname = "e1m1";
-		}
-		else if (!(serverflags & 1))
-		{
-			mapname = "e1m1";
-			serverflags = serverflags | 1;
-		}
-		else if (!(serverflags & 2))
-		{
-			mapname = "e2m1";
-			serverflags = serverflags | 2;
-		}
-		else if (!(serverflags & 4))
-		{
-			mapname = "e3m1";
-			serverflags = serverflags | 4;
-		}
-		else if (!(serverflags & 8))
-		{
-			mapname = "e4m1";
-            serverflags = serverflags | 8;
-		}
-        else
-            mapname = "end";
+			if (!cvar("registered"))
+			{
+				mapname = "e1m1";
+			}
+			else if (!(serverflags & 1))
+			{
+				mapname = "e1m1";
+				serverflags = serverflags | 1;
+			}
+			else if (!(serverflags & 2))
+			{
+				mapname = "e2m1";
+				serverflags = serverflags | 2;
+			}
+			else if (!(serverflags & 4))
+			{
+				mapname = "e3m1";
+				serverflags = serverflags | 4;
+			}
+			else if (!(serverflags & 8))
+			{
+				mapname = "e4m1";
+				serverflags = serverflags | 8;
+			}
+			else
+				mapname = "end";
 
-		o = spawn();
-		o.map = mapname;
-	}
-    else if (mapname == "end")
-    {
-        o = spawn();
-        o.map = "dm1";
-    }
-    else if (mapname == "dm6")
-    {
-        o = spawn();
-        serverflags = (serverflags & 14) / 2;
-        if (serverflags > 0)
-            o.map = "dm1";
-        else
-            o.map = "start";
-    }
-    else if (mapname == "e2m3")
-    {
-        o = spawn();
-        o.map = "e2m7";
-    }
-	else
-	{
-		// find a trigger changelevel
-		o = find(world, classname, "trigger_changelevel");
-
-		// go back to start if no trigger_changelevel
-		if (!o)
-		{
-			mapname = "start";
-			o = spawn();
 			o.map = mapname;
 		}
+		else if (mapname == "end")
+		{
+			o.map = "dm1";
+		}
+		else if (mapname == "dm6")
+		{
+			serverflags = (serverflags & 14) / 2;
+			if (serverflags > 0)
+				o.map = "dm1";
+			else
+				o.map = "start";
+		}
+		else if (mapname == "e2m3")
+		{
+			o.map = "e2m7";
+		}
+		else
+		{
+			// find a trigger changelevel
+			o = find(world, classname, "trigger_changelevel");
+
+			// go back to start if no trigger_changelevel
+			if (!o)
+			{
+				mapname = "start";
+				
+				o.map = mapname;
+			}
+		}
+		if (o.map != string_null) //just in case.
+			nextmap = o.map;
 	}
 
 	if (clanring_playmode & CLANRING_RA_MODE)
 		nextmap = ra_get_next_map();
-	else
-		nextmap = o.map;
+		
 	gameover = TRUE;
 
     // check to see if there is a user-specified level sequence
-    //	console_get_user_nextlevel();	//removed, we already loaded levels.cfg at startup
+//	console_get_user_nextlevel();	//removed, we already loaded levels.cfg at startup
 
     o.think = execute_changelevel;
     o.nextthink = time + 0.1;
@@ -1766,9 +1761,6 @@ void() PlayerPostThink =
 		}
 	}
 
-//	if ((mode_is_arena()) && (clanring_state & CLANRING_MATCH_PAUSED)) 
-//		return;
-// Players will lag-out if this check is here...
 	if (IS_CA_OBSERVER(self))
 	{
 		observer_post_think();
@@ -2025,10 +2017,10 @@ void() ClientDisconnect =
 		self.hook2 = self.hook2 - (self.hook2 & HOOK_OUT);//TODO remove the off-hand newbie hook...
 	}
 
-	if (self.super_damage_finished > 0 && (clanring_playmode & CLANRING_WIPEOUT_MODE))
-	{
-		wipeout_drop_quad (self.super_damage_finished - time);
-	}
+//	if (self.super_damage_finished > 0 && (clanring_playmode & CLANRING_WIPEOUT_MODE))
+//	{
+//		wipeout_drop_quad (self.super_damage_finished - time);
+//	}
 
 	clanring_client_disconnect ();
 	set_suicide_frame ();
@@ -2718,6 +2710,9 @@ void(string cmd) SV_ParseClientCommand =
     local float args, modecmd, mapnumber=0;
     local string arg0 = "", arg1 = "", arg2 = "";
 
+	if (!(self.style & CLANRING_CONNECTED))
+		return;
+		
     args = tokenize(cmd);
 	if (args > 0)
     	arg0 = argv(0);

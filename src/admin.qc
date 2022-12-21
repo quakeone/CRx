@@ -1267,7 +1267,7 @@ void() admin_impulse =
 		votables_request_set_weaponstay();
 	else if (self.impulse == 219)
 		votables_select_fraglimit();
-	else if (self.impulse == 220)
+	else if (self.impulse == 220)//TODO: not needed, duplicate of `nextmap` cmd
 		votables_request_next_map();
 	else if (self.impulse == 221)
 		votables_request_set_quad();

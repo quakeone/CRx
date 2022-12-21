@@ -229,144 +229,10 @@ string (entity e) strings_get_weapon =
 //
 string (entity e) strings_get_health_ammo =
 {
-	if (e.health <= 125)
-	{
-		if (e.health <= 65)
-		{
-			if (e.health <= 30)
-			{
-				if (e.health <= 0)
-				return "  Èåáìôèº 0    Áííïº ";
-				if (e.health <= 5)
-				return "  Èåáìôèº 5    Áííïº ";
-				if (e.health <= 10)
-				return "  Èåáìôèº 10   Áííïº ";
-				if (e.health <= 15)
-				return "  Èåáìôèº 15   Áííïº ";
-				if (e.health <= 20)
-				return "  Èåáìôèº 20   Áííïº ";
-				if (e.health <= 25)
-				return "  Èåáìôèº 25   Áííïº ";
-				return "  Èåáìôèº 30   Áííïº ";
-			}
-			else
-			{
-				if (e.health <= 35)
-				return "  Èåáìôèº 35   Áííïº ";
-				if (e.health <= 40)
-				return "  Èåáìôèº 40   Áííïº ";
-				if (e.health <= 45)
-				return "  Èåáìôèº 45   Áííïº ";
-				if (e.health <= 50)
-				return "  Èåáìôèº 50   Áííïº ";
-				if (e.health <= 55)
-				return "  Èåáìôèº 55   Áííïº ";
-				if (e.health <= 60)
-				return "  Èåáìôèº 60   Áííïº ";
-				return "  Èåáìôèº 65   Áííïº ";
-			}
-		}
-		else
-		{
-			if (e.health <= 95)
-			{
-				if (e.health <= 70)
-				return "  Èåáìôèº 70   Áííïº ";
-				if (e.health <= 75)
-				return "  Èåáìôèº 75   Áííïº ";
-				if (e.health <= 80)
-				return "  Èåáìôèº 80   Áííïº ";
-				if (e.health <= 85)
-				return "  Èåáìôèº 85   Áííïº ";
-				if (e.health <= 90)
-				return "  Èåáìôèº 90   Áííïº ";
-				return "  Èåáìôèº 95   Áííïº ";
-			}
-			else
-			{
-				if (e.health <= 100)
-				return "  Èåáìôèº 100  Áííïº ";
-				if (e.health <= 105)
-				return "  Èåáìôèº 105  Áííïº ";
-				if (e.health <= 110)
-				return "  Èåáìôèº 110  Áííïº ";
-				if (e.health <= 115)
-				return "  Èåáìôèº 115  Áííïº ";
-				if (e.health <= 120)
-				return "  Èåáìôèº 120  Áííïº ";
-				return "  Èåáìôèº 125  Áííïº ";
-			}
-		}
-	}
-	else
-	{
-		if (e.health <= 195)
-		{
-			if (e.health <= 160)
-			{
-				if (e.health <= 130)
-				return "  Èåáìôèº 130  Áííïº ";
-				if (e.health <= 135)
-				return "  Èåáìôèº 135  Áííïº ";
-				if (e.health <= 140)
-				return "  Èåáìôèº 140  Áííïº ";
-				if (e.health <= 145)
-				return "  Èåáìôèº 145  Áííïº ";
-				if (e.health <= 150)
-				return "  Èåáìôèº 150  Áííïº ";
-				if (e.health <= 155)
-				return "  Èåáìôèº 155  Áííïº ";
-				return "  Èåáìôèº 160  Áííïº ";
-			}
-			else
-			{
-				if (e.health <= 165)
-				return "  Èåáìôèº 165  Áííïº ";
-				if (e.health <= 170)
-				return "  Èåáìôèº 170  Áííïº ";
-				if (e.health <= 175)
-				return "  Èåáìôèº 175  Áííïº ";
-				if (e.health <= 180)
-				return "  Èåáìôèº 180  Áííïº ";
-				if (e.health <= 185)
-				return "  Èåáìôèº 185  Áííïº ";
-				if (e.health <= 190)
-				return "  Èåáìôèº 190  Áííïº ";
-				return "  Èåáìôèº 195  Áííïº ";
-			}
-		}
-		else
-		{
-			if (e.health <= 225)
-			{
-				if (e.health <= 200)
-				return "  Èåáìôèº 200  Áííïº ";
-				if (e.health <= 205)
-				return "  Èåáìôèº 205  Áííïº ";
-				if (e.health <= 210)
-				return "  Èåáìôèº 210  Áííïº ";
-				if (e.health <= 215)
-				return "  Èåáìôèº 215  Áííïº ";
-				if (e.health <= 220)
-				return "  Èåáìôèº 220  Áííïº ";
-				return "  Èåáìôèº 225  Áííïº ";
-			}
-			else
-			{
-				if (e.health <= 230)
-				return "  Èåáìôèº 230  Áííïº ";
-				if (e.health <= 235)
-				return "  Èåáìôèº 235  Áííïº ";
-				if (e.health <= 240)
-				return "  Èåáìôèº 240  Áííïº ";
-				if (e.health <= 245)
-				return "  Èåáìôèº 245  Áííïº ";
-				if (e.health <= 600)
-				return "  Èåáìôèº 250  Áííïº ";
-				return "  Èåáìôèº 666  Áííïº ";
-			}
-		}
-	}
+	local string temp;
+	temp = sprintf("  Èåáìôèº %03g  Áííïº", e.health);
+	return temp;
+
 };
 
 //
@@ -764,7 +630,7 @@ string (float mode) strings_get_mode_gold =
 //
 string (float n) strings_szplural =
 {
-    if (n == 1)
-        return "";
+    if ((n == 1)||(n == -1))
+        return "";	
     return "s";
 };

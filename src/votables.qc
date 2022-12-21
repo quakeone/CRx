@@ -417,7 +417,7 @@ void() votables_set_gametype_mode_map =
 		{
 			votables_clear_playmode_flags();
 			clanring_playmode = (clanring_playmode | CLANRING_RA_MODE | CLANRING_NO_HOOK);
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "0");
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Rocket Arena\n");
@@ -430,7 +430,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE | CLANRING_NO_HOOK);
 			cvar_set("timelimit", "3");
 			cvar_set("fraglimit", "0");
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "0");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
 			bprint("gametype set to dmm4\n");
@@ -443,7 +443,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = (clanring_playmode | CLANRING_AIRSHOT_MODE | CLANRING_NO_HOOK);
 			cvar_set("timelimit", "0");
 			cvar_set("fraglimit", "10");
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "0");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
 			bprint("gametype set to Airshot\n");
@@ -468,7 +468,7 @@ void() votables_set_gametype_mode_map =
 			clanring_playmode = (clanring_playmode | CLANRING_DMM4_MODE);
 			cvar_set("timelimit", "3");
 			cvar_set("fraglimit", "0");
-			cvar_set("teamplay", "2");
+			cvar_set("teamplay", "0");
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
 			bprint("gametype set to ctf dmm4\n");

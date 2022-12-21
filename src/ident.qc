@@ -9,8 +9,9 @@ string (entity e) ident_get_weapon_in_hand =
 	if (e.weapon == IT_NAILGUN) 			return "ng";
 	if (e.weapon == IT_SHOTGUN) 			return "sg";
 	if (e.weapon == IT_AXE) 				return "axe";
-	if (e.weapon == IT_HOOK)				return "hook";
-											return "fist";
+//	if (e.weapon == IT_HOOK)				return "hook";
+//											return "fist";
+	return "";
 }
 
 string (entity e) ident_get_other_weapons =

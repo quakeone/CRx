@@ -9,7 +9,7 @@ void () stats_team_stats;
 void () RemoveFromTeam;
 void () ra_select_team;
 void() Request_Poll_Cleanup;
-float (string captiona, string captionb, void() passfunc, optional string pollname = "") vote_init;
+float (string captiona, string captionb, void() passfunc, string pollname = "") vote_init;
 float () W_BestWeapon;
 void () score_update_time;
 void () SUB_regen;

@@ -356,13 +356,19 @@ void() match_sprint_status =
 	{
 		score = ftos(clanring_first_place.frags);
 		temp = strings_szplural(clanring_first_place.frags);
-		sprint7(self, clanring_szthe, clanring_first_place.netname, " has ", score, " frag", temp, "\n");
+		if (!(clanring_state & CLANRING_MATCH_OVER))
+			sprint7(self, clanring_szthe, clanring_first_place.netname, " has ", score, " frag", temp, "\n");
+		else
+			sprint7(self, clanring_szthe, clanring_first_place.netname, " had ", score, " frag", temp, "\n");
 	}
 	if (clanring_second_place != clanring_sentinel)
 	{
 		score = ftos(clanring_second_place.frags);
 		temp = strings_szplural(clanring_second_place.frags);
-		sprint7(self, clanring_szthe, clanring_second_place.netname, " has ", score, " frag", temp, "\n");
+		if (!(clanring_state & CLANRING_MATCH_OVER))
+			sprint7(self, clanring_szthe, clanring_second_place.netname, " has ", score, " frag", temp, "\n");
+		else
+			sprint7(self, clanring_szthe, clanring_second_place.netname, " had ", score, " frag", temp, "\n");
 	}
 };
 
@@ -783,7 +789,7 @@ void() match_bprint_timelimit =
 	local string digit;
 	local float temp;
 
-	bprint("Ôéíåìéíéô éó ");
+	bprint("\bTimelimit is\b ");
 	temp = floor(clanring_timelimit / 10);
 	if (temp)
 	{
@@ -815,6 +821,7 @@ void () match_reset_powerup =
 void() match_timer_think1 =
 {
 	//local string temp;
+	pqc_match_time(clanring_timelimit, +1);//lol this is a hack!
 
 	self.count -= 1;
 	if (self.count < 0)
@@ -823,7 +830,7 @@ void() match_timer_think1 =
 		self.lip -= 1;
 	}
 	self.nextthink = time + 1;
-	pqc_match_time(self.lip, self.count);
+
 	score_update_time();
 	if (self.count == self.dest_x)
 	{
@@ -1826,8 +1833,9 @@ void() match_pause_player =
 		self.clanring_old_velocity = '0 0 0';
 		return;
 	}
-	self.movetype = MOVETYPE_FLY;
-	self.finaldest_y = MOVETYPE_FLY;
+	self.style = self.style - (self.style & CLANRING_OK_TO_SHOOT);
+	self.movetype = MOVETYPE_NONE;//R00k: On an FTE server Paused players can still move around.
+
 	self.clanring_old_velocity = self.velocity;
 	self.velocity = VEC_ORIGIN;
 	if (self.nextthink == -1)
@@ -1950,7 +1958,9 @@ void() match_unpause_player =
 
 	if ((self.style & CLANRING_OBSERVER) || self.deadflag)
 		return;
-
+	
+	self.style = self.style | CLANRING_OK_TO_SHOOT;
+		
 	//R00k ADDED...
 	self.lefty 				= (self.lefty + clanring_match_pause_time);				// paused match reset captime
 	self.last_hurt_carrier 	= (self.last_hurt_carrier + clanring_match_pause_time);	// paused match reset last hurt flag carrier
@@ -2552,6 +2562,7 @@ void(entity player) match_disconnect_notify =
 			clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
 			match_show_timelimit();
 			score_resend_scoreboard();
+			utils_do_match_markers(spawns_restore_model);	//R00k
 		}
 		return;
 	}
