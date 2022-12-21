@@ -230,7 +230,17 @@ float 	CLANRING_ANGLE_SMOOTHING    = 0.6; // CRMOD use this instead of typing th
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------------------------------------------
+/*
+ * helpers. -- from cspreee
+ */
+ #define redify(s) strconv(0,2,2,s)
+ #define alternate(s) strconv(0,5 + ((time*4)&1), 5 + ((time*4)&1),s)
+ #define flash(s) strconv(0,1 + ((time*4)&1), 1 + ((time*4)&1),s)
+ #define goldnmbr(s) strconv(0,3,3,s)
+ #define lowrcase(s) strconv(1,0,0,s)
+ #define brackets(s) sprintf("%s%s%s", chr2str(0x90), s, chr2str(0x91))
+ #define disconnected(s) sprintf("%s %s", chr2str(0x87), s)
+//---------------------------------------------------------- 
 void(string s1, ...) cprint;
 void(string s1, string s2) cprint2;
 void(string s1, string s2, string s3) cprint3;

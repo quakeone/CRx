@@ -1842,7 +1842,7 @@ void() PlayerPostThink =
 	//if (time >= self.attack_finished)//R00k removed so non weapon impulse commands can be handled faster
 	W_WeaponFrame ();
 	
-	if (self.style & CLANRING_AUTOID)
+	if ((self.style & CLANRING_AUTOID) && (!(self.style & CLANRING_OBSERVER)))//R00k; not observers.
 	{
 		if (teamplay)
 		{
