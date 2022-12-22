@@ -60,7 +60,7 @@ The server calls this function directly from the C code, when a 'changelevel' is
 void() SetChangeParms =
 {
 	parm14 = (time - self.afk_time);	//AFK carries over
-		
+	parm15 = self.statstate;			//R00k settings carry over		
 	SetNewParms2 ();
 };
 
@@ -205,6 +205,7 @@ void() SetNewParms2 =
     parm12 = self.oflags; // CRMOD observer flags
 	parm13 = self.clanring_hack_count;
 	parm14 = (time - self.afk_time);	//AFK carries over
+	parm15 = self.statstate;
 };
 
 void() DecodeLevelParms =
@@ -216,12 +217,13 @@ void() DecodeLevelParms =
 	// Also, reset player status at start level even if serverflags = 0.
 	// Finally, reset status if fresh spawns are on.
 	// Changed SetNewParms to SetNewParms2.
-	self.style = parm10;
-	self.state = parm11;
-	self.oflags = parm12;  // CRMOD observer flags
-	self.clanring_hack_count = parm13;
-	self.afk_time = (time - parm14);
-
+	self.style 					= parm10;
+	self.state 					= parm11;
+	self.oflags 				= parm12;  // CRMOD observer flags
+	self.clanring_hack_count 	= parm13;
+	self.afk_time 				= (time - parm14);
+	self.statstate 				= parm15;
+	
 	self.player_flag = (self.player_flag - (self.player_flag & ITEM_RUNE_MASK));
 
 	SetNewParms2 ();

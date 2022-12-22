@@ -1519,69 +1519,81 @@ void () observer_check_size =
 //
 void () observer_update_display =
 {
-    local string w="", armour="", aval="", healthammo="", ammo="";
+    local string w = "", armour = "", aval = "", healthammo = "", ammo = "";
 	local entity player;	// CRMOD cameras
-	local string score="", pad="", teamname="";
-	local string status_string = "", pad_top = "";
+	local string score = "", pad = "", teamname = "";
+	local string prepend_string = "", pad_top = "";
 	local float rtime = 0;
 
-	// compute score and pad
-	if (teamplay && (clanring_state & CLANRING_MATCH_STARTED))
-	{
-		teamname = clanring_winning_teamname;
-		score = ftos(clanring_score_number);
-		if (clanring_score_number >= 100)
-			pad = "";
-		else if (clanring_score_number >= 10)
-			pad = " ";
-		else if (clanring_score_number >= 0)
-			pad = "  ";
-		else if (clanring_score_number >= -9)
-			pad = " ";
-		else 
-			pad = "";
-	}
-	else
-	{
-		score = pad = "";
-		teamname = "                       ";
-	}
+    self.delay = time + 1.8;	//default scr_centertime is 2 seconds
 
-    self.delay = time + 0.5;
-    if ((clanring_state & CLANRING_MATCH_PAUSED) ||
-        (self.style & (CLANRING_SETTING_OPTIONS | CLANRING_MOTD)))
+	if (self.style & CLANRING_AFK_CLIENT) // Don't send updates to the afk client
+		return;
+
+    if ((clanring_state & CLANRING_MATCH_PAUSED) || (self.style & (CLANRING_SETTING_OPTIONS | CLANRING_MOTD)))
         return;
 
-    // CRMOD account for cameras
+	if (prematch_rules())
+	{
+		return;
+	}
+	
+	// CRMOD account for cameras
 	player = self.movetarget;
 	if ((player != world) && (player.classname == "clanring_camera"))
 		player = player.movetarget;
     
-	if (prematch_rules())
+	//--show high scores check
+	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) && (self.leaderboardtime > time))
 	{
-		clanring_show_rules_prematch();
+		AirshotHighScores();
 		return;
 	}
+	else if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (self.leaderboardtime > time))
+	{
+		if (self.statstate == 0)
+		{
+			TeamCapturePlayerUpdate();
+			return;
+		}
+	}
+	//--end high scores check
 
+	// compute score and pad
+	if (teamplay && (clanring_state & CLANRING_MATCH_STARTED))
+	{
+		teamname = strzone(clanring_winning_teamname);
+		score = strzone(ftos(clanring_score_number));
+		if (clanring_score_number >= 100)
+			pad = strzone("");
+		else if (clanring_score_number >= 10)
+			pad = strzone(" ");
+		else if (clanring_score_number >= 0)
+			pad = strzone("  ");
+		else if (clanring_score_number >= -9)
+			pad = strzone(" ");
+		else 
+			pad = strzone("");
+	}
+	else
+	{
+		score = strzone("");
+		pad = strzone("");
+		teamname = strzone("                       ");
+	}
+	
 	//--prepend string check
-	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING)
-			&& (boss.wait == 0) && (self.next_team != world))
+	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0) && (self.next_team != world))
 	{
 		rtime = ceil(self.respawntime - time);
-		status_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
-		//self.delay = time + 0.25; //update display a little quicker while waiting to spawn, or causing lag ?
+		prepend_string = strzone(sprintf("\X90Respawn in: %s\X91", ftos(rtime)));
 	}
-	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)
-			&& (boss.wait == 0) && (self.next_team != world))
+	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0) && (self.next_team != world))
 	{
 		if (self.next_team.next_queue == world)
 		{
-			status_string = "You are NEXT in line";
+			prepend_string = strzone("You are NEXT in line");
 		}
-	}
-	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-	{
-		status_string = sprintf("         %s%s", TeamCaptureFlagStatusString(), TeamCaptureScoreString());
 	}
 	//--end prepend check
 
@@ -1589,45 +1601,50 @@ void () observer_update_display =
     {
 		if ((clanring_state & CLANRING_MATCH_STARTED) || ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING)))
 			centerprint4(self, "\n\n\n\n\n\n\n\n\n\n\n\n               ", teamname, score, pad);
-		else if (status_string != "")
-			centerprint(self, status_string);
-
-//		else
-//			centerprint(self, " ");//R00k: dont spam this!
+		else if (prepend_string != "")
+		{
+			centerprint(self, prepend_string);
+			strunzone(prepend_string);
+		}
+		strunzone(teamname);strunzone(score);strunzone(pad);
         return;
     }
 
     if (self.style & CLANRING_HEADS_UP)
     {
-        w = strings_get_weapon(player);
-        armour = strings_get_armour_type(player);
-        aval = strings_get_armour_val(player);
-        healthammo = strings_get_health_ammo(player);
-        ammo = ftos(player.currentammo);
+        w 			= strzone(strings_get_weapon(player));
+        armour 		= strzone(strings_get_armour_type(player));
+        aval 		= strzone(strings_get_armour_val(player));
+        healthammo 	= strzone(strings_get_health_ammo(player));
+        ammo 		= strzone(ftos(player.currentammo));
     
-		if (status_string != "")
-			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n\n\n\n", status_string);
+		if (prepend_string != "")
+		{
+			pad_top = strzone(sprintf("%s\n\n\n\n\n\n\n\n\n\n\n\n", prepend_string));
+			strunzone(prepend_string);
+		}
 		else
-			pad_top = "\n\n\n\n\n\n\n\n\n\n\n\n\n";
+			pad_top = strzone("\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
 		centerprint7(self, pad_top, player.netname, w, armour, aval, healthammo, ammo);
+		strunzone(w);strunzone(armour);strunzone(aval);strunzone(healthammo);strunzone(ammo);strunzone(pad_top);
     }
     else
     {
-		local string othertarget = "";
+		local string othertarget = "", mytarget = "";
 
 		if ((self.oflags & OBSERVER_TOURNEY) && (self.clanring_othertarget != world) && (self.movetarget.classname == "player"))
-			othertarget = self.clanring_othertarget.netname;
+			othertarget = strzone(self.clanring_othertarget.netname);
 		else
-			othertarget = "";
+			othertarget = strzone("");
 
-		if (status_string != "")
-			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n", status_string);
+		if (prepend_string != "")
+			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n", prepend_string);
 		else
 			pad_top = "\n\n\n\n\n\n\n\n\n\n";
-
-		centerprint7(self, pad_top, othertarget, "                       \n\n",
-			player.netname, teamname, score, pad);
+		mytarget = strzone(player.netname);
+		centerprint7(self, pad_top, othertarget, "                       \n\n",	mytarget, teamname, score, pad);
+		strunzone(othertarget);strunzone(mytarget);strunzone(teamname);strunzone(score);
     }
 };
 

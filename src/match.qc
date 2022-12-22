@@ -1215,7 +1215,7 @@ void () match_make_ghost =
 	self.owner.height = self.height;
 	self.owner.count = ghostcode;
 	self.owner.state = 0;
-//	self.owner.statstate = self.statstate;
+	self.owner.statstate = self.statstate;
 	self.owner.mangle = self.mangle;	// killstats
 	self.owner.movetype = MOVETYPE_NONE;
 	self.owner.finaldest_y = MOVETYPE_NONE;
@@ -1320,7 +1320,7 @@ void(entity ghostent) match_restore_ghost =
 	self.dest1 = ghostent.dest1;
 	self.dest2 = ghostent.dest2;
 	self.mangle = ghostent.mangle;
-//	self.statstate = ghostent.statstate;
+	self.statstate = ghostent.statstate;
 	self.clanring_badstats = ghostent.clanring_badstats;
 	self.clanring_qdwep	= ghostent.clanring_qdwep;
 	self.clanring_qdkill = ghostent.clanring_qdkill;
@@ -2448,7 +2448,7 @@ void(entity player) match_disconnect_notify =
 				self.owner.dmg_taken	= self.dmg_taken;
                	self.owner.dmg_given	= self.dmg_given;
 				self.owner.ewep			= self.ewep;
-//     			self.owner.statstate 	= self.statstate;
+     			self.owner.statstate 	= self.statstate;
                			
 				self.owner.clanring_badstats = self.clanring_badstats;
 				
