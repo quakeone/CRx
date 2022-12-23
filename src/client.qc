@@ -587,8 +587,7 @@ entity () SelectSpawnPoint =
 		spot = TeamCaptureSpawn();
 		if (spot.classname == "info_player_deathmatch")
 		{
-			centerprint(self, "\bMap has no CTF Team spawnpoints!\b\n");//Tell the player that joined the team
-			bprint("\bMap currently has no CTF Team spawnpoints; select another map.\b\n");//Tell everyone else too.
+			sprint(self, "\bMap currently has no CTF Team spawnpoints; select another map.\b\n");
 		}
 		return spot;
 	}

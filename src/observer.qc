@@ -396,16 +396,6 @@ void () observer_demo_start =
     self.think = SUB_Null;
 };
 
-void () observer_centerprint_join =
-{//TODO replace this with csqc...
-if (clanring_playmode & CLANRING_PRACTICE_MODE)
-		centerprint(self.owner, "\btype \bready\b in console to join");
-else	
-if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
-	/*else if (clanring_playmode & CLANRING_MATCH_MODE)*/
-};
-
 //
 //  S T A R T
 //
@@ -569,9 +559,6 @@ void () observer_start =
 
 	// Check to see if anyone was observing this client
 	observer_disconnect_notify(self);	
-
-	if ((!(self.style & CLANRING_MOTD)) && (!(mode_is_arena())))
-		utils_make_scheduled_event(observer_centerprint_join, 2);
 };
 
 //
@@ -617,7 +604,6 @@ void() observer_end =
 		stuffcmd(self, "viewsize 100\n");
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 	{
-		centerprint(self, "Observer mode off");
 		clanring_put_player_in_list();
 	}
 
