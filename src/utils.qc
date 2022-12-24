@@ -327,19 +327,35 @@ void () ready_name =
 
 void () afk_name =
 {
-	local string text;
+	local string text, tm = "";
+	local float t, m;
+
+	t = (time - self.afk_time);
+	m = (floor( t / 60 ));
+	tm = ftos(m);
 
 	if ((self.style & CLANRING_READY) && (!(clanring_state & CLANRING_MATCH_STARTED)) && (!(clanring_state & CLANRING_MATCH_OVER)))
+	{
 		text = "\bReady AFK\b";
+	}
 	else
+	{
 		if (self.health < 1)
 			text = "\bdead\b \bAFK\b";		
 		else
-			text = "\bAFK\b";
-	
+		{
+			if (t < clanring_afk_check)	//If someone manually typed 'afk' then indicate now.
+				text = "\bAFK\b brb";
+			else
+			{
+				if (((clanring_afk_timeout/60) - m) < 2)	//Display time as RED if less than two minutes left before being kicked...
+					tm = redify(tm);
+				text = sprintf("\bAFK\b %sm",tm);
+			}
+		}
+	}
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
-	stuffcmd(self, "cmd setinfo afk yes\n");// woods
 };
 
 void () dead_name =
