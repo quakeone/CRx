@@ -1150,6 +1150,7 @@ void () clanring_client_disconnect =
 	self.killed 				= 0;
 	self.clanring_chase_score 	= CLANRING_NEGINF;// CRMOD make sure they don't have some high rating that can't be beat by the other players
 	self.oldname 				= string_null;
+	self.statstate				= 0;
 
 	// If we're in match mode, then inform match and score modules
 	// Must inform score module first!  Score module checks to see if the
@@ -2063,7 +2064,18 @@ void () clanring_impulse =
 		// 	LongRangeGibs_sprint();
 	}
 	else if (self.impulse == 70)
+	{
+		if (self.statstate < 0) 
+		{
+			self.statstate = 0;
+			sprint(self, "Status bar on (impulse 71-81 set pos)\n");
+		} 
+		else 
+		{
 			self.statstate = -1;
+			sprint(self, "Status bar off.\n");
+		}
+	}
 	else if (self.impulse >= 71 && self.impulse <= 81) 
 	{
 		self.statstate = self.impulse - 71;
