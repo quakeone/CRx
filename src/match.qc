@@ -832,6 +832,7 @@ void() match_timer_think1 =
 	self.nextthink = time + 1;
 
 	score_update_time();
+
 	if (self.count == self.dest_x)
 	{
 		if (self.count != 5)
@@ -1834,7 +1835,7 @@ void() match_pause_player =
 		return;
 	}
 	self.style = self.style - (self.style & CLANRING_OK_TO_SHOOT);
-	self.movetype = MOVETYPE_NONE;//R00k: On an FTE server Paused players can still move around.
+	self.movetype = MOVETYPE_FLY;
 
 	self.clanring_old_velocity = self.velocity;
 	self.velocity = VEC_ORIGIN;
