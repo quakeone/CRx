@@ -535,6 +535,9 @@ void() match_timer_think2 =
 {
 	local string temp;
 
+	if (!(clanring_state & CLANRING_MATCH_PAUSED))
+		pqc_match_time(self.lip, self.count);
+
 	self.count -= 1;
 
 	if (self.count < 0)
@@ -542,9 +545,6 @@ void() match_timer_think2 =
 		self.count = 59;
 		self.lip -= 1;
 	}
-
-	if (!(clanring_state & CLANRING_MATCH_PAUSED))
-		pqc_match_time(self.lip, self.count);
 
 	self.nextthink = time + 1;
 	score_update_time();
@@ -741,7 +741,7 @@ void() match_begin =
 
 	// Set the team size so that unwanted A-holes can't join in
 	match_get_maxsize();
-	temp = ftos(clanring_maxsize);
+	//temp = ftos(clanring_maxsize);
 	//if (teamplay)
 		//announce4("Match is ", temp, "v", temp);
 
@@ -755,6 +755,7 @@ void() match_begin =
 	self.nextthink = time + 1;
 	self.lip = clanring_timelimit;
 	self.count = 0;
+	pqc_match_time(clanring_timelimit, +1);//show the match timelimit (this is displayed right at the end of clanring_show_rules_prematch, when the timer shows 00:01)
 	match_show_timelimit();//This updates the server's TIMELIMIT cvar with match information that is used on the CCREQ_RULE_INFO for the web server browser.
 
 	// reset rocket launcher count
@@ -821,7 +822,11 @@ void () match_reset_powerup =
 void() match_timer_think1 =
 {
 	//local string temp;
-	pqc_match_time(clanring_timelimit, +1);//lol this is a hack!
+
+	if (self.count <= 6)
+		pqc_match_time (0, self.count);
+	else
+		pqc_match_time(clanring_timelimit, +1);//show the match timelimit for the first 5 seconds during countdown
 
 	self.count -= 1;
 	if (self.count < 0)
