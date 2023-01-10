@@ -210,6 +210,11 @@ void () observer_fly_start =
 	if (!(self.style & CLANRING_HEADS_UP))
 		sprint(self, "type 'headsup' for fullscreen display\n");
 */
+	if (mode_is_arena())
+	{
+		self.style = self.style - (self.style & CLANRING_MOTD);
+		motd_arena_start();
+	}
 };
 
 // CRMOD
@@ -1503,6 +1508,7 @@ void () observer_check_size =
 //  Q, O, R are the quad, ring and suit flags.  The suit flag is not really
 //  an R; it's some weird quake symbol.
 //
+
 void () observer_update_display =
 {
     local string w = "", armour = "", aval = "", healthammo = "", ammo = "";
@@ -1511,16 +1517,17 @@ void () observer_update_display =
 	local string prepend_string = "", pad_top = "";
 	local float rtime = 0;
 
-    self.delay = time + 1.8;	//default scr_centertime is 2 seconds
-
-	if (self.style & CLANRING_AFK_CLIENT) // Don't send updates to the afk client
-		return;
+	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+		self.delay = time + 0.5;	//update faster to display respawn time
+	else
+    	self.delay = time + 1.8;	//default scr_centertime is 2 seconds
 
     if ((clanring_state & CLANRING_MATCH_PAUSED) || (self.style & (CLANRING_SETTING_OPTIONS | CLANRING_MOTD)))
         return;
 
 	if (prematch_rules())
 	{
+		clanring_show_rules_prematch();
 		return;
 	}
 	
@@ -1529,22 +1536,6 @@ void () observer_update_display =
 	if ((player != world) && (player.classname == "clanring_camera"))
 		player = player.movetarget;
     
-	//--show high scores check
-	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) && (self.leaderboardtime > time))
-	{
-		AirshotHighScores();
-		return;
-	}
-	else if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (self.leaderboardtime > time))
-	{
-		if (self.statstate == 0)
-		{
-			TeamCapturePlayerUpdate();
-			return;
-		}
-	}
-	//--end high scores check
-
 	// compute score and pad
 	if (teamplay && (clanring_state & CLANRING_MATCH_STARTED))
 	{
@@ -1617,7 +1608,7 @@ void () observer_update_display =
     }
     else
     {
-		local string othertarget = "", mytarget = "";
+		local string othertarget = "";
 
 		if ((self.oflags & OBSERVER_TOURNEY) && (self.clanring_othertarget != world) && (self.movetarget.classname == "player"))
 			othertarget = strzone(self.clanring_othertarget.netname);
@@ -1628,9 +1619,9 @@ void () observer_update_display =
 			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n", prepend_string);
 		else
 			pad_top = "\n\n\n\n\n\n\n\n\n\n";
-		mytarget = strzone(player.netname);
-		centerprint7(self, pad_top, othertarget, "                       \n\n",	mytarget, teamname, score, pad);
-		strunzone(othertarget);strunzone(mytarget);strunzone(teamname);strunzone(score);
+
+		centerprint7(self, pad_top, othertarget, "                       \n\n",	player.netname, teamname, score, pad);
+		strunzone(othertarget);strunzone(teamname);strunzone(score);
     }
 };
 

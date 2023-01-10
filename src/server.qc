@@ -314,7 +314,8 @@ void () clanring_init_world =
 	score_init_world();
 	match_init_world();
 	//quaketag_init_world();
-
+	autocvar(nqfriction, "0");	//Set this to 1 if using FTE as a server with sv_nqplayerphysics 0 to simulate NQ bunnyhopping but allowing QW clients to use prediction.
+	
 	temp = 0;
 
 	while(temp < 10)
@@ -1843,7 +1844,7 @@ void () clanring_show_rules_prematch =
 		if (clanring_playmode & CLANRING_NO_SPOOGE)
 			s12 = "\bno spooge    \bon\n";
 		else
-			s12 = "";//hush up this: server.qc:1596: warning F302: Potentially uninitialised variable s12
+			s12 = "";
 		local string cp1 = "", cp2 = "", cp3 = ""; //initialize locals so we dont have residual garbage next time used.
 		cp1 = sprintf("%s%s%s", s2, s3, s4);
 		cp2 = sprintf("%s%s%s", s6, s7, s8);

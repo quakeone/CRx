@@ -135,7 +135,7 @@ void() SetNewParms =
  
 	parm10 = CLANRING_NEW_CLIENT; // CRMOD observer flags moved | ELOHIM_OBSERVER_WALK; // elohim player flags
 	parm11 = 0;
-	parm12 = OBSERVER_WALK;// CRMOD observer flags
+	parm12 = OBSERVER_FLY;// CRMOD observer flags
 	parm13 = 0;
 };
 
@@ -284,7 +284,6 @@ void() GotoNextMap =
 {
 	if (nextmap == "")
 	{
-		strunzone(nextmap);
 		nextmap = mapname;
 		bprint("\nMap not found. Reloading Current Map...Please Wait.\n");
 	}
@@ -1619,6 +1618,7 @@ void() CheckPowerups =
 				self.super_damage_finished = 0;
 				self.super_time = 0;
 				self.totalquad += (time - self.quadtime);
+		
 				if (!self.invincible_finished)
 				{
 					self.effects = self.effects - (self.effects & EF_DIMLIGHT);
@@ -1711,6 +1711,9 @@ void () CheckCombos =
 		self.combo_frags = 0;
 	}
 }
+
+.float jump_time;
+float FL_BHOP	= 8192; // R00k: flag when the player bunnyhops (basically 200ms between off-ground -> on-ground -> off-ground)
 
 /*
 ================
@@ -1871,6 +1874,25 @@ void() PlayerPostThink =
 	if (!(self.flags & FL_ONGROUND))
 	{
 		self.jump_flag = self.velocity_z;
+
+		//Normalize bunnyhopping at all ticrates/client protocols (ie sv_nqplayerphysics 0)
+		if (cvar("nqfriction"))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
+		{
+			if ((!(self.flags & FL_BHOP))&&(time - self.jump_time < 0.2)) 
+			{
+				self.flags |= FL_BHOP;
+
+				if ((vlen(self.velocity)) >= 320) //sv_maxspeed
+				{
+					self.velocity[0] -= self.velocity[0] * 0.06;
+					self.velocity[1] -= self.velocity[1] * 0.08;//Strafing will increase the speed by modifying wishdir, so make this stronger...
+				}
+			}
+			else
+			{			
+				self.jump_time = 0;
+			}
+		}
 	}
 	else
 	{
@@ -1897,6 +1919,11 @@ void() PlayerPostThink =
 				}
 				self.jump_flag = 0;
 			}
+		}
+		if (self.jump_time == 0)
+		{
+			self.flags = self.flags - (self.flags & FL_BHOP);
+			self.jump_time = time;//time we landed
 		}
 	}
 
@@ -2265,7 +2292,7 @@ void(entity targ, entity attacker) ClientObituary =
 			}
 			else
 			{
-				if ((teamplay == 2) && !(clanring_playmode & CLANRING_RA_MODE) && (targ.team > 0) && (targ.team == attacker.team))
+				if ((teamplay == 2) && (targ.team > 0) && (targ.team == attacker.team))
 				{
 					attacker.mangle_y = attacker.mangle_y + 1;
 							

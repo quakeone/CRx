@@ -266,12 +266,8 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 
 void (string status) updatenameoverload =
 {
-	if (self.name_ready)
-		strunzone(self.name_ready);
-		
 	self.name_ready = strpad(16, substring(self.netname, 0, 15));
 	self.name_ready = strcat(self.name_ready, status);	
-	self.name_ready = strzone(self.name_ready);
 }
 
 void (entity ent, string c_name) updatename =
@@ -1745,3 +1741,5 @@ float () prematch_rules =
 		return TRUE;
 	return FALSE;
 }
+
+

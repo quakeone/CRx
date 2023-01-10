@@ -125,7 +125,7 @@ void ()motd_print =
 	if (self.ca_player_flag == PF_PLAYING) //R00k: 6/12/2017 9:50AM (airshot practice)
 		return;
 
-	if ((!(self.oflags & OBSERVER_WALK)) || (self.next_team != world))
+	if (((!(self.oflags & OBSERVER_FLY))&&(!(self.oflags & OBSERVER_WALK))) || (self.next_team != world))
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
 		return;
