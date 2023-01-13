@@ -291,8 +291,7 @@ void () clanring_init_world =
 	local float mode;
 	local string szmode;
 	local float temp;
-
-
+	
 	clanring_version = "crx v1.23.01nq";
 	clanring_version_info = "crx v1.23.01";
 	clanring_version_number = "1.23.01";	//version.year.month.day CRMOD - string to be used throughout code to show version number.
@@ -350,7 +349,8 @@ void () clanring_init_world =
 	// Check to see if we need to initialize the server
 	if (!(clanring_playmode & CLANRING_SERVER_INITIALIZED))
 	{
-		cprint("Initializing Server...\n");
+		print("Initializing Server...[");
+		print(clanring_version,"]\n");
 		// Set aliases for console commands
 		console_set_aliases ();
 		
@@ -764,11 +764,8 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias rune-use impulse 20\n");
 	stuffcmd(self, "alias dropweapon impulse 21\n");
 	stuffcmd(self, "alias flagstatus impulse 23\n");
-	stuffcmd(self, "alias rune-tell impulse 23\n");	
 	stuffcmd(self, "alias droprune impulse 19\n");		
-	stuffcmd(self, "alias rune-delete impulse 19\n");		
 	stuffcmd(self, "alias nextmap impulse 199\n");	
-	stuffcmd(self, "alias vote-exit impulse 220\n");
 	stuffcmd(self, "alias faststart impulse 209\n");		
 	stuffcmd(self, "alias afk impulse 57\n");
 	stuffcmd(self, "alias afkon cmd afkon\n");

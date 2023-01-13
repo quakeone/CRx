@@ -587,7 +587,7 @@ void() clanring_nextlevel_config =
 
 	if (nextmap == "")
 	{
-		strunzone(nextmap);
+		//strunzone(nextmap);
 		nextmap = strzone(mapname);	// Ugh, just reload the current map...
 		bprint("Nextmap not found, reloading \b", nextmap, "\b.\n");
 	}
@@ -904,11 +904,11 @@ void (float soundtype) clanring_read_matchsounds =
 		if (argv(0) == "//" || argv(0) == "#") continue;
 
 		if (soundtype == 1)
-			matchsound_rematch[i] = strzone(line);
+			matchsound_rematch[i] = (line);
 		else if (soundtype == 2)
-			matchsound_blowout[i] = strzone(line);
+			matchsound_blowout[i] = (line);
 		else
-			matchsound[i] = strzone(line);
+			matchsound[i] = (line);
 		i++;
 	}
 //	strunzone(line);//R00k: strunzone the matchsound but not until we dont need it anymore

@@ -869,33 +869,40 @@ void () votables_request_set_weaponstay =
 	}
 };
 
-void () votables_next_map =
+void() GotoNextMap;
+void() votables_vote_exit =
 {
-	if (clanring_state & CLANRING_MATCH_STARTED)
+	if (clanring_levelcount == -1)
 	{
-		sprint(self, "Match is already in progress.\n");
+		GotoNextMap();
+	}
+};
+
+//Vote to exit to next map in levels.cfg
+void() votables_request_vote_exit =
+{
+	if (clanring_levelcount != -1)
+	{
+		sprint(self, "Wait for map to initialize\n");
+		return;
+	}
+	
+	if (!(clanring_playmode & CLANRING_NORMAL_MODE))
+	{
+		sprint(self,"Command not allowed in current gamemode.\n");
 		return;
 	}
 
-	NextLevel();
-}
-
-void () votables_request_next_map =
-{
-	local string temp;
-
-    // Do it right away if we're an administrator, otherwise vote
 	if (self.style & CLANRING_ADMINISTRATOR)
-	{
-		votables_next_map ();
-	}
+		votables_vote_exit();
 	else
 	{
-		temp = (clanring_playmode & CLANRING_RA_MODE) ? "\brandom map\b" : "\bnext map\b";
-		if (vote_init("change to a ", temp, votables_next_map))
-		{
+		local string newstate;
+		sprint(self,"\byou have voted to exit to the next level.\n\botherwise, use WARP to specify map.\n");
+		
+		newstate = " exit to ";
+		if (vote_init(newstate, "next level.", votables_vote_exit))
 			vote_yes();
-		}
 	}
 };
 
@@ -1432,43 +1439,6 @@ void() votables_request_set_quad =
 			newstate = "\bdisable\b";
 
 		if (vote_init(newstate, " \bquad\b", votables_set_quad))
-			vote_yes();
-	}
-};
-
-void() GotoNextMap;
-void() votables_vote_exit =
-{
-	if (clanring_levelcount == -1)
-	{
-		GotoNextMap();
-	}
-};
-
-//Vote to exit to next map in levels.cfg
-void() votables_request_vote_exit =
-{
-	if (clanring_levelcount != -1)
-	{
-		sprint(self, "Wait for map to initialize\n");
-		return;
-	}
-	
-	if (!(clanring_playmode & CLANRING_NORMAL_MODE))
-	{
-		sprint(self,"Command not allowed in current gamemode.\n");
-		return;
-	}
-
-	if (self.style & CLANRING_ADMINISTRATOR)
-		votables_vote_exit();
-	else
-	{
-		local string newstate;
-		sprint(self,"\byou have voted to exit to the next level.\n\botherwise, use WARP to specify map.\n");
-		
-		newstate = " exit to ";
-		if (vote_init(newstate, "next level.", votables_vote_exit))
 			vote_yes();
 	}
 };

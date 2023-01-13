@@ -252,7 +252,7 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 		client = (ent.colormap - 1);
 		if ((client > 16)||(client < 0))
 		{
-			cprint("ERROR: setcolour: invalid client slot\n"); //output to console for debugging.
+			print("ERROR: setcolour: invalid client slot\n"); //output to console for debugging.
 			return;
 		}
 		msg_entity = ent;
@@ -268,19 +268,20 @@ void (string status) updatenameoverload =
 {
 	self.name_ready = strpad(16, substring(self.netname, 0, 15));
 	self.name_ready = strcat(self.name_ready, status);	
+
 }
 
 void (entity ent, string c_name) updatename =
 {
 	local float client;
 
-	//if (ent.style & CLANRING_CONNECTED)
+	if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);
 
 		if ((client > 16)||(client < 0))
 		{
-			cprint("ERROR: updatename: invalid client slot\n"); //output to console for debugging.
+			print("ERROR: updatename: invalid client slot\n"); //output to console for debugging.
 			return;
 		}
 		msg_entity	= ent;
@@ -368,17 +369,23 @@ void () dead_name =
 	updatenameoverload(text);
 	updatename(self,self.name_ready);
 };
-//FIXME: need to fix levels.cfg
+
 void (string s) changelevel =
-{/*
+{
 	if (clanring_levelcount != -1)
 	{
-		cprint("changelevel: still checking levels.cfg\n");
+		print("changelevel: still checking levels.cfg\n");
 		return;
 	}
+
 	if (s == "")
-		localcmd("changelevel e4m3\n");
-	else*/
+	{
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			localcmd("changelevel ctf1\n");
+		else
+			localcmd("changelevel dm3\n");
+	}
+	else
 		localcmd3("changelevel ", s, "\n");
 };
 
@@ -1741,5 +1748,3 @@ float () prematch_rules =
 		return TRUE;
 	return FALSE;
 }
-
-

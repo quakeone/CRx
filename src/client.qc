@@ -1066,12 +1066,8 @@ void() NextLevel =
 
 	if (clanring_playmode & CLANRING_RA_MODE)
 		nextmap = ra_get_next_map();
-	else
-		nextmap = o.map;
-	gameover = TRUE;
 
-    // check to see if there is a user-specified level sequence
-//	console_get_user_nextlevel();	//removed, we already loaded levels.cfg at startup
+	gameover = TRUE;
 
     o.think = execute_changelevel;
     o.nextthink = time + 0.1;
@@ -1618,7 +1614,6 @@ void() CheckPowerups =
 				self.super_damage_finished = 0;
 				self.super_time = 0;
 				self.totalquad += (time - self.quadtime);
-		
 				if (!self.invincible_finished)
 				{
 					self.effects = self.effects - (self.effects & EF_DIMLIGHT);
@@ -1872,7 +1867,7 @@ void() PlayerPostThink =
 	// check to see if player landed and play landing sound
 	// ELOHIM_MOD - rearranged if clauses for efficiency
 	if (!(self.flags & FL_ONGROUND))
-	{
+	{		
 		self.jump_flag = self.velocity_z;
 
 		//Normalize bunnyhopping at all ticrates/client protocols (ie sv_nqplayerphysics 0)
@@ -1917,7 +1912,7 @@ void() PlayerPostThink =
 						sound (self, CHAN_VOICE, "player/land.wav", 1, ATTN_NORM);
 					}
 				}
-				self.jump_flag = 0;
+				self.jump_flag = 0;				
 			}
 		}
 		if (self.jump_time == 0)
@@ -2064,6 +2059,7 @@ void() ClientDisconnect =
 	self.health 	= 0;
 	self.team 		= 0;
 	self.height 	= 0;
+//	strunzone(self.name_ready);
 	self.netname	= string_null;
 };
 
@@ -2292,7 +2288,7 @@ void(entity targ, entity attacker) ClientObituary =
 			}
 			else
 			{
-				if ((teamplay == 2) && (targ.team > 0) && (targ.team == attacker.team))
+				if ((teamplay == 2) && !(clanring_playmode & CLANRING_RA_MODE) && (targ.team > 0) && (targ.team == attacker.team))
 				{
 					attacker.mangle_y = attacker.mangle_y + 1;
 							
