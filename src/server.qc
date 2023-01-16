@@ -2344,8 +2344,6 @@ void () clanring_periodic_checks =
 			return;
 		}
 
-		afk_name();
-		
 		local string s, pl;	
 
 		s = ftos((clanring_afk_timeout / 60) - c);
@@ -2369,6 +2367,7 @@ void () clanring_periodic_checks =
 	{
 		if ((inactive >= clanring_afk_check) && (!(self.style & CLANRING_ADMINISTRATOR)))
 		{
+			afk_name();
 			self.afk_time = time;
 			self.style = (self.style | CLANRING_AFK_CLIENT);
 			stuffcmd(self, "cmd setinfo afk yes\n");// woods

@@ -440,10 +440,6 @@ void() respawn =
 //	CreateDeadBody (self);//R00k new corpse routine.
 	SetNewParms2 ();
 
-	if (self.style & CLANRING_CONNECTED)
-		updatename(self, self.netname);	//R00k: this is called in the next function; keep?
-
-	
 	PutClientInServer ();
 };
 /*
