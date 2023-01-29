@@ -889,6 +889,12 @@ void() RuneTouch =
 	if ((other == self.owner) && (self.nextthink > time + 119))
 		return;
 
+	if (other.classname == "trigger_hurt")
+	{
+		self.nextthink = time;	// just reset the respawn time and let the think function control the return...
+		return;
+	}
+
 	if (other.player_flag & ITEM_RUNE_MASK)
 	{
 		centerprint(other, "You already have a rune.\n");
