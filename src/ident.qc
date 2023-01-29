@@ -134,10 +134,15 @@ float(entity targ) infront =
 void() ident_get_target =
 {
 	local entity tm = world;
+	if (prematch_rules())
+		return;
+
+	if (self.style & CLANRING_MOTD)
+		return;
 	tm = findradius(self.origin, 2048);	//R00k: find nearby teammates, same distance as a shotgun blast
 	while (tm)
 	{
-		if ((tm.classname == "player") && (tm.style & CLANRING_CONNECTED) && (tm.team == self.team) && (tm != self))
+		if ((tm.classname == "player") && (tm.style & CLANRING_CONNECTED) && (tm != self) && ((tm.team == self.team) || (match_prewar())))     //R00k: show all players' identity in prewar.
 		{
 			if (infront(tm))
 			{
@@ -152,7 +157,7 @@ void() ident_get_target =
 				{
 					if ((trace_ent.classname == "player") && (trace_ent.style & CLANRING_CONNECTED))
 					{
-						if ((trace_ent.team == self.team) || (match_prewar()))
+						if ((trace_ent.team == self.team) || (match_prewar()))//R00k: show all players' identity in prewar.
 							ident_update_display(trace_ent, FALSE);
 						break;//if we are aiming directly at someone, then don't continue to find others.
 					}
