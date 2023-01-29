@@ -1641,7 +1641,8 @@ void() W_WeaponFrame =
 	//BuckSh0t: stop firing during timer countdown
 	if ((match_prewar()) && (clanring_state & CLANRING_TIMER_STARTED))
 	{
-		return;
+		if (self.weapon != IT_HOOK) //R00k: still allow them to finish their capture time trial
+			return;
 	}
 
 // check for attack
