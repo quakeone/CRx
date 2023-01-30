@@ -1,7 +1,7 @@
 /*
 	request.qc
 
-	polling functions
+	polling functions - by R00k
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -137,8 +137,31 @@ void(entity player, float cast) Request_Poll_Vote =
 		else
 		{
 			if (player != clanring_request.owner)
-				sprint(player, "You already voted.\n");
-			return;
+			{
+				if (player.style & CLANRING_ADMINISTRATOR)					// So, an admin already voted, and now wishes to affirm their vote
+				{
+					bprint("\x90\bAdmin Forced\b\x91 ");
+					
+					if (cast == 1)
+					{
+						bprint("vote passed.\n");
+						clanring_request.touch();
+						sound(world, CHAN_AUTO, "misc/runekey.wav", 1, ATTN_NONE);
+					}
+					else
+					{
+						bprint("The request was declined.\n");
+						sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
+					}
+					Request_Poll_Cleanup();
+					return;
+				}
+				else
+				{
+					sprint(player, "You already voted.\n");
+					return;
+				}
+			}
 		}
 	}
 
@@ -156,7 +179,7 @@ void(entity player, float cast) Request_Poll_Vote =
 	{
 		votes_needed = Request_Poll_Votes_Needed(cast);
 
-		if ((votes_needed == 0)||(player.style & CLANRING_ADMINISTRATOR)) // majority YES
+		if (votes_needed == 0)// majority YES
 		{
 			bprint("\n");
 			clanring_request.touch();
@@ -164,9 +187,13 @@ void(entity player, float cast) Request_Poll_Vote =
 			Request_Poll_Cleanup();
 		}
 		else
-		{
+		{			
 			if (player != clanring_request.owner)
 			{
+				if (player.style & CLANRING_ADMINISTRATOR)
+				{
+					sprint(player,"\x90\bWarning\b\x91: You are an admin, type \byes\b again to force this vote.\n");
+				}
 				if (votes_needed == 1)
 					bprint(" \1 vote needed to \bpass\b.\n");
 				else
@@ -180,13 +207,16 @@ void(entity player, float cast) Request_Poll_Vote =
 		if (cast == 2)
 		{
 			votes_needed = Request_Poll_Votes_Needed(cast);
-		
-			if ((votes_needed == 0)||(player.style & CLANRING_ADMINISTRATOR)) // majority NO
+			if (votes_needed == 0) // majority NO
 			{
 				bprint("\n");
 				sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
 				bprint("The request was declined.\n");
 				Request_Poll_Cleanup();
+			}
+			else if (player.style & CLANRING_ADMINISTRATOR)
+			{
+				sprint(player,"\x90\bWarning\b\x91: You are an admin, type \bno\b again to cancel this vote.\n");
 			}
 		}
 	}
