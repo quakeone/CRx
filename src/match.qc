@@ -32,6 +32,7 @@
 
 // Function declarations
 void() match_timer_think2;
+void() match_list_ghosts;
 void() match_enter_ghost_code;
 void() match_start_unpause_countdown;
 void() match_unpause;
@@ -1775,6 +1776,7 @@ void() match_help =
 	sprint(self, " timerstop   - \bpause the match\n");
 	sprint(self, " timerstart  - \bstart/restart the timer\n");
 	sprint(self, " ghostcode   - \bview your ghost code\n");
+	sprint(self, " ghostlist   - \blist ghost codes of your teammates\n");
 	sprint(self, " ghost       - \brestore yourself from ghost\n");
 	sprint(self, " score       - \bshow time left and score\n");
 	sprint(self, " +teamscores - \bbind this to a key\n");
@@ -2293,6 +2295,11 @@ void() match_impulse =
 			match_request_unpause();
 			break;
 		}
+		case (126):
+		{
+			match_list_ghosts();
+			break;
+		}
 		case (127):
 		{
 			match_request_restore_ghost();
@@ -2609,4 +2616,45 @@ void(entity player) match_disconnect_notify =
 	}
 	if (!clanring_numteams)
 		announce3("No ", clanring_szteam, "s present");
+};
+
+//
+//  L I S T  G H O S T S
+//
+void() match_list_ghosts =
+{
+	local entity e;
+	local string num, tname, pname, pad;
+
+	if (self.next_team == world)
+	{
+		sprint(self, "You are not on a team.\n");
+		return;
+	}
+	e = find(world, classname, "clanring_ghost");
+	if (!e)
+	{
+		sprint(self, "There are no ghosts\n");
+		return;
+	}
+
+	tname = strings_get_teamname(self.next_team.height);
+	sprint(self,"\nGhost codes for the ", tname,"\n");
+	while (e)
+	{
+		if (e.height == self.next_team.height)	// Only list ghostcodes for your team
+		{
+			sprint(self, "\b----------------+----\n");
+			num = strings_ftos_gold(e.count);
+			if (e.owner.owner == e)
+				pname = e.owner.netname;
+			else
+				pname = "Disconnected";
+			pad = strpad(15, pname);
+			sprint(self, pad," \b|\b ", num,"\n");
+			pad = ""; num = "";
+		}
+		e = find(e, classname, "clanring_ghost");
+	}
+	sprint(self, "\n");
 };

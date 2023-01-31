@@ -715,6 +715,7 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias timerstop impulse 124\n");
 	stuffcmd(self, "alias timerstart impulse 125\n");
 	stuffcmd(self, "alias ghostcode echo You do not have a ghost\n");
+	stuffcmd(self, "alias ghostlist impulse 126\n");
 	stuffcmd(self, "alias ghost impulse 127\n");
 	stuffcmd(self, "alias score impulse 128\n");
 	stuffcmd(self, "alias help-match impulse 129\n");
