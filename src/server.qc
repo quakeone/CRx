@@ -2366,6 +2366,17 @@ void () clanring_periodic_checks =
 	}
 	else
 	{
+		if (((clanring_playmode & CLANRING_MATCH_MODE)&&(clanring_state & CLANRING_MATCH_STARTED))&&(self.next_team != world)&&(inactive == 120))	//Warn my teammates I've been standing around doing nothing for the past 2 minutes...
+		{
+			local entity tmate;
+			tmate = self.next_team.next_player;
+			while (tmate)
+			{
+				if (tmate != self)
+					sprint(tmate, self.netname, " has been AFK for over 2 minutes.\nUse \btimerstop\b to pause the match.\n");
+				tmate = tmate.next_player;
+			}
+		}
 		if ((inactive >= clanring_afk_check) && (!(self.style & CLANRING_ADMINISTRATOR)))
 		{
 			afk_name();
