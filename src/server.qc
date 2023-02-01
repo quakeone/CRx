@@ -2326,9 +2326,12 @@ void () clanring_periodic_checks =
 		{
 			if (self.style & CLANRING_CONNECTED)
 			{				
-				ready_name();
+				if (self.style & CLANRING_AFK_CLIENT)
+					afk_name();	
+				else
+					ready_name();
 			}
-		}
+		}	
 	}
 	
 	self.ping_time = client_ping(self);//Fixme this wont work for Qrack clients; revert back to pq method for those clients.
