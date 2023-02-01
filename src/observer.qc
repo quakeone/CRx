@@ -1072,12 +1072,12 @@ void () observer_set_chase_position =
 	// CRMOD - thinking that the direction you are looking is what the chase target
 	// CRMOD - is lookin in.  This way freelook still keeps the player in view.
 
-    if (self.button0)	// freelook
-	{           
-    	angle = self.v_angle;
-		self.clanring_oldangle = self.v_angle;
-	}
-    else
+    // if (self.button0)	// freelook
+	// {           
+    // 	angle = self.v_angle;
+	// 	self.clanring_oldangle = self.v_angle;
+	// }
+    // else
     {
     	// CRMOD - tourney cam
        	if (self.oflags & OBSERVER_TOURNEY)
@@ -1100,11 +1100,11 @@ void () observer_set_chase_position =
 	// be the same as the one used by the client (after the angle has been
 	// garbled by the network protocol)
 	//
-	if (!self.button0)
-	{
-		angle_x = 360.0 / 256.0 * rint(angle_x * 256.0 / 360.0);
-		angle_y = 360.0 / 256.0 * rint(angle_y * 256.0 / 360.0);
-	}
+	// if (!self.button0)
+	// {
+	// 	angle_x = 360.0 / 256.0 * rint(angle_x * 256.0 / 360.0);
+	// 	angle_y = 360.0 / 256.0 * rint(angle_y * 256.0 / 360.0);
+	// }
 
     // The "ideal" position is 100 units behind and 40 units above the
     // chase target.  To deal with walls and ceilings, we first trace a
@@ -1120,8 +1120,9 @@ void () observer_set_chase_position =
     pos = pos - (trace_fraction * 100) * v_forward;				
     setorigin(self, pos);
 
-    if (self.button0)
-        return;  // freelook; don't set the viewing angle
+	//R00k:	Replaced .button0 to toggle obs modes..
+    // if (self.button0)
+    //     return;  // freelook; don't set the viewing angle
 
     angles_fixangle(angle);
 };
@@ -1139,8 +1140,8 @@ void () observer_set_demo_position =
 {
     setorigin(self, self.movetarget.origin);
 
-    if (self.button0)
-        return;  // freelook; don't set the viewing angle
+    // if (self.button0)
+    //     return;  // freelook; don't set the viewing angle
 
     self.v_angle = self.angles = self.movetarget.v_angle;	// CRMOD added v_angle
     self.fixangle = TRUE;
@@ -1215,8 +1216,8 @@ void () observer_set_camera_position =
 		return;
 	}
 
-	if (self.button0) // freelook
-		return;
+	// if (self.button0) // freelook
+	// 	return;
 	
 	if (camera.movetarget)
 	{
@@ -1516,6 +1517,15 @@ void () observer_update_display =
 	local string status_string = "", pad_top = "";
 	local float rtime = 0;
 
+    if ((clanring_state & CLANRING_MATCH_PAUSED) || (self.style & (CLANRING_SETTING_OPTIONS | CLANRING_MOTD)))
+        return;
+
+	if (prematch_rules())
+	{
+		clanring_show_rules_prematch();
+		return;
+	}
+	
 	// compute score and pad
 	if (teamplay && (clanring_state & CLANRING_MATCH_STARTED))
 	{
@@ -1538,32 +1548,24 @@ void () observer_update_display =
 		teamname = "                       ";
 	}
 
-    self.delay = time + 0.5;
-    if ((clanring_state & CLANRING_MATCH_PAUSED) ||
-        (self.style & (CLANRING_SETTING_OPTIONS | CLANRING_MOTD)))
-        return;
+	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world))
+    	self.delay = time + 0.5;
+	else
+		self.delay = time + 1.5;
 
     // CRMOD account for cameras
 	player = self.movetarget;
 	if ((player != world) && (player.classname == "clanring_camera"))
 		player = player.movetarget;
     
-	if (prematch_rules())
-	{
-		clanring_show_rules_prematch();
-		return;
-	}
 
 	//--prepend string check
-	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING)
-			&& (boss.wait == 0) && (self.next_team != world))
+	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING)	&& (boss.wait == 0) && (self.next_team != world))
 	{
 		rtime = ceil(self.respawntime - time);
 		status_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
-		//self.delay = time + 0.25; //update display a little quicker while waiting to spawn, or causing lag ?
 	}
-	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)
-			&& (boss.wait == 0) && (self.next_team != world))
+	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)	&& (boss.wait == 0) && (self.next_team != world))
 	{
 		if (self.next_team.next_queue == world)
 		{
@@ -1580,11 +1582,6 @@ void () observer_update_display =
     {
 		if ((clanring_state & CLANRING_MATCH_STARTED) || ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING)))
 			centerprint4(self, "\n\n\n\n\n\n\n\n\n\n\n\n               ", teamname, score, pad);
-		else if (status_string != "")
-			centerprint(self, status_string);
-
-//		else
-//			centerprint(self, " ");//R00k: dont spam this!
         return;
     }
 
@@ -1609,10 +1606,8 @@ void () observer_update_display =
 
 		if ((self.oflags & OBSERVER_TOURNEY) && (self.clanring_othertarget != world) && (self.movetarget.classname == "player"))
 			othertarget = self.clanring_othertarget.netname;
-		else
-			othertarget = "";
 
-		if (status_string != "")
+		if ((status_string != "") && (self.statstate >= 0))
 			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n", status_string);
 		else
 			pad_top = "\n\n\n\n\n\n\n\n\n\n";
@@ -1815,10 +1810,10 @@ void() observer_fly_move =
 	if (z > 500)
 		self.velocity = (self.velocity) * (500 / z);
 	
-	if (self.button0)
-		observer_fly_through_obstacle ();
-	else
-		self.attack_finished = time;
+	// if (self.button0)
+	// 	observer_fly_through_obstacle ();
+	// else
+	// 	self.attack_finished = time;
 };
 
 //
@@ -1854,16 +1849,16 @@ void () observer_pre_think =
 		{
 			if (self.movetarget.classname == "player")
 			{
-				if (self.button0)
-					observer_prev_target();
-				else
+				// if (self.button0)
+				// 	observer_prev_target();
+				// else
 					observer_next_target();
 			}
 			else
 			{
-    			if (self.button0)
-    				observer_prev_camera();
-    			else
+    			// if (self.button0)
+    			// 	observer_prev_camera();
+    			// else
     				observer_next_camera();
 			}
 			self.clanring_cam_delay = time + 6;
@@ -1884,7 +1879,7 @@ void () observer_pre_think =
     }
     else
     {
-        if (self.oflags & OBSERVER_WALK && !self.button0)
+        if (self.oflags & OBSERVER_WALK)// && !self.button0)
         {
             if (self.waterlevel == 2)
                 CheckWaterJump ();
@@ -1947,6 +1942,22 @@ void () observer_post_think =
 {
 	if (!gameover)
 	{
+		if ((self.button0) && (time > self.attack_finished))
+		{			
+			if (self.oflags & OBSERVER_FLY)
+			{
+				observer_demo_start ();
+			}
+			else 
+			{
+				if (self.oflags & OBSERVER_DEMO)
+				{
+					observer_fly_start ();
+				}
+			}
+			self.attack_finished = time + 0.5;	
+		}
+	
 		if ((mode_is_arena() == FALSE) || (mode_is_arena() && self.movetarget.ca_player_flag == PF_PLAYING))
 		{
 			if (self.oflags & OBSERVER_CHASE)
