@@ -170,9 +170,9 @@ void(entity player, float cast) Request_Poll_Vote =
 	if (player != clanring_request.owner)
 	{
 		if (cast == 1)
-			bprint(player.netname, " voted \byes\b.");
+			bprint(player.netname, " voted \byes\b.\n");
 		else if (cast == 2)
-			bprint(player.netname, " voted \bno\b.");
+			bprint(player.netname, " voted \bno\b.\n");
 	}
 
 	if (cast == 1)
