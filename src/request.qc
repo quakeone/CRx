@@ -136,7 +136,7 @@ void(entity player, float cast) Request_Poll_Vote =
 		}
 		else
 		{
-			if (player != clanring_request.owner)
+//			if (player != clanring_request.owner)
 			{
 				if (player.style & CLANRING_ADMINISTRATOR)					// So, an admin already voted, and now wishes to affirm their vote
 				{
