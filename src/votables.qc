@@ -716,11 +716,11 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 	request_mapnum = newmap;
 
 	//If ya'll could pass my vote, thanks!
-	if (self.style & CLANRING_ADMINISTRATOR)
-	{
-		votables_set_gametype_mode_map();
-	}
-	else
+	//if (self.style & CLANRING_ADMINISTRATOR)
+	//{
+	//	votables_set_gametype_mode_map();
+	//}
+	//else
 	{
 		//start vote
 		local string gametype_string = "", mode_string = "", vote_title_string = "", vote_string = "";
