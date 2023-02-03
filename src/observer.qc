@@ -1533,7 +1533,7 @@ void () observer_update_display =
 		if ((player != world) && (player.classname == "clanring_camera"))
 			player = player.movetarget;
     
-		local string w="", armour="", aval="", healthammo="", ammo="";
+		local string w="", armour="", aval="", healthammo="", ammo="", pad_top="";
         w = strings_get_weapon(player);
         armour = strings_get_armour_type(player);
         aval = strings_get_armour_val(player);
