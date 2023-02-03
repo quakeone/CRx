@@ -340,6 +340,7 @@ void () observer_chase_start =
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 	
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
+	centerprint (self,self.movetarget.netname);
 };
 
 //
@@ -399,6 +400,7 @@ void () observer_demo_start =
 
 	self.nextthink = -1;
     self.think = SUB_Null;
+	centerprint (self,self.movetarget.netname);
 };
 
 //
@@ -1511,11 +1513,7 @@ void () observer_check_size =
 //
 void () observer_update_display =
 {
-    local string w="", armour="", aval="", healthammo="", ammo="";
 	local entity player;	// CRMOD cameras
-	local string score="", pad="", teamname="";
-	local string status_string = "", pad_top = "";
-	local float rtime = 0;
 
     if ((clanring_state & CLANRING_MATCH_PAUSED) || (self.style & (CLANRING_SETTING_OPTIONS | CLANRING_MOTD)))
         return;
@@ -1525,95 +1523,24 @@ void () observer_update_display =
 		clanring_show_rules_prematch();
 		return;
 	}
-	
-	// compute score and pad
-	if (teamplay && (clanring_state & CLANRING_MATCH_STARTED))
-	{
-		teamname = clanring_winning_teamname;
-		score = ftos(clanring_score_number);
-		if (clanring_score_number >= 100)
-			pad = "";
-		else if (clanring_score_number >= 10)
-			pad = " ";
-		else if (clanring_score_number >= 0)
-			pad = "  ";
-		else if (clanring_score_number >= -9)
-			pad = " ";
-		else 
-			pad = "";
-	}
-	else
-	{
-		score = pad = "";
-		teamname = "                       ";
-	}
 
-	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (self.next_team != world))
-    	self.delay = time + 0.5;
-	else
-		self.delay = time + 1.5;
+	self.delay = time + 1.5;
 
-    // CRMOD account for cameras
-	player = self.movetarget;
-	if ((player != world) && (player.classname == "clanring_camera"))
-		player = player.movetarget;
+	if (self.style & CLANRING_HEADS_UP)
+    {		
+		player = self.movetarget;
+		// CRMOD account for cameras
+		if ((player != world) && (player.classname == "clanring_camera"))
+			player = player.movetarget;
     
-
-	//--prepend string check
-	if ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.state == CA_MATCH_PLAYING)	&& (boss.wait == 0) && (self.next_team != world))
-	{
-		rtime = ceil(self.respawntime - time);
-		status_string = sprintf("\X90Respawn in: %s\X91", ftos(rtime));
-	}
-	else if ((clanring_playmode & CLANRING_RA_MODE) && (boss.state == CA_MATCH_PLAYING)	&& (boss.wait == 0) && (self.next_team != world))
-	{
-		if (self.next_team.next_queue == world)
-		{
-			status_string = "You are NEXT in line";
-		}
-	}
-	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-	{
-		status_string = sprintf("         %s%s", TeamCaptureFlagStatusString(), TeamCaptureScoreString());
-	}
-	//--end prepend check
-
-    if (!player)
-    {
-		if ((clanring_state & CLANRING_MATCH_STARTED) || ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING)))
-			centerprint4(self, "\n\n\n\n\n\n\n\n\n\n\n\n               ", teamname, score, pad);
-        return;
-    }
-
-    if (self.style & CLANRING_HEADS_UP)
-    {
+		local string w="", armour="", aval="", healthammo="", ammo="";
         w = strings_get_weapon(player);
         armour = strings_get_armour_type(player);
         aval = strings_get_armour_val(player);
         healthammo = strings_get_health_ammo(player);
         ammo = ftos(player.currentammo);
-    
-		if (status_string != "")
-			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n\n\n\n", status_string);
-		else
-			pad_top = "\n\n\n\n\n\n\n\n\n\n\n\n\n";
-
+    	pad_top = "\n\n\n\n\n\n\n\n\n\n\n\n\n";
 		centerprint7(self, pad_top, player.netname, w, armour, aval, healthammo, ammo);
-    }
-    else
-    {
-		local string othertarget = "";
-
-		if ((self.oflags & OBSERVER_TOURNEY) && (self.clanring_othertarget != world) && (self.movetarget.classname == "player"))
-			othertarget = self.clanring_othertarget.netname;
-
-		if ((status_string != "") && (self.statstate >= 0))
-			pad_top = sprintf("%s\n\n\n\n\n\n\n\n\n", status_string);
-		else
-			pad_top = "\n\n\n\n\n\n\n\n\n\n";
-
-		centerprint7(self, pad_top, othertarget, "                       \n\n",
-			player.netname, teamname, score, pad);
     }
 };
 

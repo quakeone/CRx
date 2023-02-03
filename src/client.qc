@@ -1757,12 +1757,6 @@ void() PlayerPostThink =
 		}
 	}
 
-	if (IS_CA_OBSERVER(self))
-	{
-		observer_post_think();
-		return;
-	}
-	else
 	if (self.style & CLANRING_OBSERVER)
 	{		
 		self.effects = 0;
@@ -1773,7 +1767,7 @@ void() PlayerPostThink =
 	{
 		if (time >= self.delay)
 		{
-			self.delay = time + 0.1;
+			self.delay = time + 0.5;
 			clanring_show_rules_prematch();
 		}
 	}
