@@ -2369,6 +2369,15 @@ void () clanring_periodic_checks =
 	}
 	else
 	{
+		if ((clanring_playmode & CLANRING_MATCH_MODE) && ((!(clanring_state & CLANRING_MATCH_STARTED)) && (!(clanring_state & CLANRING_MATCH_OVER))))
+		{
+			if (self.style & CLANRING_READY) 
+			{
+				if (inactive > 60)
+					self.style = self.style - (self.style & CLANRING_READY); //Un-ready players that are afk for one minute.
+			}
+		}
+
 		if (((clanring_playmode & CLANRING_MATCH_MODE)&&(clanring_state & CLANRING_MATCH_STARTED))&&(self.next_team != world)&&(inactive == 120))	//Warn my teammates I've been standing around doing nothing for the past 2 minutes...
 		{
 			local entity tmate;
