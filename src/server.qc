@@ -2247,6 +2247,7 @@ float () clanring_client_ready =
 
 entity (entity e) observer_find_target;
 entity (entity e) observer_find_camera;
+void() match_notready;
 
 //
 //  P E R I O D I C  C H E C K S
@@ -2373,8 +2374,8 @@ void () clanring_periodic_checks =
 		{
 			if (self.style & CLANRING_READY) 
 			{
-				if (inactive > 60)
-					self.style = self.style - (self.style & CLANRING_READY); //Un-ready players that are afk for one minute.
+				if (inactive > 120)
+					match_notready(); //Un-ready players that are idle for a couple minutes.
 			}
 		}
 
