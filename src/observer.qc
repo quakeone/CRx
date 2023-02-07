@@ -500,8 +500,14 @@ void () observer_start =
 	self.ammo_rockets = 0;
 	self.ammo_cells = 0;
 	self.currentammo = 0;	
-	if (self.next_team == world)
-		self.frags = -99;
+
+	if (mode_is_arena())
+	{
+		if (self.next_team == world)
+			self.frags = -99;
+	}
+	else	
+		self.frags = -99;	
 
 	self.show_hostile = 0;
 
