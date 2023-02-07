@@ -398,6 +398,8 @@ void() stats_show_fstats =
 	local entity player;
 	local entity pteam;
 	local float useteams;
+	local string mtr = "";	//match-time record
+	local string ttr = "";	//time-trial record	
 
 	if (clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER) && teamplay)
 		useteams = TRUE;
@@ -467,6 +469,11 @@ void() stats_show_fstats =
 			pteam = player.next_team;
 		}
 	}
+	sprint(self,"\n");
+	mtr = sprintf("%s %s %-16s\n", utils_get_time(playerrecord2[0].statvalue), get_team_letter(playerrecord2[0].teamcolor), playerrecord2[0].player);
+	sprint(self, mapname, " match capture-time record: ", mtr);
+	ttr = sprintf("%s %s %-16s\n", utils_get_time(playerrecord[0].statvalue), get_team_letter(playerrecord[0].teamcolor), playerrecord[0].player);
+	sprint(self, mapname, " trial capture-time record: ", ttr);
 	sprint(self,"\n");
 };
 
