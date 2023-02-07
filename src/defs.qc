@@ -542,7 +542,7 @@ float   AS_MISSILE              = 4;
 //
 // monsters
 //
-//.float      pausetime;  // CLANRING_MOD - unused
+.float      pausetime;  // CLANRING_MOD - unused
 .entity     movetarget;
 
 

@@ -1925,6 +1925,15 @@ void() match_request_pause =
 		sprint(self, "Match is already paused\n");
 		return;
 	}
+
+	if (self.next_team.pausetime == FALSE)//give the team one free match pause...
+	{
+		bprint(sprintf("The %s used their \bone\b free match pause.\n", self.next_team.netname));
+		self.next_team.pausetime = TRUE;
+		match_pause();
+		return;
+	}
+
     // Do it right away if we're an administrator, otherwise vote
     if (self.style & CLANRING_ADMINISTRATOR)
         match_pause();
