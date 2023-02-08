@@ -2342,7 +2342,7 @@ void () clanring_periodic_checks =
 
 	if (self.style & CLANRING_AFK_CLIENT)
 	{
-		if (inactive >= clanring_afk_timeout)
+		if ((clanring_afk_timeout > 0)&&(inactive >= clanring_afk_timeout))// Set 'kickafk' in clanring.cfg to 0 to disable kicking...
 		{
 			clanring_kick_mode = KICK_AFK;			
 			clanring_kick_player(self);
