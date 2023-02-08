@@ -444,8 +444,6 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 					{
 						if (targ.classname != "button")					//R00k: dont count button damage in stats.
 							attacker.dest2_x = attacker.dest2_x + damage;
-						else
-							attacker.dest1_x = attacker.dest1_x - damage;
 					}
 					else
 					{
@@ -454,8 +452,6 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 							if ((attacker.waterlevel <= 1)	// don't count discharges
 								&& (targ.classname != "button"))					//R00k: dont count button damage in stats.
 								attacker.dest2_z = attacker.dest2_z + damage;
-							else
-								attacker.dest1_z = attacker.dest1_z - damage;
 						}
 					}
 				}
