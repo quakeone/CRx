@@ -2342,31 +2342,35 @@ void () clanring_periodic_checks =
 
 	if (self.style & CLANRING_AFK_CLIENT)
 	{
-		if ((clanring_afk_timeout > 0)&&(inactive >= clanring_afk_timeout))// Set 'kickafk' in clanring.cfg to 0 to disable kicking...
+		if (clanring_afk_timeout > 0)	// Set 'kickafk' in clanring.cfg to 0 to disable kicking...
 		{
-			clanring_kick_mode = KICK_AFK;			
-			clanring_kick_player(self);
-			return;
-		}
-
-		local string s, pl;	
-
-		s = ftos((clanring_afk_timeout / 60) - c);
-		pl = strings_szplural((clanring_afk_timeout / 60) - c);
-		
-		if (c > ((clanring_afk_timeout / 60) - 5))	//If afk-timer is less than 5 minutes from timeout...
-		{		
-			if ((inactive - (c * 60)) < 1)//One minute has passed...sorta
+			if (inactive >= clanring_afk_timeout)
 			{
-				stuffcmd(self, "play ");
-				//todo choose random?
-				//stuffcmd(self, "zombie/idle_w2.wav");	
-				stuffcmd(self, "demon/idle1");
-				stuffcmd(self, "\n");
-				sprint(self, "AFK ALERT: \bYou will be kicked in ",s," minute",pl,".\n");
-				sprint(self, "Press jump or fire to stay connected.\n");
+				clanring_kick_mode = KICK_AFK;			
+				clanring_kick_player(self);
+				//TODO: if FTE server just force them to SPECTATOR
+				return;
 			}
-		}					
+
+			local string s, pl;	
+
+			s = ftos((clanring_afk_timeout / 60) - c);
+			pl = strings_szplural((clanring_afk_timeout / 60) - c);
+			
+			if (c > ((clanring_afk_timeout / 60) - 5))	//If afk-timer is less than 5 minutes from timeout...
+			{		
+				if ((inactive - (c * 60)) < 1)//One minute has passed...sorta
+				{
+					stuffcmd(self, "play ");
+					//todo choose random?
+					//stuffcmd(self, "zombie/idle_w2.wav");	
+					stuffcmd(self, "demon/idle1");
+					stuffcmd(self, "\n");
+					sprint(self, "AFK ALERT: \bYou will be kicked in ",s," minute",pl,".\n");
+					sprint(self, "Press jump or fire to stay connected.\n");
+				}
+			}
+		}
 	}
 	else
 	{
