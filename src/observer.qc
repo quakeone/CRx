@@ -797,8 +797,8 @@ void () observer_next_target =
 	if (mode_is_arena())
 	{
 		sprint (self, "Tracking ", self.movetarget.netname, "\n");
-		centerprint (self,self.movetarget.netname);
 	}
+	centerprint (self,self.movetarget.netname);
 };
 
 //
