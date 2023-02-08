@@ -763,7 +763,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			{
 				if (inflictor.classname != "door") 	// because squishing a teammate is still possible
 				{
-					if (!(attacker.weapon == IT_LIGHTNING && targ.waterlevel))//Always damage teammates if discharging.
+				//	if (!(attacker.weapon == IT_LIGHTNING && targ.waterlevel))//Always damage teammates if discharging.
 					{
 						return;
 					}
