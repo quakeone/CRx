@@ -1354,8 +1354,8 @@ void() PlayerPreThink =
 	if (self.height != self.team - 1)
 		match_verify_team ();
 
-	if (self.movetype != self.finaldest_y) // dork used admin 0 noclip or fly (R00k: CL_PRIVILEGED was removed is this still needed?)
-		self.movetype = self.finaldest_y;
+//	if (self.movetype != self.finaldest_y) // dork used admin 0 noclip or fly (R00k: CL_PRIVILEGED was removed is this still needed?)
+//		self.movetype = self.finaldest_y;
 
 	if (time > self.wait)
 	{
