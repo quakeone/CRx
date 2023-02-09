@@ -950,8 +950,13 @@ float () match_put_player_in_team =
 	{
 		if ((self.team != RED) && (self.team != BLUE))
 		{
-			sprint(self, "Invalid pants color\n");
-			sprint(self, "type \bRED\b or \bBLUE\b to join match\n");
+			if (!(clanring_state & CLANRING_MATCH_STARTED))
+			{
+				sprint(self, "Invalid pants color\n");
+				sprint(self, "type \bRED\b or \bBLUE\b to join match\n");
+			}
+			else 
+				sprint(self,"A match is already playing; you may not join at this time.\n");
 			return FALSE;
 		}
 	}
