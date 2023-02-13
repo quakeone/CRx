@@ -2488,7 +2488,7 @@ void(entity player) match_disconnect_notify =
 				self.owner.captime   	= self.captime;
 				
 				// check autopause
-				if (clanring_playmode & CLANRING_AUTO_PAUSE)
+//				if (clanring_playmode & CLANRING_AUTO_PAUSE)
 				{
 					match_pause();
 					bprint("\bClanring autopause activated\n");

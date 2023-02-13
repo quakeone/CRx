@@ -177,7 +177,7 @@ float (entity team1) number_teammates_alive =
 
 	while (e.chain_gang)
 	{
-        if (e.chain_gang.deadflag == DEAD_NO && (IS_CA_OBSERVER(e.chain_gang) == FALSE) && ((e.chain_gang.style & CLANRING_CONNECTED)))
+        if (e.chain_gang.deadflag == DEAD_NO && (e.chain_gang.frozen == FALSE) && (IS_CA_OBSERVER(e.chain_gang) == FALSE) && ((e.chain_gang.style & CLANRING_CONNECTED)))
         n = n + 1;
 		e = e.chain_gang;
 	}
