@@ -1146,8 +1146,8 @@ void() console_server_flags =
 		cprint("CLANRING_CONSOLE_INITIALIZED\n");
 	// if (clanring_playmode & CLANRING_FAST_START)
 	// 	cprint("CLANRING_FAST_START\n");
-	if (clanring_playmode & CLANRING_AUTO_PAUSE)
-		cprint("CLANRING_AUTO_PAUSE\n");
+//	if (clanring_playmode & CLANRING_AUTO_PAUSE)
+//		cprint("CLANRING_AUTO_PAUSE\n");
 
     cprint("\n");
 
@@ -1168,8 +1168,8 @@ void() console_server_flags =
 		cprint("CLANRING_NO_PRACTICE\n");
 	if (clanring_state & CLANRING_UNPAUSING)
 		cprint("CLANRING_UNPAUSING\n");
-	if (clanring_state & CLANRING_AUTO_PAUSED)
-		cprint("CLANRING_AUTO_PAUSED\n");
+//	if (clanring_state & CLANRING_AUTO_PAUSED)
+//		cprint("CLANRING_AUTO_PAUSED\n");
 	if (clanring_state & CLANRING_DELAYED_AUTOSS)
 		cprint("CLANRING_DELAYED_AUTOSS\n");
 
@@ -1644,10 +1644,10 @@ void() console_show_settings =
 	console_onoff(clanring_playmode & CLANRING_EXTENDED_OBITS);
 	// cprint("fast match starts: ");
 	// console_onoff(clanring_playmode & CLANRING_FAST_START);
-	cprint("fresh spawns: ");
-	console_onoff(clanring_playmode & CLANRING_FRESH_SPAWNS);
-	cprint("autopausing: ");
-	console_onoff(clanring_playmode & CLANRING_AUTO_PAUSE);
+//	cprint("fresh spawns: ");
+//	console_onoff(clanring_playmode & CLANRING_FRESH_SPAWNS);
+//	cprint("autopausing: ");
+//	console_onoff(clanring_playmode & CLANRING_AUTO_PAUSE);
 
 	cprint("\n");
 };
@@ -1891,22 +1891,22 @@ void(float command) console_command =
 			cprint("practice mode disabled\n");
 			break;
 		}
-		case 43:
-		{
-			if (!(clanring_playmode & CLANRING_AUTO_PAUSE))
-			{
-				utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
-			}
-			break;
-		}
-		case 44:
-		{
-			if (clanring_playmode & CLANRING_AUTO_PAUSE)
-			{
-				utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
-			}
-			break;
-		}
+//		case 43:
+//		{
+//			if (!(clanring_playmode & CLANRING_AUTO_PAUSE))
+//			{
+//				utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
+//			}
+//			break;
+//		}
+//		case 44:
+//		{
+//			if (clanring_playmode & CLANRING_AUTO_PAUSE)
+//			{
+//				utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
+//			}
+//			break;
+//		}
 		case 45:
 		{
 			if (!(clanring_playmode & CLANRING_CONSOLE_STATS))

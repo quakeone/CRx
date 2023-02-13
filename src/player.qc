@@ -857,3 +857,105 @@ void()	player_die_ax6	=	[	$axdeth6,	player_die_ax7	] {};
 void()	player_die_ax7	=	[	$axdeth7,	player_die_ax8	] {};
 void()	player_die_ax8	=	[	$axdeth8,	player_die_ax9	] {};
 void()	player_die_ax9	=	[	$axdeth9,	player_die_ax9	] {PlayerDead();};
+
+void() Frozen_Touch =
+{
+	vector dir;
+	
+	if (other.classname != "player")
+		return;
+
+	if (!(other.health)) 
+		return;
+
+	if (other.team2 == self.team2)
+		return;
+		
+	self.flags = self.flags - (self.flags & FL_ONGROUND);
+	dir = self.origin - other.origin;
+	dir = normalize(dir);
+	self.velocity_z = self.velocity_z + 20;
+	self.velocity = other.velocity + (dir * 525);	//wait i accidentally did = other. not self. but it works ... eek! (dont think it matterS)
+}
+
+void() Thaw_Player =
+{
+	local entity whodat;
+	
+	if ((self.flags & FL_ONGROUND)||(self.waterlevel))
+	{
+		self.velocity = '0 0 0';
+	}
+	self.movement = '0 0 0';
+	self.maxspeed = 0;
+
+	self.nextthink	= time + 0.1;
+	self.think 	= Thaw_Player;
+	
+	whodat = findradius (self.origin, 120);//Same radius as an rl blast...
+	
+	while (whodat)
+	{
+		if (whodat.classname == "player")
+		{
+			if ((whodat.team2 == self.team2) && (!(whodat.frozen)))
+			{
+				self.health = self.health + 1;
+				sound (self, CHAN_VOICE, "items/r_item1.wav", 0.25, ATTN_NORM);
+				if (self.health >= 100)
+					break;
+			}
+		}
+		whodat = whodat.chain;
+	}
+
+	if ((self.health >= 100) && (boss.state == CA_MATCH_PLAYING))
+	{
+		stuffcmd (self, "v_cshift 0 0 0 0\n");
+		announce3(self.netname, " was thawed by ", whodat.netname);
+		self.maxspeed = 320;
+		self.effects = self.effects - (self.effects & EF_FROZEN);
+		self.frozen = FALSE;	
+		clear_name();
+		respawn();	
+	}
+}
+
+void (entity e) freeze_player =
+{
+	local entity oself;
+	
+	if ((e.deathtype == "teledeath")||(e.watertype == CONTENT_LAVA))//if they get telefragged or fall in lava just kick them out of the round.
+	{
+		oself = self;
+		self = e;
+		GibPlayer ();
+		PlayerDead();
+	 	self = oself;
+		return;
+	}
+
+	e.solid 		= SOLID_SLIDEBOX;
+	e.movetype 		= MOVETYPE_BOUNCE;
+	e.takedamage 	= DAMAGE_AIM;
+	e.maxspeed 		= 0;//FTE specific, this entity cannot move; requires sv_nqplayerphysics 0
+	e.effects 		= 0;	
+	e.health		= 1;
+	e.weaponmodel 	= string_null;
+	e.items			= 0;
+	e.weapon 		= 0;
+	e.view_ofs 		= '0 0 22';
+	e.flags 		= e.flags - (e.flags & FL_ONGROUND);
+	e.velocity 		= '0 0 0';
+
+	e.effects = e.effects | EF_FROZEN; //non-glowing polygon shell around the player (Qrack)
+	
+	sound (e, CHAN_BODY, "fish/bite.wav", 1, ATTN_NORM);
+
+	stuffcmd (e, "v_cshift 50 50 100 50\n");// Blue/white screen overlay
+
+	e.frozen	= TRUE;
+	e.touch		= Frozen_Touch;
+	e.think 	= Thaw_Player;
+	e.nextthink = time + sys_ticrate;	
+}

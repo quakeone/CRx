@@ -746,9 +746,9 @@ void() PutClientInServer =
 			
 	DecodeLevelParms ();	
 	
-	if (self.style & CLANRING_CONNECTED)
-		updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
-	
+	if (clanring_playmode & CLANRING_FREEZETAG_MODE)
+		stuffcmd (self, ";v_cshift 0 0 0 0;\n");//Clear color shift
+
 	//in classic mode auto join on connect
 	if (teamplay)
 	{
@@ -1399,6 +1399,17 @@ void() PlayerPreThink =
 		return;
 	}
 
+	if (self.frozen)
+	{
+		if (self.flags & FL_ONGROUND)
+		{
+			self.velocity = '0 0 0';
+		}
+		self.movement = '0 0 0';
+		self.maxspeed = 0;
+		return;
+	}
+
 	self.deathtype = "";	//R00k - wrong obituary messages fix by Zoid
 
 	if (self.waterlevel || (self.flags & FL_INWATER))
@@ -1870,7 +1881,7 @@ void() PlayerPostThink =
 				if ((vlen(self.velocity)) >= 320) //sv_maxspeed
 				{
 					self.velocity[0] -= self.velocity[0] * 0.06;
-					self.velocity[1] -= self.velocity[1] * 0.08;//Strafing will increase the speed by modifying wishdir, so make this stronger...
+					self.velocity[1] -= self.velocity[1] * 0.08;
 				}
 			}
 			else
@@ -2049,8 +2060,7 @@ void() ClientDisconnect =
 	self.health 	= 0;
 	self.team 		= 0;
 	self.height 	= 0;
-//	strunzone(self.name_ready);
-	self.netname	= string_null;
+	self.netname	= "";
 };
 
 //
@@ -2946,6 +2956,22 @@ void(string cmd) SV_ParseClientCommand =
 				return;
 			}
 			votables_request_set_gametype_mode_map(3, -1, 0);
+			return;
+		case "freezetag":
+			if (arg1 != "")
+			{
+				mapnumber = found_in_warp_list(arg1);
+				if (mapnumber)
+				{
+					votables_request_set_gametype_mode_map(8, 9, mapnumber);
+				}
+				else
+				{
+					sprint2(self, arg1, " is not a recognized map.\n");
+				}
+				return;
+			}
+			votables_request_set_gametype_mode_map(8, -1, 0);
 			return;
 		default:
 			if (arg0 != "")

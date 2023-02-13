@@ -563,20 +563,20 @@ void () options_display =
 //
 float () options_get_mode =
 {
+    if (clanring_playmode & CLANRING_FREEZETAG_MODE)
+        return ADMIN_FREEZETAG_MODE;
     if (clanring_playmode & CLANRING_WIPEOUT_MODE)
         return ADMIN_WIPEOUT_MODE;
     if (clanring_playmode & CLANRING_DMM4_MODE)
         return ADMIN_DMM4_MODE;
-    if (clanring_playmode & CLANRING_CA_MODE)
-        return ADMIN_CA_MODE;
     if (clanring_playmode & CLANRING_RA_MODE)
         return ADMIN_RA_MODE;
     if (clanring_playmode & CLANRING_AIRSHOT_MODE)
         return ADMIN_AIRSHOT_MODE;
+    if (clanring_playmode & CLANRING_CA_MODE)
+        return ADMIN_CA_MODE;
     if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
         return ADMIN_CTF_MODE;
-    if (clanring_playmode & CLANRING_PRACTICE_MODE)
-        return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_PRACTICE_MODE)
         return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_MATCH_MODE)

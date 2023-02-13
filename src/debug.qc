@@ -83,9 +83,9 @@ void() debug_flags =
 	// 	sprint(self, "CLANRING_FAST_START\n");
 /*	if (clanring_playmode & CLANRING_FRESH_SPAWNS)
 		sprint(self, "CLANRING_FRESH_SPAWNS\n");
-*/
+
 	if (clanring_playmode & CLANRING_AUTO_PAUSE)
-		sprint(self, "CLANRING_AUTO_PAUSE\n");
+		sprint(self, "CLANRING_AUTO_PAUSE\n");*/
 	if (clanring_playmode & CLANRING_CONSOLE_STATS)
 		sprint(self, "CLANRING_CONSOLE_STATS\n");
 
@@ -108,8 +108,8 @@ void() debug_flags =
 		sprint(self, "CLANRING_NO_PRACTICE\n");
 	if (clanring_state & CLANRING_UNPAUSING)
 		sprint(self, "CLANRING_UNPAUSING\n");
-	if (clanring_state & CLANRING_AUTO_PAUSED)
-		sprint(self, "CLANRING_AUTO_PAUSED\n");
+//	if (clanring_state & CLANRING_AUTO_PAUSED)
+//		sprint(self, "CLANRING_AUTO_PAUSED\n");
 	if (clanring_state & CLANRING_DELAYED_AUTOSS)
 		sprint(self, "CLANRING_DELAYED_AUTOSS\n");
 	if (clanring_state & CLANRING_TAKING_AUTOSS)

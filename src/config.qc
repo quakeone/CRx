@@ -219,24 +219,24 @@ void(string command, string value) config_command =
 			cprint("practice mode disabled\n");
 			break;
 		}
-		case "autopauseon":
-		{
-			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (!(clanring_playmode & CLANRING_AUTO_PAUSE))
-			{
-				utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
-			}
-			break;
-		}
-		case "autopauseoff":
-		{
-			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (clanring_playmode & CLANRING_AUTO_PAUSE)
-			{
-				utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
-			}
-			break;
-		}
+		// case "autopauseon":
+		// {
+		// 	if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+		// 	if (!(clanring_playmode & CLANRING_AUTO_PAUSE))
+		// 	{
+		// 		utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
+		// 	}
+		// 	break;
+		// }
+		// case "autopauseoff":
+		// {
+		// 	if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+		// 	if (clanring_playmode & CLANRING_AUTO_PAUSE)
+		// 	{
+		// 		utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
+		// 	}
+		// 	break;
+		// }
 		case "autostatson":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;

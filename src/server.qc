@@ -313,7 +313,7 @@ void () clanring_init_world =
 	score_init_world();
 	match_init_world();
 	//quaketag_init_world();
-	autocvar(nqfriction, "0");	//Set this to 1 if using FTE as a server with sv_nqplayerphysics 0 to simulate NQ bunnyhopping but allowing QW clients to use prediction.
+	autocvar(nqfriction, "1");	//Set this to 1 if using FTE as a server with sv_nqplayerphysics 0 to simulate NQ bunnyhopping but allowing QW clients to use prediction.
 	
 	temp = 0;
 
@@ -353,7 +353,7 @@ void () clanring_init_world =
 		print(clanring_version,"]\n");
 		// Set aliases for console commands
 		console_set_aliases ();
-		
+		autocvar(nqfriction, "1");	//Set this to 1 if using FTE as a server with sv_nqplayerphysics 0 to simulate NQ bunnyhopping but allowing QW clients to use prediction.
 		// Initialize global variables
 		cvar_set ("scratch1", "1");//level index
 		cvar_set ("scratch2", "0");//overtime
@@ -870,16 +870,18 @@ void () clanring_init_think =
 void () clanring_show_mode =
 {
 	sprint2(self.owner, clanring_version, "\n");
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		sprint(self.owner, "capture the flag\n");
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		if (teamplay)
-			sprint(self.owner, "match mode\n");
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			sprint(self.owner, "ctf match mode\n");
+		else
+			sprint(self.owner, "tdm match mode\n");
 	}
 	else
 	{
-		if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+		if (clanring_playmode & CLANRING_FREEZETAG_MODE)
+			sprint(self.owner, "clan arena freezetag mode\n");
+		else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 			sprint(self.owner, "clan arena wipeout mode\n");
 		else if (clanring_playmode & CLANRING_CA_MODE)
 			sprint(self.owner, "clan arena mode\n");
@@ -891,8 +893,18 @@ void () clanring_show_mode =
 			sprint(self.owner, "rocket arena mode\n");
 		else if (clanring_playmode & CLANRING_PRACTICE_MODE)
 			sprint(self.owner, "practice mode\n");
-		else
-			sprint(self.owner, "classic mode\n");
+		else if (clanring_playmode & CLANRING_NORMAL_MODE)
+		{
+			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+				sprint(self.owner, "pickup ctf mode\n");
+			else
+			{
+				if (teamplay)
+					sprint(self.owner, "pickup tdm mode\n");
+				else
+					sprint(self.owner, "normal ffa deathmatch mode\n");
+			}
+		}	
 	}
 	remove(self);
 };
@@ -1365,7 +1377,7 @@ void () clanring_help_misc =
 	sprint(self, " ticrate    - view sys_ticrate\n");
 	sprint(self, " autoid     - toggle auto teammate identify\n");
 	sprint(self, " autoweapon - toggle smartweapon\n");
-	sprint(self, " autopause  - toggle auto pausing\n");
+	//sprint(self, " autopause  - toggle auto pausing\n");
 };
 
 //
@@ -1739,6 +1751,9 @@ void () clanring_show_rules_prematch =
 			s1 = "é  airshot mode  é\n\n";
 		else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 			s1 = "éclan arena wipeouté\n\n";
+		else if (clanring_playmode & CLANRING_FREEZETAG_MODE)
+			s1 = "éclan arena freezetagé\n\n";
+
 		else if (clanring_playmode & CLANRING_CA_MODE)
 			s1 = "éclan arena  modeé\n\n";
 		else if (clanring_playmode & CLANRING_RA_MODE)
@@ -2432,7 +2447,7 @@ void () clanring_periodic_checks =
 						{
 							self.team2 = self.next_team.team2;
 							//R00k -- this forces team colors, unless they are in queue to join.
-							if ((!self.cc_queue))
+							if ((!self.cc_queue)&&(!(self.frozen)))
 							{							
 								setcolour(self, self.team2, self.team2);
 							}						

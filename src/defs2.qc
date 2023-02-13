@@ -76,14 +76,14 @@ float CLANRING_RUNES			    = 4096;
 float CLANRING_EXTENDED_OBITS    	= 8192;
 float CLANRING_CONSOLE_INITIALIZED  = 16384;
 float CLANRING_WIPEOUT_MODE			= 32768;
-//float CLANRING_FAST_START    		= 32768; //for now we don't need this  
-float CLANRING_FRESH_SPAWNS         = 0;//65536;//used?
+//float CLANRING_FAST_START    		= 0; //for now we don't need this  
+//float CLANRING_FRESH_SPAWNS       = 0;
 float CLANRING_AIRSHOT_MODE			= 65536;
-float CLANRING_AUTO_PAUSE    		= 131072;
+//float CLANRING_AUTO_PAUSE    		= 0;
+float CLANRING_FREEZETAG_MODE		= 131072;//TESTING
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
 //float CLANRING_CA_CC_VOTE			= 0;
-//float CLANRING_FREEZETAG			= 0;
 //float CLANRING_SPEEDBALL			= 0;
 //float CLANRING_SPAWNFRAG_PROTECTION = 0;
 //float UNUSED						= 1048576;
@@ -123,6 +123,7 @@ float ADMIN_RA_MODE    		= 5;
 float ADMIN_AIRSHOT_MODE    = 6;
 float ADMIN_DMM4_MODE    	= 7;
 float ADMIN_WIPEOUT_MODE	= 8;
+float ADMIN_FREEZETAG_MODE	= 9;
 
 // entity constants
 float CLANRING_MANUAL_SPAWN = 1;
@@ -642,3 +643,6 @@ float STATE_INVISIBLE = 8;
 // worldspawn default mdls
 .string h_vial_mdl;
 .string a_shr_mdl;
+//Freezetag variables
+.float frozen;
+float EF_FROZEN = 32;

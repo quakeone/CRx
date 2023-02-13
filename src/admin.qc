@@ -1251,8 +1251,8 @@ void() admin_impulse =
 		votables_init_warp(self.impulse - 190);
 	else if (self.impulse == 202)
 		votables_request_set_hook();
-	else if (self.impulse == 210)
-		votables_request_set_autopause();
+//	else if (self.impulse == 210)
+//		votables_request_set_autopause();
 	else if (self.impulse == 211)
 		votables_request_set_obits();
 	else if (self.impulse == 214)

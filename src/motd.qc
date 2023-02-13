@@ -26,7 +26,7 @@ string motd_top7;
 void() motd_init_world =
 {
 	motd_top1   = "\n\n\n\n\x80\x81\x81\x81\x81\x81 \bc\blan\br\bing\bx\b \x81\x81\x81\x81\x81\x82\n\n\nClanRing Multiplayer Server\n\n\noriginal works by \nJ.P. Grossman & Dave 'Zoid' Kirsch";
-	motd_top2   = "\n\n\n\x80\x81\x81\x81\x81\x81\x81\x81\x81\x81\x81\x82\n\n\nWelcome to denver.crxquake.com\n\n\n\badmin\b\n\n\x85BuckSh0t\x85";
+	motd_top2   = "\n\n\n\x80\x81\x81\x81\x81\x81\x81\x81\x81\x81\x81\x82\n\n\nWelcome to denver.quakeone.com\n\n\n\badmin\b\n\n\x85Woods\x85";
 };
 
 void() motd_think =
@@ -148,9 +148,11 @@ void ()motd_arena_start =
 	if (clanring_playmode & CLANRING_CA_MODE)
 	{
 		if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-			motd_top2 = "\n\x85Clan Arena (Wipeout)\x85\n\n";
+			motd_top2 = "\n\x85Clan Arena\x85\nWipeout\n";
 		else
-			motd_top2 = "\n\x85Clan Arena\x85\n\n";
+		if (clanring_playmode & CLANRING_FREEZETAG_MODE)
+			motd_top2 = "\n\x85Clan Arena\x85\nFreezeTag\n";
+		else motd_top2 = "\n\x85Clan Arena\x85\n\n";			
 		motd_top3 = "\nchoose a team\n\n";
 		motd_top4 = "\x13 blue   \n\x14 red    \n\x15 yellow \n\x16 green  \n\npress \x17 to uncommit from team\n";
 	}

@@ -36,8 +36,8 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias force impulse 217\n");
 	stuffcmd(self, "alias weaponstay impulse 218\n");
 	// toggle faststarts	
-	stuffcmd(self, "alias faststart impulse 209\n");
-	stuffcmd(self, "alias autopause impulse 210\n");
+//	stuffcmd(self, "alias faststart impulse 209\n");
+//	stuffcmd(self, "alias autopause impulse 210\n");
 	// toggle extended obits
 	stuffcmd(self, "alias obits impulse 211\n");
 	// timelimit aliases
@@ -342,6 +342,7 @@ void() votables_clear_arena_playmode_flags =
 	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_DMM4_MODE);
 	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_AIRSHOT_MODE);
 	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_WIPEOUT_MODE);
+	clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_FREEZETAG_MODE);
 }
 
 void() votables_clear_playmode_flags =
@@ -382,8 +383,6 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
-
-			newmapname = "dm3";
 		}
 		else if (request_gametype == 1)
 		{
@@ -399,8 +398,6 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Capture The Flag\n");
-
-			newmapname = "ctf1";
 		}
 		else if (request_gametype == 2)
 		{
@@ -410,8 +407,6 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena\n");
-
-			newmapname = "dm3";
 		}
 		else if (request_gametype == 3)
 		{
@@ -474,6 +469,14 @@ void() votables_set_gametype_mode_map =
 			bprint("gametype set to ctf dmm4\n");
 
 			newmapname = "ctf8dmm4";
+		}
+		else if (request_gametype == 8)
+		{
+			votables_clear_playmode_flags();
+			clanring_playmode = (clanring_playmode | CLANRING_CA_MODE | CLANRING_FREEZETAG_MODE | CLANRING_NO_HOOK);
+			cvar_set("teamplay", "1");
+			cvar_set("deathmatch", "1");
+			bprint("gametype set to Clan Arena FreezeTag\n");
 		}
 
 		utils_set_cvar ("samelevel", clanring_playmode);
@@ -596,6 +599,7 @@ void() votables_set_gametype_mode_map =
 //		5	-	airshot
 //		6	-	wipeout
 //		7	-	ctfdmm4
+//		8	-	freezetag
 //
 // newmode		(dm/ctf)
 //	   -1	-	no change
@@ -633,9 +637,13 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 	if (newtype >= 0)
 	{
 		//if request is only to change to the game type we are already in
-		if (newtype == 0 && !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) 
-			&& !(clanring_playmode & CLANRING_DMM4_MODE) && !(clanring_playmode & CLANRING_CA_MODE) 
-			&& !(clanring_playmode & CLANRING_RA_MODE) && !(clanring_playmode & CLANRING_AIRSHOT_MODE) 
+		if (newtype == 0 
+			&& !(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) 
+			&& !(clanring_playmode & CLANRING_DMM4_MODE)
+			&& !(clanring_playmode & CLANRING_FREEZETAG_MODE) 
+			&& !(clanring_playmode & CLANRING_CA_MODE) 
+			&& !(clanring_playmode & CLANRING_RA_MODE) 
+			&& !(clanring_playmode & CLANRING_AIRSHOT_MODE) 
 			&& newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in DeathMatch mode\n");
@@ -670,6 +678,11 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 		else if (newtype == 6 && clanring_playmode & CLANRING_WIPEOUT_MODE && newmode < 0 && !newmap)
 		{
 			sprint(self, "Already in wipeout mode\n");
+			return;
+		}
+		else if (newtype == 7 && clanring_playmode & CLANRING_FREEZETAG_MODE && newmode < 0 && !newmap)
+		{
+			sprint(self, "Already in FreezeTag mode\n");
 			return;
 		}
 	}
@@ -1588,17 +1601,17 @@ void() votables_request_set_obits =
 //
 //  Enable/disable autopausing
 //
-void() votables_set_autopause =
-{
-	utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
-};
+//void() votables_set_autopause =
+//{
+//	utils_toggle_sflag (CLANRING_AUTO_PAUSE, "Automatic match pausing");
+//};
 
 //
 //  R E Q U E S T  S E T  A U T O P A U S E
 //
 //  Request to enable/disable autopausing
 //
-
+/*
 void() votables_request_set_autopause =
 {
 
@@ -1617,7 +1630,7 @@ void() votables_request_set_autopause =
 			vote_yes();
 	}
 };
-
+*/
 void() StartRuneSpawn;
 void() DropRune;
 

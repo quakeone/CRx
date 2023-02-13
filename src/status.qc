@@ -180,6 +180,9 @@ void() TeamCapturePlayerUpdate =
 		
 	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 		return;
+
+	if ((clanring_playmode & CLANRING_MATCH_MODE)&& (!(clanring_state & CLANRING_MATCH_STARTED)))
+		return;
 		
 	if ((self.statstate < 0))
 	{

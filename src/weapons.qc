@@ -1157,6 +1157,9 @@ void() W_Attack =
 		self.plag = 0;
 	}
 
+	if (self.frozen) //Frozen players cannot shoot!
+		return;
+
 	if ((self.weapon != IT_HOOK) && (self.weapon != IT_AXE))
 	{
 		if (!W_CheckNoAmmo ())
@@ -1644,6 +1647,9 @@ void() W_WeaponFrame =
 		if (self.weapon != IT_HOOK) //R00k: still allow them to finish their capture time trial
 			return;
 	}
+
+	if (self.frozen == TRUE)
+		return;
 
 // check for attack
     // ELOHIM_MOD - don't fire unless ELOHIM_OK_TO_SHOOT is set

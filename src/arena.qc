@@ -125,10 +125,22 @@ void () arena_client_disconnect =
 	self.solid			= SOLID_NOT;
 };
 
+float () mode_freezetag =
+{
+    if ((clanring_playmode & CLANRING_FREEZETAG_MODE))
+        return TRUE;
+    return FALSE;
+}
+
 float () mode_is_arena
 {
-    if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE) 
-		|| (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+    if (
+		(clanring_playmode & CLANRING_CA_MODE)||
+		(clanring_playmode & CLANRING_RA_MODE)||
+		(clanring_playmode & CLANRING_DMM4_MODE) ||
+		(clanring_playmode & CLANRING_AIRSHOT_MODE)||
+		(clanring_playmode & CLANRING_FREEZETAG_MODE)
+		)
         return TRUE;
     return FALSE;
 }
@@ -780,6 +792,9 @@ void () im_dead_now_what =
 	local float prnd=0;
 
 	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
+		return;
+
+	if (mode_freezetag())
 		return;
 
 	if (self.style & CLANRING_CONNECTED)
@@ -1817,7 +1832,7 @@ void() round_end =
 	{
 		if ((current_player.ca_player_flag == PF_PLAYING) || (current_player.ca_player_flag == PF_READY))
 		{
-			if ((current_player.health) && (current_player.style & CLANRING_CONNECTED) && (current_player.next_team != world))
+			if ((current_player.health) && (current_player.style & CLANRING_CONNECTED) && (current_player.next_team != world) && (current_player.frozen == FALSE))
 			{
 				wteam = current_player.next_team;
 				wteam.armorvalue = (wteam.armorvalue + current_player.armorvalue);

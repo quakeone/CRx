@@ -598,6 +598,7 @@ void() observer_end =
 
 		self.velocity = '0 0 0';//R00k 1.95
 		self.ca_player_flag = PF_PLAYING;
+		self.frozen = FALSE;	//R00k: FreezeTag
 		self.enemy = world;//R00k, v1.92
 		self.delay = 0;
 		self.wait = time;//11/6/2014 11:29AM

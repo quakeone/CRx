@@ -22,6 +22,7 @@ void() T_MissileTouch;
 void() info_player_start;
 void(entity targ, entity attacker) ClientObituary;
 void(entity who) ResistanceSound;
+void (entity e) freeze_player;
 /*
 ============
 CanDamage
@@ -518,6 +519,16 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	}
 	// END_CRMOD  
 
+	//CAx v1.97 FreezeTag
+	if ((inflictor != world) && targ.frozen && attacker != targ)
+	{	
+		targ.flags = targ.flags - (targ.flags & FL_ONGROUND);
+		dir = (targ.origin - inflictor.origin);
+		dir = normalize(dir);
+		targ.velocity = (targ.velocity + ((dir * damage) * 8));
+		return;
+	}
+	
 	// used by buttons and triggers to set activator for target firing
 	damage_attacker = attacker;
 	
@@ -796,6 +807,17 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	
 	// do the damage
 	targ.health = targ.health - take;
+
+	if (((targ.health <= 0) && (mode_freezetag()) && targ.classname == "player"))
+	{
+		if (inflictor.classname == "teledeath")
+			targ.deathtype = "teledeath";
+		freeze_player(targ);
+		
+		announce3(targ.netname, " was frozen by ", attacker.netname);
+		frozen_name(targ);
+		return;
+	}
 
 	if (targ.health <= 0)
 	{
