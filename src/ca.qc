@@ -161,7 +161,7 @@ void () arena_main_loop =
 				if (boss.count == 0)
 				{
 					sound (world, CHAN_ITEM, "crx/fight.wav", 1, ATTN_NONE);
-					//ctprint ("\bFIGHT!");
+					ctprint ("\bFIGHT!");
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
 					boss.state = CA_MATCH_PLAYING;
@@ -171,22 +171,24 @@ void () arena_main_loop =
 
 				if (boss.count == 1)
 				{
-					//ctprint ("1");
+					if (boss.round > 1) ctprint ("1");
 					sound (world, CHAN_ITEM, "crx/one.wav",1, ATTN_NONE);
 				}
 				else if (boss.count == 2)
 				{
-					//ctprint ("2");
+					if (boss.round > 1) ctprint ("2");
 					sound (world, CHAN_ITEM, "crx/two.wav", 1, ATTN_NONE);
 				}
 				else if (boss.count == 3)
 				{
-					//ctprint("3");
+					if (boss.round > 1) ctprint("3");
 					sound(world, CHAN_ITEM, "crx/three.wav", 1, ATTN_NONE);
 				}
-				else if ((boss.count == 5) && (boss.round > 1))
+				else if (boss.count == 5)
 				{
-					announce("prepare to fight");					
+					if (boss.round > 1) 
+						announce("prepare to fight");					
+					//sound(world, CHAN_ITEM, "crx/prepare.wav", 1, ATTN_NONE);
 				}
 			}
 		}

@@ -1838,7 +1838,7 @@ void() round_end =
 		if (wteam != world)//ugh lagouts cause all hell
 		{
 			wteam.wins = wteam.wins + 1;//up team rounds won
-			//pqc_team_frags(wteam.team2, wteam.wins);
+			pqc_team_frags(wteam.team2, wteam.wins);
 
 			bprint ("\n");
 			if (wteam.chain_gang != world)
