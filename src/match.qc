@@ -748,7 +748,7 @@ void() match_begin =
 
 	temp = ftos(clanring_timelimit);
 	announce2(temp, " minutes remaining");
-
+	forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 	stats_matchtype = clanring_maxsize;	//3/6/2017 6:14AM added for stats header output, this will be incorrect if the game is unlocked.(fixme)
 	stats_timelimit = clanring_timelimit;
 	

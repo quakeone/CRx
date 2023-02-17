@@ -870,12 +870,12 @@ void () clanring_init_think =
 void () clanring_show_mode =
 {
 	sprint2(self.owner, clanring_version, "\n");
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		sprint(self.owner, "capture the flag\n");
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		if (teamplay)
-			sprint(self.owner, "match mode\n");
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			sprint(self.owner, "ctf match mode\n");
+		else
+			sprint(self.owner, "tdm match mode\n");
 	}
 	else
 	{
@@ -891,8 +891,18 @@ void () clanring_show_mode =
 			sprint(self.owner, "rocket arena mode\n");
 		else if (clanring_playmode & CLANRING_PRACTICE_MODE)
 			sprint(self.owner, "practice mode\n");
-		else
-			sprint(self.owner, "classic mode\n");
+		else if (clanring_playmode & CLANRING_NORMAL_MODE)
+		{
+			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+				sprint(self.owner, "pickup ctf mode\n");
+			else
+			{
+				if (teamplay)
+					sprint(self.owner, "pickup tdm mode\n");
+				else
+					sprint(self.owner, "normal ffa deathmatch mode\n");
+			}
+		}	
 	}
 	remove(self);
 };

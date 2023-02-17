@@ -1461,7 +1461,7 @@ void () arena_unpause_countdown_think =
 	{
 		boss.unpausing = FALSE;
 		arena_unpause ();
-		//ctprint("\bFIGHT!");
+		ctprint("\bFIGHT!");
 		sound(world, CHAN_AUTO, "crx/fight.wav", 1, ATTN_NONE);
 		remove (self);
 	}

@@ -250,7 +250,7 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 	if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);
-		if ((client > 16)||(client < 0))
+		if ((client > 15)||(client < 0))
 		{
 			print("ERROR: setcolour: invalid client slot\n"); //output to console for debugging.
 			return;
