@@ -861,15 +861,16 @@ void() clanring_exec_configs =
 	}
 
 	//R00k: ticrate defaults for different modes :|
-	local string useTicrate;
-
 	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
-		useTicrate = ftos(clanring_tdm_ticrate);
+	{
+		dprint(sprintf("setting sys_ticrate to %1.3f\n", clanring_tdm_ticrate));
+		cvar_set("sys_ticrate", ftos(clanring_tdm_ticrate));
+	}
 	else
-		useTicrate = ftos(clanring_ctf_ticrate);//use the faster ticrate for everything else...
-
-	dprint("setting sys_ticrate to ", useTicrate, "\n");
-	cvar_set("sys_ticrate", useTicrate);
+	{
+		dprint(sprintf("setting sys_ticrate to %1.3f\n", clanring_ctf_ticrate));
+		cvar_set("sys_ticrate", ftos(clanring_ctf_ticrate));
+	}
 
 	remove(self);//scheduled_event_entity
 	sys_ready = TRUE;
