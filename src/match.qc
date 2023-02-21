@@ -745,7 +745,6 @@ void() match_begin =
 	//temp = ftos(clanring_maxsize);
 	//if (teamplay)
 		//announce4("Match is ", temp, "v", temp);
-
 	temp = ftos(clanring_timelimit);
 	announce2(temp, " minutes remaining");
 	forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
@@ -1931,12 +1930,15 @@ void() match_request_pause =
 		return;
 	}
 
-	if (self.next_team.pausetime == FALSE)//give the team one free match pause...
+	if (self.next_team != world)
 	{
-		bprint(sprintf("The %s used their \bone\b free match pause.\n", self.next_team.netname));
-		self.next_team.pausetime = TRUE;
-		match_pause();
-		return;
+		if (self.next_team.pausetime == FALSE)//give the team one free match pause...
+		{
+			bprint(sprintf("The %s used their \bone\b free match pause.\n", self.next_team.netname));
+			self.next_team.pausetime = TRUE;
+			match_pause();
+			return;
+		}
 	}
 
     // Do it right away if we're an administrator, otherwise vote
