@@ -98,33 +98,33 @@ string() TeamCaptureFlagStatusString =
 	e = find(world, classname, "item_flag_team1");
 	if ((e.cnt == FLAG_AT_BASE))
 	{
-		s2 = " ";
+		s2 = "\x80 \x81";
 	}
 	else
 	{
 		if ((e.cnt == FLAG_CARRIED))
 		{
-			s2 = "r";
+			s2 = "\x80R\x81";
 		}
 		else
 		{
-			s2 = "ς";
+			s2 = "\x80\bR\x81";//dropped
 		}
 	}
 	e = find(world, classname, "item_flag_team2");
 	if ((e.cnt == FLAG_AT_BASE))
 	{
-		s3 = " ";
+		s3 = " \x82";
 	}
 	else
 	{
 		if ((e.cnt == FLAG_CARRIED))
 		{
-			s3 = "b";
+			s3 = "B\x82";
 		}
 		else
 		{
-			s3 = "β";
+			s3 = "\bB\x82";//Dropped
 		}
 	}
 
@@ -230,44 +230,16 @@ void() TeamCapturePlayerUpdate =
 		}
 	}
 
-	TeamCaptureCheckUpdate ();
-
 	self.laststattime = (time + PLAYERSTATTIME);
 	res = TeamSetStatRes (self);
-
-	if ((self.player_flag & ITEM_RUNE1_FLAG))
+	//Removed runes because they are on the hud.
+	s1 = TeamCaptureFlagStatusString();
+	if (clanring_playmode & CLANRING_NORMAL_MODE)	//R00k: no need to print the team up by score since in match mode we have hud scores.
 	{
-		s1 = "ςεσιστ   ";
+		TeamCaptureCheckUpdate ();
+		s2 = TeamCaptureScoreString();
 	}
-	else
-	{
-		if ((self.player_flag & ITEM_RUNE2_FLAG))
-		{
-			s1 = "στςεξητθ ";
-		}
-		else
-		{
-			if ((self.player_flag & ITEM_RUNE3_FLAG))
-			{
-				s1 = "θαστε    ";
-			}
-			else
-			{
-				if ((self.player_flag & ITEM_RUNE4_FLAG))
-				{
-					s1 = "ςεηεξ    ";
-				}
-				else
-				{
-					s1 = "         ";
-				}
-			}
-		}
-	}
-
-	s2 = TeamCaptureFlagStatusString();
-
-	s3 = TeamCaptureScoreString();
+	s3 = sprintf("\n%s",self.movetarget.netname);
 
 	centerprint (self, res, s1, s2, s3);
 };

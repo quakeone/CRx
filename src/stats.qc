@@ -826,7 +826,14 @@ void() stats_autodump =
 		sprint(self, "\n");
 		sprint(self, "\n");
 		sprint(self, "ù\bmatch statisticsü\n");
-		sprint(self, "\n");
+		sprint(self, "\n");		
+		string date = strftime(TRUE, "%m-%d-%Y %H:%M");
+		sprint(self, sprintf("%s\n",date));
+		//MAPname	:
+		//mode		:
+		//timelimit	:
+		//etc...
+
 		stats_show_summary ();
 		//sprint(self, "\n");
 

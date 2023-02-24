@@ -441,6 +441,7 @@ void () clanring_init_world =
 			clanring_timelimit = 2;
 		default_timelimit = clanring_timelimit;//R00k added
 		match_show_timelimit();
+		forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 	}
 	else
 		default_timelimit = clanring_timelimit = 20;		
@@ -741,6 +742,7 @@ void () clanring_set_aliases =
     stuffcmd(self, "alias quaketv impulse 154\n");      // CRMOD - autocam
 	stuffcmd(self, "alias autochase impulse 155\n");
 	stuffcmd(self, "alias help-camera impulse 156\n");
+	stuffcmd(self, "alias autopov impulse 157\n");
 	stuffcmd(self, "alias pentstats impulse 169\n");
 	stuffcmd(self, "alias killstats impulse 170\n");
 	stuffcmd(self, "alias efficiency impulse 171\n");
@@ -962,7 +964,7 @@ float () clanring_check_player_in_list =
 //This is for stats in Classic Mode.
 void () clanring_put_player_in_list =
 {
-	if (clanring_check_player_in_list() == FALSE)// just incase 
+	if (clanring_check_player_in_list() == FALSE)// just in case 
 	{
 		self.next_player = clanring_sentinel.next_player;
 		clanring_sentinel.next_player = self;
@@ -1078,15 +1080,31 @@ void () clanring_client_connect =
 		utils_make_scheduled_event(clanring_init_think, 0.5);
 		// Get rid of the new client flag
 		parm10	= parm10 - (parm10 & CLANRING_NEW_CLIENT);
+
 		// Set default observer flags
 		parm12 = OBSERVER_FLY |  OBSERVER_COMMENTARY;
-
+		
 		parm13 = 0;
 		
 		stats_reset_player();
 
 		utils_make_scheduled_event(find_pqc_teamscore_teams, 1.25);//R00k
+
 		self.afk_time = time + 20;
+		
+/*FIXME://Identify/advertise the player's client in use.
+		if (substring(infokey(self, "*client"), 0, 7) == "ezQuake")
+			self.client = "ezQuake";
+		else
+		if (substring(infokey(self, "*ver"), 0, 3) == "FTE")
+			self.client = "FTE";                
+		else
+		if (substring(infokey(self, "*ver"), 0, 5) == "QSS-M")
+			self.client = "QSS-M";    
+		else
+			self.client = "quake";
+
+		announce(sprintf("%s has connected using %s",self.netname, self.client));*/
 	}
 	else self.afk_time = time;
 
@@ -1705,6 +1723,9 @@ void () clanring_show_rules =
 	
 	if (clanring_playmode & CLANRING_NO_SPOOGE)
 		sprint(self, "no spooge®®®®on\n");
+
+	if (self.style & CLANRING_SMART_WEAPON)
+		sprint(self, "autoweapon®®®on\n");
 
 	sprint(self, "\n");
 };

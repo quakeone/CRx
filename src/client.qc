@@ -133,7 +133,7 @@ void() SetNewParms =
 		}
 	}
  
-	parm10 = CLANRING_NEW_CLIENT; // CRMOD observer flags moved | ELOHIM_OBSERVER_WALK; // elohim player flags
+	parm10 = CLANRING_NEW_CLIENT | CLANRING_SMART_WEAPON; // CRMOD observer flags moved | ELOHIM_OBSERVER_WALK; // elohim player flags
 	parm11 = 0;
 	parm12 = OBSERVER_FLY;// CRMOD observer flags
 	parm13 = 0;
@@ -747,7 +747,12 @@ void() PutClientInServer =
 	DecodeLevelParms ();	
 	
 	if (self.style & CLANRING_CONNECTED)
-		updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
+	{
+		if (!(self.style & CLANRING_AFK_CLIENT))
+			updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
+		else
+			afk_name();
+	}
 	
 	//in classic mode auto join on connect
 	if (teamplay)
@@ -1763,7 +1768,8 @@ void() PlayerPostThink =
 		observer_post_think ();
 		return;
 	}
-	else if (prematch_rules())
+
+	if (prematch_rules())
 	{
 		if (time >= self.delay)
 		{
@@ -1771,16 +1777,12 @@ void() PlayerPostThink =
 			clanring_show_rules_prematch();
 		}
 	}
-	else if ((clanring_state & CLANRING_MATCH_STARTED))
-	{
-		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			TeamCapturePlayerUpdate();
-		else if (clanring_match_timer.lip == clanring_timelimit)
-			centerprint(self, " \n\n\n"); //make sure rules centerprint is gone
-	}
 	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
-		TeamCapturePlayerUpdate();
+		if (((clanring_playmode & CLANRING_MATCH_MODE)&&(clanring_state & CLANRING_MATCH_STARTED))||(clanring_playmode & CLANRING_NORMAL_MODE))
+		{
+			TeamCapturePlayerUpdate();
+		}
 	}
 	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 	{

@@ -279,7 +279,7 @@ void (entity ent, string c_name) updatename =
 	{
 		client = (ent.colormap - 1);
 
-		if ((client > 16)||(client < 0))
+		if ((client > 15)||(client < 0))
 		{
 			print("ERROR: updatename: invalid client slot\n"); //output to console for debugging.
 			return;

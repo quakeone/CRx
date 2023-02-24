@@ -206,10 +206,12 @@ void () observer_fly_start =
 /*
 	stuffcmd(self, "sm0\n");		// CRMOD - smoothing off
 	stuffcmd(self, "v_centerspeed 500\n");
-	sprint(self, "fly mode\n");
+
 	if (!(self.style & CLANRING_HEADS_UP))
 		sprint(self, "type 'headsup' for fullscreen display\n");
 */
+	centerprint(self, "fly mode");
+	sprint(self, "fly mode\n");
 	if (mode_is_arena())
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
@@ -322,6 +324,7 @@ void () observer_chase_start =
 	observer_set_chase_position();
 	stuffcmd(self, "v_centerspeed 0\n");
 	sprint(self, "chase mode - help-chase for help\n");
+
 	stuffcmd(self, "cmd setinfo observer chase\n");// woods
 	// CRMOD - auto, tourney
 	if (self.oflags & OBSERVER_GO_AUTO)
@@ -331,8 +334,9 @@ void () observer_chase_start =
 		self.oflags = self.oflags | OBSERVER_AUTO;
 	}
 	else
+	{
 		sprint(self, "type 'autochase' for automatic chase switching\n");
-
+	}
 	if (self.oflags & OBSERVER_TOURNEY)
 		sprint(self, "Tournament Mode Enabled.\n");
 	// END_CRMOD
@@ -340,7 +344,14 @@ void () observer_chase_start =
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 	
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
-	centerprint (self,self.movetarget.netname);
+	if ((((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_MATCH_STARTED)))||(clanring_playmode & CLANRING_NORMAL_MODE))||(self.statstate < 0))
+	{	
+		if (self.oflags & OBSERVER_AUTO)
+			centerprint(self,sprintf("auto chasecam \[%s\]", self.movetarget.netname));
+		else
+			centerprint(self,sprintf("chasecam \[%s\]", self.movetarget.netname));
+		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
+	}
 };
 
 //
@@ -398,9 +409,28 @@ void () observer_demo_start =
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
 	stuffcmd(self, "cmd setinfo observer eyecam\n");// woods
 
+	//R00k: added auto pov
+	if (self.oflags & OBSERVER_GO_AUTO)
+	{
+		sprint(self, "Automatic Eyecam Enabled.\n");
+		self.oflags = self.oflags - OBSERVER_GO_AUTO;
+		self.oflags = self.oflags | OBSERVER_AUTO;
+	}
+	else
+	{
+		sprint(self, "type 'autopov' for automatic eyecam switching\n");
+	}
+
 	self.nextthink = -1;
     self.think = SUB_Null;
-	centerprint (self,self.movetarget.netname);
+	if ((((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_MATCH_STARTED)))||(clanring_playmode & CLANRING_NORMAL_MODE))||(self.statstate < 0))
+	{	
+		if (self.oflags & OBSERVER_AUTO)
+			centerprint(self,sprintf("auto eyecam \[%s\]", self.movetarget.netname));
+		else
+			centerprint(self,sprintf("eyecam \[%s\]", self.movetarget.netname));
+		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.			
+	}
 };
 
 //
@@ -545,6 +575,8 @@ void () observer_start =
 	if (self.oflags & OBSERVER_DEMO)
 	{
 		// This is necessary to prevent the other player's model from being drawn. Don't fucking ask me why!!!
+		if (self.oflags & OBSERVER_AUTO)//R00k added autopov
+			self.oflags = self.oflags | OBSERVER_GO_AUTO;
 		self.nextthink = time + 0.1;
 		self.think = observer_demo_start;
 	}
@@ -798,7 +830,12 @@ void () observer_next_target =
 	{
 		sprint (self, "Tracking ", self.movetarget.netname, "\n");
 	}
-	centerprint (self,self.movetarget.netname);
+
+	if ((((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_MATCH_STARTED)))||(clanring_playmode & CLANRING_NORMAL_MODE))||(self.statstate <0))
+	{
+		centerprint (self,self.movetarget.netname);
+		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
+	}
 };
 
 //
@@ -1070,7 +1107,9 @@ void () observer_set_chase_position =
 				if (clanring_current_chase_target != world && self.movetarget != clanring_current_chase_target)
 				{
 					self.movetarget = clanring_current_chase_target;
+					observer_chase_start();//R00k: reset in case we were in autopov
 					self.delay = 0;
+					return;
 				}
 			}
 		}
@@ -1146,6 +1185,24 @@ void () observer_set_chase_position =
 //
 void () observer_set_demo_position =
 {
+	if (self.oflags & OBSERVER_AUTO)
+	{
+		if (self.oflags & OBSERVER_DEMO)
+		{
+			if (time > self.clanring_cam_delay)
+			{
+				if (clanring_current_chase_target != world && self.movetarget != clanring_current_chase_target)
+				{
+					self.movetarget = clanring_current_chase_target;
+				    msg_entity = self;
+				    WriteByte(MSG_ONE, SVC_SETVIEWPORT);
+				    WriteEntity(MSG_ONE, self.movetarget);
+					self.delay = 0;
+				}
+			}
+		}
+	}
+
     setorigin(self, self.movetarget.origin);
 
     // if (self.button0)
@@ -1416,6 +1473,8 @@ void () observer_impulse =
 			auto_camera_start();
 		else if (self.impulse == 155)
 			auto_chase_start();
+		else if (self.impulse == 157)
+			auto_pov_start();
     }
     else
     {                                                                              // CRMOD more commands to go observer
@@ -1530,7 +1589,7 @@ void () observer_update_display =
 		return;
 	}
 
-	self.delay = time + 1.5;
+	self.delay = time + 0.5;
 
 	if (self.style & CLANRING_HEADS_UP)
     {		
@@ -1548,6 +1607,20 @@ void () observer_update_display =
     	pad_top = "\n\n\n\n\n\n\n\n\n\n\n\n\n";
 		centerprint7(self, pad_top, player.netname, w, armour, aval, healthammo, ammo);
     }
+	else
+	{
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		{			
+			if (((clanring_playmode & CLANRING_MATCH_MODE)&&(clanring_state & CLANRING_MATCH_STARTED))||(clanring_playmode & CLANRING_NORMAL_MODE))
+			{
+				TeamCapturePlayerUpdate();
+			}
+		}	
+		else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+		{
+			WipeoutModePlayerUpdate();
+		}
+	}
 };
 
 //
@@ -1875,22 +1948,6 @@ void () observer_post_think =
 {
 	if (!gameover)
 	{
-		if ((self.button0) && (time > self.attack_finished))
-		{			
-			if (self.oflags & OBSERVER_FLY)
-			{
-				observer_demo_start ();
-			}
-			else 
-			{
-				if (self.oflags & OBSERVER_DEMO)
-				{
-					observer_fly_start ();
-				}
-			}
-			self.attack_finished = time + 0.5;	
-		}
-	
 		if ((mode_is_arena() == FALSE) || (mode_is_arena() && self.movetarget.ca_player_flag == PF_PLAYING))
 		{
 			if (self.oflags & OBSERVER_CHASE)
@@ -1900,7 +1957,35 @@ void () observer_post_think =
 			else if (self.oflags & OBSERVER_CAMERA)
 				observer_set_camera_position();
 		}
-    		
+
+		if ((self.button0) && (time > self.attack_finished))
+		{			
+			if (self.oflags & OBSERVER_FLY)
+			{
+				observer_demo_start ();
+			}
+			else if ((self.oflags & OBSERVER_DEMO) && (!(self.oflags & OBSERVER_AUTO)))
+			{
+				self.oflags = self.oflags | OBSERVER_DEMO | OBSERVER_GO_AUTO;
+				observer_demo_start ();
+			}
+			else if ((self.oflags & OBSERVER_DEMO) && (self.oflags & OBSERVER_AUTO))
+			{
+				observer_chase_start();
+			}
+			else if ((self.oflags & OBSERVER_CHASE) && (!(self.oflags & OBSERVER_AUTO)))
+			{
+				self.oflags = self.oflags | OBSERVER_CHASE | OBSERVER_GO_AUTO;
+				observer_chase_start();
+			}
+			else
+			{
+				observer_fly_start ();
+				self.oflags = self.oflags - (self.oflags & OBSERVER_AUTO);	
+			}
+			self.attack_finished = time + 0.5;	
+		}
+	
 		// When an observer touches a door they are not teleported through
 		// the door immediately as this doesn't seem to work.  Instead, the
 		// POP_FORWARD flag is set and they are teleported through the next
