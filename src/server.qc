@@ -1069,7 +1069,7 @@ void () find_pqc_teamscore_teams =
 //
 void () clanring_client_connect =
 {
-	//local string text;
+	local string text = "";
 	
 	if (parm10 & CLANRING_NEW_CLIENT)
 	{	
@@ -1096,22 +1096,26 @@ void () clanring_client_connect =
 		if (substring(infokey(self, "*client"), 0, 7) == "ezQuake")
 		{
 			self.client = "ezQuake";
-			bprint(sprintf("using %s\n",(infokey(self,"*client"))));
+			text = (sprintf(" with %s.\n",(infokey(self,"*client"))));
 		}
 		else
 		if (substring(infokey(self, "*ver"), 0, 3) == "FTE")
 		{
 			self.client = "FTE";                
-			bprint(sprintf("using %s\n",(infokey(self,"*ver"))));
+			text = (sprintf(" with %s.\n",(infokey(self,"*ver"))));
 		}
 		else
 		if (substring(infokey(self, "*ver"), 0, 5) == "QSS-M")
 		{
 			self.client = "QSS-M";                
-			bprint(sprintf("using %s\n",(infokey(self,"*ver"))));
+			text = (sprintf(" with %s.\n",(infokey(self,"*ver"))));
 		}
 		else
+		{
 			self.client = "quake";
+			text = (".\n");			
+		}
+		bprint (self.netname," has connected", text);
 	}
 	else self.afk_time = time;
 
