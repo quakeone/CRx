@@ -2086,7 +2086,8 @@ void () clanring_impulse =
 	{
 		if (!(self.style & CLANRING_AFK_CLIENT))
 		{
-			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
+			if (clanring_afk_timeout > 0)
+				sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
 			afk_name();
 			stuffcmd(self, "cmd setinfo afk yes\n");// woods
 			self.style = self.style | CLANRING_AFK_CLIENT;

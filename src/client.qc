@@ -2702,7 +2702,6 @@ void () client_afk_on =
 {
 	if (!(self.style & CLANRING_AFK_CLIENT))
 	{
-		sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
 		afk_name();
 		stuffcmd(self, "cmd setinfo afk yes\n");// woods
 		self.style = self.style | CLANRING_AFK_CLIENT;
