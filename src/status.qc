@@ -239,6 +239,10 @@ void() TeamCapturePlayerUpdate =
 		TeamCaptureCheckUpdate ();
 		s2 = TeamCaptureScoreString();
 	}
+	else
+	{
+		s2 = "                              ";		//Push the status to the left.
+	}
 	s3 = sprintf("\n%s",self.movetarget.netname);
 
 	centerprint (self, res, s1, s2, s3);

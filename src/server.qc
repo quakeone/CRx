@@ -1092,19 +1092,26 @@ void () clanring_client_connect =
 
 		self.afk_time = time + 20;
 		
-/*FIXME://Identify/advertise the player's client in use.
+	//Identify/advertise the player's client in use.
 		if (substring(infokey(self, "*client"), 0, 7) == "ezQuake")
+		{
 			self.client = "ezQuake";
+			bprint(sprintf("using %s\n",(infokey(self,"*client"))));
+		}
 		else
 		if (substring(infokey(self, "*ver"), 0, 3) == "FTE")
+		{
 			self.client = "FTE";                
+			bprint(sprintf("using %s\n",(infokey(self,"*ver"))));
+		}
 		else
 		if (substring(infokey(self, "*ver"), 0, 5) == "QSS-M")
-			self.client = "QSS-M";    
+		{
+			self.client = "QSS-M";                
+			bprint(sprintf("using %s\n",(infokey(self,"*ver"))));
+		}
 		else
 			self.client = "quake";
-
-		announce(sprintf("%s has connected using %s",self.netname, self.client));*/
 	}
 	else self.afk_time = time;
 
@@ -1724,7 +1731,7 @@ void () clanring_show_rules =
 	if (clanring_playmode & CLANRING_NO_SPOOGE)
 		sprint(self, "no spooge®®®®on\n");
 
-	if (self.style & CLANRING_SMART_WEAPON)
+	if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
 		sprint(self, "autoweapon®®®on\n");
 
 	sprint(self, "\n");
@@ -2369,7 +2376,6 @@ void () clanring_periodic_checks =
 	self.ping_time = client_ping(self);//Fixme this wont work for Qrack clients; revert back to pq method for those clients.
 
 	inactive = time - self.afk_time;//Seconds of inactivity
-	c = floor(inactive / 60);		//Minutes of inactivity (round down).
 
 	if (self.style & CLANRING_AFK_CLIENT)
 	{
@@ -2384,10 +2390,12 @@ void () clanring_periodic_checks =
 			}
 
 			local string s, pl;	
+			
+			c = floor(inactive / 60);		//Minutes of inactivity (round down).
 
 			s = ftos((clanring_afk_timeout / 60) - c);
 			pl = strings_szplural((clanring_afk_timeout / 60) - c);
-			
+
 			if (c > ((clanring_afk_timeout / 60) - 5))	//If afk-timer is less than 5 minutes from timeout...
 			{		
 				if ((inactive - (c * 60)) < 1)//One minute has passed...sorta
@@ -2430,8 +2438,9 @@ void () clanring_periodic_checks =
 			afk_name();
 			self.afk_time = time;
 			self.style = (self.style | CLANRING_AFK_CLIENT);
-			stuffcmd(self, "cmd setinfo afk yes\n");// woods
-			sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");			
+			stuffcmd(self, "cmd setinfo afk yes\n");	// woods
+			if (clanring_afk_timeout > 0)//Only print afk if kick is enabled  
+				sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");			
 		}
 	}
 	//R00k: Moved here from PlayerPreThink

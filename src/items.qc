@@ -690,7 +690,6 @@ void() weapon_touch =
 {
 	local entity stemp;
 	local float  best, leave, donttake;
-	float canSwitch;
 
 	if (!(items_are_ready()))
 		return;
@@ -704,8 +703,6 @@ void() weapon_touch =
 	if (other.health < 1)
 		return;
 	
-	canSwitch = TRUE;//Default ON
-
 	// if the player was using his best weapon, change up to the new one if better		
 	stemp = self;
 	self = other;
@@ -799,11 +796,8 @@ void() weapon_touch =
 
 		bound_other_ammo ();
 
-		if ((infokey(other, "w_switch") != "")) // woods
-			canSwitch = (infokeyf(other, "w_switch"));
-
 // change to the weapon
-		if ((other.style & CLANRING_SMART_WEAPON)&&(canSwitch))//R00k: toggle all weapon switching
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 		{
 			if (!(other.items & self.weapon))
 			{
@@ -817,8 +811,8 @@ void() weapon_touch =
 
 		stemp = self;
 		self = other;
-		// 1997-12-23 Thunderbolt fix by Maddes
-		if ((other.style & CLANRING_SMART_WEAPON)&&(canSwitch))
+
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 		{
 			if (( other.weapon == best ) && (other.weapon != IT_HOOK))
 			{
@@ -1017,7 +1011,7 @@ void() ammo_touch =
 
 		if (( other.weapon == best ) && ( other.weapon != IT_HOOK ))
 		{
-			if (self.style & CLANRING_SMART_WEAPON)	// R00k from CRMOD... modified
+			if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 				self.weapon = W_BestWeapon();
 		}
 		
@@ -1776,7 +1770,7 @@ void() BackpackTouch =
 	//old = other.items;
 	if (!(other.items & new))
 	{
-		if (self.style & CLANRING_SMART_WEAPON)
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 			Deathmatch_Weapon (other, new);
 	}
 	other.items = (other.items | new);
@@ -1830,7 +1824,7 @@ void() BackpackTouch =
 
 	if (( other.weapon == best ) && ( other.weapon != IT_HOOK ))
 	{
-		if (self.style & CLANRING_SMART_WEAPON)	// R00k from clanring... modified
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 			self.weapon = W_BestWeapon();
 	}
 	if (other.weapon != IT_HOOK)
@@ -1980,13 +1974,7 @@ void() Team_weapon_touch =
 	sound (other, CHAN_ITEM, "weapons/pkup.wav", 1, ATTN_NORM);
 	bound_other_ammo();
 
-	float canSwitch;
-	canSwitch = TRUE;
-
-	if ((infokey(other, "w_switch") != "")) // woods
-		canSwitch = (infokeyf(other, "w_switch"));
-
-	if ((other.style & CLANRING_SMART_WEAPON)&&(canSwitch))//R00k: toggle all weapon switching
+	if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 	{
 		if (!(other.items & new))
 		{
@@ -2002,7 +1990,7 @@ void() Team_weapon_touch =
 	stemp = self;
 	self = other;
 
-	if ((other.style & CLANRING_SMART_WEAPON)&&(canSwitch))
+	if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 	{
 		if (( other.weapon == best ) && (other.weapon != IT_HOOK))
 		{

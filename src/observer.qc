@@ -210,7 +210,6 @@ void () observer_fly_start =
 	if (!(self.style & CLANRING_HEADS_UP))
 		sprint(self, "type 'headsup' for fullscreen display\n");
 */
-	centerprint(self, "fly mode");
 	sprint(self, "fly mode\n");
 	if (mode_is_arena())
 	{
@@ -1831,7 +1830,7 @@ void () observer_pre_think =
 {
     local float jump;
 
-    // Deal with button2.  jump is set to TRUE is button2 was just pressed,
+    // Deal with button2.  jump is set to TRUE if button2 was just pressed,
     // FALSE otherwise.
     if (self.button2)
     {
@@ -1948,6 +1947,22 @@ void () observer_post_think =
 {
 	if (!gameover)
 	{
+		//R00k: cycle modes with +attack button
+		if ((self.button0) && (time > self.attack_finished))
+		{						
+			self.oflags = self.oflags - (self.oflags & OBSERVER_AUTO|OBSERVER_GO_AUTO|OBSERVER_QUAKETV);
+
+			if (self.oflags & OBSERVER_FLY)
+			{
+				observer_demo_start ();
+			}
+			else
+			{
+				observer_fly_start ();
+			}			
+			self.attack_finished = time + 0.8;	
+		}
+	
 		if ((mode_is_arena() == FALSE) || (mode_is_arena() && self.movetarget.ca_player_flag == PF_PLAYING))
 		{
 			if (self.oflags & OBSERVER_CHASE)
@@ -1958,34 +1973,6 @@ void () observer_post_think =
 				observer_set_camera_position();
 		}
 
-		if ((self.button0) && (time > self.attack_finished))
-		{			
-			if (self.oflags & OBSERVER_FLY)
-			{
-				observer_demo_start ();
-			}
-			else if ((self.oflags & OBSERVER_DEMO) && (!(self.oflags & OBSERVER_AUTO)))
-			{
-				self.oflags = self.oflags | OBSERVER_DEMO | OBSERVER_GO_AUTO;
-				observer_demo_start ();
-			}
-			else if ((self.oflags & OBSERVER_DEMO) && (self.oflags & OBSERVER_AUTO))
-			{
-				observer_chase_start();
-			}
-			else if ((self.oflags & OBSERVER_CHASE) && (!(self.oflags & OBSERVER_AUTO)))
-			{
-				self.oflags = self.oflags | OBSERVER_CHASE | OBSERVER_GO_AUTO;
-				observer_chase_start();
-			}
-			else
-			{
-				observer_fly_start ();
-				self.oflags = self.oflags - (self.oflags & OBSERVER_AUTO);	
-			}
-			self.attack_finished = time + 0.5;	
-		}
-	
 		// When an observer touches a door they are not teleported through
 		// the door immediately as this doesn't seem to work.  Instead, the
 		// POP_FORWARD flag is set and they are teleported through the next

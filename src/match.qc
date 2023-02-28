@@ -522,6 +522,7 @@ void() match_end =
 	announce("The match is over");//used for cl_autodemo 2, stop the demo after stats_autodump.
 	// Backup all statistics so that they don't go away
 	//stats_copy_statistics();
+	match_bprint_score();//R00k adding here again, this will be closest to their cursor so it will be the first thing they want to read.
 	utils_do_match_spawns(spawns_restore_model);
 };
 
@@ -705,6 +706,14 @@ void() spawns_restore_model =
 	setsize(self,'-16 -16 -24','16 16 24'); // Must call setsize after setmodel
 };
 
+void() match_updatestat_matchstarttime =
+{//R00k: support for QW clients
+	WriteByte(MSG_MULTICAST, SVC_UPDATESTAT);
+	WriteByte(MSG_MULTICAST, 18);// STAT_MATCHSTARTTIME
+	WriteLong(MSG_MULTICAST,(time * 1000));
+	multicast('0 0 0', MULTICAST_ONE_R);
+}
+
 //
 //  B E G I N
 //
@@ -729,6 +738,7 @@ void() match_begin =
 
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
 	announce("The match has begun!");//Moved up here for autodemo
+
 	utils_do_projectiles(SUB_Remove);
 	utils_do_players(match_gib_player);//3.19k : placed before rune remove
 	utils_do_item(SUB_Remove, "item_backpack");
@@ -744,24 +754,26 @@ void() match_begin =
 	match_get_maxsize();
 	//temp = ftos(clanring_maxsize);
 	//if (teamplay)
-		//announce4("Match is ", temp, "v", temp);
+	//announce4("Match is ", temp, "v", temp);
 	temp = ftos(clanring_timelimit);
 	announce2(temp, " minutes remaining");
 	forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 	stats_matchtype = clanring_maxsize;	//3/6/2017 6:14AM added for stats header output, this will be incorrect if the game is unlocked.(fixme)
 	stats_timelimit = clanring_timelimit;
-	
+
 	self.think = match_timer_think2;
 	self.nextthink = time + 1;
 	self.lip = clanring_timelimit;
 	self.count = 0;
+
+	match_updatestat_matchstarttime();//R00k: send the match time to QW players.
 	pqc_match_time(clanring_timelimit, +1);//show the match timelimit (this is displayed right at the end of clanring_show_rules_prematch, when the timer shows 00:01)
 	match_show_timelimit();//This updates the server's TIMELIMIT cvar with match information that is used on the CCREQ_RULE_INFO for the web server browser.
 
 	// reset rocket launcher count
 	clanring_sentinel.ammo_rockets = 0;
 	clanring_sentinel.cnt = 0;
-	
+
 	// reset quad, pent counts
 	utils_do_item(match_reset_owner, "item_artifact_invulnerability");
 	utils_do_item(match_reset_owner, "item_artifact_super_damage");
@@ -2461,11 +2473,11 @@ void(entity player) match_disconnect_notify =
 				self.owner.dest1 		= self.dest1;
 				self.owner.dest2 		= self.dest2;
 				self.owner.mangle 		= self.mangle;
-				self.owner.clanring_qdwep 	= self.clanring_qdwep;
-				self.owner.clanring_qdkill = self.clanring_qdkill;
-				self.owner.clanring_ptwep = self.clanring_ptwep;
-				self.owner.clanring_ptkill = self.clanring_ptkill;
-				self.owner.clanring_hack_count = self.clanring_hack_count;// clanring
+				self.owner.clanring_qdwep 		= self.clanring_qdwep;
+				self.owner.clanring_qdkill 		= self.clanring_qdkill;
+				self.owner.clanring_ptwep 		= self.clanring_ptwep;
+				self.owner.clanring_ptkill 		= self.clanring_ptkill;
+				self.owner.clanring_hack_count 	= self.clanring_hack_count;
 				self.owner.style 		= self.style & (CLANRING_ADMINISTRATOR | CLANRING_HEADS_UP | CLANRING_SMART_WEAPON | CLANRING_AUTOSTATS);
 				self.owner.true_kills 	= self.true_kills;
 				self.owner.pos1_x 		= self.pos1_x;
