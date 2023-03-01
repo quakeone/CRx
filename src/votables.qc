@@ -1014,6 +1014,7 @@ void() votables_set_timelimit =
 		default_timelimit = clanring_timelimit;
 		temp = ftos(clanring_timelimit);
 		bprint("Match length changed to ", temp, " minutes\n");
+		forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 		match_show_timelimit();
 	}
 	else

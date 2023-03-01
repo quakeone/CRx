@@ -1526,6 +1526,7 @@ void() match_ready =
 		{
 			match_get_maxsize();
 			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;
+			forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 			match_show_timelimit();
 		}
 	}
