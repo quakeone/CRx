@@ -41,7 +41,7 @@ void() teamplay_show_score =
 		scorestr = ftos(t1frags);
 		if (self.team==BLUE)
 		{
-			sprint(self,"ùBlue Scoreë: ");
+			sprint(self,"\x90Blue Score\x91: ");
 		}
 		else
 		{
@@ -52,7 +52,7 @@ void() teamplay_show_score =
 		scorestr = ftos(t2frags);
 		if (self.team==RED)
 		{
-			sprint(self,"ùRed  Scoreë: ");
+			sprint(self,"\x90Red  Score\x91: ");
 		}
 		else
 		{
@@ -68,12 +68,12 @@ void() teamplay_show_score =
 
 		scorestr = ftos(t2frags);
 
-		if (self.team==RED)  sprint(self,"ùRed  Scoreë: ");
+		if (self.team==RED)  sprint(self,"\x90Red  Score\x91: ");
 		else	         sprint(self," Red  Score : ");
 		sprint2(self,(scorestr),"\n");
 
 		scorestr = ftos(t1frags);
-		if (self.team==BLUE) sprint(self,"ùBlue Scoreë: ");
+		if (self.team==BLUE) sprint(self,"\x90Blue Score\x91: ");
 		else		 sprint(self," Blue Score : ");
 
 		sprint2(self,(scorestr),"\n");
@@ -83,7 +83,7 @@ void() teamplay_show_score =
 	if (t1frags == t2frags)
 	{
 		scorestr = ftos(t1frags);
-		sprint3(self,"ù\bteams tiedë: ",(scorestr),"\n");
+		sprint3(self," \bteams tied : ",(scorestr),"\n");
 	}
 };
 
