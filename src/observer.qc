@@ -1950,7 +1950,7 @@ void () observer_post_think =
 		//R00k: cycle modes with +attack button
 		if ((self.button0) && (time > self.attack_finished))
 		{						
-			self.oflags = self.oflags - (self.oflags & OBSERVER_AUTO|OBSERVER_GO_AUTO|OBSERVER_QUAKETV);
+			self.oflags = self.oflags - (self.oflags & (OBSERVER_AUTO|OBSERVER_GO_AUTO|OBSERVER_QUAKETV));
 
 			if (self.oflags & OBSERVER_FLY)
 			{

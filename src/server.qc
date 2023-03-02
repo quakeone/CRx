@@ -430,6 +430,11 @@ void () clanring_init_world =
 	utils_make_scheduled_event(clanring_find_powerups, 5);
 	nextmap = "";
 
+	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
+	{
+		clanring_playmode |= CLANRING_NO_HOOK;// Set this for non ctf modes, so that when the hook is voted ON, we can check for this flag missing.
+	}
+
 	if ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		clanring_timelimit = cvar("timelimit");
@@ -1724,13 +1729,13 @@ void () clanring_show_rules =
 			sprint(self, "on\n");
 		else
 			sprint(self, "\bOFF\n"); 
-	
-		sprint(self, "hook®®®®®®®®®");
-		if (clanring_playmode & CLANRING_NO_HOOK)
-			sprint(self, "\bOFF\n");
-		else
-			sprint(self, "on\n");
 	}
+	//R00k: we *can* have the hook enabled in non-CTF modes too! :)
+	sprint(self, "hook®®®®®®®®®");
+	if (clanring_playmode & CLANRING_NO_HOOK)
+		sprint(self, "\bOFF\n");
+	else
+		sprint(self, "on\n");
 	
 	if (clanring_playmode & CLANRING_NO_SPOOGE)
 		sprint(self, "no spooge®®®®on\n");

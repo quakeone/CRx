@@ -68,16 +68,28 @@ float(float ballot) Request_Poll_Votes_Needed =
 	{
 		while (bingo)
 		{
-			if ((bingo.style & CLANRING_CONNECTED) && !(bingo.style & CLANRING_AFK_CLIENT))
+			if (bingo.style & CLANRING_CONNECTED)
 			{
-				pcount += 1;
+				if (bingo.style & CLANRING_AFK_CLIENT)
+				{
+					if (bingo.vote)	//count players that are afk and already voted 
+					{
+						pcount += 1;
 
-				if ((bingo.vote == ballot) || (bingo == clanring_request.owner))
-					vcount += 1;
+						if ((bingo.vote == ballot) || (bingo == clanring_request.owner))
+							vcount += 1;
+					}
+				}
+				else
+				{
+					pcount += 1;
+
+					if ((bingo.vote == ballot) || (bingo == clanring_request.owner))
+						vcount += 1;
+				}
 			}
 			bingo = find(bingo, classname, "player");
 		}
-
 		votes_needed = ceil((pcount * 0.51) - vcount);
 	}
 	else
@@ -86,21 +98,33 @@ float(float ballot) Request_Poll_Votes_Needed =
 		{
 			while (bingo)
 			{
-				if ((bingo.style & CLANRING_CONNECTED) && !(bingo.style & CLANRING_AFK_CLIENT))
+				if (bingo.style & CLANRING_CONNECTED)
 				{
-					pcount += 1;
-
-					if (bingo.vote == ballot)
-						vcount += 1;
+					if (bingo.style & CLANRING_AFK_CLIENT)
+					{
+						if (bingo.vote)	//count players that are afk and already voted 
+						{
+							pcount += 1;
+	
+							if (bingo.vote == ballot)
+								vcount += 1;
+						}
+					}
+					else
+					{
+						pcount += 1;
+	
+						if (bingo.vote == ballot)
+							vcount += 1;
+					}
 				}
 				bingo = find(bingo, classname, "player");
 			}
-
-			votes_needed = ceil((pcount * 0.51) - vcount);
-		}
-		else
-			bprint("Request_Poll_Votes_Needed: Invalid Ballot\n");
-	}
+	 		votes_needed = ceil((pcount * 0.51) - vcount);
+	 	}
+	 	else
+	 		bprint("Request_Poll_Votes_Needed: Invalid Ballot\n");
+	 }
 	if (votes_needed < 1)
 		return 0;
 	else
@@ -253,6 +277,14 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 {
     clear_afk_status(self);	//R00k: (1/3/2022 12:54pm)
 
+/*TODO:
+	if (clanring_playmode & CLANRING_DISABLE_VOTE)
+	{
+		sprint(self, "Voting has been disabled.\n");
+		return FALSE;
+	}
+*/
+
 	if (clanring_request)
 	{
 		sound (world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
@@ -265,7 +297,7 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 		sprint(self, "Observers cannot initiate votes during match.\n");
 		return FALSE;
 	}
-
+	
 	clanring_request = spawn();
 	clanring_request.owner = self;
 	clanring_request.noise1 = strzone(captiona);

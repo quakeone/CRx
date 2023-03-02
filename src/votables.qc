@@ -90,9 +90,8 @@ void() votables_send_aliases =
 //----------------------------------------------------------------
 //	V O T A B L E S  S E T  H O O K
 //
-//	R00K: Enable or disable the hook, only for ctf
-//	(TODO): allow in pub-tdm?
-//			voteable speeds for QW players
+//	R00K: Enable or disable the hook
+//
 //----------------------------------------------------------------
 void() votables_set_hook =
 {
@@ -132,18 +131,15 @@ void() votables_set_hook =
 		if (clanring_playmode & CLANRING_NO_HOOK)
 		{
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NO_HOOK);
+			clanring_state = clanring_state - (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM);
 
-			if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && 
-				!(clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE))
+			if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & (CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE)))
 			{
-				bprint("grappling hook has been \benabled\n");
-			}
-			else
-			{
-				if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
-					clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
+				clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
 				bprint("custom grappling hook has been \benabled\n");
 			}
+			else
+				bprint("grappling hook has been \benabled\n");
 
 			p = find(world, classname, "player");
 			while (p)

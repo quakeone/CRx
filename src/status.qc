@@ -83,9 +83,9 @@ string(entity who) TeamSetStatRes2 =
 string (float t_teamcolor) get_team_letter =
 {
 	if (t_teamcolor == TEAM_BLUE)
-		return "\bB\b";
+		return "\bb\b";
 	if (t_teamcolor == TEAM_RED)
-		return "\bR\b";
+		return "\br\b";
 	return " ";
 };
 
@@ -98,33 +98,33 @@ string() TeamCaptureFlagStatusString =
 	e = find(world, classname, "item_flag_team1");
 	if ((e.cnt == FLAG_AT_BASE))
 	{
-		s2 = "\x80 \x81";
+		s2 = "ù û";
 	}
 	else
 	{
 		if ((e.cnt == FLAG_CARRIED))
 		{
-			s2 = "\x80R\x81";
+			s2 = "ùrû";
 		}
 		else
 		{
-			s2 = "\x80\bR\x81";//dropped
+			s2 = "ùÚû";
 		}
 	}
 	e = find(world, classname, "item_flag_team2");
 	if ((e.cnt == FLAG_AT_BASE))
 	{
-		s3 = " \x82";
+		s3 = " ü";
 	}
 	else
 	{
 		if ((e.cnt == FLAG_CARRIED))
 		{
-			s3 = "B\x82";
+			s3 = "bü";
 		}
 		else
 		{
-			s3 = "\bB\x82";//Dropped
+			s3 = "‚ü";
 		}
 	}
 

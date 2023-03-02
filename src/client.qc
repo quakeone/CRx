@@ -80,7 +80,7 @@ void() SetPracticeParms =
 {
 	parm1 = IT_SHOTGUN | IT_AXE | IT_ROCKET_LAUNCHER | IT_ARMOR3 | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_GRENADE_LAUNCHER | IT_LIGHTNING | IT_SUPER_NAILGUN;
 
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)	//default hook on in CTF modes
+	if (!(clanring_playmode & CLANRING_NO_HOOK))
 		parm1 = parm1 | IT_HOOK;
 
 	parm2 = 100;
@@ -133,6 +133,9 @@ void() SetNewParms =
 		}
 	}
  
+	if (!(clanring_playmode & CLANRING_NO_HOOK))//optional sethook
+		parm1 = parm1 | IT_HOOK;
+
 	parm10 = CLANRING_NEW_CLIENT | CLANRING_SMART_WEAPON; // CRMOD observer flags moved | ELOHIM_OBSERVER_WALK; // elohim player flags
 	parm11 = 0;
 	parm12 = OBSERVER_FLY;// CRMOD observer flags
@@ -176,6 +179,10 @@ void() SetNewParms2 =
 			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
 			{
 				parm1 = IT_SHOTGUN | IT_AXE;
+
+				if (!(clanring_playmode & CLANRING_NO_HOOK))//someone voted for hook...
+					parm1 = parm1 | IT_HOOK;
+	
 				parm2 = 100;
 				parm3 = 0;
 				parm4 = 25;
@@ -468,7 +475,7 @@ void() ClientKill =
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 	{
-		sprint(self,"The match is paused; you cannot suicide.\n");
+		sprint(self,"The match is paused; you cannot self-gib.");
 		return;
 	}
 
@@ -577,7 +584,7 @@ entity () SelectSpawnPoint =
 	local float	pcount;
 	local float	loop_count;	
 
-	if ((self.killed == FALSE) && (clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (!(self.style & CLANRING_OBSERVER)))
+	if ((self.killed == FALSE) && (clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (!(self.style & CLANRING_OBSERVER)) && (!(clanring_playmode & CLANRING_PRACTICE_MODE)))
 	{
 		spot = TeamCaptureSpawn();
 		if (spot.classname == "info_player_deathmatch")
@@ -620,7 +627,7 @@ entity () SelectSpawnPoint =
 					thing = findradius (spot.origin, 128);
 					while (thing)
 					{
-						if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))//r00k: todo thing.health check ?
+						if (((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && (!(thing.style & CLANRING_OBSERVER)) && (thing.health))//r00k: added .health
 						{
 							pcount = 1;
 							thing = world;
@@ -761,7 +768,7 @@ void() PutClientInServer =
 		{
 			if  ((!(self.style & CLANRING_BLUE_TEAM)) && (!(self.style & CLANRING_RED_TEAM)) && (!(self.style & CLANRING_OBSERVER)))
 			{
-				utils_make_scheduled_event(teamplay_force_player_ready, 0.05);
+				utils_make_scheduled_event(teamplay_force_player_ready, 1);//R00k: changed from 0.05 to 1, give them time to establish connection.
 				return;
 			}	
 		}
