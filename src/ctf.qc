@@ -743,11 +743,6 @@ void() place_flag =
 	self.cnt       = FLAG_AT_BASE;
 	self.mangle    = self.angles;	
 
-	if ((self.team == RED))
-		forceinfokey (world, "red flag","at base");
-	else
-		forceinfokey (world, "blue flag","at base");
-
 	self.watertype	= CONTENT_EMPTY;
 	self.waterlevel	= 0;
 
@@ -759,6 +754,12 @@ void() place_flag =
 		remove(self);
 		return;
 	}	
+
+	if ((self.team == RED))
+		forceinfokey (world, "red flag","at base");
+	else
+		forceinfokey (world, "blue flag","at base");
+
 	self.oldorigin = self.origin;//base position
 };
 
@@ -774,6 +775,8 @@ void() item_flag_team1 =
 	self.items     = IT_KEY2;	
 	self.owner     = world;		
 	self.effects   = self.effects | EF_RED;
+
+	forceinfokey (world, "red flag","at base");
 	
 	if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
 	{
@@ -827,6 +830,8 @@ void() item_flag_team2 =
 	self.items     = IT_KEY1;	
     self.owner     = world;	        
 	self.effects   = self.effects | EF_BLUE;
+
+	forceinfokey (world, "blue flag","at base");
 	
 	if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
 	{		

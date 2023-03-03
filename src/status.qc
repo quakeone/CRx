@@ -183,8 +183,11 @@ void() TeamCapturePlayerUpdate =
 
 	if ((clanring_playmode & CLANRING_MATCH_MODE)&& (!(clanring_state & CLANRING_MATCH_STARTED)))
 		return;
-		
-	if ((self.statstate < 0))
+
+	if (strconv(1,0,0,(infokey(self, "f_status"))) == "off")
+		return;
+
+	if (self.statstate < 0)
 	{
 		return;
 	}

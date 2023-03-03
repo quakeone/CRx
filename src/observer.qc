@@ -211,6 +211,7 @@ void () observer_fly_start =
 		sprint(self, "type 'headsup' for fullscreen display\n");
 */
 	sprint(self, "fly mode\n");
+	centerprint(self, "fly mode\n");
 	if (mode_is_arena())
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);

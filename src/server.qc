@@ -292,10 +292,10 @@ void () clanring_init_world =
 	local string szmode;
 	local float temp;
 	
-	clanring_version = "crx v1.23.01nq";
-	clanring_version_info = "crx v1.23.01";
-	clanring_version_number = "1.23.01";	//version.year.month.day CRMOD - string to be used throughout code to show version number.
-	clanring_version_red = "\bcrx v1.23.01nq";
+	clanring_version = "crx v1.23.03nq";
+	clanring_version_info = "crx v1.23.03";
+	clanring_version_number = "1.23.03";	//version.year.month.day CRMOD - string to be used throughout code to show version number.
+	clanring_version_red = "\bcrx v1.23.03nq";
 	// Initialize sentinel
 	clanring_sentinel = spawn();
 	banent = spawn();
