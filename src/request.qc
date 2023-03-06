@@ -149,7 +149,7 @@ void(entity player, float cast) Request_Poll_Vote =
 			if (player == clanring_request.owner)							// This person, who changed their mind, also started the request, so just cancel it.
 			{
 				sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
-				bprint("The request was cancelled.\n");
+				bprint(player.netname," cancelled his request.\n");
 				Request_Poll_Cleanup();
 				return;
 			}
