@@ -280,6 +280,15 @@ void (entity client) clear_afk_status =
 	client.afk_time = time;	
 }
 
+float () server_get_mode =
+{
+    if (clanring_playmode & CLANRING_PRACTICE_MODE)
+        return ADMIN_PRACTICE_MODE;
+    if (clanring_playmode & CLANRING_MATCH_MODE)
+		return ADMIN_MATCH_MODE;
+    return ADMIN_NORMAL_MODE;
+};
+
 void () W_Precache;
 //
 //  I N I T  W O R L D
@@ -393,6 +402,7 @@ void () clanring_init_world =
 
 	// Set global variables
 	clanring_level 			= cvar("scratch1");
+	if (clanring_level < 1) clanring_level = 1;
 	clanring_overtime 		= cvar("scratch2");
 	clanring_maxteams 		= cvar("scratch3");
 	clanring_levelcount 	= 0; // - This is used throughout to check that levels.cfg has been read...
@@ -428,7 +438,6 @@ void () clanring_init_world =
 	clanring_afk_timeout 		= 1800; //Time to kick after AFK (30 minutes).
 
 	utils_make_scheduled_event(clanring_find_powerups, 5);
-	nextmap = "";
 
 	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 	{
@@ -478,10 +487,10 @@ void () clanring_init_world =
 	
 	W_Precache ();
     // show mode		
-	mode = options_get_mode();
+	mode = server_get_mode();
 	szmode = strings_get_mode(mode);
 	cprint2(szmode, " mode\n");
-
+	
 	dprint("init_world playmode: ");
 	dprint(ftos(clanring_playmode));
 	dprint("\n");
@@ -506,22 +515,43 @@ void () clanring_init_world =
 	utils_make_scheduled_event(clanring_remove_start_teleport, 3);
 
 	// woods set serverinfo mod name
-
 	forceinfokey(world, "mod", "crx");
-
-	// woods lets set serverinfo playmode
-
-	if (clanring_playmode & CLANRING_PRACTICE_MODE)
-		forceinfokey(world, "playmode", "practice");
-
-	else if (clanring_playmode & CLANRING_NORMAL_MODE)
-		forceinfokey(world, "playmode", "normal");
-
-	else
-		forceinfokey(world, "playmode", "match");
-
 	// woods lets set serverinfo to current mode set in mod
 	forceinfokey(world, "mode", szmode);
+	// woods lets set serverinfo playmode
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			forceinfokey(world, "playmode", "crctf match");
+		else 
+			forceinfokey(world, "playmode", "crmod match");
+	}
+	else
+	{
+		if (clanring_playmode & CLANRING_NORMAL_MODE)
+		{
+			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+				forceinfokey(world, "playmode", "pickup ctf");
+			else
+			{
+				if (teamplay)
+				{
+					forceinfokey(world, "playmode", "pickup team deathmatch");
+				}
+				else forceinfokey(world, "playmode", "ffa deathmatch");
+			}
+		}
+		else 
+		{
+			if (clanring_playmode & CLANRING_PRACTICE_MODE)
+			{
+				if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+					forceinfokey(world, "playmode", "ctf practice");
+				else
+					forceinfokey(world, "playmode", "practice");
+			}		
+		}
+	}
 };
 
 //
@@ -1742,7 +1772,9 @@ void () clanring_show_rules =
 
 	if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
 		sprint(self, "autoweapon®®®on\n");
-
+	
+	if (!(clanring_playmode & CLANRING_MATCH_MODE))
+		sprint(self, "next®map®®®®®",nextmap,"\n");
 	sprint(self, "\n");
 };
 
@@ -2620,66 +2652,37 @@ void () clanring_start_frame =
 														
 				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 				{
-					if (rint(timelimit - time) == 300)
+					float tl = rint(timelimit - time);
+					switch (tl)
 					{
-						bprint("\nÇáíå åîäó éî  íéîõôåó\n\n");
+						case 300:
+							bprint("\n\bGame ends in\b \.\[ 5 \]\.\b minutes\n\n");
+							break;
+						case 60:
+							bprint("\n\bGame ends in\b \.\[ 1 \]\.\b minute\n\n");
+							break;
+						case 30:
+							bprint("\n\bGame ends in\b 30 \bseconds\n\n");
+							break;
+						case 10:
+							bprint("\n\bGame ends in\b  \bseconds\n\n");
+							break;
+						case 5:
+							bprint("\[ — ‘\n");
+							break;
+						case 4:
+							bprint("\[ – ‘\n");
+						break;
+						case 3:
+							bprint("\[ • ‘\n");
+						break;
+						case 2:
+							bprint("\[ ” ‘\n");
+						break;
+						case 1:
+							bprint("\[ “ ‘\n\n");
+						break;
 					}
-					else
-					{
-						if (rint(timelimit - time) == 60)
-						{
-							bprint("\nÇáíå åîäó éî  íéîõôå\n\n");
-						}
-						else
-						{
-							if (rint(timelimit - time) == 30)
-							{
-								bprint("\nÇáíå åîäó éî  óåãïîäó\n\n");
-							}
-							else
-							{
-								if (rint(timelimit - time) == 10)
-								{
-									bprint("\nÇáíå åîäó éî  óåãïîäó\n\n");
-								}
-								else
-								{
-									if (rint(timelimit - time) == 5)
-									{
-										bprint(" — ‘\n");
-									}
-									else
-									{
-										if (rint(timelimit - time) == 4)
-										{
-											bprint(" – ‘\n");
-										}
-										else
-										{
-											if (rint(timelimit - time) == 3)
-											{
-												bprint(" • ‘\n");
-											}
-											else
-											{
-												if (rint(timelimit - time) == 2)
-												{
-													bprint(" ” ‘\n");
-												}
-												else
-												{
-													if (rint(timelimit - time) == 1)
-													{
-														bprint(" “ ‘\n");
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}				
 				}									
 				clanring_nextcheck2 = time + 1;
 			}

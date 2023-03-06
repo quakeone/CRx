@@ -171,6 +171,22 @@ void(string command, string value) config_command =
 				utils_toggle_sflag (CLANRING_MODE_VOTE, "Mode voting");
 			break;
 		}
+/*TODO:
+		case "allvoteoff":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (clanring_playmode & CLANRING_DISABLE_VOTE)
+				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			break;
+		}
+		case "allvoteon":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (clanring_playmode & CLANRING_DISABLE_VOTE)
+				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			break;
+		}
+*/		
 		case "obitson":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
@@ -534,10 +550,21 @@ void() exec_warp_cfg =
 
 void() clanring_nextlevel_config =
 {
-	string 	line = "";
-	float 	i = 1;
+	string 	line = "", mode ="";
+	float 	i = 1, done = 0;
 	
 	nextmap = "";
+	
+	if (clanring_level < 1)
+		clanring_level = 1;
+
+	//Find the current mode we are in.
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		mode = "[ctf]";
+	else if (clanring_playmode & CLANRING_CA_MODE)
+		mode = "[ca]";
+	else
+		mode = "[dm]";
 
 	filestream f = fopen("configs/levels.cfg", FILE_READ);
 	cprint("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
@@ -558,11 +585,29 @@ void() clanring_nextlevel_config =
 
 		if (!argc) continue;		
 		if (argv(0) == "//" || argv(0) == "#") continue;
-
-		if (found_in_warp_list(line))
-			clanring_lastcount++;
+		
+		if (argv(0) == mode) 
+		{
+			while ((line = fgets(f)))
+			{
+				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
+				{
+					break;
+				}
+				if (found_in_warp_list(line))
+					clanring_lastcount++;
+			}
+			done = TRUE; // We've bumped into the next section or reached the EOF.
+		}		
+		else 
+		{
+			if (done == FALSE)
+				continue;
+		}
 	}
 	fclose(f);
+
+	done = FALSE;
 
 	f = fopen("configs/levels.cfg", FILE_READ);
 
@@ -573,14 +618,30 @@ void() clanring_nextlevel_config =
 		if (!argc) continue;		
 		if (argv(0) == "//" || argv(0) == "#") continue;
 
-		if (found_in_warp_list(line))
+		if (argv(0) == mode) 
 		{
-			if (i == clanring_level)
+			while ((line = fgets(f)))
 			{
-				nextmap = strzone(line);//strzone is required for qss, not FTE ... (Nextmap is dm6. Host_Error: cannot find map maps/6.bsp)				
-				break;
+				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
+				{
+					break;
+				}
+				if (found_in_warp_list(line))
+				{
+					if (i == clanring_level)
+					{
+						nextmap = strzone(line);//strzone is required for qss, not FTE ... (Nextmap is dm6. Host_Error: cannot find map maps/6.bsp)				
+						break;
+					}
+					i++;
+				}
 			}
-			i++;
+			done = TRUE;
+		}		
+		else 
+		{
+			if (done == FALSE)
+				continue;
 		}
 	}
 	fclose(f);
@@ -593,7 +654,6 @@ void() clanring_nextlevel_config =
 	}
 	else
 	{
-	//	bprint(sprintf("Nextmap is %s.\n", nextmap));
 		cprint(sprintf("Nextmap is %s.\n", nextmap));
 		clanring_level++;
 		if (clanring_level > clanring_lastcount)

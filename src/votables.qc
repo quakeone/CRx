@@ -473,6 +473,9 @@ void() votables_set_gametype_mode_map =
 		}
 
 		utils_set_cvar ("samelevel", clanring_playmode);
+		clanring_level = 1;//Reset the map count if we changed modes
+		utils_set_cvar ("scratch1", clanring_level);
+		nextmap = ""; //Reset the nextmap too
 	}
 	if (request_mode >= 0)
 	{
@@ -544,6 +547,9 @@ void() votables_set_gametype_mode_map =
 		mode = strings_get_mode(request_mode);
 		announce3("playmode set to '", mode, "'");
 		utils_set_cvar("samelevel", clanring_playmode);
+		clanring_level = 1;//Reset the map count if we changed modes
+		utils_set_cvar ("scratch1", clanring_level);
+		nextmap = ""; //Reset the nextmap too
 	}
 	if (request_mapnum)
 	{
@@ -571,7 +577,6 @@ void() votables_set_gametype_mode_map =
 		if ((player.style & CLANRING_CONNECTED) && (player.style & CLANRING_OBSERVER) && (player.movetarget != world))
 		{
 			stuffcmd(player, "setinfo observing off\n");
-			dprint(sprintf("observer off to %s\n", player.netname));
 		}
 		player = find(player, classname, "player");
 	}
