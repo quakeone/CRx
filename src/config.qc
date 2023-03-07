@@ -595,7 +595,11 @@ void() clanring_nextlevel_config =
 					break;
 				}
 				if (found_in_warp_list(line))
+				{
+					if (mapname == line)
+						continue;
 					clanring_lastcount++;
+				}
 			}
 			done = TRUE; // We've bumped into the next section or reached the EOF.
 		}		
@@ -628,7 +632,13 @@ void() clanring_nextlevel_config =
 				}
 				if (found_in_warp_list(line))
 				{
-					if (i == clanring_level)
+					if (mapname == line)	//If the next map will be the same map we are on, just skip to the one after it.
+					{
+						i++;
+						continue;
+					}
+
+					if (i >= clanring_level)
 					{
 						nextmap = strzone(line);//strzone is required for qss, not FTE ... (Nextmap is dm6. Host_Error: cannot find map maps/6.bsp)				
 						break;
@@ -972,7 +982,6 @@ void (float soundtype) clanring_read_matchsounds =
 			matchsound[i] = (line);
 		i++;
 	}
-//	strunzone(line);//R00k: strunzone the matchsound but not until we dont need it anymore
 	fclose(f);
 
 	if (soundtype == 1)

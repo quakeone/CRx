@@ -1471,7 +1471,7 @@ float(string maparg) found_in_warp_list =
 		if (mapfound)
 			break;
 	}
-	return mapfound;
+	return (mapfound?TRUE:FALSE);
 };
 
 // used to determine mode from client command
