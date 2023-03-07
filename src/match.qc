@@ -736,6 +736,9 @@ void() match_begin =
 		new_player_record_match = 0;
 	}
 
+	if (clanring_request != world)	//Remove any active requests
+		Request_Poll_Cleanup();
+
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
 	announce("The match has begun!");//Moved up here for autodemo
 
@@ -2031,6 +2034,10 @@ void() match_unpause =
 	{
 		return;
 	}
+
+	if (clanring_request != world)    //Remove any active requests
+        Request_Poll_Cleanup();
+
 	clanring_state = (clanring_state - (clanring_state & CLANRING_MATCH_PAUSED));
 	clanring_state = (clanring_state - (clanring_state & CLANRING_AUTO_PAUSED));
 	clanring_match_pause_time = time - clanring_match_pause_time;
@@ -2047,6 +2054,7 @@ void() match_unpause =
 	utils_do_players(match_unpause_player);
 	utils_do_item(match_unpause_ghost, "clanring_ghost");
 	announce("Match unpaused");
+
 	match_bprint_time();
 	match_bprint_score();
 	clanring_match_timer.nextthink = clanring_match_timer.cnt + clanring_match_pause_time;
