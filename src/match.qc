@@ -1960,7 +1960,7 @@ void() match_request_pause =
     // Do it right away if we're an administrator, otherwise vote
     if (self.style & CLANRING_ADMINISTRATOR)
         match_pause();
-    else if (vote_init("\bpause the match\b", (""), match_pause))
+    else if (vote_init("\bpause the match\b", (""), match_pause,"match_pause"))
         vote_yes();
 };
 
@@ -2514,6 +2514,8 @@ void(entity player) match_disconnect_notify =
 				if (clanring_playmode & CLANRING_AUTO_PAUSE)
 				{
 					match_pause();
+					if ((clanring_request != world)&&(clanring_request.classname == "match_pause"))	//Remove active request to pause
+						Request_Poll_Cleanup();
 					bprint("\bClanring autopause activated\n");
 					cprint("Clanring autopause activated\n");
 					bprint("\bType '\btimerstart\b' to restart match\n");

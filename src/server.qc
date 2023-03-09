@@ -311,6 +311,12 @@ void () clanring_init_world =
 	
 	clanring_playmode = cvar("samelevel");
 	
+	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
+	{
+		forceinfokey (world, "red flag","");
+		forceinfokey (world, "blue flag","");
+	}
+
 	clanring_sentinel.next_player = world;
 	clanring_sentinel.next_team = world;
 	clanring_sentinel.next_camera = world;
@@ -349,9 +355,8 @@ void () clanring_init_world =
 	precache_sound ("crx/hiscore.wav");
 	precache_sound ("crx/laugh3.wav");
 	precache_sound ("crx/laugh6.wav");
-
 	//end
-	precache_sound ("ra/gong.wav");	
+	
 
 	//	qsmack_init_server ();
 
