@@ -356,7 +356,7 @@ void () clanring_init_world =
 	precache_sound ("crx/laugh3.wav");
 	precache_sound ("crx/laugh6.wav");
 	//end
-	
+	precache_sound ("ra/gong.wav");
 
 	//	qsmack_init_server ();
 
