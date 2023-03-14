@@ -88,7 +88,7 @@ float CLANRING_NO_HOOK			    = 524288;
 //float CLANRING_SPAWNFRAG_PROTECTION = 0;
 //float UNUSED						= 1048576;
 float CLANRING_DMM4_MODE			= 1048576;
-float CLANRING_CONSOLE_STATS   		= 2097152;//Used to dump stats to the server console (FIXME:TODO: use this flag to save stats out to a file instead of condebug.log)
+float CLANRING_CONSOLE_STATS   		= 2097152;
 float CLANRING_CA_MODE				= 4194304;
 float CLANRING_RA_MODE				= 8388608;
 
@@ -642,3 +642,6 @@ float STATE_INVISIBLE = 8;
 // worldspawn default mdls
 .string h_vial_mdl;
 .string a_shr_mdl;
+
+float isFTEserver; //Is the server running on FTE or QSS/M?
+string clanring_new_record_player;

@@ -328,6 +328,7 @@ void () clanring_init_world =
 	score_init_world();
 	match_init_world();
 	//quaketag_init_world();
+	if (isFTEserver)
 	autocvar(nqfriction, "0");	//Set this to 1 if using FTE as a server with sv_nqplayerphysics 0 to simulate NQ bunnyhopping but allowing QW clients to use prediction.
 	
 	temp = 0;
@@ -381,7 +382,7 @@ void () clanring_init_world =
 		clanring_playmode 	= clanring_playmode | CLANRING_MATCH_MODE;
 		clanring_playmode 	= clanring_playmode | CLANRING_CAPTURE_THE_FLAG;//default match clanring ctf
 		clanring_playmode 	= clanring_playmode | CLANRING_SERVER_INITIALIZED;
-		//clanring_state 		= clanring_state 	| CLANRING_TEAM_CAPTURE_CUSTOM;
+		clanring_state 		= clanring_state 	| CLANRING_TEAM_CAPTURE_CUSTOM;
 		
 		utils_set_cvar("samelevel", clanring_playmode);		
 	}//initialized
@@ -467,6 +468,7 @@ void () clanring_init_world =
 	
 	if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & CLANRING_NORMAL_MODE))//Defaults for Pub CTF mode
 	{
+		clanring_state = clanring_state - (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM);
 		cvar_set("teamplay","1");		
 		clanring_set_teamplay(1);
 		cvar_set("fraglimit","150");
@@ -492,7 +494,7 @@ void () clanring_init_world =
 	
 	W_Precache ();
     // show mode		
-	mode = server_get_mode();
+	mode = options_get_mode();
 	szmode = strings_get_mode(mode);
 	cprint2(szmode, " mode\n");
 	
