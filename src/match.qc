@@ -741,7 +741,7 @@ void() match_begin =
 
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
 	announce("The match has begun!");//Moved up here for autodemo
-
+	clanring_new_record_player = "";	// .netname of the person who set the current top record.(only used in stats output)
 	utils_do_projectiles(SUB_Remove);
 	utils_do_players(match_gib_player);//3.19k : placed before rune remove
 	utils_do_item(SUB_Remove, "item_backpack");

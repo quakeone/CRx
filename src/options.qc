@@ -577,12 +577,8 @@ float () options_get_mode =
         return ADMIN_CTF_MODE;
     if (clanring_playmode & CLANRING_PRACTICE_MODE)
         return ADMIN_PRACTICE_MODE;
-    if (clanring_playmode & CLANRING_PRACTICE_MODE)
-        return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_MATCH_MODE)
-	{
 		return ADMIN_MATCH_MODE;
-	}
     return ADMIN_NORMAL_MODE;
 };
 

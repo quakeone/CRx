@@ -609,6 +609,7 @@ string (float mode) strings_get_mode_gold =
 {
 	switch(mode)
 	{
+
 		case 0:	return "\bNormal";
 		case 1: return "\bPractice";
 		case 2: return "\bMatch";

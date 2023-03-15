@@ -827,12 +827,9 @@ void() stats_autodump =
 		sprint(self, "\n");
 		sprint(self, "ù\bmatch statisticsü\n");
 		sprint(self, "\n");		
+		sprint(self, sprintf("map: %s\n",mapname));
 		string date = strftime(TRUE, "%m-%d-%Y %H:%M");
 		sprint(self, sprintf("%s\n",date));
-		//MAPname	:
-		//mode		:
-		//timelimit	:
-		//etc...
 
 		stats_show_summary ();
 		//sprint(self, "\n");
@@ -870,6 +867,10 @@ void() stats_autodump =
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		{
 			stats_show_fstats();
+			if (clanring_new_record_player != "")
+			{
+				sprint(self,sprintf("%s set a new match capture record!\n", clanring_new_record_player));
+			}
 			//sprint(self, "\n");
 		}
 		sprint(self, "\n");

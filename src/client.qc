@@ -1519,7 +1519,6 @@ void() CheckPowerups =
 				self.modelindex	= modelindex_eyes;
 				setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 			}
-			
 			self.skin  = 0;//R00k: oversight 3wave forgot to reset the skin; engine complains about this during execution. :(
 	
 			if (self.invisible_finished < time)
@@ -1870,7 +1869,7 @@ void() PlayerPostThink =
 		self.jump_flag = self.velocity_z;
 
 		//Normalize bunnyhopping at all ticrates/client protocols (ie sv_nqplayerphysics 0)
-		if (cvar("nqfriction"))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
+		if (isFTEserver && (cvar("nqfriction")))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
 		{
 			if ((!(self.flags & FL_BHOP))&&(time - self.jump_time < 0.2)) 
 			{
@@ -1940,6 +1939,7 @@ void() PlayerPostThink =
 			}
 
 			if (self.armorvalue < 150 && self.armortype)
+			//?if (self.armorvalue < (250 * self.armortype))//R00k: max value based on armor type (200R 150Y 100G)
 			{
 				rjs = 1;
 				self.armorvalue = self.armorvalue + 5;

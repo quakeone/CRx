@@ -40,7 +40,7 @@ void() Request_Poll_Cleanup =
 		clanring_request.touch = SUB_Null;
 		remove(clanring_request);
 		clanring_request = world;
-}
+	}
 
 	//Clear out the votes for this request.
 	trash_disco = find(world, classname, "player");
