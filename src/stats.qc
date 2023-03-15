@@ -829,7 +829,8 @@ void() stats_autodump =
 		sprint(self, "\n");		
 		sprint(self, sprintf("map: %s\n",mapname));
 		string date = strftime(TRUE, "%m-%d-%Y %H:%M");
-		sprint(self, sprintf("%s\n",date));
+		local string hname = infokey(world,"hostname");
+		sprint(self, sprintf("%s\n%s\n",date,hname));
 
 		stats_show_summary ();
 		//sprint(self, "\n");
