@@ -279,16 +279,81 @@ void (entity client) clear_afk_status =
 	}
 	client.afk_time = time;	
 }
+//woods — 
+/*
+mode: dm, ctf, ra, ca, wipeout, airshot, dmm4
+playmode: match, ffa, practice
+*/
 
-float () server_get_mode =
+//Used for QSSM parsing
+float () server_set_infokey_modes =
 {
-    if (clanring_playmode & CLANRING_PRACTICE_MODE)
-        return ADMIN_PRACTICE_MODE;
-    if (clanring_playmode & CLANRING_MATCH_MODE)
-		return ADMIN_MATCH_MODE;
-    return ADMIN_NORMAL_MODE;
-};
+	local string zmode = "", pmode = "";
+    
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		pmode = "match";
 
+		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			zmode = "ctf";
+		else 
+			zmode = "dm";
+	}
+	else
+	{
+		if (clanring_playmode & CLANRING_NORMAL_MODE)
+		{			
+			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			{
+				pmode = "pug";
+				zmode = "ctf";
+			}
+			else
+			{
+				if (teamplay)
+				{
+					pmode = "pug";
+					zmode = "dm";
+				}
+				else 
+				{
+					pmode = "ffa";
+					zmode = "dm";
+				}
+			}
+		}
+		else 
+		{
+			if (clanring_playmode & CLANRING_PRACTICE_MODE)
+			{
+				pmode = "practice";
+			}		
+		}
+	}
+
+	if 
+	(
+		(clanring_playmode & CLANRING_WIPEOUT_MODE)
+    ||	(clanring_playmode & CLANRING_DMM4_MODE)
+    ||	(clanring_playmode & CLANRING_CA_MODE)
+    ||	(clanring_playmode & CLANRING_RA_MODE)
+    ||	(clanring_playmode & CLANRING_AIRSHOT_MODE)
+	)
+	{
+		pmode = "match";
+		zmode = "arena";
+
+			 if (clanring_playmode & CLANRING_WIPEOUT_MODE) zmode = "wipeout";
+		else if (clanring_playmode & CLANRING_DMM4_MODE) 	zmode = "dmm4"; 
+		else if (clanring_playmode & CLANRING_CA_MODE) 		zmode = "clanarena";
+		else if (clanring_playmode & CLANRING_RA_MODE) 		zmode = "rocketarena";
+		else if (clanring_playmode & CLANRING_AIRSHOT_MODE) zmode = "airshot";	
+	}
+
+	forceinfokey(world, "mode", zmode);
+	forceinfokey(world, "playmode", pmode);
+};
+/**/
 void () W_Precache;
 //
 //  I N I T  W O R L D
@@ -498,10 +563,6 @@ void () clanring_init_world =
 	szmode = strings_get_mode(mode);
 	cprint2(szmode, " mode\n");
 	
-	dprint("init_world playmode: ");
-	dprint(ftos(clanring_playmode));
-	dprint("\n");
-
 	if (mode_is_arena() == TRUE)
 	{
 		arena_precache();
@@ -523,42 +584,7 @@ void () clanring_init_world =
 
 	// woods set serverinfo mod name
 	forceinfokey(world, "mod", "crx");
-	// woods lets set serverinfo to current mode set in mod
-	forceinfokey(world, "mode", szmode);
-	// woods lets set serverinfo playmode
-	if (clanring_playmode & CLANRING_MATCH_MODE)
-	{
-		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			forceinfokey(world, "playmode", "crctf match");
-		else 
-			forceinfokey(world, "playmode", "crmod match");
-	}
-	else
-	{
-		if (clanring_playmode & CLANRING_NORMAL_MODE)
-		{
-			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-				forceinfokey(world, "playmode", "pickup ctf");
-			else
-			{
-				if (teamplay)
-				{
-					forceinfokey(world, "playmode", "pickup team deathmatch");
-				}
-				else forceinfokey(world, "playmode", "ffa deathmatch");
-			}
-		}
-		else 
-		{
-			if (clanring_playmode & CLANRING_PRACTICE_MODE)
-			{
-				if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-					forceinfokey(world, "playmode", "ctf practice");
-				else
-					forceinfokey(world, "playmode", "practice");
-			}		
-		}
-	}
+	server_set_infokey_modes();
 };
 
 //

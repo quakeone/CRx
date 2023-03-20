@@ -563,6 +563,8 @@ void () options_display =
 //
 float () options_get_mode =
 {
+    if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+        return ADMIN_CTF_MODE;
     if (clanring_playmode & CLANRING_WIPEOUT_MODE)
         return ADMIN_WIPEOUT_MODE;
     if (clanring_playmode & CLANRING_DMM4_MODE)
@@ -577,8 +579,6 @@ float () options_get_mode =
         return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_MATCH_MODE)
 		return ADMIN_MATCH_MODE;
-    if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-        return ADMIN_CTF_MODE;
     return ADMIN_NORMAL_MODE;
 };
 

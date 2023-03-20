@@ -592,7 +592,7 @@ string (float mode) strings_get_mode =
 {
 	switch(mode)
 	{
-		case 0:	return "FFA";
+		case 0:	return "DM";
 		case 1: return "Practice";
 		case 2: return "Match";
 		case 3: return "CTF";
