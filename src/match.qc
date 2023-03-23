@@ -1846,6 +1846,7 @@ void() match_show_not_ready =
 	}
 };
 
+
 //
 //  P A U S E  I T E M
 //
@@ -1882,6 +1883,7 @@ void() match_pause_player =
 	self.nextthink = self.nextthink + 1000000;
 };
 
+void()match_abort_pause_timeout;
 //
 //  S H O W  P A U S E
 //
@@ -1890,9 +1892,12 @@ void() match_pause_player =
 void() match_show_pause =
 {
     local entity oldself;
-
-	if ((time - clanring_match_pause_time) > 1200)	//R00k: Abort a match that has been paused for 20 minutes.
-		match_end();
+//TODO:Detect afk players to lessen the time to abort
+	if ((time - clanring_match_pause_time) > 600)	//R00k: Abort a match that has been paused for 10 minutes.
+	{
+		match_abort_pause_timeout();
+		return;
+	}
 
 	oldself = self;
     self = find(world, classname, "player");
@@ -2037,6 +2042,46 @@ void() match_unpause_ghost =
 {
 	self.state = 0;
 };
+
+// 
+// P A U S E  T I M E O U T
+// 
+// Called when the match is left in a paused state for too long.
+//
+void() match_abort_pause_timeout = 
+{
+	announce ("\[\bAuto Match Abort Activated\b\]\n");
+	announce ("Match was paused for too long.");
+	announce ("The match is over");//used for cl_autodemo 2, stop the demo after stats_autodump.
+
+	if (clanring_request != world)    //Remove any active requests
+		Request_Poll_Cleanup();
+
+	clanring_state = (clanring_state - (clanring_state & CLANRING_MATCH_PAUSED));
+	clanring_state = (clanring_state - (clanring_state & CLANRING_AUTO_PAUSED));
+	clanring_match_pause_time = time - clanring_match_pause_time;
+
+	utils_do_items(match_unpause_item);
+	utils_do_item(match_unpause_item, "item_backpack");
+	utils_do_flags (match_unpause_item);
+	utils_do_hook (match_unpause_item);
+	utils_do_item(match_unpause_item, "item_rune");
+	utils_do_projectiles(match_unpause_item);
+	utils_do_players(match_unpause_player);
+	utils_do_item(match_unpause_ghost, "clanring_ghost");
+
+	match_reset();
+	match_delete_teams();
+	remove(clanring_match_timer);
+	clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
+	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
+	clanring_state = ((clanring_state | CLANRING_MATCH_OVER) | CLANRING_MATCH_WAIT);
+	utils_do_players(match_gib_player);
+
+	clanring_sentinel.movetarget = world;
+
+	utils_do_match_spawns(spawns_restore_model);
+}
 
 //
 //  U N P A U S E
