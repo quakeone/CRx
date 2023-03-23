@@ -611,7 +611,7 @@ void () options_start_setting =
         centerprint(self, " ");
         return;
     }
-
+    /*           
     // Initialize stuff
     self.t_length = 0;
     self.style = self.style | CLANRING_SETTING_OPTIONS;
@@ -657,6 +657,7 @@ void () options_start_setting =
 
     // play sound
     stuffcmd(self, "play misc/menu2.wav\n");
+    */
 };
 
 //

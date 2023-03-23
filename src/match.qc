@@ -46,6 +46,17 @@ void() StartRuneSpawn;
 void() GibPlayer;
 void() PlayerDead;
 
+//TODO: Make this dynamic
+static string pausehint[6] =
+{
+	"Hint: A health pack respawns every 20 seconds",
+	"Hint: End your pent or quad at an armor",
+	"Hint: don't walk around with your best weapon out",
+	"Hint: communicate with your team about enemy positions and important items on the map",
+	"Hint: megahealth respawns at most 125 seconds after being taken.",
+	"Hint: Leave backpack for teammates; communicate location"
+};
+
 //
 //  I N I T  W O R L D
 //
@@ -1880,11 +1891,15 @@ void() match_show_pause =
 {
     local entity oldself;
 
-    oldself = self;
+	if ((time - clanring_match_pause_time) > 1200)	//R00k: Abort a match that has been paused for 20 minutes.
+		match_end();
+
+	oldself = self;
     self = find(world, classname, "player");
+
     while (self)
-    {
-		centerprint(self,"\n\bPAUSED\b\n");
+    {			
+		centerprint(self, "\n\n\n\n\[\bPAUSED\b\]");
         self = find(self, classname, "player");
     }
     self = oldself;

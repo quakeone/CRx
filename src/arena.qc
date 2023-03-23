@@ -127,8 +127,14 @@ void () arena_client_disconnect =
 
 float () mode_is_arena
 {
-    if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE) 
-		|| (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+    if 
+	(
+		(clanring_playmode & CLANRING_CA_MODE) 		||
+		(clanring_playmode & CLANRING_WIPEOUT_MODE)	||
+		(clanring_playmode & CLANRING_RA_MODE) 		|| 
+		(clanring_playmode & CLANRING_DMM4_MODE) 	|| 
+		(clanring_playmode & CLANRING_AIRSHOT_MODE)
+	)
         return TRUE;
     return FALSE;
 }

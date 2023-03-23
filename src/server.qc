@@ -286,7 +286,7 @@ playmode: match, ffa, practice
 */
 
 //Used for QSSM parsing
-float () server_set_infokey_modes =
+void () server_set_infokey_modes =
 {
 	local string zmode = "", pmode = "";
     
@@ -331,14 +331,7 @@ float () server_set_infokey_modes =
 		}
 	}
 
-	if 
-	(
-		(clanring_playmode & CLANRING_WIPEOUT_MODE)
-    ||	(clanring_playmode & CLANRING_DMM4_MODE)
-    ||	(clanring_playmode & CLANRING_CA_MODE)
-    ||	(clanring_playmode & CLANRING_RA_MODE)
-    ||	(clanring_playmode & CLANRING_AIRSHOT_MODE)
-	)
+	if ((mode_is_arena()))
 	{
 		pmode = "match";
 		zmode = "arena";
@@ -348,6 +341,7 @@ float () server_set_infokey_modes =
 		else if (clanring_playmode & CLANRING_CA_MODE) 		zmode = "clanarena";
 		else if (clanring_playmode & CLANRING_RA_MODE) 		zmode = "rocketarena";
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE) zmode = "airshot";	
+	//else if (clanring_playmode & CLANRING_FREEZETAG_MODE) zmode = "freezetag";	
 	}
 
 	forceinfokey(world, "mode", zmode);
