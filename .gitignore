@@ -1,3 +1,7 @@
 src/csprogs.dat
 src/progs.dat
 src/fteqcc.ini
+src/progs.lno
+src/win64-fteqcc.exe
+src/csprogs.lno
+src/compile.bat

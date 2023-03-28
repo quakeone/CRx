@@ -563,6 +563,8 @@ void () options_display =
 //
 float () options_get_mode =
 {
+    if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+        return ADMIN_CTF_MODE;
     if (clanring_playmode & CLANRING_WIPEOUT_MODE)
         return ADMIN_WIPEOUT_MODE;
     if (clanring_playmode & CLANRING_DMM4_MODE)
@@ -573,16 +575,10 @@ float () options_get_mode =
         return ADMIN_RA_MODE;
     if (clanring_playmode & CLANRING_AIRSHOT_MODE)
         return ADMIN_AIRSHOT_MODE;
-    if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-        return ADMIN_CTF_MODE;
-    if (clanring_playmode & CLANRING_PRACTICE_MODE)
-        return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_PRACTICE_MODE)
         return ADMIN_PRACTICE_MODE;
     if (clanring_playmode & CLANRING_MATCH_MODE)
-	{
 		return ADMIN_MATCH_MODE;
-	}
     return ADMIN_NORMAL_MODE;
 };
 
@@ -607,15 +603,15 @@ float () options_get_gibs =
 //
 void () options_start_setting =
 {
-    if (self.style & CLANRING_SETTING_OPTIONS)
+//FIXME:    if (self.style & CLANRING_SETTING_OPTIONS)
     {
         // cancel
         stuffcmd(self, "play misc/menu2.wav\n");
-        self.style = self.style - CLANRING_SETTING_OPTIONS;
+        self.style = self.style - (self.style & CLANRING_SETTING_OPTIONS);
         centerprint(self, " ");
         return;
     }
-
+    /*           
     // Initialize stuff
     self.t_length = 0;
     self.style = self.style | CLANRING_SETTING_OPTIONS;
@@ -661,6 +657,7 @@ void () options_start_setting =
 
     // play sound
     stuffcmd(self, "play misc/menu2.wav\n");
+    */
 };
 
 //

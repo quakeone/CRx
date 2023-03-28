@@ -444,8 +444,6 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 					{
 						if (targ.classname != "button")					//R00k: dont count button damage in stats.
 							attacker.dest2_x = attacker.dest2_x + damage;
-						else
-							attacker.dest1_x = attacker.dest1_x - damage;
 					}
 					else
 					{
@@ -454,8 +452,6 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 							if ((attacker.waterlevel <= 1)	// don't count discharges
 								&& (targ.classname != "button"))					//R00k: dont count button damage in stats.
 								attacker.dest2_z = attacker.dest2_z + damage;
-							else
-								attacker.dest1_z = attacker.dest1_z - damage;
 						}
 					}
 				}
@@ -539,11 +535,14 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				if (inflictor.classname != "door") 	// because squishing a teammate is still possible
 				{
 					teamdamage = FALSE;
-					if (attacker.weapon == IT_LIGHTNING)//Always damage teammates if discharging.
+/*
+//Optional: Always damage teammates if discharging. Suggestion by Omicron.
+					if (attacker.weapon == IT_LIGHTNING)
 					{
-						if ((attacker.waterlevel > 1)&&(targ.waterlevel > 1))//fixed
+							if ((attacker.waterlevel > 1)&&(targ.waterlevel > 1))
 							teamdamage = TRUE;
 					}
+*/
 				}
 			}
 		}
@@ -760,7 +759,7 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			{
 				if (inflictor.classname != "door") 	// because squishing a teammate is still possible
 				{
-					if (!(attacker.weapon == IT_LIGHTNING && targ.waterlevel))//Always damage teammates if discharging.
+				//	if (!(attacker.weapon == IT_LIGHTNING && targ.waterlevel))//Always damage teammates if discharging.
 					{
 						return;
 					}

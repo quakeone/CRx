@@ -662,7 +662,7 @@ void () func_laser_use =
 		// the func_laser itself instead of from the activator -- iw
 		sound (self, CHAN_VOICE, self.noise1, 1, ATTN_NORM);
 
-		setorigin(self, '0 0 9000');
+		setorigin(self, '0 0 9000');//FIXME:
 		self.spawnflags = self.spawnflags + START_OFF;
 
 		if (activator.classname == "player" && self.message2 != "")

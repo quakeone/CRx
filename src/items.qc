@@ -688,10 +688,8 @@ float () W_BestWeapon;
 
 void() weapon_touch =
 {
-	local float	best;
-	local entity	stemp;
-	local float	leave;
-	local float	donttake;
+	local entity stemp;
+	local float  best, leave, donttake;
 
 	if (!(items_are_ready()))
 		return;
@@ -704,8 +702,8 @@ void() weapon_touch =
 
 	if (other.health < 1)
 		return;
-
-// if the player was using his best weapon, change up to the new one if better		
+	
+	// if the player was using his best weapon, change up to the new one if better		
 	stemp = self;
 	self = other;
 	best = W_BestWeapon();
@@ -799,26 +797,28 @@ void() weapon_touch =
 		bound_other_ammo ();
 
 // change to the weapon
-
-		if (!(other.items & self.weapon))
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 		{
-			if (other.weapon != IT_HOOK)
+			if (!(other.items & self.weapon))
 			{
-				Deathmatch_Weapon (other, self.weapon);
+				if (other.weapon != IT_HOOK)
+				{
+					Deathmatch_Weapon (other, self.weapon);
+				}
 			}
 		}
-
 		other.items = other.items | self.weapon;
 
 		stemp = self;
 		self = other;
-		// 1997-12-23 Thunderbolt fix by Maddes
-		if (( other.weapon == best ) && (other.weapon != IT_HOOK))
-		{
-			if (self.style & CLANRING_SMART_WEAPON)
-			self.weapon = W_BestWeapon();
-		}
 
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
+		{
+			if (( other.weapon == best ) && (other.weapon != IT_HOOK))
+			{
+				self.weapon = W_BestWeapon();
+			}
+		}
 		if (other.weapon != IT_HOOK)
 			W_SetCurrentAmmo();
 
@@ -1011,8 +1011,8 @@ void() ammo_touch =
 
 		if (( other.weapon == best ) && ( other.weapon != IT_HOOK ))
 		{
-			if (self.style & CLANRING_SMART_WEAPON)	// R00k from CRMOD... modified
-			self.weapon = W_BestWeapon();
+			if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
+				self.weapon = W_BestWeapon();
 		}
 		
 		if (other.weapon != IT_HOOK)
@@ -1770,7 +1770,8 @@ void() BackpackTouch =
 	//old = other.items;
 	if (!(other.items & new))
 	{
-		Deathmatch_Weapon (other, new);
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
+			Deathmatch_Weapon (other, new);
 	}
 	other.items = (other.items | new);
 	bound_other_ammo ();
@@ -1823,7 +1824,7 @@ void() BackpackTouch =
 
 	if (( other.weapon == best ) && ( other.weapon != IT_HOOK ))
 	{
-		if (self.style & CLANRING_SMART_WEAPON)	// R00k from clanring... modified
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 			self.weapon = W_BestWeapon();
 	}
 	if (other.weapon != IT_HOOK)
@@ -1973,21 +1974,33 @@ void() Team_weapon_touch =
 	sound (other, CHAN_ITEM, "weapons/pkup.wav", 1, ATTN_NORM);
 	bound_other_ammo();
 
-	if (other.weapon != IT_HOOK) Deathmatch_Weapon (other, self.weapon);
-
-	other.items = other.items | self.weapon;
-
-	if (( other.weapon == best ) && (other.weapon != IT_HOOK))
+	if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 	{
-		other.weapon = W_BestWeapon();
+		if (!(other.items & new))
+		{
+			if (other.weapon != IT_HOOK)
+			{
+				Deathmatch_Weapon (other, new);
+			}
+		}
 	}
-	stemp=self;
-	self=other;
 
+	other.items = other.items | new;
+
+	stemp = self;
+	self = other;
+
+	if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
+	{
+		if (( other.weapon == best ) && (other.weapon != IT_HOOK))
+		{
+			self.weapon = W_BestWeapon();
+		}
+	}
 	if (other.weapon != IT_HOOK)
-	W_SetCurrentAmmo();
+		W_SetCurrentAmmo();
 
-	self=stemp;
+	self = stemp;
 
 	remove(self);//remove the weapon
 	activator = other;

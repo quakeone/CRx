@@ -41,7 +41,7 @@ void() W_Precache =
 	precache_sound ("knight/sword1.wav");		//server modules hook
 	precache_sound ("shambler/smack.wav");  	// hook tear
 
-	if ((clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM) || (mode_is_arena()))
+	//if (/*(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)*/ || (mode_is_arena()))
 	{		
 		precache_sound ("weapons/chain1.wav");
 		precache_sound ("weapons/chain2.wav");
@@ -1100,15 +1100,17 @@ float() W_BestWeapon =
 	
 	it = self.items;
 
-	if (self.waterlevel <= 2 && self.ammo_cells >= 1 && (it & IT_LIGHTNING) )
-			return IT_LIGHTNING;
-	if(self.ammo_nails >= 2 && (it & IT_SUPER_NAILGUN) )
+	if (self.waterlevel <= 2 && self.ammo_cells >= 1 && (it & IT_LIGHTNING))
+		return IT_LIGHTNING;
+	if ((self.ammo_rockets >= 1 && (it & IT_ROCKET_LAUNCHER))&&(self.currentammo))//Don't switch to RL if we ran out of ammo with current gun
+	 	return IT_ROCKET_LAUNCHER;
+	if(self.ammo_nails >= 2 && (it & IT_SUPER_NAILGUN))
 		return IT_SUPER_NAILGUN;
-	if(self.ammo_shells >= 2 && (it & IT_SUPER_SHOTGUN) )
+	if(self.ammo_shells >= 2 && (it & IT_SUPER_SHOTGUN))
 		return IT_SUPER_SHOTGUN;
-	if(self.ammo_nails >= 1 && (it & IT_NAILGUN) )
+	if(self.ammo_nails >= 1 && (it & IT_NAILGUN))
 		return IT_NAILGUN;
-	if(self.ammo_shells >= 1 && (it & IT_SHOTGUN) )
+	if(self.ammo_shells >= 1 && (it & IT_SHOTGUN))
 		return IT_SHOTGUN;
 	return IT_AXE;
 };
@@ -1641,7 +1643,8 @@ void() W_WeaponFrame =
 	//BuckSh0t: stop firing during timer countdown
 	if ((match_prewar()) && (clanring_state & CLANRING_TIMER_STARTED))
 	{
-		return;
+		if (self.weapon != IT_HOOK) //R00k: still allow them to finish their capture time trial
+			return;
 	}
 
 // check for attack

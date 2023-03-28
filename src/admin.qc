@@ -223,7 +223,7 @@ void(entity client) clanring_kick_player =
 			}
 			else
 			{
-				if (clanring_kick_mode == KICK_NONE)
+				if (clanring_kick_mode == KICK_LAGOUT)
 				{
 					announce2(client.netname, " lost connection to the server.");
 					temp = ftos(client.colormap);

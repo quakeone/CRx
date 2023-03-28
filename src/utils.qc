@@ -250,7 +250,7 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 	if (ent.style & CLANRING_CONNECTED)
 	{
 		client = (ent.colormap - 1);
-		if ((client > 16)||(client < 0))
+		if ((client > 15)||(client < 0))
 		{
 			print("ERROR: setcolour: invalid client slot\n"); //output to console for debugging.
 			return;
@@ -279,7 +279,7 @@ void (entity ent, string c_name) updatename =
 	{
 		client = (ent.colormap - 1);
 
-		if ((client > 16)||(client < 0))
+		if ((client > 15)||(client < 0))
 		{
 			print("ERROR: updatename: invalid client slot\n"); //output to console for debugging.
 			return;
@@ -1471,7 +1471,7 @@ float(string maparg) found_in_warp_list =
 		if (mapfound)
 			break;
 	}
-	return mapfound;
+	return (mapfound);
 };
 
 // used to determine mode from client command
@@ -1622,9 +1622,10 @@ void(float m, float s)pqc_match_time =
     {
         if (self.style & CLANRING_CONNECTED)
         {
+			msg_entity = self;
+
 			if (self.csqc_enabled == 1)
 			{
-				msg_entity = self;
 				WriteByte(MSG_MULTICAST, SVC_CGAMEPACKET);
 				WriteByte(MSG_MULTICAST, PQC_MATCH_TIME);
 				WriteByte(MSG_MULTICAST, m);
@@ -1632,15 +1633,27 @@ void(float m, float s)pqc_match_time =
 				multicast('0 0 0', MULTICAST_ONE_R);
 			}
 			else
-			{
-				msg_entity = self;
-				WriteByte(MSG_MULTICAST , SVC_STUFFCMD);
-				WriteByte(MSG_MULTICAST , MOD_PROQUAKE);
-				WriteByte(MSG_MULTICAST , PQC_MATCH_TIME);
-				WriteBytePQ(MSG_MULTICAST , m);
-				WriteBytePQ(MSG_MULTICAST , s);
-				WriteString(MSG_MULTICAST , string_null);
-				multicast('0 0 0', MULTICAST_ONE_R);
+			{			 	
+				if ((self.client == "ezQuake")||(self.client == "FTE")/*(|| (self.client == "QSS-M"))*/)
+				{
+					if (!(clanring_state & CLANRING_MATCH_STARTED))//Prior to match start use timer to display countdown.
+					{
+						WriteByte(MSG_MULTICAST, SVC_UPDATESTAT);
+						WriteByte(MSG_MULTICAST, 18);// STAT_MATCHSTARTTIME
+						WriteLong(MSG_MULTICAST, (time + s)*1000);
+						multicast('0 0 0', MULTICAST_ONE_R);
+					}
+				}
+				else
+				{
+					WriteByte(MSG_MULTICAST , SVC_STUFFCMD);
+					WriteByte(MSG_MULTICAST , MOD_PROQUAKE);
+					WriteByte(MSG_MULTICAST , PQC_MATCH_TIME);
+					WriteBytePQ(MSG_MULTICAST , m);
+					WriteBytePQ(MSG_MULTICAST , s);
+					WriteString(MSG_MULTICAST , string_null);
+					multicast('0 0 0', MULTICAST_ONE_R);
+				}
 			}
 		}
         self = find(self, classname, "player");

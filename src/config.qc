@@ -171,6 +171,22 @@ void(string command, string value) config_command =
 				utils_toggle_sflag (CLANRING_MODE_VOTE, "Mode voting");
 			break;
 		}
+/*TODO:
+		case "allvoteoff":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (clanring_playmode & CLANRING_DISABLE_VOTE)
+				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			break;
+		}
+		case "allvoteon":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (clanring_playmode & CLANRING_DISABLE_VOTE)
+				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			break;
+		}
+*/		
 		case "obitson":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
@@ -534,10 +550,21 @@ void() exec_warp_cfg =
 
 void() clanring_nextlevel_config =
 {
-	string 	line = "";
-	float 	i = 1;
+	string 	line = "", mode ="";
+	float 	i = 1, done = 0;
 	
 	nextmap = "";
+	
+	if (clanring_level < 1)
+		clanring_level = 1;
+
+	//Find the current mode we are in.
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+		mode = "[ctf]";
+	else if (clanring_playmode & CLANRING_CA_MODE)
+		mode = "[ca]";
+	else
+		mode = "[dm]";
 
 	filestream f = fopen("configs/levels.cfg", FILE_READ);
 	cprint("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
@@ -558,11 +585,33 @@ void() clanring_nextlevel_config =
 
 		if (!argc) continue;		
 		if (argv(0) == "//" || argv(0) == "#") continue;
-
-		if (found_in_warp_list(line))
-			clanring_lastcount++;
+		
+		if (argv(0) == mode) 
+		{
+			while ((line = fgets(f)))
+			{
+				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
+				{
+					break;
+				}
+				if (found_in_warp_list(line))
+				{
+					if (mapname == line)
+						continue;
+					clanring_lastcount++;
+				}
+			}
+			done = TRUE; // We've bumped into the next section or reached the EOF.
+		}		
+		else 
+		{
+			if (done == FALSE)
+				continue;
+		}
 	}
 	fclose(f);
+
+	done = FALSE;
 
 	f = fopen("configs/levels.cfg", FILE_READ);
 
@@ -573,14 +622,36 @@ void() clanring_nextlevel_config =
 		if (!argc) continue;		
 		if (argv(0) == "//" || argv(0) == "#") continue;
 
-		if (found_in_warp_list(line))
+		if (argv(0) == mode) 
 		{
-			if (i == clanring_level)
+			while ((line = fgets(f)))
 			{
-				nextmap = strzone(line);//strzone is required for qss, not FTE ... (Nextmap is dm6. Host_Error: cannot find map maps/6.bsp)				
-				break;
+				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
+				{
+					break;
+				}
+				if (found_in_warp_list(line))
+				{
+					if (mapname == line)	//If the next map will be the same map we are on, just skip to the one after it.
+					{
+						i++;
+						continue;
+					}
+
+					if (i >= clanring_level)
+					{
+						nextmap = strzone(line);//strzone is required for qss, not FTE ... (Nextmap is dm6. Host_Error: cannot find map maps/6.bsp)				
+						break;
+					}
+					i++;
+				}
 			}
-			i++;
+			done = TRUE;
+		}		
+		else 
+		{
+			if (done == FALSE)
+				continue;
 		}
 	}
 	fclose(f);
@@ -593,7 +664,6 @@ void() clanring_nextlevel_config =
 	}
 	else
 	{
-	//	bprint(sprintf("Nextmap is %s.\n", nextmap));
 		cprint(sprintf("Nextmap is %s.\n", nextmap));
 		clanring_level++;
 		if (clanring_level > clanring_lastcount)
@@ -861,15 +931,16 @@ void() clanring_exec_configs =
 	}
 
 	//R00k: ticrate defaults for different modes :|
-	local string useTicrate;
-
 	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
-		useTicrate = ftos(clanring_tdm_ticrate);
+	{
+		dprint(sprintf("setting sys_ticrate to %1.3f\n", clanring_tdm_ticrate));
+		cvar_set("sys_ticrate", ftos(clanring_tdm_ticrate));
+	}
 	else
-		useTicrate = ftos(clanring_ctf_ticrate);//use the faster ticrate for everything else...
-
-	dprint("setting sys_ticrate to ", useTicrate, "\n");
-	cvar_set("sys_ticrate", useTicrate);
+	{
+		dprint(sprintf("setting sys_ticrate to %1.3f\n", clanring_ctf_ticrate));
+		cvar_set("sys_ticrate", ftos(clanring_ctf_ticrate));
+	}
 
 	remove(self);//scheduled_event_entity
 	sys_ready = TRUE;
@@ -911,7 +982,6 @@ void (float soundtype) clanring_read_matchsounds =
 			matchsound[i] = (line);
 		i++;
 	}
-//	strunzone(line);//R00k: strunzone the matchsound but not until we dont need it anymore
 	fclose(f);
 
 	if (soundtype == 1)

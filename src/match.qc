@@ -32,6 +32,7 @@
 
 // Function declarations
 void() match_timer_think2;
+void() match_list_ghosts;
 void() match_enter_ghost_code;
 void() match_start_unpause_countdown;
 void() match_unpause;
@@ -44,6 +45,17 @@ void() admin_dm3_screenshot_setup;
 void() StartRuneSpawn;
 void() GibPlayer;
 void() PlayerDead;
+
+//TODO: Make this dynamic
+static string pausehint[6] =
+{
+	"Hint: A health pack respawns every 20 seconds",
+	"Hint: End your pent or quad at an armor",
+	"Hint: don't walk around with your best weapon out",
+	"Hint: communicate with your team about enemy positions and important items on the map",
+	"Hint: megahealth respawns at most 125 seconds after being taken.",
+	"Hint: Leave backpack for teammates; communicate location"
+};
 
 //
 //  I N I T  W O R L D
@@ -521,6 +533,7 @@ void() match_end =
 	announce("The match is over");//used for cl_autodemo 2, stop the demo after stats_autodump.
 	// Backup all statistics so that they don't go away
 	//stats_copy_statistics();
+	match_bprint_score();//R00k adding here again, this will be closest to their cursor so it will be the first thing they want to read.
 	utils_do_match_spawns(spawns_restore_model);
 };
 
@@ -704,6 +717,14 @@ void() spawns_restore_model =
 	setsize(self,'-16 -16 -24','16 16 24'); // Must call setsize after setmodel
 };
 
+void() match_updatestat_matchstarttime =
+{//R00k: support for QW clients
+	WriteByte(MSG_MULTICAST, SVC_UPDATESTAT);
+	WriteByte(MSG_MULTICAST, 18);// STAT_MATCHSTARTTIME
+	WriteLong(MSG_MULTICAST,(time * 1000));
+	multicast('0 0 0', MULTICAST_ONE_R);
+}
+
 //
 //  B E G I N
 //
@@ -726,8 +747,12 @@ void() match_begin =
 		new_player_record_match = 0;
 	}
 
+	if (clanring_request != world)	//Remove any active requests
+		Request_Poll_Cleanup();
+
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
 	announce("The match has begun!");//Moved up here for autodemo
+	clanring_new_record_player = "";	// .netname of the person who set the current top record.(only used in stats output)
 	utils_do_projectiles(SUB_Remove);
 	utils_do_players(match_gib_player);//3.19k : placed before rune remove
 	utils_do_item(SUB_Remove, "item_backpack");
@@ -743,25 +768,26 @@ void() match_begin =
 	match_get_maxsize();
 	//temp = ftos(clanring_maxsize);
 	//if (teamplay)
-		//announce4("Match is ", temp, "v", temp);
-
+	//announce4("Match is ", temp, "v", temp);
 	temp = ftos(clanring_timelimit);
 	announce2(temp, " minutes remaining");
-
+	forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 	stats_matchtype = clanring_maxsize;	//3/6/2017 6:14AM added for stats header output, this will be incorrect if the game is unlocked.(fixme)
 	stats_timelimit = clanring_timelimit;
-	
+
 	self.think = match_timer_think2;
 	self.nextthink = time + 1;
 	self.lip = clanring_timelimit;
 	self.count = 0;
+
+	match_updatestat_matchstarttime();//R00k: send the match time to QW players.
 	pqc_match_time(clanring_timelimit, +1);//show the match timelimit (this is displayed right at the end of clanring_show_rules_prematch, when the timer shows 00:01)
 	match_show_timelimit();//This updates the server's TIMELIMIT cvar with match information that is used on the CCREQ_RULE_INFO for the web server browser.
 
 	// reset rocket launcher count
 	clanring_sentinel.ammo_rockets = 0;
 	clanring_sentinel.cnt = 0;
-	
+
 	// reset quad, pent counts
 	utils_do_item(match_reset_owner, "item_artifact_invulnerability");
 	utils_do_item(match_reset_owner, "item_artifact_super_damage");
@@ -949,8 +975,13 @@ float () match_put_player_in_team =
 	{
 		if ((self.team != RED) && (self.team != BLUE))
 		{
-			sprint(self, "Invalid pants color\n");
-			sprint(self, "type \bRED\b or \bBLUE\b to join match\n");
+			if (!(clanring_state & CLANRING_MATCH_STARTED))
+			{
+				sprint(self, "Invalid pants color\n");
+				sprint(self, "type \bRED\b or \bBLUE\b to join match\n");
+			}
+			else 
+				sprint(self,"A match is already playing; you may not join at this time.\n");
 			return FALSE;
 		}
 	}
@@ -1509,6 +1540,7 @@ void() match_ready =
 		{
 			match_get_maxsize();
 			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;
+			forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 			match_show_timelimit();
 		}
 	}
@@ -1775,6 +1807,7 @@ void() match_help =
 	sprint(self, " timerstop   - \bpause the match\n");
 	sprint(self, " timerstart  - \bstart/restart the timer\n");
 	sprint(self, " ghostcode   - \bview your ghost code\n");
+	sprint(self, " ghostlist   - \blist ghost codes of your teammates\n");
 	sprint(self, " ghost       - \brestore yourself from ghost\n");
 	sprint(self, " score       - \bshow time left and score\n");
 	sprint(self, " +teamscores - \bbind this to a key\n");
@@ -1813,6 +1846,7 @@ void() match_show_not_ready =
 	}
 };
 
+
 //
 //  P A U S E  I T E M
 //
@@ -1849,6 +1883,7 @@ void() match_pause_player =
 	self.nextthink = self.nextthink + 1000000;
 };
 
+void()match_abort_pause_timeout;
 //
 //  S H O W  P A U S E
 //
@@ -1857,12 +1892,19 @@ void() match_pause_player =
 void() match_show_pause =
 {
     local entity oldself;
+//TODO:Detect afk players to lessen the time to abort
+	if ((time - clanring_match_pause_time) > 600)	//R00k: Abort a match that has been paused for 10 minutes.
+	{
+		match_abort_pause_timeout();
+		return;
+	}
 
-    oldself = self;
+	oldself = self;
     self = find(world, classname, "player");
+
     while (self)
-    {
-		centerprint(self,"\n\bPAUSED\b\n");
+    {			
+		centerprint(self, "\n\n\n\n\[\bPAUSED\b\]");
         self = find(self, classname, "player");
     }
     self = oldself;
@@ -1923,10 +1965,22 @@ void() match_request_pause =
 		sprint(self, "Match is already paused\n");
 		return;
 	}
+
+	if (self.next_team != world)
+	{
+		if (self.next_team.pausetime == FALSE)//give the team one free match pause...
+		{
+			bprint(sprintf("The %s used their \bone\b free match pause.\n", self.next_team.netname));
+			self.next_team.pausetime = TRUE;
+			match_pause();
+			return;
+		}
+	}
+
     // Do it right away if we're an administrator, otherwise vote
     if (self.style & CLANRING_ADMINISTRATOR)
         match_pause();
-    else if (vote_init("\bpause the match\b", (""), match_pause))
+    else if (vote_init("\bpause the match\b", (""), match_pause,"match_pause"))
         vote_yes();
 };
 
@@ -1989,6 +2043,45 @@ void() match_unpause_ghost =
 	self.state = 0;
 };
 
+// 
+// P A U S E  T I M E O U T
+// 
+// Called when the match is left in a paused state for too long.
+//
+void() match_abort_pause_timeout = 
+{
+	announce ("\[\bAuto Match Abort Activated\b\]\n");
+	announce ("Match was paused for too long.");
+	announce ("The match is over");//used for cl_autodemo 2, stop the demo before stats_autodump.
+
+	if (clanring_request != world)    //Remove any active requests
+		Request_Poll_Cleanup();
+
+	clanring_state = (clanring_state - (clanring_state & CLANRING_MATCH_PAUSED));
+	clanring_state = (clanring_state - (clanring_state & CLANRING_AUTO_PAUSED));
+	clanring_match_pause_time = time - clanring_match_pause_time;
+
+	utils_do_items(match_unpause_item);
+	utils_do_item(match_unpause_item, "item_backpack");
+	utils_do_flags (match_unpause_item);
+	utils_do_hook (match_unpause_item);
+	utils_do_item(match_unpause_item, "item_rune");
+	utils_do_projectiles(match_unpause_item);
+	utils_do_players(match_unpause_player);
+	utils_do_item(match_unpause_ghost, "clanring_ghost");
+	utils_do_players(match_gib_player);
+	match_reset();
+	match_delete_teams();
+	remove(clanring_match_timer);
+	clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
+	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
+	clanring_state = ((clanring_state | CLANRING_MATCH_OVER) | CLANRING_MATCH_WAIT);
+	//TODO: Play some custom sound here... 
+	clanring_sentinel.movetarget = world;
+
+	utils_do_match_spawns(spawns_restore_model);
+}
+
 //
 //  U N P A U S E
 //
@@ -2000,6 +2093,10 @@ void() match_unpause =
 	{
 		return;
 	}
+
+	if (clanring_request != world)    //Remove any active requests
+        Request_Poll_Cleanup();
+
 	clanring_state = (clanring_state - (clanring_state & CLANRING_MATCH_PAUSED));
 	clanring_state = (clanring_state - (clanring_state & CLANRING_AUTO_PAUSED));
 	clanring_match_pause_time = time - clanring_match_pause_time;
@@ -2016,6 +2113,7 @@ void() match_unpause =
 	utils_do_players(match_unpause_player);
 	utils_do_item(match_unpause_ghost, "clanring_ghost");
 	announce("Match unpaused");
+
 	match_bprint_time();
 	match_bprint_score();
 	clanring_match_timer.nextthink = clanring_match_timer.cnt + clanring_match_pause_time;
@@ -2293,6 +2391,11 @@ void() match_impulse =
 			match_request_unpause();
 			break;
 		}
+		case (126):
+		{
+			match_list_ghosts();
+			break;
+		}
 		case (127):
 		{
 			match_request_restore_ghost();
@@ -2438,11 +2541,11 @@ void(entity player) match_disconnect_notify =
 				self.owner.dest1 		= self.dest1;
 				self.owner.dest2 		= self.dest2;
 				self.owner.mangle 		= self.mangle;
-				self.owner.clanring_qdwep 	= self.clanring_qdwep;
-				self.owner.clanring_qdkill = self.clanring_qdkill;
-				self.owner.clanring_ptwep = self.clanring_ptwep;
-				self.owner.clanring_ptkill = self.clanring_ptkill;
-				self.owner.clanring_hack_count = self.clanring_hack_count;// clanring
+				self.owner.clanring_qdwep 		= self.clanring_qdwep;
+				self.owner.clanring_qdkill 		= self.clanring_qdkill;
+				self.owner.clanring_ptwep 		= self.clanring_ptwep;
+				self.owner.clanring_ptkill 		= self.clanring_ptkill;
+				self.owner.clanring_hack_count 	= self.clanring_hack_count;
 				self.owner.style 		= self.style & (CLANRING_ADMINISTRATOR | CLANRING_HEADS_UP | CLANRING_SMART_WEAPON | CLANRING_AUTOSTATS);
 				self.owner.true_kills 	= self.true_kills;
 				self.owner.pos1_x 		= self.pos1_x;
@@ -2470,6 +2573,8 @@ void(entity player) match_disconnect_notify =
 				if (clanring_playmode & CLANRING_AUTO_PAUSE)
 				{
 					match_pause();
+					if ((clanring_request != world)&&(clanring_request.classname == "match_pause"))	//Remove active request to pause
+						Request_Poll_Cleanup();
 					bprint("\bClanring autopause activated\n");
 					cprint("Clanring autopause activated\n");
 					bprint("\bType '\btimerstart\b' to restart match\n");
@@ -2609,4 +2714,45 @@ void(entity player) match_disconnect_notify =
 	}
 	if (!clanring_numteams)
 		announce3("No ", clanring_szteam, "s present");
+};
+
+//
+//  L I S T  G H O S T S
+//
+void() match_list_ghosts =
+{
+	local entity e;
+	local string num, tname, pname, pad;
+
+	if (self.next_team == world)
+	{
+		sprint(self, "You are not on a team.\n");
+		return;
+	}
+	e = find(world, classname, "clanring_ghost");
+	if (!e)
+	{
+		sprint(self, "There are no ghosts\n");
+		return;
+	}
+
+	tname = strings_get_teamname(self.next_team.height);
+	sprint(self,"\nGhost codes for the ", tname,"\n");
+	while (e)
+	{
+		if (e.height == self.next_team.height)	// Only list ghostcodes for your team
+		{
+			sprint(self, "\b----------------+----\n");
+			num = strings_ftos_gold(e.count);
+			if (e.owner.owner == e)
+				pname = e.owner.netname;
+			else
+				pname = "Disconnected";
+			pad = strpad(15, pname);
+			sprint(self, pad," \b|\b ", num,"\n");
+			pad = ""; num = "";
+		}
+		e = find(e, classname, "clanring_ghost");
+	}
+	sprint(self, "\n");
 };

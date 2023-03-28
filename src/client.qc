@@ -80,7 +80,7 @@ void() SetPracticeParms =
 {
 	parm1 = IT_SHOTGUN | IT_AXE | IT_ROCKET_LAUNCHER | IT_ARMOR3 | IT_SUPER_SHOTGUN | IT_NAILGUN | IT_GRENADE_LAUNCHER | IT_LIGHTNING | IT_SUPER_NAILGUN;
 
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)	//default hook on in CTF modes
+	if (!(clanring_playmode & CLANRING_NO_HOOK))
 		parm1 = parm1 | IT_HOOK;
 
 	parm2 = 100;
@@ -133,7 +133,10 @@ void() SetNewParms =
 		}
 	}
  
-	parm10 = CLANRING_NEW_CLIENT; // CRMOD observer flags moved | ELOHIM_OBSERVER_WALK; // elohim player flags
+	if (!(clanring_playmode & CLANRING_NO_HOOK))//optional sethook
+		parm1 = parm1 | IT_HOOK;
+
+	parm10 = CLANRING_NEW_CLIENT | CLANRING_SMART_WEAPON; // CRMOD observer flags moved | ELOHIM_OBSERVER_WALK; // elohim player flags
 	parm11 = 0;
 	parm12 = OBSERVER_FLY;// CRMOD observer flags
 	parm13 = 0;
@@ -176,6 +179,10 @@ void() SetNewParms2 =
 			if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))		//Deathmatch
 			{
 				parm1 = IT_SHOTGUN | IT_AXE;
+
+				if (!(clanring_playmode & CLANRING_NO_HOOK))//someone voted for hook...
+					parm1 = parm1 | IT_HOOK;
+	
 				parm2 = 100;
 				parm3 = 0;
 				parm4 = 25;
@@ -468,7 +475,7 @@ void() ClientKill =
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 	{
-		sprint(self,"The match is paused; you cannot suicide.\n");
+		sprint(self,"The match is paused; you cannot self-gib.");
 		return;
 	}
 
@@ -577,7 +584,7 @@ entity () SelectSpawnPoint =
 	local float	pcount;
 	local float	loop_count;	
 
-	if ((self.killed == FALSE) && (clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (!(self.style & CLANRING_OBSERVER)))
+	if ((self.killed == FALSE) && (clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (!(self.style & CLANRING_OBSERVER)) && (!(clanring_playmode & CLANRING_PRACTICE_MODE)))
 	{
 		spot = TeamCaptureSpawn();
 		if (spot.classname == "info_player_deathmatch")
@@ -620,7 +627,7 @@ entity () SelectSpawnPoint =
 					thing = findradius (spot.origin, 128);
 					while (thing)
 					{
-						if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))//r00k: todo thing.health check ?
+						if (((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && (!(thing.style & CLANRING_OBSERVER)) && (thing.health))//r00k: added .health
 						{
 							pcount = 1;
 							thing = world;
@@ -747,7 +754,12 @@ void() PutClientInServer =
 	DecodeLevelParms ();	
 	
 	if (self.style & CLANRING_CONNECTED)
-		updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
+	{
+		if (!(self.style & CLANRING_AFK_CLIENT))
+			updatename(self,self.netname); //R00k: workaround for qss server losing userinfo
+		else
+			afk_name();
+	}
 	
 	//in classic mode auto join on connect
 	if (teamplay)
@@ -756,7 +768,7 @@ void() PutClientInServer =
 		{
 			if  ((!(self.style & CLANRING_BLUE_TEAM)) && (!(self.style & CLANRING_RED_TEAM)) && (!(self.style & CLANRING_OBSERVER)))
 			{
-				utils_make_scheduled_event(teamplay_force_player_ready, 0.05);
+				utils_make_scheduled_event(teamplay_force_player_ready, 1);//R00k: changed from 0.05 to 1, give them time to establish connection.
 				return;
 			}	
 		}
@@ -1354,8 +1366,8 @@ void() PlayerPreThink =
 	if (self.height != self.team - 1)
 		match_verify_team ();
 
-	if (self.movetype != self.finaldest_y) // dork used admin 0 noclip or fly (R00k: CL_PRIVILEGED was removed is this still needed?)
-		self.movetype = self.finaldest_y;
+//	if (self.movetype != self.finaldest_y) // dork used admin 0 noclip or fly (R00k: CL_PRIVILEGED was removed is this still needed?)
+//		self.movetype = self.finaldest_y;
 
 	if (time > self.wait)
 	{
@@ -1507,7 +1519,6 @@ void() CheckPowerups =
 				self.modelindex	= modelindex_eyes;
 				setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 			}
-			
 			self.skin  = 0;//R00k: oversight 3wave forgot to reset the skin; engine complains about this during execution. :(
 	
 			if (self.invisible_finished < time)
@@ -1757,36 +1768,27 @@ void() PlayerPostThink =
 		}
 	}
 
-	if (IS_CA_OBSERVER(self))
-	{
-		observer_post_think();
-		return;
-	}
-	else
 	if (self.style & CLANRING_OBSERVER)
 	{		
 		self.effects = 0;
 		observer_post_think ();
 		return;
 	}
-	else if (prematch_rules())
+
+	if (prematch_rules())
 	{
 		if (time >= self.delay)
 		{
-			self.delay = time + 0.1;
+			self.delay = time + 0.5;
 			clanring_show_rules_prematch();
 		}
 	}
-	else if ((clanring_state & CLANRING_MATCH_STARTED))
-	{
-		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-			TeamCapturePlayerUpdate();
-		else if (clanring_match_timer.lip == clanring_timelimit)
-			centerprint(self, " \n\n\n"); //make sure rules centerprint is gone
-	}
 	else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
-		TeamCapturePlayerUpdate();
+		if (((clanring_playmode & CLANRING_MATCH_MODE)&&(clanring_state & CLANRING_MATCH_STARTED))||(clanring_playmode & CLANRING_NORMAL_MODE))
+		{
+			TeamCapturePlayerUpdate();
+		}
 	}
 	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 	{
@@ -1867,7 +1869,7 @@ void() PlayerPostThink =
 		self.jump_flag = self.velocity_z;
 
 		//Normalize bunnyhopping at all ticrates/client protocols (ie sv_nqplayerphysics 0)
-		if (cvar("nqfriction"))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
+		if (isFTEserver && (cvar("nqfriction")))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
 		{
 			if ((!(self.flags & FL_BHOP))&&(time - self.jump_time < 0.2)) 
 			{
@@ -1937,6 +1939,7 @@ void() PlayerPostThink =
 			}
 
 			if (self.armorvalue < 150 && self.armortype)
+			//?if (self.armorvalue < (250 * self.armortype))//R00k: max value based on armor type (200R 150Y 100G)
 			{
 				rjs = 1;
 				self.armorvalue = self.armorvalue + 5;
@@ -1961,10 +1964,6 @@ void() ClientConnect =
 	self.finaldest_x = time;//lagout timer
 
 	clanring_client_connect ();
-
-	//remove this - bucksh0t
-	bprint (self.netname);
-	bprint (" entered the game\n");
 
 	if (stof(infokey(self, "csqcactive")))
 	{				
@@ -2013,7 +2012,12 @@ void() ClientDisconnect =
 			if ((self.frags < 1) && (self.frags > -99))
 				announce5(self.netname, " rage-quit with ", s, " frag", pl);
 			else
-				announce2(self.netname, " disconnected.");	//observers
+			{
+				if (clanring_kick_mode == KICK_LAGOUT)
+				{}
+				else
+					announce2(self.netname, " disconnected.");	//observers
+			}				
 		}
 	}
 	// ELOHIM_MOD - play gib sound if client was kicked for suiciding
@@ -2710,7 +2714,6 @@ void () client_afk_on =
 {
 	if (!(self.style & CLANRING_AFK_CLIENT))
 	{
-		sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
 		afk_name();
 		stuffcmd(self, "cmd setinfo afk yes\n");// woods
 		self.style = self.style | CLANRING_AFK_CLIENT;

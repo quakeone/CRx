@@ -1,7 +1,7 @@
 /*
 	request.qc
 
-	polling functions
+	polling functions - by R00k
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ void() Request_Poll_Cleanup =
 		clanring_request.touch = SUB_Null;
 		remove(clanring_request);
 		clanring_request = world;
-}
+	}
 
 	//Clear out the votes for this request.
 	trash_disco = find(world, classname, "player");
@@ -68,16 +68,28 @@ float(float ballot) Request_Poll_Votes_Needed =
 	{
 		while (bingo)
 		{
-			if ((bingo.style & CLANRING_CONNECTED) && !(bingo.style & CLANRING_AFK_CLIENT))
+			if (bingo.style & CLANRING_CONNECTED)
 			{
-				pcount += 1;
+				if (bingo.style & CLANRING_AFK_CLIENT)
+				{
+					if (bingo.vote)	//count players that are afk and already voted 
+					{
+						pcount += 1;
 
-				if ((bingo.vote == ballot) || (bingo == clanring_request.owner))
-					vcount += 1;
+						if ((bingo.vote == ballot) || (bingo == clanring_request.owner))
+							vcount += 1;
+					}
+				}
+				else
+				{
+					pcount += 1;
+
+					if ((bingo.vote == ballot) || (bingo == clanring_request.owner))
+						vcount += 1;
+				}
 			}
 			bingo = find(bingo, classname, "player");
 		}
-
 		votes_needed = ceil((pcount * 0.51) - vcount);
 	}
 	else
@@ -86,21 +98,33 @@ float(float ballot) Request_Poll_Votes_Needed =
 		{
 			while (bingo)
 			{
-				if ((bingo.style & CLANRING_CONNECTED) && !(bingo.style & CLANRING_AFK_CLIENT))
+				if (bingo.style & CLANRING_CONNECTED)
 				{
-					pcount += 1;
-
-					if (bingo.vote == ballot)
-						vcount += 1;
+					if (bingo.style & CLANRING_AFK_CLIENT)
+					{
+						if (bingo.vote)	//count players that are afk and already voted 
+						{
+							pcount += 1;
+	
+							if (bingo.vote == ballot)
+								vcount += 1;
+						}
+					}
+					else
+					{
+						pcount += 1;
+	
+						if (bingo.vote == ballot)
+							vcount += 1;
+					}
 				}
 				bingo = find(bingo, classname, "player");
 			}
-
-			votes_needed = ceil((pcount * 0.51) - vcount);
-		}
-		else
-			bprint("Request_Poll_Votes_Needed: Invalid Ballot\n");
-	}
+	 		votes_needed = ceil((pcount * 0.51) - vcount);
+	 	}
+	 	else
+	 		bprint("Request_Poll_Votes_Needed: Invalid Ballot\n");
+	 }
 	if (votes_needed < 1)
 		return 0;
 	else
@@ -125,7 +149,7 @@ void(entity player, float cast) Request_Poll_Vote =
 			if (player == clanring_request.owner)							// This person, who changed their mind, also started the request, so just cancel it.
 			{
 				sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
-				bprint("The request was cancelled.\n");
+				bprint(player.netname," cancelled their request.\n");
 				Request_Poll_Cleanup();
 				return;
 			}
@@ -136,9 +160,32 @@ void(entity player, float cast) Request_Poll_Vote =
 		}
 		else
 		{
-			if (player != clanring_request.owner)
-				sprint(player, "You already voted.\n");
-			return;
+//			if (player != clanring_request.owner)
+			{
+				if (player.style & CLANRING_ADMINISTRATOR)					// So, an admin already voted, and now wishes to affirm their vote
+				{
+					bprint("\x90\bAdmin Forced\b\x91 ");
+					
+					if (cast == 1)
+					{
+						bprint("vote passed.\n");
+						clanring_request.touch();
+						sound(world, CHAN_AUTO, "misc/runekey.wav", 1, ATTN_NONE);
+					}
+					else
+					{
+						bprint("The request was declined.\n");
+						sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
+					}
+					Request_Poll_Cleanup();
+					return;
+				}
+				else
+				{
+					sprint(player, "You already voted.\n");
+					return;
+				}
+			}
 		}
 	}
 
@@ -147,16 +194,16 @@ void(entity player, float cast) Request_Poll_Vote =
 	if (player != clanring_request.owner)
 	{
 		if (cast == 1)
-			bprint(player.netname, " voted \byes\b.");
+			bprint(player.netname, " voted \byes\b.\n");
 		else if (cast == 2)
-			bprint(player.netname, " voted \bno\b.");
+			bprint(player.netname, " voted \bno\b.\n");
 	}
 
 	if (cast == 1)
 	{
 		votes_needed = Request_Poll_Votes_Needed(cast);
 
-		if ((votes_needed == 0)||(player.style & CLANRING_ADMINISTRATOR)) // majority YES
+		if (votes_needed == 0)// majority YES
 		{
 			bprint("\n");
 			clanring_request.touch();
@@ -164,9 +211,13 @@ void(entity player, float cast) Request_Poll_Vote =
 			Request_Poll_Cleanup();
 		}
 		else
-		{
+		{			
 			if (player != clanring_request.owner)
 			{
+				if (player.style & CLANRING_ADMINISTRATOR)
+				{
+					sprint(player,"\x90\bWarning\b\x91: You are an admin, type \byes\b again to force this vote.\n");
+				}
 				if (votes_needed == 1)
 					bprint(" \1 vote needed to \bpass\b.\n");
 				else
@@ -180,13 +231,16 @@ void(entity player, float cast) Request_Poll_Vote =
 		if (cast == 2)
 		{
 			votes_needed = Request_Poll_Votes_Needed(cast);
-		
-			if ((votes_needed == 0)||(player.style & CLANRING_ADMINISTRATOR)) // majority NO
+			if (votes_needed == 0) // majority NO
 			{
 				bprint("\n");
 				sound(world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
 				bprint("The request was declined.\n");
 				Request_Poll_Cleanup();
+			}
+			else if (player.style & CLANRING_ADMINISTRATOR)
+			{
+				sprint(player,"\x90\bWarning\b\x91: You are an admin, type \bno\b again to cancel this vote.\n");
 			}
 		}
 	}
@@ -223,6 +277,14 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 {
     clear_afk_status(self);	//R00k: (1/3/2022 12:54pm)
 
+/*TODO:
+	if (clanring_playmode & CLANRING_DISABLE_VOTE)
+	{
+		sprint(self, "Voting has been disabled.\n");
+		return FALSE;
+	}
+*/
+
 	if (clanring_request)
 	{
 		sound (world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
@@ -235,7 +297,7 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 		sprint(self, "Observers cannot initiate votes during match.\n");
 		return FALSE;
 	}
-
+	
 	clanring_request = spawn();
 	clanring_request.owner = self;
 	clanring_request.noise1 = strzone(captiona);

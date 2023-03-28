@@ -160,8 +160,8 @@ void () arena_main_loop =
 			{
 				if (boss.count == 0)
 				{
-					sound (world, CHAN_ITEM, "crx/fight.wav", 1, ATTN_NONE);
-					//ctprint ("\bFIGHT!");
+					sound (world, CHAN_AUTO, "crx/fight.wav", 1, ATTN_NONE);
+					ctprint ("\bFIGHT!");
 					utils_do_arena_players(arena_fight_and_shoot);
 					boss.timetofight = TRUE;
 					boss.state = CA_MATCH_PLAYING;
@@ -171,22 +171,24 @@ void () arena_main_loop =
 
 				if (boss.count == 1)
 				{
-					//ctprint ("1");
-					sound (world, CHAN_ITEM, "crx/one.wav",1, ATTN_NONE);
+					if (boss.round > 1) ctprint ("1");
+					sound (world, CHAN_AUTO, "crx/one.wav",1, ATTN_NONE);
 				}
 				else if (boss.count == 2)
 				{
-					//ctprint ("2");
-					sound (world, CHAN_ITEM, "crx/two.wav", 1, ATTN_NONE);
+					if (boss.round > 1) ctprint ("2");
+					sound (world, CHAN_AUTO, "crx/two.wav", 1, ATTN_NONE);
 				}
 				else if (boss.count == 3)
 				{
-					//ctprint("3");
-					sound(world, CHAN_ITEM, "crx/three.wav", 1, ATTN_NONE);
+					if (boss.round > 1) ctprint("3");
+					sound(world, CHAN_AUTO, "crx/three.wav", 1, ATTN_NONE);
 				}
-				else if ((boss.count == 5) && (boss.round > 1))
+				else if (boss.count == 5)
 				{
-					announce("prepare to fight");					
+					if (boss.round > 1) 
+						announce("prepare to fight");					
+					//sound(world, CHAN_ITEM, "crx/prepare.wav", 1, ATTN_NONE);
 				}
 			}
 		}
@@ -231,9 +233,9 @@ void () arena_main_loop =
 				boss.timetofight	= FALSE;
 				boss.count 	= 10;
 				boss.wait 	= 0;
-				//sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
-				sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
-				//announce("Match begins in \b10\b seconds.");
+				sound (world, CHAN_VOICE, "misc/talk.wav", 1, ATTN_NONE);
+				//sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
+				announce("Match begins in \b10\b seconds.");
 				utils_do_players(reset_frags);
 				Practice_Object_Remove();
 				//TODO: needed?

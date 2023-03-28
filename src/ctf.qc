@@ -34,7 +34,12 @@ void(entity flg) RegenFlag =
 	sound(flg, CHAN_AUTO, "items/itembk2.wav", 1, ATTN_NORM);
 	flg.angles    	= flg.mangle;
 	flg.cnt       	= FLAG_AT_BASE; 
-	
+
+	if ((flg.team == RED))
+		forceinfokey (world, "red flag","at base");
+	else
+		forceinfokey (world, "blue flag","at base");
+
 	if (flg.owner != world)
 		flg.owner.items = flg.owner.items - (flg.owner.items & (IT_KEY1 | IT_KEY2));
 		
@@ -144,6 +149,11 @@ void(entity flg) TeamDropFlag =
 	flg.flags      	= FL_ITEM;
 	flg.solid      	= SOLID_TRIGGER;
 	flg.movetype   	= MOVETYPE_TOSS;
+
+	if ((flg.team == RED))
+		forceinfokey (world, "red flag","dropped");
+	else
+		forceinfokey (world, "blue flag","dropped");
 
 	sound(flg, CHAN_AUTO, "misc/basekey.wav", 1, ATTN_NONE);
 	
@@ -280,7 +290,10 @@ void() TeamCaptureFlagTouch =
 							if (new_player_record > 0)
 							{
 								if (new_player_record == 1)
+								{
 									sound(world,CHAN_AUTO,"crx/congrats.wav",1,ATTN_NONE);
+									clanring_new_record_player = other.netname;
+								}									
 								else if ((new_player_record == 2) || (new_player_record == 3))
 									sound(world,CHAN_AUTO,"crx/goodstat.wav",1,ATTN_NONE);
 								write_capture_stats();
@@ -433,10 +446,17 @@ void() TeamCaptureFlagTouch =
 	{
 		other.lefty = 0;
 	}
-	self.cnt	= FLAG_CARRIED;
+
+	self.cnt		= FLAG_CARRIED;
 	self.movetype	= MOVETYPE_NOCLIP;
-	self.solid	= SOLID_NOT;
-	self.owner	= other;
+	self.solid		= SOLID_NOT;
+	self.owner		= other;
+
+	if ((self.team == RED))
+		forceinfokey (world, "red flag","carried");
+	else
+		forceinfokey (world, "blue flag","carried");
+
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
@@ -725,7 +745,7 @@ void() place_flag =
 	self.nextthink = time + (sys_ticrate);
 	self.cnt       = FLAG_AT_BASE;
 	self.mangle    = self.angles;	
-	
+
 	self.watertype	= CONTENT_EMPTY;
 	self.waterlevel	= 0;
 
@@ -737,6 +757,12 @@ void() place_flag =
 		remove(self);
 		return;
 	}	
+
+	if ((self.team == RED))
+		forceinfokey (world, "red flag","at base");
+	else
+		forceinfokey (world, "blue flag","at base");
+
 	self.oldorigin = self.origin;//base position
 };
 
@@ -752,6 +778,8 @@ void() item_flag_team1 =
 	self.items     = IT_KEY2;	
 	self.owner     = world;		
 	self.effects   = self.effects | EF_RED;
+
+	forceinfokey (world, "red flag","at base");
 	
 	if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
 	{
@@ -805,6 +833,8 @@ void() item_flag_team2 =
 	self.items     = IT_KEY1;	
     self.owner     = world;	        
 	self.effects   = self.effects | EF_BLUE;
+
+	forceinfokey (world, "blue flag","at base");
 	
 	if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
 	{		
@@ -888,6 +918,12 @@ void() RuneTouch =
 
 	if ((other == self.owner) && (self.nextthink > time + 119))
 		return;
+
+	if (other.classname == "trigger_hurt")
+	{
+		self.nextthink = time;	// just reset the respawn time and let the think function control the return...
+		return;
+	}
 
 	if (other.player_flag & ITEM_RUNE_MASK)
 	{

@@ -398,6 +398,8 @@ void() stats_show_fstats =
 	local entity player;
 	local entity pteam;
 	local float useteams;
+	local string mtr = "";	//match-time record
+	local string ttr = "";	//time-trial record	
 
 	if (clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER) && teamplay)
 		useteams = TRUE;
@@ -467,6 +469,11 @@ void() stats_show_fstats =
 			pteam = player.next_team;
 		}
 	}
+	sprint(self,"\n");
+	mtr = sprintf("%s %s %-16s\n", utils_get_time(playerrecord2[0].statvalue), get_team_letter(playerrecord2[0].teamcolor), playerrecord2[0].player);
+	sprint(self, mapname, " match capture-time record: ", mtr);
+	ttr = sprintf("%s %s %-16s\n", utils_get_time(playerrecord[0].statvalue), get_team_letter(playerrecord[0].teamcolor), playerrecord[0].player);
+	sprint(self, mapname, " trial capture-time record: ", ttr);
 	sprint(self,"\n");
 };
 
@@ -819,7 +826,12 @@ void() stats_autodump =
 		sprint(self, "\n");
 		sprint(self, "\n");
 		sprint(self, "ù\bmatch statisticsü\n");
-		sprint(self, "\n");
+		sprint(self, "\n");		
+		sprint(self, sprintf("map: %s\n",mapname));
+		string date = strftime(TRUE, "%m-%d-%Y %H:%M");
+		local string hname = infokey(world,"hostname");
+		sprint(self, sprintf("%s\n%s\n",date,hname));
+
 		stats_show_summary ();
 		//sprint(self, "\n");
 
@@ -856,6 +868,10 @@ void() stats_autodump =
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		{
 			stats_show_fstats();
+			if (clanring_new_record_player != "")
+			{
+				sprint(self,sprintf("%s set a new match capture record!\n", clanring_new_record_player));
+			}
 			//sprint(self, "\n");
 		}
 		sprint(self, "\n");

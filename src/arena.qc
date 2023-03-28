@@ -127,8 +127,14 @@ void () arena_client_disconnect =
 
 float () mode_is_arena
 {
-    if ((clanring_playmode & CLANRING_CA_MODE) || (clanring_playmode & CLANRING_RA_MODE) 
-		|| (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
+    if 
+	(
+		(clanring_playmode & CLANRING_CA_MODE) 		||
+		(clanring_playmode & CLANRING_WIPEOUT_MODE)	||
+		(clanring_playmode & CLANRING_RA_MODE) 		|| 
+		(clanring_playmode & CLANRING_DMM4_MODE) 	|| 
+		(clanring_playmode & CLANRING_AIRSHOT_MODE)
+	)
         return TRUE;
     return FALSE;
 }
@@ -1461,7 +1467,7 @@ void () arena_unpause_countdown_think =
 	{
 		boss.unpausing = FALSE;
 		arena_unpause ();
-		//ctprint("\bFIGHT!");
+		ctprint("\bFIGHT!");
 		sound(world, CHAN_AUTO, "crx/fight.wav", 1, ATTN_NONE);
 		remove (self);
 	}
@@ -1838,7 +1844,7 @@ void() round_end =
 		if (wteam != world)//ugh lagouts cause all hell
 		{
 			wteam.wins = wteam.wins + 1;//up team rounds won
-			//pqc_team_frags(wteam.team2, wteam.wins);
+			pqc_team_frags(wteam.team2, wteam.wins);
 
 			bprint ("\n");
 			if (wteam.chain_gang != world)

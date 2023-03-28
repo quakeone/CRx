@@ -90,9 +90,8 @@ void() votables_send_aliases =
 //----------------------------------------------------------------
 //	V O T A B L E S  S E T  H O O K
 //
-//	R00K: Enable or disable the hook, only for ctf
-//	(TODO): allow in pub-tdm?
-//			voteable speeds for QW players
+//	R00K: Enable or disable the hook
+//
 //----------------------------------------------------------------
 void() votables_set_hook =
 {
@@ -132,18 +131,15 @@ void() votables_set_hook =
 		if (clanring_playmode & CLANRING_NO_HOOK)
 		{
 			clanring_playmode = clanring_playmode - (clanring_playmode & CLANRING_NO_HOOK);
+			clanring_state = clanring_state - (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM);
 
-			if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && 
-				!(clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_playmode & CLANRING_PRACTICE_MODE))
+			if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (clanring_playmode & (CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE)))
 			{
-				bprint("grappling hook has been \benabled\n");
-			}
-			else
-			{
-				if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
-					clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
+				clanring_state = clanring_state | CLANRING_TEAM_CAPTURE_CUSTOM;
 				bprint("custom grappling hook has been \benabled\n");
 			}
+			else
+				bprint("grappling hook has been \benabled\n");
 
 			p = find(world, classname, "player");
 			while (p)
@@ -382,8 +378,6 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Deathmatch\n");
-
-			newmapname = "dm3";
 		}
 		else if (request_gametype == 1)
 		{
@@ -399,8 +393,6 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Capture The Flag\n");
-
-			newmapname = "ctf1";
 		}
 		else if (request_gametype == 2)
 		{
@@ -410,8 +402,6 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena\n");
-
-			newmapname = "dm3";
 		}
 		else if (request_gametype == 3)
 		{
@@ -459,8 +449,6 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena Wipeout\n");
-
-			newmapname = "dm3";
 		}
 		else if (request_gametype == 7)
 		{
@@ -477,6 +465,9 @@ void() votables_set_gametype_mode_map =
 		}
 
 		utils_set_cvar ("samelevel", clanring_playmode);
+		clanring_level = 1;//Reset the map count if we changed modes
+		utils_set_cvar ("scratch1", clanring_level);
+		nextmap = ""; //Reset the nextmap too
 	}
 	if (request_mode >= 0)
 	{
@@ -548,6 +539,9 @@ void() votables_set_gametype_mode_map =
 		mode = strings_get_mode(request_mode);
 		announce3("playmode set to '", mode, "'");
 		utils_set_cvar("samelevel", clanring_playmode);
+		clanring_level = 1;//Reset the map count if we changed modes
+		utils_set_cvar ("scratch1", clanring_level);
+		nextmap = ""; //Reset the nextmap too
 	}
 	if (request_mapnum)
 	{
@@ -575,7 +569,6 @@ void() votables_set_gametype_mode_map =
 		if ((player.style & CLANRING_CONNECTED) && (player.style & CLANRING_OBSERVER) && (player.movetarget != world))
 		{
 			stuffcmd(player, "setinfo observing off\n");
-			dprint(sprintf("observer off to %s\n", player.netname));
 		}
 		player = find(player, classname, "player");
 	}
@@ -716,11 +709,11 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 	request_mapnum = newmap;
 
 	//If ya'll could pass my vote, thanks!
-	if (self.style & CLANRING_ADMINISTRATOR)
-	{
-		votables_set_gametype_mode_map();
-	}
-	else
+	//if (self.style & CLANRING_ADMINISTRATOR)
+	//{
+	//	votables_set_gametype_mode_map();
+	//}
+	//else
 	{
 		//start vote
 		local string gametype_string = "", mode_string = "", vote_title_string = "", vote_string = "";
@@ -1014,6 +1007,7 @@ void() votables_set_timelimit =
 		default_timelimit = clanring_timelimit;
 		temp = ftos(clanring_timelimit);
 		bprint("Match length changed to ", temp, " minutes\n");
+		forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
 		match_show_timelimit();
 	}
 	else

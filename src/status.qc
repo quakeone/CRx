@@ -83,9 +83,9 @@ string(entity who) TeamSetStatRes2 =
 string (float t_teamcolor) get_team_letter =
 {
 	if (t_teamcolor == TEAM_BLUE)
-		return "\bB\b";
+		return "\bb\b";
 	if (t_teamcolor == TEAM_RED)
-		return "\bR\b";
+		return "\br\b";
 	return " ";
 };
 
@@ -180,8 +180,14 @@ void() TeamCapturePlayerUpdate =
 		
 	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 		return;
-		
-	if ((self.statstate < 0))
+
+	if ((clanring_playmode & CLANRING_MATCH_MODE)&& (!(clanring_state & CLANRING_MATCH_STARTED)))
+		return;
+
+	if (strconv(1,0,0,(infokey(self, "f_status"))) == "off")
+		return;
+
+	if (self.statstate < 0)
 	{
 		return;
 	}
@@ -227,44 +233,20 @@ void() TeamCapturePlayerUpdate =
 		}
 	}
 
-	TeamCaptureCheckUpdate ();
-
 	self.laststattime = (time + PLAYERSTATTIME);
 	res = TeamSetStatRes (self);
-
-	if ((self.player_flag & ITEM_RUNE1_FLAG))
+	//Removed runes because they are on the hud.
+	s1 = TeamCaptureFlagStatusString();
+	if (clanring_playmode & CLANRING_NORMAL_MODE)	//R00k: no need to print the team up by score since in match mode we have hud scores.
 	{
-		s1 = "òåóéóô   ";
+		TeamCaptureCheckUpdate ();
+		s2 = TeamCaptureScoreString();
 	}
 	else
 	{
-		if ((self.player_flag & ITEM_RUNE2_FLAG))
-		{
-			s1 = "óôòåîçôè ";
-		}
-		else
-		{
-			if ((self.player_flag & ITEM_RUNE3_FLAG))
-			{
-				s1 = "èáóôå    ";
-			}
-			else
-			{
-				if ((self.player_flag & ITEM_RUNE4_FLAG))
-				{
-					s1 = "òåçåî    ";
-				}
-				else
-				{
-					s1 = "         ";
-				}
-			}
-		}
+		s2 = "                              ";		//Push the status to the left.
 	}
-
-	s2 = TeamCaptureFlagStatusString();
-
-	s3 = TeamCaptureScoreString();
+	s3 = sprintf("\n%s",self.movetarget.netname);
 
 	centerprint (self, res, s1, s2, s3);
 };

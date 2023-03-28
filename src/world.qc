@@ -347,7 +347,8 @@ void() worldspawn =
 	precache_sound ("hknight/slash1.wav"); //rune toss
 	precache_sound ("misc/basekey.wav"); //flag dropped notification
 	precache_sound("buttons/switch04.wav"); //match timer countdown
-
+	precache_sound("crx/prepare.wav");
+	
 	//
 	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
 	//
@@ -392,8 +393,10 @@ void() worldspawn =
 
 	// 63 testing
 	lightstyle(63, "a");
-	
+
 	clanring_init_world ();    // ELOHIM_MOD - do server specific stuff
+	isFTEserver = checkextension("FTE_MULTIPROGS");
+	if (isFTEserver) print ("FTE server detected.\n");
 };
 
 void() StartFrame =
