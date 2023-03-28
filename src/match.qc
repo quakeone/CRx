@@ -2052,7 +2052,7 @@ void() match_abort_pause_timeout =
 {
 	announce ("\[\bAuto Match Abort Activated\b\]\n");
 	announce ("Match was paused for too long.");
-	announce ("The match is over");//used for cl_autodemo 2, stop the demo after stats_autodump.
+	announce ("The match is over");//used for cl_autodemo 2, stop the demo before stats_autodump.
 
 	if (clanring_request != world)    //Remove any active requests
 		Request_Poll_Cleanup();
@@ -2069,15 +2069,14 @@ void() match_abort_pause_timeout =
 	utils_do_projectiles(match_unpause_item);
 	utils_do_players(match_unpause_player);
 	utils_do_item(match_unpause_ghost, "clanring_ghost");
-
+	utils_do_players(match_gib_player);
 	match_reset();
 	match_delete_teams();
 	remove(clanring_match_timer);
 	clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
 	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
 	clanring_state = ((clanring_state | CLANRING_MATCH_OVER) | CLANRING_MATCH_WAIT);
-	utils_do_players(match_gib_player);
-
+	//TODO: Play some custom sound here... 
 	clanring_sentinel.movetarget = world;
 
 	utils_do_match_spawns(spawns_restore_model);

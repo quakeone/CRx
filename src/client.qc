@@ -2012,7 +2012,12 @@ void() ClientDisconnect =
 			if ((self.frags < 1) && (self.frags > -99))
 				announce5(self.netname, " rage-quit with ", s, " frag", pl);
 			else
-				announce2(self.netname, " disconnected.");	//observers
+			{
+				if (clanring_kick_mode == KICK_LAGOUT)
+				{}
+				else
+					announce2(self.netname, " disconnected.");	//observers
+			}				
 		}
 	}
 	// ELOHIM_MOD - play gib sound if client was kicked for suiciding

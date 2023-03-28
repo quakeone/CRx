@@ -2648,7 +2648,7 @@ void () clanring_start_frame =
 
 						if (time > player.finaldest_x + 25)
 						{
-							clanring_kick_mode = KICK_NONE;
+							clanring_kick_mode = KICK_LAGOUT;
 							clanring_kick_player (player);
 						}
 					}

@@ -377,6 +377,7 @@ float  	KICK_NONE  	= 0;
 float  	KICK_KICK  	= 1;
 float  	KICK_BAN   	= 2;
 float	KICK_AFK	= 3;
+float 	KICK_LAGOUT	= 4;	//R00k
 float 	sys_ready;//hold on the server is loading!!
 float 	debug = 0;
 .float 	ctime;
