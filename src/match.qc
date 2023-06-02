@@ -1933,6 +1933,7 @@ void() match_pause =
 	utils_do_items(match_pause_item);
 	utils_do_item(match_pause_item, "item_backpack");
 	//R00k added -start
+	utils_do_runes(match_pause_item);
 	utils_do_flags(match_pause_item);
 	utils_do_hook(match_pause_item);
 	utils_do_item(match_pause_item, "item_rune");
@@ -2104,6 +2105,7 @@ void() match_unpause =
 	utils_do_item(match_unpause_item, "item_backpack");
 
 	//R00k added -start
+	utils_do_runes (match_unpause_item);
 	utils_do_flags (match_unpause_item);
 	utils_do_hook (match_unpause_item);
 	utils_do_item(match_unpause_item, "item_rune");
