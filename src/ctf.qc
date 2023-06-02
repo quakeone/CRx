@@ -1,4 +1,4 @@
-
+float clanring_map_has_runes;
 void() teamplay_show_score;
 void() StartItem;
 void() vote_impulse;
@@ -9,6 +9,7 @@ void () write_capture_stats;
 void () write_capture_stats_match;
 void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record;
 void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record2;
+void() match_bprint_score;
 
 void(entity flg) RegenFlag =
 {
@@ -328,6 +329,7 @@ void() TeamCaptureFlagTouch =
 					
 					client_frag(other, TEAM_CAPTURE_CAPTURE_BONUS);//score for capture
 					other.fcaptures = (other.fcaptures + 1);//fstats
+					match_bprint_score();//R00k: update scores for console and infokeys
 
 					// Ok, let's do the player loop, hand out the bonuses
 					p = find(world, classname, "player");
@@ -888,6 +890,33 @@ void() func_clanring_wall =
 };
 
 //--Runes Code Based from ZOID's 3WAVE CTF
+//------------------------------------------
+
+void(float flag) Do_DropRune;
+//https://github.com/quakeone/CRx/pull/85 
+void() item_rune_res =
+{
+	self.player_flag = ITEM_RUNE1_FLAG;
+	clanring_map_has_runes = TRUE;
+}
+
+void() item_rune_str =
+{
+	self.player_flag = ITEM_RUNE2_FLAG;
+	clanring_map_has_runes = TRUE;
+}
+
+void() item_rune_hst =
+{
+	self.player_flag = ITEM_RUNE3_FLAG;
+	clanring_map_has_runes = TRUE;
+}
+
+void() item_rune_rgn =
+{
+	self.player_flag = ITEM_RUNE4_FLAG;
+	clanring_map_has_runes = TRUE;	//This flag is set FALSE by default to spawn dynamic runes if the map does not have spawnpoints already defined.
+}
 
 entity () SelectRuneSpawnPoint =
 {
@@ -966,7 +995,6 @@ void() RuneTouch =
 	sound (other, CHAN_ITEM, "misc/runekey.wav", 1, ATTN_NORM);
 	remove(self);
 };
-void(float flag) Do_DropRune;
 
 void() RuneRespawn =
 {
@@ -986,9 +1014,12 @@ void(float flag) Do_DropRune =
 	item.owner = item;
 	item.origin = (self.origin - '0 0 24');	
 	item.player_flag = flag;
-	item.velocity_z = 400;
-	item.velocity_x = (-500 + (random () * 1000));
-	item.velocity_y = (-500 + (random () * 1000));
+	if (clanring_map_has_runes == FALSE)
+	{
+		item.velocity_z = 400;
+		item.velocity_x = (-500 + (random () * 1000));
+		item.velocity_y = (-500 + (random () * 1000));
+	}
 	item.flags = FL_ITEM;
 	item.solid = SOLID_TRIGGER;
 	item.movetype = MOVETYPE_TOSS;
@@ -1071,20 +1102,34 @@ void() SpawnRunes =
 	local float i;
 
 	oself = self;
-	i = (random() * 10);
-	while (i > 0)
+	if (clanring_map_has_runes == FALSE)
 	{
+		i = (random() * 10);
+		while (i > 0)
+		{
+			self = SelectRuneSpawnPoint ();
+			i = i - 1;
+		}
 		self = SelectRuneSpawnPoint ();
-		i = i - 1;
+		Do_DropRune (ITEM_RUNE1_FLAG);
+		self = SelectRuneSpawnPoint ();
+		Do_DropRune (ITEM_RUNE2_FLAG);
+		self = SelectRuneSpawnPoint ();
+		Do_DropRune (ITEM_RUNE3_FLAG);
+		self = SelectRuneSpawnPoint ();
+		Do_DropRune (ITEM_RUNE4_FLAG);
 	}
-	self = SelectRuneSpawnPoint ();
-	Do_DropRune (ITEM_RUNE1_FLAG);
-	self = SelectRuneSpawnPoint ();
-	Do_DropRune (ITEM_RUNE2_FLAG);
-	self = SelectRuneSpawnPoint ();
-	Do_DropRune (ITEM_RUNE3_FLAG);
-	self = SelectRuneSpawnPoint ();
-	Do_DropRune (ITEM_RUNE4_FLAG);
+	else
+	{
+		self = find(world,classname,"item_rune_res");
+		Do_DropRune (ITEM_RUNE1_FLAG);
+		self = find(world,classname,"item_rune_str");
+		Do_DropRune (ITEM_RUNE2_FLAG);
+		self = find(world,classname,"item_rune_hst");
+		Do_DropRune (ITEM_RUNE3_FLAG);
+		self = find(world,classname,"item_rune_rgn");
+		Do_DropRune (ITEM_RUNE4_FLAG);
+	}
 	remove(oself);
 };
 
