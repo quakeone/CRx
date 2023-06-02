@@ -326,6 +326,7 @@ void () server_set_infokey_modes =
 		{
 			if (clanring_playmode & CLANRING_PRACTICE_MODE)
 			{
+				zmode = ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) ? "ctf":"dm");
 				pmode = "practice";
 			}		
 		}
