@@ -1361,10 +1361,13 @@ void () clanring_put_client_in_server =
 			}
 		}
 
-		if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
-		{	
-			if (self.team == RED)  self.skin = 1;				
-			if (self.team == BLUE) self.skin = 3;								
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+		{
+			if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+			{	
+				if (self.team == RED)  self.skin = 1;				
+				if (self.team == BLUE) self.skin = 3;								
+			}
 		}
 
 		if (mode_is_arena())
