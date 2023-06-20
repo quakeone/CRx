@@ -1483,10 +1483,13 @@ void() CheckPowerups =
 			setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 			player_run();
 
-			if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+			if (clanring_playmode & CLANRING_MATCH_MODE)
 			{
-				if (self.team == RED)   self.skin = 1;
-				if (self.team == BLUE)  self.skin = 3;
+				if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+				{
+					if (self.team == RED)   self.skin = 1;
+					if (self.team == BLUE)  self.skin = 3;
+				}
 			}
 		}// end
 		else
@@ -1530,10 +1533,13 @@ void() CheckPowerups =
 				setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 				player_run();
 
-				if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+				if (clanring_playmode & CLANRING_MATCH_MODE)
 				{
-					if (self.team == RED)   self.skin = 1;
-					if (self.team == BLUE)  self.skin = 3;
+					if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+					{
+						if (self.team == RED)   self.skin = 1;
+						if (self.team == BLUE)  self.skin = 3;
+					}
 				}
 			}
 		}
