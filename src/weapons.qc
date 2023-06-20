@@ -347,7 +347,7 @@ void() W_FireShotgun =
 	if (!(ammo_is_infinite()))
 	self.currentammo = self.ammo_shells = self.ammo_shells - 1;
 	makevectors(self.v_angle); // ELOHIM_MOD - added this
-	dir = aim (self, 100000);
+	dir = v_forward; // R00k: removed autoaim support 	
 	FireBullets (6, dir, '0.04 0.04 0');
 };
 
@@ -374,7 +374,7 @@ void() W_FireSuperShotgun =
 		self.currentammo = self.ammo_shells = self.ammo_shells - 2;
     // END_MOD
     makevectors(self.v_angle); // ELOHIM_MOD - added this
-	dir = aim (self, 100000);
+	dir = v_forward; // R00k: removed autoaim support 	
 	FireBullets (14, dir, '0.14 0.08 0');
 };
 
@@ -478,8 +478,8 @@ void() T_MissileTouch =
 
 //	sound (self, CHAN_WEAPON, "weapons/r_exp3.wav", 1, ATTN_NORM);
 	self.origin = self.origin - 8*normalize(self.velocity);
-	WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
-	WriteByte(MSG_BROADCAST, TE_EXPLOSION);
+	WriteByte  (MSG_BROADCAST, SVC_TEMPENTITY);
+	WriteByte  (MSG_BROADCAST, TE_EXPLOSION);
 	WriteCoord (MSG_BROADCAST, self.origin_x);
 	WriteCoord (MSG_BROADCAST, self.origin_y);
 	WriteCoord (MSG_BROADCAST, self.origin_z);
@@ -510,8 +510,8 @@ void() W_FireRocket =
 
 // set missile speed		
 	makevectors (self.v_angle);
-	missile.velocity = aim (self, 1000);
-	missile.velocity = missile.velocity * 1000;
+
+	missile.velocity = (v_forward * 1000);
 	missile.angles = vectoangles(missile.velocity);
 	missile.touch = T_MissileTouch;
 

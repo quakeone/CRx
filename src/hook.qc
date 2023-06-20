@@ -315,8 +315,8 @@ void() W_FireHook =
 
 	if (hookspeedfire < 800)
 		hookspeedfire = 1200;
-		
-	hook.velocity 	= hookspeedfire * aim (self, hookspeedfire);
+
+	hook.velocity 	= hookspeedfire * v_forward;
 	hook.angles 	= vectoangles (hook.velocity);
 	hook.avelocity 	= '0 0 -500';
 	hook.touch 		= T_HookTouch;
