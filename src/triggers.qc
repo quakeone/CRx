@@ -458,7 +458,7 @@ void() teleport_touch =
 	{
 		other.v_angle = other.angles = t.mangle;	
 		if (isFTEserver)
-			self.fixangle = 3;	// 3 = FTE Skip Deltas.
+			other.fixangle = 3;	// 3 = FTE Skip Deltas.
 		else
 			other.fixangle = TRUE; // turn this way immediately
 		other.teleport_time	= time + 0.7;
