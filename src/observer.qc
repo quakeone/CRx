@@ -804,11 +804,15 @@ void () observer_next_target =
 	// 	return;
 	// }
 
-    self.movetarget = observer_find_target(self.movetarget);
+	//if (clanring_gameconfig & CLANRING_TEAM_CAMLOCK) 	//R00k: With cam lock a player can only track his teammates.
+	if ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING) && (self.next_team != world))
+		self.movetarget = observer_find_team_target ();
+	else
+		self.movetarget = observer_find_target (self.movetarget);
 
-	if /*(mode_is_arena() && */(self.movetarget == world)//)
-	{
-		observer_walk_start ();
+	if (self.movetarget == world)
+	{	
+		observer_fly_start();
 		return;
 	}
 
