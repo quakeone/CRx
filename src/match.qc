@@ -274,6 +274,38 @@ void() match_gib_player =
 	}
 };
 
+void() match_update_score_info =
+{
+	local string score;
+	local string temp, tc = "";
+
+	if (clanring_first_place != clanring_sentinel)
+	{
+		score = ftos(clanring_first_place.frags);
+		tc = strings_get_colour(clanring_first_place.height);
+		temp = sprintf("teamscore1:%s ",tc);
+
+		forceinfokey (world, temp, score);
+
+		if (clanring_second_place != clanring_sentinel)
+		{
+			score = ftos(clanring_second_place.frags);
+			tc = strings_get_colour(clanring_second_place.height);
+			temp = sprintf("teamscore2:%s ",tc);
+			forceinfokey (world, temp, score);
+		}
+		else
+		{
+			forceinfokey (world, "teamscore2:none","0");
+		}
+	}
+	else
+	{
+		forceinfokey (world, "teamscore1:none","0");
+		forceinfokey (world, "teamscore2:none","0");
+	}
+};
+
 //
 //  B P R I N T  S C O R E
 //
@@ -291,6 +323,7 @@ void() match_bprint_score =
 		temp = strings_szplural(clanring_second_place.frags);
 		announce6(clanring_szthe, clanring_second_place.netname, " has ", score, " frag", temp);
 	}
+	match_update_score_info();
 };
 
 //
@@ -998,7 +1031,8 @@ float () match_put_player_in_team =
 	{
 		clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_OVER);
 		match_delete_teams();
-		score_resend_scoreboard();		
+		score_resend_scoreboard();
+		match_update_score_info();
 	}
 
 	if (self.next_team)
