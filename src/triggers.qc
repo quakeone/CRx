@@ -452,18 +452,18 @@ void() teleport_touch =
 
 	setorigin(other, t.origin);
 	other.angles = t.mangle;
-	
+	other.flags = other.flags - other.flags & FL_ONGROUND;	
+
 	if (other.classname == "player")
 	{
-		other.fixangle 		= TRUE;		// turn this way immediately
+		other.v_angle = other.angles = t.mangle;	
+		if (isFTEserver)
+			self.fixangle = 3;	// 3 = FTE Skip Deltas.
+		else
+			other.fixangle = TRUE; // turn this way immediately
 		other.teleport_time	= time + 0.7;
-		
-		if (other.flags & FL_ONGROUND)
-			other.flags = other.flags - FL_ONGROUND;
 		other.velocity = v_forward * 300;
 	}
-	else
-		other.flags = other.flags - other.flags & FL_ONGROUND;	
 };
 
 /*QUAKED info_teleport_destination (.5 .5 .5) (-8 -8 -8) (8 8 32)
@@ -473,8 +473,6 @@ void() info_teleport_destination =
 {
 // this does nothing, just serves as a target spot
 	self.mangle = self.angles;
-//	self.angles = '0 0 0'; //for some reason, when we give this entity a model, setting this changes the direction we face after spawning.
-//	self.model = "";
 	self.origin = self.origin + '0 0 27';
 	if (!self.targetname)
 		objerror ("no targetname");
