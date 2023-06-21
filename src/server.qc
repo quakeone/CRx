@@ -344,7 +344,7 @@ void () server_set_infokey_modes =
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE) zmode = "airshot";	
 	//else if (clanring_playmode & CLANRING_FREEZETAG_MODE) zmode = "freezetag";	
 	}
-
+	forceinfokey(world, "gametype", zmode);	//TODO: Combine these into one key. gamemode
 	forceinfokey(world, "mode", zmode);
 	forceinfokey(world, "playmode", pmode);
 };
@@ -361,15 +361,19 @@ void () clanring_init_world =
 	local string szmode;
 	local float temp;
 	
-	clanring_version = "crx v1.23.03nq";
-	clanring_version_info = "crx v1.23.03";
-	clanring_version_number = "1.23.03";	//version.year.month.day CRMOD - string to be used throughout code to show version number.
-	clanring_version_red = "\bcrx v1.23.03nq";
+	//CRMOD - string to be used throughout code to show version number.
+	//version.year.month.day 
+	string mv = strzone(strftime(TRUE, "%Y.%m.%d"));
+	clanring_version = sprintf("CRx (v1.%s)",mv);
+	clanring_version_info = sprintf("CRx (v1.%s)",mv);
+	clanring_version_number = sprintf("(v1.%s)",mv);
+	clanring_version_red = sprintf("\bcrx (\b%s\b)",mv);
 	// Initialize sentinel
 	clanring_sentinel = spawn();
 	banent = spawn();
 	
 	clanring_playmode = cvar("samelevel");
+	clanring_gameconfig = cvar("gamecfg");	//R00k TODO: migrate settings 
 	
 	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 	{
@@ -436,7 +440,11 @@ void () clanring_init_world =
 
 		serverflags	= 0;
 		
-		//clanring_playmode 	= clanring_playmode | CLANRING_NO_SPOOGE;//Discharge protection, FIXME: Move this to classic-mode init.
+		// TODO:
+		// clanring_gameconfig 	= clanring_gameconfig | CLANRING_EXTENDED_OBITS;
+		// clanring_gameconfig 	= clanring_gameconfig | CLANRING_RUNETOSS;	//can toss runes on by default.
+		// clanring_gameconfig 	= clanring_gameconfig | CLANRING_SERVER_INITIALIZED;
+
 		clanring_playmode 	= clanring_playmode | CLANRING_EXTENDED_OBITS;
 		clanring_playmode 	= clanring_playmode | CLANRING_RUNETOSS;	//can toss runes on by default.
 		clanring_playmode 	= clanring_playmode | CLANRING_MATCH_MODE;
@@ -444,7 +452,8 @@ void () clanring_init_world =
 		clanring_playmode 	= clanring_playmode | CLANRING_SERVER_INITIALIZED;
 		clanring_state 		= clanring_state 	| CLANRING_TEAM_CAPTURE_CUSTOM;
 		
-		utils_set_cvar("samelevel", clanring_playmode);		
+		utils_set_cvar("samelevel", clanring_playmode);	
+		utils_set_cvar("gamecfg", clanring_gameconfig);	
 	}//initialized
 	
 	// Get/set console variables
@@ -578,7 +587,7 @@ void () clanring_init_world =
 	utils_make_scheduled_event(clanring_remove_start_teleport, 3);
 
 	// woods set serverinfo mod name
-	forceinfokey(world, "mod", "crx");
+	forceinfokey(world, "mod", clanring_version_info);
 	server_set_infokey_modes();
 };
 
@@ -627,7 +636,7 @@ void (float value) clanring_set_teamplay =
 	if (value != -1)
 		teamplay = value;
 	temp = ftos(teamplay);
-	localcmd5("teamplay \"", temp, "?CRx v", clanring_version_number, "\"\n");
+	localcmd3("teamplay \"", temp, "\"\n");
 };
 
 //
@@ -1155,29 +1164,37 @@ void () clanring_client_connect =
 
 		self.afk_time = time + 20;
 		
-	//Identify/advertise the player's client in use.
-		if (substring(infokey(self, "*client"), 0, 7) == "ezQuake")
+		//Identify/advertise the player's client in use.
+		string myClient;
+
+		myClient = string_null;
+		
+		myClient = infokey(self,"*ver");						//FTE and QSS
+		
+		if (myClient != "")
 		{
-			self.client = "ezQuake";
-			text = (sprintf(" with %s.\n",(infokey(self,"*client"))));
+			if (substring(myClient, 0, 5) == "QSS-M")
+				self.client = "QSS-M";
+
+			if (substring(myClient, 0, 3) == "FTE")
+				self.client = "FTE";
+			
+			text = (sprintf(" with %s.\n", myClient));						
 		}
 		else
-		if (substring(infokey(self, "*ver"), 0, 3) == "FTE")
 		{
-			self.client = "FTE";                
-			text = (sprintf(" with %s.\n",(infokey(self,"*ver"))));
-		}
-		else
-		if (substring(infokey(self, "*ver"), 0, 5) == "QSS-M")
-		{
-			self.client = "QSS-M";                
-			text = (sprintf(" with %s.\n",(infokey(self,"*ver"))));
-		}
-		else
-		{
-			self.client = "quake";
-			text = (".\n");			
-		}
+			myClient = infokey(self,"*client");					//ezQuake
+			if (myClient != "")
+			{
+				text = (sprintf(" with %s.\n", myClient));		
+				self.client = "ezQuake";
+			}
+			else
+			{
+				text = ".\n";										//anything else
+				self.client = "Quake";
+			}
+		}			
 		bprint (self.netname," has connected", text);
 	}
 	else self.afk_time = time;
@@ -2629,7 +2646,7 @@ void () clanring_start_frame =
 				fraglimit 	= cvar("fraglimit");
 				teamplay 	= cvar("teamplay");
 				clanring_playmode 	= cvar("samelevel");
-
+				clanring_gameconfig = cvar("gamecfg");	//R00k
 				player = find(world, classname, "player");
 				while (player != world)
 				{
