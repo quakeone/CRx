@@ -1981,6 +1981,22 @@ void() match_pause =
 	match_show_pause();
 };
 
+//  C O U N T D O W N  P A U S E
+// 
+//
+void() match_countdown_pause =
+{
+	if (self.owner.next_team.pausetime > 3)
+	{
+		remove(self);		
+		match_pause();
+		return;
+	}
+	bprint(sprintf("\[%g\]\n", (4 - self.owner.next_team.pausetime)));
+	self.owner.next_team.pausetime += 1;
+	self.nextthink = time + 1;
+};
+
 //
 //  R E Q U E S T  P A U S E
 //
@@ -2004,9 +2020,9 @@ void() match_request_pause =
 	{
 		if (self.next_team.pausetime == FALSE)//give the team one free match pause...
 		{
-			bprint(sprintf("The %s used their \bone\b free match pause.\n", self.next_team.netname));
+			bprint(sprintf("%s used the %s's \bone\b free match pause.\n", self.netname, self.next_team.netname));
 			self.next_team.pausetime = TRUE;
-			match_pause();
+			utils_make_scheduled_event(match_countdown_pause, 1);
 			return;
 		}
 	}
