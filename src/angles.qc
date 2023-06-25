@@ -89,9 +89,8 @@ void(vector v) angles_fixangle =
     // I tried adding and it didn't work; I tried subtracting and it did.
     // Take it up with id.
 	self.v_angle = self.angles = v - '0.1 0.1 0';
-		if (isFTEserver)
+	if (isFTEserver)
 		self.fixangle = 3;	// 3 = FTE Skip Deltas.
 	else
 		self.fixangle = TRUE;	// forces client's angle to the above, using svc_setangle.
-
 };

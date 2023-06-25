@@ -692,7 +692,7 @@ void(float newtype, float newmode, float newmap) votables_request_set_gametype_m
 		mode = strings_get_mode (newmode);
 	}
 
-	if (newmap)
+	if (newmap >= 0)
 	{
 		self.use = SUB_Null;
 		request_mapname = sprintf("%s (%s)",warpmap[newmap].name,warpmap[newmap].title);

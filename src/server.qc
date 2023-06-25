@@ -344,7 +344,7 @@ void () server_set_infokey_modes =
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE) zmode = "airshot";	
 	//else if (clanring_playmode & CLANRING_FREEZETAG_MODE) zmode = "freezetag";	
 	}
-	forceinfokey(world, "gametype", zmode);	//TODO: Combine these into one key. gamemode
+	forceinfokey(world, "gametype", zmode);	//for json output; gamemode = gametype + playmode ("CTF PickUp", "CA Match", "TDM Practice")
 	forceinfokey(world, "mode", zmode);
 	forceinfokey(world, "playmode", pmode);
 };
@@ -363,11 +363,11 @@ void () clanring_init_world =
 	
 	//CRMOD - string to be used throughout code to show version number.
 	//version.year.month.day 
-	string mv = strzone(strftime(TRUE, "%Y.%m.%d"));
-	clanring_version = sprintf("CRx (v1.%s)",mv);
-	clanring_version_info = sprintf("CRx (v1.%s)",mv);
-	clanring_version_number = sprintf("(v1.%s)",mv);
-	clanring_version_red = sprintf("\bcrx (\b%s\b)",mv);
+	clanring_version        = "CRx \b(v1.23.06)";     // This is used in the server console, the help display, and on connect.
+	clanring_version_info   = "CRx (v1.23.06)";       // This is the value for the forced server infokey named "mod".
+	clanring_version_number = "(v1.23.06)";           // This is only used once when typing 'commands' in the server console. :|
+	clanring_version_red    = "\bcrx (v\b1.23.06\b)"; // This isn't used anywhere :(
+	
 	// Initialize sentinel
 	clanring_sentinel = spawn();
 	banent = spawn();

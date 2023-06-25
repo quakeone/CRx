@@ -1717,7 +1717,7 @@ void() BackpackTouch =
 		}
 		else
 		{
-			sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
+			sound (other, CHAN_ITEM, "weapons/lock4.wav", 1, ATTN_NORM);
 			other.health = other.health + 10;
 			if (other.health > 300)
 				other.health = 300;
@@ -1817,7 +1817,7 @@ void() BackpackTouch =
 	}
 	sprint(other, "\n");
 // backpack touch sound
-	sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
+	sound (other, CHAN_ITEM, "weapons/lock4.wav", 1, ATTN_NORM);
 // remove the backpack, change self to the player
 	remove(self);
 	self = other;
