@@ -1112,23 +1112,23 @@ void() PlayerDeathThink =
 
 		//R00k 1.55 look at enemy when dead
 		if ((self.enemy.classname == "player") && (self.enemy != self))
-				self.movetarget = self.enemy;
-
-		if (time < self.ca_deathcamtime)
 		{
-			if (self.movetarget.ca_player_flag == PF_PLAYING)
+			if (time < self.ca_deathcamtime)
 			{
-				makevectors (self.v_angle);
-				traceline (self.origin, self.movetarget.origin, TRUE, self.movetarget);
-				if (trace_fraction == 1)
+				if (self.enemy.ca_player_flag == PF_PLAYING)
 				{
-					angle = angles_bestaim (self.origin, self.movetarget.origin);
-					angles_fixangle (angle);
+					makevectors (self.v_angle);
+					traceline (self.origin, self.enemy.origin, TRUE, self.enemy);
+					if (trace_fraction == 1)
+					{
+						angle = angles_bestaim (self.origin, self.enemy.origin);
+						angles_fixangle (angle);
+					}
 				}
 			}
 		}
-		if (!(clanring_playmode & CLANRING_WIPEOUT_MODE) || 
-			((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait > 0)))
+
+		if (!(clanring_playmode & CLANRING_WIPEOUT_MODE) || ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait > 0)))
 			return;
 	}
 	// wait for all buttons released

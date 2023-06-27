@@ -592,7 +592,7 @@ void () observer_start =
 
 	if (clanring_playmode & CLANRING_CA_MODE)
 	{
-		if (((self.ca_player_flag == PF_DEAD)||(self.ca_player_flag == PF_WAITING))&&(boss.state == CA_MATCH_PLAYING))//
+		if (((self.ca_player_flag == PF_DEAD)||(self.ca_player_flag == PF_WAITING))&&(boss.state == CA_MATCH_PLAYING))
 		{
 			observer_next_target();
 			observer_chase_start();
@@ -774,21 +774,27 @@ entity (entity e) observer_find_target =
 //  F I N D  T E A M T A R G E T
 //
 //  Returns the next teammate to watch
-//
-entity () observer_find_team_target =
+//	Arena mode only.
+
+entity (entity e) observer_find_team_target =
 {
-	local entity targ;
+	local entity p;
 
-	targ = find (world, classname, "player");
+	p = e.chain_gang;
 
-	while ((!targ) || ((IS_CA_OBSERVER(targ)) || !(targ.style & CLANRING_CONNECTED) || self.next_team.team2 != targ.next_team.team2))
-		targ = find (targ, classname, "player");
-
-	if (targ == world)
+	while (p)
 	{
-		targ = observer_find_target(world);//Find the winner of the match if opponent
+        if ((p.deadflag == DEAD_NO) && (IS_CA_OBSERVER(p) == FALSE) && ((p.style & CLANRING_CONNECTED)))
+			return p;
+		p = p.chain_gang;
 	}
-	return targ;
+	
+	if (p == world)
+	{
+		p = observer_find_target(world); // Find the winner of the match if opponent
+	}
+
+	return p;
 };
 
 //
@@ -798,18 +804,20 @@ entity () observer_find_team_target =
 //
 void () observer_next_target =
 {
-	// if (mode_is_arena() && boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
-	// {
-	// 	observer_walk_start ();
-	// 	return;
-	// }
+	if (mode_is_arena() && (boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART))
+	{
+		observer_fly_start();
+		return;
+	}
 
-	//if (clanring_gameconfig & CLANRING_TEAM_CAMLOCK) 	//R00k: With cam lock a player can only track his teammates.
 	if ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING) && (self.next_team != world))
-		self.movetarget = observer_find_team_target ();
+	{
+		if (self.movetarget.ca_player_flag != PF_PLAYING) // Re-Affirm why we are here finding another team-mate...
+			self.movetarget = observer_find_team_target (self.next_team);
+	}
 	else
 		self.movetarget = observer_find_target (self.movetarget);
-
+	
 	if (self.movetarget == world)
 	{	
 		observer_fly_start();
@@ -1878,7 +1886,7 @@ void () observer_pre_think =
 		{
 			if ((self.movetarget.ca_player_flag == PF_DEAD) || (IS_CA_OBSERVER(self.movetarget)))
 			{
-				if (boss.state == CA_MATCH_PLAYING)//Dont switch between rounds.
+				if (boss.state == CA_MATCH_PLAYING) // Dont switch between rounds.
 					observer_next_target ();
 				else
 					observer_walk_start();
