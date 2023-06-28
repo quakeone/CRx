@@ -74,6 +74,11 @@ void() noclass =
 	remove(self);
 };
 
+// ELOHIM_MOD - need these prototypes
+void() weapon_touch;
+void() ammo_touch;
+// END_MOD
+
 /*
 ============
 PlaceItem
@@ -93,6 +98,17 @@ void() PlaceItem =
 	self.origin_z = self.origin_z + 6;
 	oldz = self.origin_z;
 
+	// Transparent weapons and ammo spawns in practice mode
+	if (clanring_playmode & CLANRING_PRACTICE_MODE)
+	{
+		if (self.touch == weapon_touch || self.touch == ammo_touch)
+		{
+			self.solid = SOLID_NOT;
+			self.alpha = 0.33;
+			return;
+		}
+	}
+	
 	if (!droptofloor())
 	{
 		dprint ("Bonus item fell out of level at ");
@@ -121,10 +137,6 @@ void() PlaceItem =
     // END_MOD
 };
 
-// ELOHIM_MOD - need these prototypes
-void() weapon_touch;
-void() ammo_touch;
-// END_MOD
 float() CheckValidTouch;
 void() SUB_UseAndForgetTargets;
 
@@ -137,17 +149,18 @@ Sets the clipping size and plants the object on the floor
 */
 void() StartItem =
 {
-    // ELOHIM_MOD - no weapons or ammo in practice mode
-	if (clanring_playmode & CLANRING_PRACTICE_MODE)
-    {
-        if (self.touch == weapon_touch || self.touch == ammo_touch)
-        {
-            remove(self);
-            return;
-        }
-    }
+    // // ELOHIM_MOD - no weapons or ammo in practice mode
+	// if (clanring_playmode & CLANRING_PRACTICE_MODE)
+    // {
+    //     if (self.touch == weapon_touch || self.touch == ammo_touch)
+    //     {
+    //         remove(self);
+    //         return;
+    //     }
+    // }
     // END_MOD
-	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	/*else*/
+	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 	{
 		if (self.touch == weapon_touch)
 		{
@@ -473,7 +486,7 @@ void() shard_touch = // this from RMQ shard_touch
 	if (self.snd_misc != "")
 	sound_misc(other, CHAN_AUTO, self.snd_misc, 1, ATTN_NORM);
 	else
-	sound_misc(other, CHAN_AUTO,"dump/armsh1.wav", 1, ATTN_NORM); // dumptruck_ds custom models and sounds END
+	sound_misc(other, CHAN_AUTO,"items/ashardpkup.wav", 1, ATTN_NORM); // dumptruck_ds custom models and sounds END
 	stuffcmd (other, "bf\n");
 
 	activator = other;
@@ -559,7 +572,7 @@ void() item_armor_shard =
 
 	if (!self.mdl_body && world.a_shr_mdl)
 	{
-	  self.mdl_body = world.a_shr_mdl;
+		self.mdl_body = world.a_shr_mdl;
 	}
 
 	self.touch = shard_touch;
@@ -567,7 +580,7 @@ void() item_armor_shard =
 	//precache_body_model ("progs/armshr.mdl");
 	// setmodel (self, "progs/armor.mdl");
 	body_model ("progs/armshr.mdl");
-	precache_sound_misc ("dump/armsh1.wav");
+	precache_sound_misc ("items/ashardpkup.wav"); // R00k
 	if !(self.skin) // dumptruck_ds custom models and sounds END
 	self.skin = 0;
 	setsize (self, '-16 -16 0', '16 16 56');
