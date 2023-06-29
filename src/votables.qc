@@ -218,7 +218,22 @@ void () votables_change_level =
 		changelevel("start");
 	}
 	else
-	changelevel (request_mapname);
+	{
+		local entity player;
+
+		player = find(world, classname, "player");
+		while (player)
+		{		
+		 	if (player.style & CLANRING_CONNECTED)
+		 	{
+				if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
+		 			stuffcmd(player, "setinfo observing off\n");
+				stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
+		 	}
+			player = find(player, classname, "player");
+		}
+		changelevel (request_mapname);
+	}	
 };
 
 
@@ -565,10 +580,12 @@ void() votables_set_gametype_mode_map =
 
 	player = find(world, classname, "player");
 	while (player)
-	{
-		if ((player.style & CLANRING_CONNECTED) && (player.style & CLANRING_OBSERVER) && (player.movetarget != world))
+	{		
+		if (player.style & CLANRING_CONNECTED)
 		{
-			stuffcmd(player, "setinfo observing off\n");
+			if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
+				stuffcmd(player, "setinfo observing off\n");
+			stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
 		}
 		player = find(player, classname, "player");
 	}
