@@ -1423,7 +1423,7 @@ void(entity ghostent) match_restore_ghost =
 	{
 		setorigin(self, ghostent.origin);
 		self.frame = ghostent.frame;
-		self.effects = ghostent.effects;
+		self.effects = self.effects | ghostent.effects;
 		self.angles = ghostent.angles;
 		self.waterlevel = ghostent.waterlevel;
 		self.watertype = ghostent.watertype;
@@ -1432,7 +1432,9 @@ void(entity ghostent) match_restore_ghost =
 		self.nextthink = ghostent.nextthink - 1000000;
 		self.think = ghostent.think;
 		self.health = ghostent.health;
-		self.items = ghostent.items;
+		self.items = (self.items | ghostent.items);
+		if (self.items & IT_QUAD)
+			sprint(self, "You regained your Quad\n");
 		self.armortype = ghostent.armortype;
 		self.armorvalue = ghostent.armorvalue;
 		self.weapon = ghostent.weapon;
@@ -1443,19 +1445,26 @@ void(entity ghostent) match_restore_ghost =
 		self.ammo_nails = ghostent.ammo_nails;
 		self.ammo_rockets = ghostent.ammo_rockets;
 		self.ammo_cells = ghostent.ammo_cells;
-		self.flags = ghostent.flags;
+		self.flags = self.flags | ghostent.flags;
 		self.walkframe = ghostent.walkframe;
 		self.attack_finished = ghostent.attack_finished;
 		self.pain_finished = ghostent.pain_finished;
 		self.air_finished = ghostent.air_finished;
 		self.invincible_finished = ghostent.invincible_finished;
 		self.invisible_finished = ghostent.invisible_finished;
-		self.super_damage_finished = ghostent.super_damage_finished;
-		self.radsuit_finished = ghostent.radsuit_finished;
+		//Update Quad ownership/time			-- request by Unspoken
+		self.super_time = ghostent.super_time;
+		self.super_damage_finished = time + (30 - ghostent.super_time);
+		if (self.super_damage_finished > time)
+		{
+			self.effects = self.effects | EF_DIMLIGHT;
+			self.effects = self.effects | EF_BLUE;
+		}
+		self.rad_time = ghostent.rad_time;
+		self.radsuit_finished = time + (30 - ghostent.rad_time);
 		self.invincible_time = ghostent.invincible_time;
 		self.invisible_time = ghostent.invisible_time;
-		self.super_time = ghostent.super_time;
-		self.rad_time = ghostent.rad_time;
+	
 		self.show_hostile = ghostent.show_hostile;
 		self.jump_flag = ghostent.jump_flag;
 		self.swim_flag = ghostent.swim_flag;
@@ -2125,10 +2134,9 @@ void() match_abort_pause_timeout =
 	remove(clanring_match_timer);
 	clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
 	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
-	clanring_state = ((clanring_state | CLANRING_MATCH_OVER) | CLANRING_MATCH_WAIT);
+	clanring_state = (clanring_state | CLANRING_MATCH_OVER);
 	//TODO: Play some custom sound here... 
 	clanring_sentinel.movetarget = world;
-
 	utils_do_match_spawns(spawns_restore_model);
 }
 
@@ -2552,8 +2560,7 @@ void(entity player) match_disconnect_notify =
 		match_remove_player (player);
 
 	//A player readies up, types notready, then disconnects; which causes the match_start_timer to halt.
-	//We want to proceed with match_start_timer if there are enough players.
-	
+	//We want to proceed with match_start_timer if there are enough players.	
 	if (!(player.style & CLANRING_READY))
 	{
 		// Check to see if we need to start the timer
@@ -2648,7 +2655,7 @@ void(entity player) match_disconnect_notify =
 					self.owner.nextthink = self.nextthink + 1000000;
 					self.owner.think = self.think;
 					self.owner.health = self.health;
-
+					self.owner.items = self.items;
 					self.owner.items = self.items - (self.items & (IT_KEY1 | IT_KEY2));//just in case.
 					self.owner.armortype = self.armortype;
 					self.owner.armorvalue = self.armorvalue;
