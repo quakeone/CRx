@@ -2713,22 +2713,23 @@ void () clanring_start_frame =
 							bprint("\n\bGame ends in\b 30 \bseconds\n\n");
 							break;
 						case 10:
-							bprint("\n\bGame ends in\b  \bseconds\n\n");
+							bprint("\n\bGame ends in\b 10 \bseconds\n\n");
 							break;
 						case 5:
-							bprint("\[ — ‘\n");
+							bprint("5\n");
 							break;
 						case 4:
-							bprint("\[ – ‘\n");
+							bprint("4\n");
 						break;
 						case 3:
-							bprint("\[ • ‘\n");
+							bprint("3\n");
 						break;
 						case 2:
-							bprint("\[ ” ‘\n");
+							bprint("2\n");
 						break;
 						case 1:
-							bprint("\[ “ ‘\n\n");
+							bprint("1\n");
+							bprint("\n");
 						break;
 					}
 				}									

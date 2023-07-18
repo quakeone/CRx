@@ -358,15 +358,23 @@ string (float num) strings_get_colour =
 {
 	const string tab[] = 
 	{
-		"brown",	"light blue",
-		"green",	"red",
-		"olive",	"gold",
-		"flesh",	"lavender",
-		"purple",	"beige",
-		"aqua",		"yellow",
+        "white",
+		"brown",	
+        "light blue",
+		"green",	
+        "red",
+		"olive",	
+        "gold",
+		"flesh",	
+        "lavender",
+		"purple",	
+        "beige",
+		"aqua",		
+        "yellow",
 		"blue"
 	};
-	return tab[num-1];
+
+	return tab[num];
 };
 
 //

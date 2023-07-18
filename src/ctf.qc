@@ -329,7 +329,10 @@ void() TeamCaptureFlagTouch =
 					
 					client_frag(other, TEAM_CAPTURE_CAPTURE_BONUS);//score for capture
 					other.fcaptures = (other.fcaptures + 1);//fstats
-					match_bprint_score();//R00k: update scores for console and infokeys
+
+					// R00k: update scores for console and infokeys
+					if (clanring_playmode & CLANRING_MATCH_MODE)
+						match_bprint_score();
 
 					// Ok, let's do the player loop, hand out the bonuses
 					p = find(world, classname, "player");

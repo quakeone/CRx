@@ -1862,9 +1862,18 @@ void() PlayerPostThink =
 		if (!(self.style & CLANRING_OBSERVER))
 		{
 			if (!(self.style & CLANRING_READY))
-				self.effects |= EF_RED;
+			{
+				if (clanring_numteams > 0) //Woods: "can we disable red glow if you are the only player not ready? so it only activates if >= 1 people ready"
+				{
+					if (!(self.effects & EF_RED))
+						self.effects |= EF_RED;
+				}
+			}
 			else
+			{
+				if (self.effects & EF_RED)
 				self.effects = self.effects - (self.effects & EF_RED);
+			}
 		}
 	}
 
