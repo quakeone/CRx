@@ -1452,14 +1452,15 @@ void(entity ghostent) match_restore_ghost =
 		self.air_finished = ghostent.air_finished;
 		self.invincible_finished = ghostent.invincible_finished;
 		self.invisible_finished = ghostent.invisible_finished;
-		//Update Quad ownership/time			-- request by Unspoken
+		// Update Quad ownership/time			-- request by Unspoken
 		self.super_time = ghostent.super_time;
-		self.super_damage_finished = time + (30 - ghostent.super_time);
-		if (self.super_damage_finished > time)
+		if (self.super_time > 0)
 		{
+			self.super_damage_finished = time + (ghostent.super_time - clanring_match_pause_time);
 			self.effects = self.effects | EF_DIMLIGHT;
 			self.effects = self.effects | EF_BLUE;
 		}
+
 		self.rad_time = ghostent.rad_time;
 		self.radsuit_finished = time + (30 - ghostent.rad_time);
 		self.invincible_time = ghostent.invincible_time;
