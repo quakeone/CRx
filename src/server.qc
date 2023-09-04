@@ -443,8 +443,7 @@ void () clanring_init_world =
 		// TODO:
 		// clanring_gameconfig 	= clanring_gameconfig | CLANRING_EXTENDED_OBITS;
 		// clanring_gameconfig 	= clanring_gameconfig | CLANRING_RUNETOSS;	//can toss runes on by default.
-		// clanring_gameconfig 	= clanring_gameconfig | CLANRING_SERVER_INITIALIZED;
-
+		
 		clanring_playmode 	= clanring_playmode | CLANRING_EXTENDED_OBITS;
 		clanring_playmode 	= clanring_playmode | CLANRING_RUNETOSS;	//can toss runes on by default.
 		clanring_playmode 	= clanring_playmode | CLANRING_MATCH_MODE;
@@ -1793,12 +1792,15 @@ void () clanring_show_rules =
 		sprint(self, "\bOFF\n");
 	else
 		sprint(self, "on\n");
-
+	
 	sprint(self, "ring®®®®®®®®®");
 	if (clanring_playmode & CLANRING_NO_RING)
 		sprint(self, "\bOFF\n");
 	else
 		sprint(self, "on\n");
+
+	if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+		sprint(self, "powerupDrops®", "on\n");
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
@@ -1823,6 +1825,7 @@ void () clanring_show_rules =
 	
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 		sprint(self, "next®map®®®®®",nextmap,"\n");
+
 	sprint(self, "\n");
 };
 
@@ -2645,8 +2648,7 @@ void () clanring_start_frame =
 				timelimit 	= cvar("timelimit") * 60;
 				fraglimit 	= cvar("fraglimit");
 				teamplay 	= cvar("teamplay");
-				clanring_playmode 	= cvar("samelevel");
-				clanring_gameconfig = cvar("gamecfg");	//R00k
+
 				player = find(world, classname, "player");
 				while (player != world)
 				{

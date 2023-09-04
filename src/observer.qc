@@ -407,7 +407,7 @@ void () observer_demo_start =
    // if (!(self.style & CLANRING_HEADS_UP))
         //sprint(self, "type 'headsup' for fullscreen display\n");
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
-	stuffcmd(self, "cmd setinfo observer eyecam\n");// woods
+	clientcommand(self, "setinfo observer eyecam\n");// woods
 
 	//R00k: added auto pov
 	if (self.oflags & OBSERVER_GO_AUTO)
@@ -418,7 +418,7 @@ void () observer_demo_start =
 	}
 	else
 	{
-		sprint(self, "type 'autopov' for automatic eyecam switching\n");
+		sprint(self, "type '\bautopov\b' for automatic eyecam switching\n");
 	}
 
 	self.nextthink = -1;

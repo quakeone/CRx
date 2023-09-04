@@ -277,13 +277,11 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 {
     clear_afk_status(self);	//R00k: (1/3/2022 12:54pm)
 
-/*TODO:
-	if (clanring_playmode & CLANRING_DISABLE_VOTE)
+	if (clanring_gameconfig & CLANRING_DISABLE_VOTE)
 	{
 		sprint(self, "Voting has been disabled.\n");
 		return FALSE;
 	}
-*/
 
 	if (clanring_request)
 	{

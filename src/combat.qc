@@ -592,20 +592,21 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
+		//BAM: Airshot Mod --R00k rewrote 5/31/2017 12:23AM
 		targ.airborn_pos = 0;
 		if (targ.waterlevel < 2)
-		{
-			old_damage = damage; // save back the original damage
-			damage = airshot_damage_z (targ, old_damage); // Modify damage to the target based on the distance they are from the ground; save the height in airborn_pos.
-			if (old_damage < 100) // Ignore splash damage caused by missing the target and hitting walls.
-				damage = 0;
-			else if ((attacker.super_damage_finished <= time) || ((attacker.super_damage_finished > time) && (old_damage >= 400)))
-				attacker.direct_hit = attacker.direct_hit + 1;
+		{		
+			old_damage = damage;							// save back the original damage
 
-			if (targ.airborn_pos < 45) // This was 'if (targ.flags & FL_ONGROUND)'; take minimal damage when jumping over rockets, but still kick them up.
+			damage = airshot_damage_z (targ, old_damage); 	// Modify damage to the target based on the distance they are from the ground; save the height in airborn_pos.
+
+			if (old_damage < 100) 							// Ignore splash damage caused by missing the target and hitting walls.
+				damage = 0;
+
+			if (targ.airborn_pos < 45)						// This was 'if (targ.flags & FL_ONGROUND)'; take minimal damage when jumping over rockets, but still kick them up.
 			{
-				// if (targ.classname == "practice_object")
-				// 	targ.flags = targ.flags - (targ.flags & FL_ONGROUND);
+				if (targ.classname == "practice_object")
+					targ.flags = targ.flags - (targ.flags & FL_ONGROUND);
 
 				dir = targ.origin - ((inflictor.absmin + inflictor.absmax) * 0.5);
 				dir = normalize (dir);
@@ -616,15 +617,6 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				{	
 					targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 6));
 				}
-				save = ceil(targ.armortype*old_damage);
-				if (save >= targ.armorvalue)
-				{
-					save = targ.armorvalue;
-					targ.armortype = 0;	// lost all armor
-					targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
-				}
-				
-				targ.armorvalue = targ.armorvalue - save;
 				return;
 			}
 		}

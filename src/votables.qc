@@ -64,6 +64,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias dmm4 cmd dmm4\n");
 	stuffcmd(self, "alias ctfdmm4 cmd ctfdmm4\n");
 	stuffcmd(self, "alias airshot cmd airshot\n");
+	stuffcmd(self, "alias powerupdrop cmd powerupdrop;\n");
 	// number aliases
 	stuffcmd(self, "alias 0 impulse 230\n");
 	stuffcmd(self, "alias 1 impulse 231\n");
@@ -118,7 +119,6 @@ void() votables_set_hook =
 					self = tmp;
 					p.weapon = IT_AXE;
 				}			
-				//self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));
 				p.hook2 = (p.hook2 - (p.hook2 & HOOK_OUT)); //not this?
 				p.items = p.items - (p.items & IT_HOOK);
 			}
@@ -227,8 +227,8 @@ void () votables_change_level =
 		 	if (player.style & CLANRING_CONNECTED)
 		 	{
 				if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
-		 			stuffcmd(player, "setinfo observing off\n");
-				stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
+		 			stuffcmd(player, "setinfo observing off\n"); //Need a better function to reset all observer infokeys...
+//				stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
 		 	}
 			player = find(player, classname, "player");
 		}
@@ -585,11 +585,10 @@ void() votables_set_gametype_mode_map =
 		{
 			if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
 				stuffcmd(player, "setinfo observing off\n");
-			stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
+			//stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
 		}
 		player = find(player, classname, "player");
-	}
-
+	}	
 	changelevel (newmapname);
 };
 
@@ -1765,3 +1764,37 @@ void() votables_request_abortmatch =
 		}
 	}
 };
+
+//
+//  S E T  D R O P  P O W E R U P S
+//
+//  Enable/disable powerup dropping
+//
+void() votables_set_powerupdrop =
+{
+	utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+};
+
+//
+//  R E Q U E S T  S E T  D R O P  P O W E R U P S
+//
+//  Request to enable/disable powerup dropping
+//
+void() votables_request_set_powerupdrop =
+{
+	// Do it right away if we're an administrator, otherwise vote
+	if (self.style & CLANRING_ADMINISTRATOR)
+		utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+	else
+	{
+		local string newstate;
+		if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+			newstate = "\bdisable\b";
+		else
+			newstate = "\benable\b";
+
+		if (vote_init(newstate, " \bpowerup dropping\b", votables_set_powerupdrop))
+			vote_yes();
+	}
+};
+

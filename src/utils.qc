@@ -1365,6 +1365,26 @@ void (float flag, string name) utils_toggle_sflag =
 	utils_set_cvar ("samelevel", clanring_playmode);
 };
 
+// R00k
+//  T O G G L E  G F L A G
+//
+//  Toggles the specified flag in clanring_gameconfig
+//
+void (float flag, string name) utils_toggle_gflag =
+{
+	if (clanring_gameconfig & flag)
+	{
+		clanring_gameconfig = clanring_gameconfig - (clanring_gameconfig & flag);
+		announce2(name, " disabled");
+	}
+	else
+	{
+		clanring_gameconfig = (clanring_gameconfig | flag);
+		announce2(name, " enabled");
+	}
+	utils_set_cvar("gamecfg", clanring_gameconfig);
+};
+
 // CRMOD
 // S T U F F  T O  P L A Y E R
 //      by Paul Baker

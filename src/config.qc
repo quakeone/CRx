@@ -171,22 +171,37 @@ void(string command, string value) config_command =
 				utils_toggle_sflag (CLANRING_MODE_VOTE, "Mode voting");
 			break;
 		}
-/*TODO:
+
 		case "allvoteoff":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (clanring_playmode & CLANRING_DISABLE_VOTE)
-				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			if (!(clanring_gameconfig & CLANRING_DISABLE_VOTE))
+				utils_toggle_gflag (CLANRING_DISABLE_VOTE, "All voting");
 			break;
 		}
 		case "allvoteon":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (clanring_playmode & CLANRING_DISABLE_VOTE)
-				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			if (clanring_gameconfig & CLANRING_DISABLE_VOTE)
+				utils_toggle_gflag (CLANRING_DISABLE_VOTE, "All voting");
 			break;
 		}
-*/		
+
+		case "powerupdropoff":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+				utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+			break;
+		}
+		case "powerupdropon":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (!(clanring_gameconfig & CLANRING_POWERUP_DROP))
+				utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+			break;
+		}
+
 		case "obitson":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
@@ -524,6 +539,8 @@ void() exec_warp_cfg =
 		if ((mapfile == "****") || (level > 15))
 		{
 			menunum += 1;
+			if (menunum > 15)
+				cprint("**ERROR: menunum > 15\n");
 			level = 0;
 			continue;
 		}
@@ -531,10 +548,14 @@ void() exec_warp_cfg =
 		level += 1;
 		mapnum = (menunum * 15) + level;
 
-		warpmap[mapnum].name = strzone(mapfile);
-		warpmap[mapnum].title = strzone(fgets(f));
-		warpmap[mapnum].author = strzone(fgets(f));
-		//dprint(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
+		if (mapnum < warpmap.length)//sanity check for mapnum > sizeof(warpmap)
+		{
+			warpmap[mapnum].name = strzone(mapfile);
+			warpmap[mapnum].title = strzone(fgets(f));
+			warpmap[mapnum].author = strzone(fgets(f));
+			//dprint(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
+		}
+		else cprint((sprintf("**ERROR: mapnum > warpmap array (Too many [%s] warp menus/maps)(250 maps 15 categories maximum)",ftos(mapnum)),"\n"));//todo remove limits
 	}
 	fclose(f);
 }
@@ -590,7 +611,7 @@ void() clanring_nextlevel_config =
 		{
 			while ((line = fgets(f)))
 			{
-				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
+				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))// todo: add [ra] 
 				{
 					break;
 				}

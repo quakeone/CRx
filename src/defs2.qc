@@ -82,15 +82,52 @@ float CLANRING_AIRSHOT_MODE			= 65536;
 float CLANRING_AUTO_PAUSE    		= 131072;
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
-//float CLANRING_CA_CC_VOTE			= 0;
 //float CLANRING_FREEZETAG			= 0;
 //float CLANRING_SPEEDBALL			= 0;
-//float CLANRING_SPAWNFRAG_PROTECTION = 0;
 //float UNUSED						= 1048576;
 float CLANRING_DMM4_MODE			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;
 float CLANRING_CA_MODE				= 4194304;
 float CLANRING_RA_MODE				= 8388608;
+
+/*
+	P L A Y M O D E
+	server .playmode - stored in cvar 'samelevel' and preserved across levels
+
+float CLANRING_NORMAL_MODE    		=
+float CLANRING_MATCH_MODE    		=
+float CLANRING_PRACTICE_MODE    	=
+float CLANRING_SERVER_INITIALIZED   =
+float CLANRING_CAPTURE_THE_FLAG		=
+float CLANRING_TEAM_DEATHMATCH		=
+float CLANRING_WIPEOUT_MODE			=
+float CLANRING_AIRSHOT_MODE			=
+float CLANRING_FREEZETAG			=
+float CLANRING_SPEEDBALL			=
+float CLANRING_DMM4_MODE			=
+float CLANRING_CA_MODE				=
+float CLANRING_RA_MODE				=
+*/
+/*
+	G A M E C O N F I G
+	server .gameconfig - stored in cvar 'gamecfg' and preserved across levels
+*/
+// float CLANRING_AUTO_PAUSE    		= 1;
+// float CLANRING_CA_CC_VOTE			= 2;
+float CLANRING_DISABLE_VOTE			= 4;
+// float CLANRING_EXTENDED_OBITS    	= 8;
+// float CLANRING_FAST_START    		= 16;
+// float CLANRING_FRESH_SPAWNS         	= 32;
+// float CLANRING_MODE_VOTE    			= 64;
+// float CLANRING_NO_HOOK			    = 128;
+// float CLANRING_NO_PENT    			= 256;
+// float CLANRING_NO_QUAD    			= 512;
+// float CLANRING_NO_RING    			= 1024;
+// float CLANRING_NO_SPOOGE    			= 2048;
+float CLANRING_POWERUP_DROP			= 4096;
+// float CLANRING_RUNES			    	= 8192;
+// float CLANRING_RUNETOSS    		    = 16384;
+// float CLANRING_SPAWNFRAG_PROTECTION 	= 32768;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;

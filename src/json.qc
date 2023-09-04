@@ -145,7 +145,7 @@ void () json_encode_players =
     "match": 
     {
 		"date": "2023-02-09 12:23:09",
-		"gamemode": "CTF",
+		"gamemode": "CTF Match",
 		"match size": 2,
 		"teams size": 4,
 		"match type": "4 v 4",

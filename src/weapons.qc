@@ -88,6 +88,7 @@ void() W_FireAxe =
 	makevectors (self.v_angle);
 	source = self.origin + '0 0 16';
 	traceline (source, source + v_forward*64, FALSE, self);
+
 	if (trace_fraction == 1.0)
 		return;
 	
@@ -256,17 +257,16 @@ TraceAttack
 */
 void(float damage, vector dir) TraceAttack =
 {
-	local	vector	vel, org;
-	
-	vel = normalize(dir + v_up*crandom() + v_right*crandom());
-	vel = vel + 2*trace_plane_normal;
-	vel = vel * 200;
+	local	vector	vel = '0 0 0', org = '0 0 0';
 
-	org = trace_endpos - dir*4;
 	if (trace_ent.takedamage)
 	{
 		if (trace_ent.classname == "player") 
 		{
+			vel = normalize(dir + v_up*crandom() + v_right*crandom());
+			vel = vel + 2*trace_plane_normal;
+			vel = vel * 200;
+			org = trace_endpos - dir*4;
 			SpawnBlood (org, (vel * 0.2), damage);
 		}
 		else
@@ -718,6 +718,7 @@ void() GrenadeTouch =
 		GrenadeExplode ();
 		return;
 	}
+
 	sound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);	// bounce sound
 	if (self.velocity == '0 0 0')
 		self.avelocity = '0 0 0';

@@ -1450,22 +1450,14 @@ void(entity ghostent) match_restore_ghost =
 		self.attack_finished = ghostent.attack_finished;
 		self.pain_finished = ghostent.pain_finished;
 		self.air_finished = ghostent.air_finished;
-		self.invincible_finished = ghostent.invincible_finished;
-		self.invisible_finished = ghostent.invisible_finished;
-		// Update Quad ownership/time			-- request by Unspoken
-		self.super_time = ghostent.super_time;
-		if (self.super_time > 0)
-		{
-			self.super_damage_finished = time + (ghostent.super_time - clanring_match_pause_time);
-			self.effects = self.effects | EF_DIMLIGHT;
-			self.effects = self.effects | EF_BLUE;
-		}
-
-		self.rad_time = ghostent.rad_time;
-		self.radsuit_finished = time + (30 - ghostent.rad_time);
 		self.invincible_time = ghostent.invincible_time;
+		self.invincible_finished = ghostent.invincible_time;
 		self.invisible_time = ghostent.invisible_time;
-	
+		self.invisible_finished = ghostent.invisible_time;
+		self.super_time = ghostent.super_time;
+		self.super_damage_finished = ghostent.super_time;
+		self.rad_time = ghostent.rad_time;
+		self.radsuit_finished = ghostent.rad_time;
 		self.show_hostile = ghostent.show_hostile;
 		self.jump_flag = ghostent.jump_flag;
 		self.swim_flag = ghostent.swim_flag;
@@ -1536,6 +1528,29 @@ void(entity ghostent) match_restore_ghost =
 		vote_yes();
 };
 
+void() match_no_ring_check = 
+{
+	if (clanring_maxsize < 3) // if less than 3 members per team...
+	{
+		if (!(clanring_playmode & CLANRING_NO_RING)) // If ring is on...	disable now.
+		{
+			utils_do_item(votables_disable_item, "item_artifact_invisibility");
+			announce("Ring of shadows disabled");
+			clanring_playmode = clanring_playmode | CLANRING_NO_RING; // This change will not be perminent.
+		}
+	}
+	else
+	{
+		if (clanring_playmode & CLANRING_NO_RING)	// Turn back on if it was voted or set in the config...
+		{
+			clanring_playmode = clanring_playmode  - CLANRING_NO_RING;
+			clanring_playmode = clanring_playmode | (cvar("samelevel") & CLANRING_NO_RING);
+			if (!(clanring_playmode & CLANRING_NO_RING))
+				announce("Ring of shadows enabled");
+		}
+	}	
+}
+
 float request_timelimit;
 //
 //  R E A D Y
@@ -1576,18 +1591,19 @@ void() match_ready =
 	}
 
 	self.style = self.style | CLANRING_READY;
-
-	//R00k: adjust timelimit based on team size automatically.
+	
 	if (!(clanring_state & CLANRING_MATCH_STARTED))
 	{
-		if (clanring_timelimit != request_timelimit)//hack to see if we already voted
-		{
-			match_get_maxsize();
-			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;
-			forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
+		match_get_maxsize();
+		if (clanring_timelimit != request_timelimit)						// hack to see if we already voted
+		{			
+			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;			// R00k: adjust timelimit based on team size automatically.
+			forceinfokey(world, "matchtime", ftos(clanring_timelimit));		// R00k: update infokey 'matchtime'; requested by Woods.
 			match_show_timelimit();
 		}
+		match_no_ring_check();												// R00k: disable invisibility for smaller games automatically.
 	}
+	
 	// check to see if we need to start the timer
 	if (clanring_numteams > 1 && !(clanring_state & CLANRING_TIMER_STARTED) && match_all_ready())
 	{
@@ -1633,16 +1649,18 @@ void(entity player) match_remove_player =
 		plast.next_team = player.next_team;
 		clanring_numteams = clanring_numteams - 1;
 	}
-	//R00k: adjust timelimit based on team size automatically.
+
 	if (!(clanring_state & CLANRING_MATCH_STARTED))
-	{
-		if (clanring_timelimit != request_timelimit)//hack to see if we already voted
+	{		
+		match_get_maxsize();
+
+		if (clanring_timelimit != request_timelimit)				// hack to see if we already voted
 		{
-			match_get_maxsize();
-			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;
+			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;	// R00k: adjust timelimit based on team size automatically.
 			match_show_timelimit();
 		}
-	}	
+		match_no_ring_check();										// R00k: disable invisibility for smaller games automatically.
+	}
 };
 
 //
@@ -2677,10 +2695,10 @@ void(entity player) match_disconnect_notify =
 					self.owner.invisible_finished = self.invisible_finished;
 					self.owner.super_damage_finished = self.super_damage_finished;
 					self.owner.radsuit_finished = self.radsuit_finished;
-					self.owner.invincible_time = self.invincible_time;
-					self.owner.invisible_time = self.invisible_time;
-					self.owner.super_time = self.super_time;
-					self.owner.rad_time = self.rad_time;
+					self.owner.invincible_time = self.invincible_finished - time; // R00k: how many seconds remain
+					self.owner.invisible_time = self.invisible_finished - time;
+					self.owner.super_time = self.super_damage_finished - time;
+					self.owner.rad_time = self.radsuit_finished - time;
 					self.owner.show_hostile = self.show_hostile;
 					self.owner.jump_flag = self.jump_flag;
 					self.owner.swim_flag = self.swim_flag;

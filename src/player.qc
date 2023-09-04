@@ -698,6 +698,9 @@ void() PlayerDie =
 {
 	local float i;
 
+	if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+	   powerup_drop();
+
 	if (mode_is_arena())
 	{
 		im_dead_now_what();

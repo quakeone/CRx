@@ -1480,6 +1480,125 @@ POWERUPS
 
 ===============================================================================
 */
+void () powerup_denied =
+{
+    local entity e;
+
+	e = findradius(other.origin, 128);
+
+	while (e)
+	{
+        if ( (e != other) && (e.health > 0) && (e.classname == "player") && (!(e.style & CLANRING_OBSERVER)) && (e.team != other.team) )	// Don't jeer your teammates
+        {
+			centerprint (e, "\bdenied!\n");
+			sound(other, CHAN_BODY, "ra/laugh.wav", 1, ATTN_NORM);
+		}
+        e = e.chain;		
+    }
+};
+
+//=====================================================
+void () powerup_pickup =
+{
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		return;
+
+	if (other.style & CLANRING_OBSERVER)
+		return;
+    
+	if (other.classname != "player")
+		return;
+
+	if (other.health < 1)
+		return;
+
+	if (self == world) return;	// R00k: just in the slight chance SUB_Remove was called when it was picked up.
+
+	// how much time remains NOW; we cannot just give them the amount of time unused, as there's another quad going to spawn at nextthink + 30...
+	float timeleft = floor(self.nextthink - time); 		// R00k: We use the .nexthink here not timeleft[i] because match_pause_item updates the entity's nextthink 
+		
+	sound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
+	other.items = other.items | self.items; 
+
+	switch (self.items)
+	{
+		case IT_QUAD:
+		{
+			other.super_time = 1;
+			other.effects = other.effects | EF_DIMLIGHT | EF_BLUE;
+			if (other.super_damage_finished > time)
+			{
+				other.super_damage_finished = (min((other.super_damage_finished + timeleft), time + 30));
+				sprint(other, "You got the ", self.netname, ".\ntime remaining: \[ ", ftos(floor(other.super_damage_finished - time)), " \] seconds.\n");
+			}
+			else
+			{
+				other.super_damage_finished = self.nextthink;
+				sprint(other, "You got the ", self.netname, " with ", ftos(timeleft), " seconds remaining.\n");
+			}
+			break;
+		}
+		case IT_INVISIBILITY:
+		{
+			other.invisible_time = 1;	
+			other.invisible_finished = (other.invisible_finished <= time) ? (self.nextthink) : (min((other.invisible_finished + timeleft), time + 30));
+			break;
+		}
+		case IT_SUIT:
+		{
+			other.rad_time = 1;
+			other.radsuit_finished = (other.radsuit_finished <= time) ? (self.nextthink) : (min((other.radsuit_finished + timeleft), time + 30));
+			break;
+		}
+		case IT_INVULNERABILITY:
+		{
+			other.invincible_time = 1;		
+			other.effects = other.effects | EF_DIMLIGHT | EF_RED;
+			other.invincible_finished = (other.invincible_finished <= time) ? (self.nextthink) : (min((other.invincible_finished + timeleft), time + 30));
+			break;
+		}
+	}
+	powerup_denied(); //laugh at anyone who is nearby...
+	activator = other;
+	SUB_UseTargets ();
+	remove(self);
+};
+
+void() powerup_drop =
+{
+	float     it_flag[4] = { IT_QUAD, IT_INVISIBILITY, IT_SUIT, IT_INVULNERABILITY };
+	string      sound[4] = { "items/damage.wav", "items/inv1.wav", "items/suit.wav", "items/protect.wav" };
+	string   filename[4] = { "progs/quaddama.mdl", "progs/invisibl.mdl", "progs/suit.mdl", "progs/invulner.mdl" };
+	string       text[4] = { "Quad", "Ring of Shadows", "Biosuit", "Pentagram of Protection" };
+	string      cname[4] = { "item_artifact_super_damage", "item_artifact_invisibility", "item_artifact_envirosuit", "item_artifact_invulnerability"};
+	float    timeleft[4] = { self.super_damage_finished, self.invisible_finished, self.radsuit_finished, self.invincible_finished };
+
+	float i;
+
+    for (i = 0; i < 4; i++)
+    {
+        if (self.items & it_flag[i])
+        {
+            entity drop = spawn();
+            drop.noise = sound[i];
+            drop.items = it_flag[i];
+            setmodel(drop, filename[i]);
+            drop.netname = text[i];
+            drop.classname = cname[i]; // R00k: we need the classname so we can pause the entity
+            drop.origin = self.origin + '0 0 16';
+            drop.velocity = '0 0 30';
+            drop.flags = FL_ITEM;
+            drop.solid = SOLID_TRIGGER;
+            drop.movetype = MOVETYPE_TOSS;
+            setsize(drop, VEC_HULL_MIN, VEC_HULL_MAX);
+            drop.touch = powerup_pickup;
+			//drop.alpha = (timeleft[i] - time)/16;	// R00k: fade the quad model based on time remaining			
+            drop.nextthink = timeleft[i];
+			drop.think = SUB_Remove;
+        }
+    }
+};
+
 void() powerup_touch =
 {
     // CLANRING_MOD
@@ -1570,9 +1689,9 @@ void() powerup_touch =
 		}
 	}
 
-	// 1998-12-24 Improved weapon and powerup touch functions by Maddes/Sméagol  start
+	// 1998-12-24 Improved weapon and powerup touch functions by Maddes/Smï¿½agol  start
 	if (self.items == IT_QUAD)
-	{
+	{	// R00k: TODO: count number of quads on the map; if only one then use global attenuation.
 		if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 			sound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
 		else
@@ -1657,7 +1776,7 @@ void() item_artifact_invisibility =
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 0';
 	self.noise3 = " is invisible";			// ELOHIM_MOD
-	self.noise4 = " is ŽInvisibleŽ\n";		// ELOHIM_MOD
+	self.noise4 = " is Å½InvisibleÅ½\n";		// ELOHIM_MOD
 	StartItem ();
 };
 
@@ -2183,7 +2302,17 @@ void() TossWeapon =
 		}
 	}
 	
-	self.toss_time = time + 21;
+	// R00k: "You There!" so my teammates will look at me when dropping items...
+	if ((time > self.toss_time)||(self.toss_time == 0))
+	{
+		sound(self, CHAN_VOICE, "enforcer/sight3.wav", 1, ATTN_NORM);
+		self.toss_time = time + 5;
+	}
+	else self.toss_time = time + 2;//more spamming more duration
+
+	if (deathmatch == 3)
+		self.toss_time = time + 21;
+
 	self.items = self.items - (self.items & (self.weapon));
 
 	self.weapon = W_BestWeapon();
@@ -2395,12 +2524,18 @@ void() TossAmmo =
 		}
 	}
 	
+	// R00k: "You There!" so my teammates will look at me when dropping items...
+	if (time > self.toss_time)
+	{
+		sound(self, CHAN_VOICE, "enforcer/sight3.wav", 1, ATTN_NORM);
+		self.toss_time = time + 5;
+	}
+	
 	item = spawn();
 	item.owner = self;
 	makevectors(self.v_angle);
-
 	setorigin(item, self.origin + '0 0 16');
-	item.velocity = aim(self, 320);
+	item.velocity = v_forward;
 	item.velocity = item.velocity * 320;
 	item.flags = FL_ITEM;
 	item.solid = SOLID_TRIGGER;

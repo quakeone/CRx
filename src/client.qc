@@ -472,7 +472,6 @@ void() ClientKill =
 	if (self.style & CLANRING_OBSERVER)
 		return;
 
-
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 	{
 		sprint(self,"The match is paused; you cannot self-gib.");
@@ -483,8 +482,9 @@ void() ClientKill =
 		return;
 
 	announce2(self.netname, " suicides");
-	set_suicide_frame ();
+	powerup_drop();
 	DropRune();
+
 	if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
 	{
 		DropBackpack();
@@ -497,6 +497,8 @@ void() ClientKill =
 	UnHookPlayer();
 	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));//added for server mod hook
 	self.modelindex = modelindex_player;
+
+	set_suicide_frame();
 
 	// ELOHIM_MOD
 	//
@@ -2047,6 +2049,7 @@ void() ClientDisconnect =
 	TeamCaptureDropFlagOfPlayer (self, 0);
 	if (!(self.style & CLANRING_OBSERVER))
 	{
+		powerup_drop(); // Spite the rage-quitter
 		DropRune();
 		if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
 		{
@@ -2335,7 +2338,7 @@ void(entity targ, entity attacker) ClientObituary =
 						}
 					}
 					
-					deathstring2 = ", with just his bare hands.\n";
+					deathstring2 = ", with just his bare hands.\n";
 					
 					if (attacker.weapon == IT_ROCKET_LAUNCHER)
 						deathstring2 = ", with a Rocket Launcher.";
@@ -2348,7 +2351,7 @@ void(entity targ, entity attacker) ClientObituary =
 					if ((attacker.weapon == IT_SUPER_SHOTGUN))
 						deathstring2 = ", with a Super Shotgun.";
 					if ((attacker.weapon == IT_NAILGUN))
-						deathstring2 = ", with a Nailgun.";
+						deathstring2 = ", with a Nailgun.";
 					if ((attacker.weapon == IT_SHOTGUN))
 						deathstring2 = ", with a Shotgun.";
 					if ((attacker.weapon == IT_AXE))
@@ -2755,6 +2758,14 @@ void(string cmd) SV_ParseClientCommand =
 		return;
 	}
 
+	if (cmd == "ping")
+	{
+		//string t = strpad(15,self.netname);
+		self.ping_time = client_ping(self);
+		//print(sprintf("---------------------------------------------\n%s(%gms)\n---------------------------------------------\n",t,self.ping_time*1000));
+		return;
+	}
+
     args = tokenize(cmd);
 	if (args > 0)
     	arg0 = argv(0);
@@ -2971,6 +2982,10 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			votables_request_set_gametype_mode_map(3, -1, 0);
 			return;
+		case "powerupdrop":
+			votables_request_set_powerupdrop();
+			return;			
+
 		default:
 			if (arg0 != "")
 			{
