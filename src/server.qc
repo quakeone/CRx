@@ -2466,7 +2466,7 @@ void () clanring_periodic_checks =
 		}	
 	}
 	
-	self.ping_time = client_ping(self);//Fixme this wont work for Qrack clients; revert back to pq method for those clients.
+	self.ping_time = client_ping(self);
 
 	inactive = time - self.afk_time;//Seconds of inactivity
 

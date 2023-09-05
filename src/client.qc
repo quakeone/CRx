@@ -2758,15 +2758,7 @@ void(string cmd) SV_ParseClientCommand =
 		return;
 	}
 
-	if (cmd == "ping")
-	{
-		//string t = strpad(15,self.netname);
-		self.ping_time = client_ping(self);
-		//print(sprintf("---------------------------------------------\n%s(%gms)\n---------------------------------------------\n",t,self.ping_time*1000));
-		return;
-	}
-
-    args = tokenize(cmd);
+	args = tokenize(cmd);
 	if (args > 0)
     	arg0 = argv(0);
 	if (args > 1)

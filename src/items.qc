@@ -1776,7 +1776,7 @@ void() item_artifact_invisibility =
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 0';
 	self.noise3 = " is invisible";			// ELOHIM_MOD
-	self.noise4 = " is ŽInvisibleŽ\n";		// ELOHIM_MOD
+	self.noise4 = " is \b\<invisible\>\n";	// ELOHIM_MOD
 	StartItem ();
 };
 

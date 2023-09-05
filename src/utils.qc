@@ -1720,7 +1720,7 @@ float (entity e) client_ping =
 	local float ping;
 
 	ping = stof(infokey(e,INFOKEY_P_PING));
-	return ping;
+	return ping * 1000;			// R00k: whoops!
 };
 
 void ()pqc_ping_times =
@@ -1735,9 +1735,8 @@ void ()pqc_ping_times =
 	e = world;
 	for (i = 0; i < 16; i = i + 1)
 	{		
-		e = nextent (e);
-		
-		if ((e.style & CLANRING_CONNECTED) && e.ping_time)
+		e = nextent (e);		
+		if ((e.classname == "player") && (e.style & CLANRING_CONNECTED) && e.ping_time)
 		{
 			ping = e.ping_time;
 			WriteShortPQ (MSG_ALL, ping + (i * 4096));

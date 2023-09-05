@@ -567,7 +567,7 @@ void() PlayerDead =
 		if (!gameover)			
 		{
 			self.think = respawn;
-			if ((deathmatch == 4) || (deathmatch == 5))
+			if (deathmatch == 4)
 			{
 				self.nextthink = time + 1;
 			}
