@@ -753,6 +753,15 @@ void() PutClientInServer =
 {
 	local entity spot = world;
 			
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+		if (!(clanring_state & CLANRING_MATCH_STARTED))
+		{	
+			if ((self.client == "Quake"))//||(self.client == "QSS-M")) //not ezq, fte, qss
+				pqc_ping_times();
+		}
+	}
+
 	DecodeLevelParms ();	
 	
 	if (self.style & CLANRING_CONNECTED)

@@ -2697,9 +2697,7 @@ void () clanring_start_frame =
 				auto_schedule_cameras();
 				utils_make_scheduled_event(auto_chase, 0.3);
 				utils_make_scheduled_event(auto_camera, 0.6);				
-				
-				pqc_ping_times();
-														
+													
 				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 				{
 					float tl = rint(timelimit - time);

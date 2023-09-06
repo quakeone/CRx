@@ -1728,9 +1728,11 @@ void ()pqc_ping_times =
 	local entity e;
 	local float i, ping;
 
-	WriteByte(MSG_ALL, SVC_STUFFCMD);
-	WriteByte(MSG_ALL, MOD_PROQUAKE);
-	WriteByte(MSG_ALL, PQC_PING_TIMES);
+	msg_entity = self;
+
+	WriteByte(MSG_ONE, SVC_STUFFCMD);
+	WriteByte(MSG_ONE, MOD_PROQUAKE);
+	WriteByte(MSG_ONE, PQC_PING_TIMES);
 
 	e = world;
 	for (i = 0; i < 16; i = i + 1)
@@ -1739,12 +1741,12 @@ void ()pqc_ping_times =
 		if ((e.classname == "player") && (e.style & CLANRING_CONNECTED) && e.ping_time)
 		{
 			ping = e.ping_time;
-			WriteShortPQ (MSG_ALL, ping + (i * 4096));
+			WriteShortPQ (MSG_ONE, ping + (i * 4096));
 		}
 	}
 
-	WriteShortPQ (MSG_ALL, 0);
-	WriteString(MSG_ALL, string_null);
+	WriteShortPQ (MSG_ONE, 0);
+	WriteString(MSG_ONE, string_null);
 };
 
 float () ammo_is_infinite =
