@@ -296,6 +296,8 @@ void () observer_camera_start =
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
+	stuffcmd(self, "cmd observing off\n");
+	stuffcmd(self, "cmd setinfo observer camera\n");
 };
 
 //
@@ -352,6 +354,9 @@ void () observer_chase_start =
 			centerprint(self,sprintf("chasecam \[%s\]", self.movetarget.netname));
 		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
 	}
+
+	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname) );
+	stuffcmd(self, "cmd setinfo observer chasecam\n");
 };
 
 //
@@ -397,18 +402,25 @@ void () observer_demo_start =
     self.oflags = self.oflags | OBSERVER_DEMO;
     self.finaldest_y = self.movetype = MOVETYPE_FLY;
     self.view_ofs = '0 0 22';
-    msg_entity = self;
-    WriteByte(MSG_ONE, SVC_SETVIEWPORT);
-    WriteEntity(MSG_ONE, self.movetarget);
-    setmodel(self, string_null);
-    observer_set_demo_position();
-    stuffcmd(self, "v_centerspeed 0\n");
-    sprint(self, "eyecam mode\n");
-   // if (!(self.style & CLANRING_HEADS_UP))
-        //sprint(self, "type 'headsup' for fullscreen display\n");
-	//sprint(self, "type 'smooth' to eliminate choppines\n");
-	clientcommand(self, "setinfo observer eyecam\n");// woods
 
+	msg_entity = self;
+	WriteByte(MSG_ONE, SVC_SETVIEWPORT);
+	WriteEntity(MSG_ONE, self.movetarget);
+	
+	setmodel(self, string_null);
+	observer_set_demo_position();
+
+	stuffcmd(self, "v_centerspeed 0\n");
+	sprint(self, "eyecam mode\n");
+    
+	// if (!(self.style & CLANRING_HEADS_UP))
+    // 	sprint(self, "type 'headsup' for fullscreen display\n");
+	// sprint(self, "type 'smooth' to eliminate choppines\n");
+	
+	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname) );
+	stuffcmd(self, "cmd setinfo observer eyecam\n");
+
+	
 	//R00k: added auto pov
 	if (self.oflags & OBSERVER_GO_AUTO)
 	{
