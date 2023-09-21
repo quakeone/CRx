@@ -1723,7 +1723,12 @@ float (entity e) client_ping =
 	return ping * 1000;			// R00k: whoops!
 };
 
-void ()pqc_ping_times =
+// U P D A T E  P I N G  T I M E S
+//
+// when we use SVC_UPDATENAME to put 'READY' on the scoreboard, all other elements become immutable
+// so, this specifically updates the ping element; for Proquake compatible clients.
+
+void () pqc_ping_times =
 {	
 	local entity e;
 	local float i, ping;

@@ -253,6 +253,9 @@ void() make_breakable_debris = {
 			new.frame = 2; //smaller
 
 		// choose skin based on "style" key
+		if ((self.style) && (self.style < 32)) //R00k
+			new.skin = self.style;
+/*
 		if (self.style == 1)
 			new.skin = 1;
 		if (self.style == 2)
@@ -315,7 +318,7 @@ void() make_breakable_debris = {
 		new.skin = 30;
 		if (self.style == 31)// new debris skins end here - dumptruck_ds
 		new.skin = 31;
-
+*/
 		i = i + 1;
 	}
 };

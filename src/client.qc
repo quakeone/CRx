@@ -438,12 +438,11 @@ void() trigger_changelevel =
 
 void() set_suicide_frame;
 
-void(entity ent) CreateDeadBody;
+//void(entity ent) CreateDeadBody;
 // called by ClientKill and DeadThink
 void() respawn =
 {
-	//Don't leave dead bodies anymore
-//	CopyToBodyQue (self);//R00k remove bodies when player respawns.
+//	if (!(clanring_gameconfig & CLANRING_DEADBODY_FILTER))
 //	CreateDeadBody (self);//R00k new corpse routine.
 	SetNewParms2 ();
 
@@ -461,7 +460,7 @@ void() ClientKill =
 	if (IS_CA_OBSERVER(self))
 		return;
 
-	if (mode_is_arena())	//R00k: What's the point?
+	if (mode_is_arena())
 	{		
 		return;
 	}
@@ -482,13 +481,18 @@ void() ClientKill =
 		return;
 
 	announce2(self.netname, " suicides");
-	powerup_drop();
+
+	if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+		powerup_drop();
+
 	DropRune();
 
-	if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
-	{
-		DropBackpack();
-	}
+	// if (clanring_gameconfig & CLANRING_SUICIDE_BACKPACK)
+	// if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
+	// {
+	// 	DropBackpack();
+	// }
+
 	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_MATCH_STARTED)))
 		TeamCaptureDropFlagOfPlayer (self, 1);	//During Capture Time Trials (prematch); a suicide will return the flag back to base.
 	else

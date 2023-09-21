@@ -1968,14 +1968,14 @@ void() DropBackpack =
 	local entity item;
 
 	if (!(self.ammo_shells + self.ammo_nails + self.ammo_rockets + self.ammo_cells))
-	return;	// nothing in it
+		return;	// nothing in it
 	
 	item = spawn();
-	item.origin 	= self.origin - '0 0 24';
+	item.origin	= self.origin - '0 0 24';
     item.classname = "item_backpack";    // ELOHIM_MOD
 	item.owner = self;	// ELOHIM_MOD
-	item.items 	= self.weapon;
-	
+	item.items = self.weapon;
+
 	if (item.items == IT_AXE)
 		item.netname = "Axe";
 	else if (item.items == IT_SHOTGUN)
@@ -2158,7 +2158,7 @@ void() TossWeapon =
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
 	
-	if (self.health < 1) 
+	if (self.health < 1)
 		return;
 	
 	if ((self.weapon == IT_AXE)||(self.weapon == IT_SHOTGUN)||(self.weapon == IT_HOOK)) 
@@ -2309,7 +2309,7 @@ void() TossWeapon =
 		self.toss_time = time + 5;
 	}
 	else self.toss_time = time + 2;//more spamming more duration
-
+	
 	if (deathmatch == 3)
 		self.toss_time = time + 21;
 
