@@ -1899,7 +1899,7 @@ void() PlayerPostThink =
 		self.jump_flag = self.velocity_z;
 
 		//Normalize bunnyhopping at all ticrates/client protocols (ie sv_nqplayerphysics 0)
-		if (isFTEserver && (cvar("nqfriction")))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
+		if ((cvar("sv_nqplayerphysics") == 0) && (cvar("nqfriction")))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
 		{
 			if ((!(self.flags & FL_BHOP))&&(time - self.jump_time < 0.2)) 
 			{
