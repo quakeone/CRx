@@ -359,7 +359,7 @@ void() W_FireHook =
 		link.weapon = (linknum / 6); 
 		link.movetype = MOVETYPE_NOCLIP;
 		link.solid = SOLID_NOT;
-		link.angles = vectoangles(hook.velocity);
+		link.angles = hook.angles;
 
 		if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
 		{
@@ -369,7 +369,7 @@ void() W_FireHook =
 		{
 			setmodel (link, "progs/bit.mdl");
 		}
-		makevectors (self.angles);
+		makevectors (self.v_angle);
 		setorigin(link, hook.origin + (((self.origin + (v_up * 16 * (!self.button2)) + (v_forward * 16)) - hook.origin) * (link.weapon)));
 		setsize (link, '0 0 0', '0 0 0');
 		link.nextthink  = (time + sys_ticrate);
