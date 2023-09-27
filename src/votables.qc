@@ -160,12 +160,6 @@ void() votables_request_set_hook =
 {
 	local string newstate = "", newstate2 = "";
 
-	if (clanring_request)
-	{
-		sprint(self, "There is already a vote in progress\n");
-		return;
-	}
-
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
 		votables_set_hook();
