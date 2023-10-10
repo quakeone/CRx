@@ -1963,6 +1963,35 @@ void() BackpackTouch =
 		W_SetCurrentAmmo ();
 };
 
+float() backpack_customizeentityforclient =
+{
+	if (other.style & CLANRING_OBSERVER)
+	{
+		if (self.items == IT_ROCKET_LAUNCHER)
+		{
+			self.effects |= EF_FULLBRIGHT;
+			self.colormod = '199 1 0';
+		}
+		else if (self.items == IT_LIGHTNING)
+		{
+			self.effects |= EF_FULLBRIGHT;
+			self.colormod = '0 1 199';
+		}
+		else
+		{
+			self.effects = 0;
+			self.colormod = '0 0 0';
+		}
+	}
+	else
+	{
+		self.effects = 0;
+		self.colormod = '0 0 0';
+	}
+
+	return 1;
+}
+
 void() DropBackpack =
 {
 	local entity item;
@@ -1975,6 +2004,9 @@ void() DropBackpack =
     item.classname = "item_backpack";    // ELOHIM_MOD
 	item.owner = self;	// ELOHIM_MOD
 	item.items = self.weapon;
+	
+	if (deathmatch == 1)
+		item.customizeentityforclient = backpack_customizeentityforclient;
 
 	if (item.items == IT_AXE)
 		item.netname = "Axe";
