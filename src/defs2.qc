@@ -112,6 +112,8 @@ float CLANRING_RA_MODE				=
 	G A M E C O N F I G
 	server .gameconfig - stored in cvar 'gamecfg' and preserved across levels
 */
+//todo enumflags
+
 // float CLANRING_AUTO_PAUSE    		= 1;
 // float CLANRING_CA_CC_VOTE			= 2;
 float CLANRING_DISABLE_VOTE			= 4;
@@ -128,6 +130,7 @@ float CLANRING_POWERUP_DROP			= 4096;
 // float CLANRING_RUNES			    	= 8192;
 // float CLANRING_RUNETOSS    		    = 16384;
 // float CLANRING_SPAWNFRAG_PROTECTION 	= 32768;
+// float CLANRING_BREAKAWAY_HOOK		= 0;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
@@ -245,10 +248,30 @@ vector 	clanring_angle;					// used for both autoss and intermission
 
 // client variables
 .vector clanring_qdwep;             // vector to keep track of quad weapon stats	// CRMOD - stats
-.vector clanring_qdkill;            // vector to keep track of quad kill stats	// CRMOD - stats
+.vector clanring_qdkill;            // vector to keep track of quad kill stats		// CRMOD - stats
 .vector clanring_ptwep;             // vector to keep track of pent weapon stats	// CRMOD - stats
-.vector clanring_ptkill;            // vector to keep track of pent kill stats	// CRMOD - stats
+.vector clanring_ptkill;            // vector to keep track of pent kill stats		// CRMOD - stats
 .vector clanring_badstats;          // keep track of RL paks and damage done to team
+
+.float loot_stats_ssg;				//
+.float loot_stats_ng;				//
+.float loot_stats_sng;				//
+.float loot_stats_gl;				//
+.float loot_stats_rl;				//
+.float loot_stats_lg;				//
+.float loot_stats_shells;			//
+.float loot_stats_nails;			//
+.float loot_stats_rockets;			//
+.float loot_stats_cells;			//
+.float loot_stats_health;			//
+.float loot_stats_mega;				//
+.float loot_stats_biosuit;			//
+.float loot_stats_redarmor;			//
+.float loot_stats_yellowarmor;		//
+.float loot_stats_greenarmor;		//
+.float loot_stats_backpacks;		//
+.float loot_stats_runes;			//
+
 .entity clanring_othertarget;       // entity to focus on in tourneycam		// CRMOD - tourneycam
 .entity clanring_inflicted;         // stores entity last attacked			// CRMOD - combat
 .float  clanring_chase_score;       // same as above, also used by cameras

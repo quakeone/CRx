@@ -2760,6 +2760,8 @@ void () client_afk_off =
 	}
 };
 
+void( entity p ) stats_show_player_loot_stats;
+
 void(string cmd) SV_ParseClientCommand =
 {
     local float args, modecmd, mapnumber=0;
@@ -2787,6 +2789,12 @@ void(string cmd) SV_ParseClientCommand =
 		case "afkoff":
 			client_afk_off();
 			return;
+		case "lootstats":
+			if ((self.style & CLANRING_OBSERVER)||(gameover)||((clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_state & CLANRING_MATCH_STARTED))))
+				stats_show_loot_stats();
+			else
+				sprint(self,"\bYou may not view lootstats during a game as a player.\n");
+			return;		
 		case "dm":
 			if (arg2 != "")
 			{

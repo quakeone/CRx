@@ -362,7 +362,8 @@ void() health_touch =
 			MakeHealthRot(other,self);// create rot entity R00k: fixed
 	
 			other.items = other.items | IT_SUPERHEALTH;
-	
+			other.loot_stats_mega += 1;
+
 			//Set this megahealth's respawn to default 125 seconds.
 			if (deathmatch != 2 && deathmatch != 4 && deathmatch != 5)	// deathmatch 2 is silly old rules
 			{
@@ -382,6 +383,7 @@ void() health_touch =
 				self.nextthink = time + 20;
 				self.think = SUB_regen;
 			}
+			other.loot_stats_health += 1;
 		}
 	}
 	activator = other;
@@ -520,6 +522,7 @@ void() armor_touch =
 		value = 100;
 		bit = IT_ARMOR1;
 		v = '0 0 1';
+		other.loot_stats_greenarmor += 1;
 	}
 	if (self.classname == "item_armor2")
 	{
@@ -527,6 +530,7 @@ void() armor_touch =
 		value = 150;
 		bit = IT_ARMOR2;
 		v = '0 1 0';
+		other.loot_stats_yellowarmor += 1;
 	}
 	if (self.classname == "item_armorInv")
 	{
@@ -534,6 +538,7 @@ void() armor_touch =
 		value = 200;
 		bit = IT_ARMOR3;
 		v = '1 0 0';
+		other.loot_stats_redarmor += 1;
 	}
 	donttake = 0;	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes  end
 	if (other.armortype*other.armorvalue >= type*value)
@@ -544,7 +549,7 @@ void() armor_touch =
 		if (other.next_team != world)
 		{
 			other.next_team.dest = (other.next_team.dest + v);
-		}
+		}		
 
 		other.armortype 	= type;
 		other.armorvalue 	= value;
@@ -735,25 +740,28 @@ void() weapon_touch =
 	}
 	else
 	{
-		if (self.weapon == IT_SHOTGUN || self.weapon == IT_SUPER_SHOTGUN)
+		if (self.weapon == IT_SUPER_SHOTGUN)
 		{
 			other.ammo_shells = other.ammo_shells + 5;
+			//TODO: other.next_team.STATS_SSG += 1;
+			other.loot_stats_ssg += 1;
 		}
 		else
 		{
 			if (self.weapon == IT_NAILGUN || self.weapon == IT_SUPER_NAILGUN)
 			{
 				other.ammo_nails = other.ammo_nails + 30;
-				if (other.next_team != world)
+				if (self.weapon == IT_NAILGUN)
 				{
-					if (self.weapon == IT_NAILGUN)
-					{
+					if (other.next_team != world)
 						other.next_team.pos1_y = other.next_team.pos1_y + 1;
-					}
-					else
-					{
+					other.loot_stats_ng += 1;
+				}
+				else
+				{
+					if (other.next_team != world)
 						other.next_team.pos1_x = other.next_team.pos1_x + 1;
-					}
+					other.loot_stats_sng += 1;
 				}
 			}
 			else
@@ -978,6 +986,7 @@ void() ammo_touch =
 		donttake = 1;
 		else
 		other.ammo_shells = other.ammo_shells + self.aflag;
+		other.loot_stats_shells += self.aflag;
 	}
 
 // spikes
@@ -987,6 +996,7 @@ void() ammo_touch =
 		donttake = 1;
 		else
 		other.ammo_nails = other.ammo_nails + self.aflag;
+		other.loot_stats_nails += self.aflag;
 	}
 
 //	rockets
@@ -996,6 +1006,7 @@ void() ammo_touch =
 		donttake = 1;
 		else
 		other.ammo_rockets = other.ammo_rockets + self.aflag;
+		other.loot_stats_rockets += self.aflag;
 	}
 
 //	cells
@@ -1005,6 +1016,7 @@ void() ammo_touch =
 		donttake = 1;
 		else
 		other.ammo_cells = other.ammo_cells + self.aflag;
+		other.loot_stats_cells += self.aflag;
 	}
 
 	if (!donttake)
@@ -1638,7 +1650,7 @@ void() powerup_touch =
 		self.solid = SOLID_NOT;
 		other.items = other.items | self.items;
 		self.model = string_null;
-	
+		self.loot_stats_biosuit += 1;
 //		other.effects = other.effects | EF_GREEN;	
 		other.rad_time = 1;
 		other.radsuit_finished = time + 30;
@@ -1950,6 +1962,7 @@ void() BackpackTouch =
 	sprint(other, "\n");
 // backpack touch sound
 	sound (other, CHAN_ITEM, "weapons/lock4.wav", 1, ATTN_NORM);
+	other.loot_stats_backpacks +=1;
 // remove the backpack, change self to the player
 	remove(self);
 	self = other;

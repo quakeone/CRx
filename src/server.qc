@@ -853,7 +853,8 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias misc impulse 185\n");
 	stuffcmd(self, "alias modhelp impulse 186\n");
 	stuffcmd(self, "alias shortcuts impulse 187\n");
-	
+	stuffcmd(self, "alias lootstats cmd lootstats\n");
+
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
     // remove the temporary entity
