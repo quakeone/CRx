@@ -1628,7 +1628,7 @@ void () observer_update_display =
         aval = strings_get_armour_val(player);
         healthammo = strings_get_health_ammo(player);
         ammo = ftos(player.currentammo);
-    	pad_top = "\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    	pad_top = TeamSetStatRes2(self);//R00k : position the display based on the observer's .statstate value.
 		centerprint7(self, pad_top, player.netname, w, armour, aval, healthammo, ammo);
     }
 	else

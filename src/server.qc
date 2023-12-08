@@ -577,6 +577,12 @@ void () clanring_init_world =
 		clanring_precache_matchsounds();
 	}
 
+	if (clanring_gameconfig & CLANRING_DROP_DEATH_SHARDS)
+	{
+		precache_model ("progs/armshr.mdl");
+		precache_sound ("items/armsh1.wav");
+	}
+
 	// schedule the config files for a bit later so that they don't
 	// get loaded twice on startup
 	utils_make_scheduled_event(clanring_exec_configs, 1);
@@ -853,7 +859,10 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias misc impulse 185\n");
 	stuffcmd(self, "alias modhelp impulse 186\n");
 	stuffcmd(self, "alias shortcuts impulse 187\n");
-	stuffcmd(self, "alias lootstats cmd lootstats\n");
+	stuffcmd(self, "alias itemstats cmd itemstats\n");
+	stuffcmd(self, "alias dstats cmd dstats\n");
+	stuffcmd(self, "alias wtstats cmd wtstats\n");
+	stuffcmd(self, "alias itstats cmd itstats\n");
 
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
@@ -2043,9 +2052,8 @@ void (float quakever) clanring_wingl_detect =
 	else if (quakever == 2)
 		self.style = self.style | CLANRING_GLQUAKE;
 };
-
-//-----------------------------------------------------------------------------------
 /*
+//-----------------------------------------------------------------------------------
 void () Practice_Object_Remove =
 {
 	local entity e;
@@ -2139,7 +2147,7 @@ void () practice_spawn =
 // shoot object from gun
 //
 	makevectors (self.v_angle);
-	e.velocity = e.velocity * 500;
+	e.velocity = e.velocity * v_forward * 500;
 	sound (self, CHAN_WEAPON, "misc/r_tele4.wav", 1, ATTN_NORM);
 };
 */

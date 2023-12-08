@@ -964,6 +964,7 @@ void() RuneTouch =
 	}
 
 	other.player_flag = (other.player_flag | self.player_flag);
+	other.stats_item_runes +=1;
 	
 	if (other.player_flag & ITEM_RUNE1_FLAG)//Rune 1 - Earth Magic(resistance)
 	{

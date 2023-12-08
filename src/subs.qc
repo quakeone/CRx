@@ -428,6 +428,8 @@ added noclip check because Quake's default still-touch-everything noclip is awfu
 */
 float() CheckValidTouch =
 {
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		return FALSE;
 	if (other.classname != "player")
 		return FALSE;
 	if (other.health <= 0)

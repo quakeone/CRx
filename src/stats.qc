@@ -38,24 +38,32 @@ void() stats_reset_player =
 	self.true_kills = 0;
 	self.direct_hit = 0;
 	self.killed = FALSE;
-	self.loot_stats_ssg = 0;
-	self.loot_stats_ng = 0;
-	self.loot_stats_sng = 0;
-	self.loot_stats_gl = 0;
-	self.loot_stats_rl = 0;
-	self.loot_stats_lg = 0;
-	self.loot_stats_shells = 0;
-	self.loot_stats_nails = 0;
-	self.loot_stats_rockets = 0;
-	self.loot_stats_cells = 0;
-	self.loot_stats_health = 0;
-	self.loot_stats_mega = 0;
-	self.loot_stats_biosuit = 0;
-	self.loot_stats_redarmor = 0;
-	self.loot_stats_yellowarmor = 0;
-	self.loot_stats_greenarmor = 0;
-	self.loot_stats_backpacks = 0;
-	self.loot_stats_runes = 0;
+	self.stats_item_ssg = 0;
+	self.stats_item_ng = 0;
+	self.stats_item_sng = 0;
+	self.stats_item_gl = 0;
+	self.stats_item_rl = 0;
+	self.stats_item_lg = 0;
+	self.stats_item_shells = 0;
+	self.stats_item_nails = 0;
+	self.stats_item_rockets = 0;
+	self.stats_item_cells = 0;
+	self.stats_item_health = 0;
+	self.stats_item_mega = 0;
+	self.stats_item_biosuit = 0;
+	self.stats_item_redarmor = 0;
+	self.stats_item_yellowarmor = 0;
+	self.stats_item_greenarmor = 0;
+	self.stats_item_backpacks = 0;
+	self.stats_item_runes = 0;
+	self.stats_defense_teammate = 0;
+	self.stats_defense_backpack = 0;
+	self.stats_defense_dropped_flag = 0;
+	self.stats_defense_powerup = 0;
+	self.stats_defense_weapon = 0;
+	self.stats_defense_armor = 0;
+	self.stats_discharge_kills = 0;
+	self.stats_avenge_teammate = 0;
 };
 
 //
@@ -78,14 +86,14 @@ void() stats_show_badstats =
 	{
 		sprint(self, "badstats valid in match mode only\n");
 		return;
-	}
+	}/*
 	sprint(self, "\n");
 	sprint(self, "\bbad stuff\n");
 	sprint(self, "\n");
 	sprint(self, "paks - number of RL paks given away\n");
 	sprint(self, "self - percent damage done to self\n");
 	sprint(self, "team - percent damage done to team\n");
-	sprint(self, "\n");
+	sprint(self, "\n");*/
 	sprint(self, " paks ü self ü team ü      name\n");
 	sprint(self, "­­­­­­«­­­­­­«­­­­­­«­­­­­­­­­­­­­­­­\n");
 	player = clanring_sentinel.next_player;
@@ -129,7 +137,7 @@ void() stats_show_quadstats =
 	local float useteams;
 	//local string teamname;
 
-	if (teamplay && ((clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)) || clanring_sentinel.owner != clanring_sentinel))
+    if (teamplay && ((clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)) || clanring_sentinel.owner != clanring_sentinel))
 		useteams = TRUE;
 	else
 		useteams = FALSE;
@@ -240,9 +248,9 @@ void() stats_show_killstats =
 	sprint(self, "\n");
 	sprint(self, "\bkills\b\n");
 	sprint(self, "\n");
-	sprint(self, "fragsüoppüslfütm ükldü dtk ü dgv ü ewp ü     name\n");
-	sprint(self, "­­­­­«­­­«­­­«­­­«­­­«­­­­­«­­­­­«­­­­­­­­­­­­­­­\n");
-
+	sprint(self, "fragsüoppüavngüslfütm ükldü dcü dtk ü dgv ü ewp ü     name\n");
+	sprint(self, "\b-----+---+----+---+---+---+---+-----+-----+-----+---------------\n");
+	
 	player = clanring_sentinel.next_player;
 
 	while (player != world)
@@ -263,11 +271,15 @@ void() stats_show_killstats =
 		}
 		utils_print_int3(player.true_kills);
 		sprint(self, "ü");
+		sprint(self, sprintf("%4g",player.stats_avenge_teammate));
+		sprint(self, "ü");
 		utils_print_int3(player.mangle_x);
 		sprint(self, "ü");
-		utils_print_int3(player.mangle_y);
+		utils_print_int3(player.mangle_y);//FIXME: teamkills doesnt account for discharging (ctf)
 		sprint(self, "ü");
-		utils_print_int3(player.mangle_z);
+		utils_print_int3(player.mangle_z);//FIXME: killed doesnt account for discharging (ctf)
+		sprint(self, "ü");
+		utils_print_int3(player.stats_discharge_kills);
 		sprint(self, "ü");
 		utils_print_damage_gold(player.dmg_taken);
 		sprint(self, "ü");
@@ -835,44 +847,53 @@ void() stats_show_teamstats =
 };
 
 //
-//	S H O W  L O O T  S T A T S 
+//    S H O W  P L A Y E R  W E A P O N  I T E M S  T A K E N  S T A T S 
 //
-void( entity p ) stats_show_player_loot_stats =
+void( entity p ) stats_show_player_weapon_items_taken_stats =
 {
-	sprint(self, " ", strpad(15, p.netname),"\b|\b");
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_ssg));
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_ng));
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_sng));
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_gl));
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_rl));
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_lg));
-	sprint(self, sprintf("%6g\b|\b",p.loot_stats_shells));
-	sprint(self, sprintf("%5g\b|\b",p.loot_stats_nails));
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_rockets));
-	sprint(self, sprintf("%5g\b|\b",p.loot_stats_cells));
-	sprint(self, sprintf("%6g\b|\b",p.loot_stats_health));
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_mega));
-	sprint(self, sprintf("%4g\b|\b",p.loot_stats_biosuit));
-	sprint(self, sprintf("%3g\b|\b",p.loot_stats_greenarmor));
-	sprint(self, sprintf("%3g\b|\b",p.loot_stats_yellowarmor));
-	sprint(self, sprintf("%3g\b|\b",p.loot_stats_redarmor));
-	sprint(self, sprintf("%6g\b|\b",p.loot_stats_backpacks));
-//	sprint(self, sprintf("%3g\b|\b",p.loot_stats_runes));
-	sprint(self, " ",strpad(15, p.netname),"\n");
+    //sprint(self, " ", strpad(15, p.netname),"\b|\b");
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_ssg));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_ng));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_sng));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_gl));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_rl));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_lg));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_shells));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_nails));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_rockets));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_cells));
+    sprint(self, " ",p.netname,"\n");
 };
 
 //
-//	S H O W  L O O T  S T A T S 
+//    S H O W  P L A Y E R  I T E M S  T A K E N  S T A T S 
 //
-void() stats_show_loot_stats =
+void( entity p ) stats_show_player_items_taken_stats =
 {
-	local entity e;
-	
-	sprint(self, "\n");
-	sprint(self, "\b+---------------+----+----+----+----+----+----+------+-----+----+-----+------+----+----+---+---+---+------|---------------\n");
-	sprint(self, "  loot stat     \b|\b ssg\b|\b  ng\b|\b sng\b|\b  gl\b|\b  rl\b|\b  lg\b|\bshells\b|\bnails\b|\b rox\b|\bcells\b|\bhealth\b|\bmega\b|\bsuit\b|\b GA\b|\b YA\b|\b RA\b|\bbkpcks\b|\b name\n");
-	sprint(self, "\b+---------------+----+----+----+----+----+----+------+-----+----+-----+------+----+----+---+---+---+------|---------------\n");
+    sprint(self, sprintf("%4g\b|\b",p.stats_item_health));
+    sprint(self, sprintf("%4g\b|\b",p.stats_item_mega));
+    sprint(self, sprintf("%4g\b|\b",p.stats_item_biosuit));
+//	sprint(self, sprintf("%4g\b|\b",p.stats_item_ring)); // TODO
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_greenarmor));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_yellowarmor));
+    sprint(self, sprintf("%3g\b|\b",p.stats_item_redarmor));
+    sprint(self, sprintf("%4g\b|\b",p.stats_item_backpacks));
+//    sprint(self, sprintf("%3g\b|\b",p.stats_item_runes));
+    sprint(self, " ",p.netname,"\n");
+};
 
+//
+//    S H O W  W E A P O N  I T E M S  T A K E N  S T A T S 
+//
+void() stats_show_weapon_items_taken_stats =
+{
+    local entity e;
+    
+    sprint(self, "\n");
+    sprint(self, "\bweapon items taken stats\n");
+    sprint(self, "\b     weapons taken        ammo taken\n");
+    sprint(self, "ssg\b|\b ng\b|\bsng\b|\b gl\b|\b rl\b|\b lg\b|\bshl\b|\bnls\b|\brox\b|\bcls\b|\b name\n");
+    sprint(self, "\b---+---+---+---+---+---+---+---+---+---+---------------\n");
 	
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 		e = clanring_sentinel.next_player;
@@ -882,7 +903,96 @@ void() stats_show_loot_stats =
 	while (e)
 	{
 		if (!(e.style & CLANRING_OBSERVER))
-			stats_show_player_loot_stats(e);
+			stats_show_player_weapon_items_taken_stats(e);
+
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+		{
+			e = e.next_player;
+		}
+		else
+		{
+			e = find(e,classname, "player");			
+		}
+	}
+	sprint(self, "\n");
+};
+
+//
+//    S H O W  I T E M S  T A K E N  S T A T S 
+//
+void() stats_show_items_taken_stats =
+{
+    local entity e;
+    
+    sprint(self, "\n");
+    sprint(self, "\bitems taken stats\n");
+    sprint(self, "\n");
+    
+    sprint(self, "hlth\b|\bmega\b|\bsuit\b|\b GA\b|\b YA\b|\b RA\b|\bbkpk\b|\b name\n");
+    sprint(self, "\b----+----+----+---+---+---+----+---------------\n");
+	
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+		e = clanring_sentinel.next_player;
+	else	
+		e = find(world,classname, "player");
+	
+	while (e)
+	{
+		if (!(e.style & CLANRING_OBSERVER))
+			stats_show_player_items_taken_stats(e);
+
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+		{
+			e = e.next_player;
+		}
+		else
+		{
+			e = find(e,classname, "player");			
+		}
+	}
+	sprint(self, "\n");
+};
+
+//
+//    S H O W  D E F E N S E  S T A T S 
+//
+void() stats_show_defense_stats =
+{
+    local entity e;
+    
+    sprint(self, "\n");
+    sprint(self, "\bdefense stats\n");
+    sprint(self, "\n");
+
+	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+	{
+    	sprint(self, "teammate\b|\bflag\b|\bbackpack\b|\bpowerup\b|\bweapon\b|\barmor\b|\b name\n");
+    	sprint(self, "\b--------+----+--------+-------+------+-----+-----------\n");
+	}
+	else
+	{
+    	sprint(self, "teammate\b|\bbackpack\b|\bpowerup\b|\bweapon\b|\barmor\b|\b name\n");
+    	sprint(self, "\b--------+--------+-------+------+-----+-----------\n");
+	}
+	
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+		e = clanring_sentinel.next_player;
+	else	
+		e = find(world,classname, "player");
+	
+	while (e)
+	{
+		if (!(e.style & CLANRING_OBSERVER))
+		{
+			sprint(self, sprintf("%8g\b|\b",e.stats_defense_teammate));
+			if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+				sprint(self, sprintf("%4g\b|\b",e.stats_defense_dropped_flag));
+			sprint(self, sprintf("%8g\b|\b",e.stats_defense_backpack));
+			sprint(self, sprintf("%7g\b|\b",e.stats_defense_powerup));
+			sprint(self, sprintf("%6g\b|\b",e.stats_defense_weapon));
+			sprint(self, sprintf("%5g\b|\b",e.stats_defense_armor));
+			sprint(self, " ",e.netname,"\n");
+		}
 
 		if (clanring_playmode & CLANRING_MATCH_MODE)
 		{
@@ -946,7 +1056,14 @@ void() stats_autodump =
 		}
 
 		if (!(mode_is_arena()))
-			stats_show_loot_stats();
+		{
+			//Only display these at the end.
+			if ((gameover)||(clanring_state & CLANRING_MATCH_OVER))
+			{
+				stats_show_items_taken_stats();
+				stats_show_weapon_items_taken_stats();
+			}
+		}
 
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 		{

@@ -677,7 +677,7 @@ void() match_remove_start =
 //
 //  R E M O V E  S T A R T S
 //
-//  2 seconds into the match all start points revert to start points.
+//  2 seconds into the match all spawn points revert to start points.
 //
 void() match_remove_starts =
 {
@@ -785,18 +785,14 @@ void() match_begin =
 
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
 	announce("The match has begun!");//Moved up here for autodemo
+	utils_do_players(match_gib_player);//r00k after additional spawns...
+
 	clanring_new_record_player = "";	// .netname of the person who set the current top record.(only used in stats output)
 	utils_do_projectiles(SUB_Remove);
-	utils_do_players(match_gib_player);//3.19k : placed before rune remove
+
 	utils_do_item(SUB_Remove, "item_backpack");
 	utils_do_arena_players(arena_fight_and_shoot);
 	
-	if (clanring_playmode & CLANRING_RUNES)
-	{
-		utils_do_item(SUB_Remove, "item_rune");
-		StartRuneSpawn();
-	}
-
 	// Set the team size so that unwanted A-holes can't join in
 	match_get_maxsize();
 	//temp = ftos(clanring_maxsize);
@@ -826,11 +822,14 @@ void() match_begin =
 	utils_do_item(match_reset_owner, "item_artifact_super_damage");
 
 	// Temporarily turn the extra start points into spawn points if necessary
-	if (match_count_players() > dm_num_spawns)
+	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 	{
-		utils_do_item(match_add_spawn, "clanring_start_point");
-		dm_num_spawns = dm_num_spawns + clanring_num_starts;
-		utils_make_scheduled_event(match_remove_starts, 2);
+		if (match_count_players() > dm_num_spawns)
+		{
+			utils_do_item(match_add_spawn, "clanring_start_point");
+			dm_num_spawns = dm_num_spawns + clanring_num_starts;
+			utils_make_scheduled_event(match_remove_starts, 2);
+		}
 	}
 
 	score_resend_scoreboard();
@@ -941,29 +940,33 @@ void() match_timer_think1 =
 		{
 			if (self.count <= 10)
 			{
-				if (self.count == 10)
-				{
-					//announce("Match begins in T minus");
-					sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
-					//quaketag_clear();
-				}
-				else if (self.count == 9)
-				{
-					if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-						TeamCaptureRegenFlags();// respawn flags
-					
-					clanring_state = clanring_state | CLANRING_NULL_FLAG;
-				}
-				else if (self.count == 6)
-				{
-					//play pre-match sound sometimes
-					//match_pregame_sound();
-				}
 				if (self.count <= 3)
 					sound (world, CHAN_AUTO, "buttons/switch04.wav", 1, ATTN_NONE);
+
 				if (self.count == 1)
 				{
 					self.think = match_begin;
+				}
+				else
+				{
+					if (self.count == 10)
+					{
+						//announce("Match begins in T minus");
+						sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
+						//quaketag_clear();
+						if (clanring_playmode & CLANRING_RUNES)
+						{
+							utils_do_item(SUB_Remove, "item_rune");
+							StartRuneSpawn();// Spawn runes now so they have a chance to migrate away from the spawnpoint.
+						}
+					}
+					else if (self.count == 9)
+					{
+						if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+							TeamCaptureRegenFlags();// respawn flags
+
+						clanring_state = clanring_state | CLANRING_NULL_FLAG;
+					}
 				}
 			}
 		}

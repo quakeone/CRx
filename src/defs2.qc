@@ -93,6 +93,8 @@ float CLANRING_RA_MODE				= 8388608;
 /*
 	P L A Y M O D E
 	server .playmode - stored in cvar 'samelevel' and preserved across levels
+	eg. (clanring_playmode & CLANRING_PRACTICE_MODE)
+
 
 float CLANRING_NORMAL_MODE    		=
 float CLANRING_MATCH_MODE    		=
@@ -111,12 +113,13 @@ float CLANRING_RA_MODE				=
 /*
 	G A M E C O N F I G
 	server .gameconfig - stored in cvar 'gamecfg' and preserved across levels
-*/
-//todo enumflags
+	eg. (clanring_gameconfig & CLANRING_NO_HOOK)
+	*/
+// TODO: enumflags
 
 // float CLANRING_AUTO_PAUSE    		= 1;
 // float CLANRING_CA_CC_VOTE			= 2;
-float CLANRING_DISABLE_VOTE			= 4;
+float CLANRING_DISABLE_VOTE				= 4;
 // float CLANRING_EXTENDED_OBITS    	= 8;
 // float CLANRING_FAST_START    		= 16;
 // float CLANRING_FRESH_SPAWNS         	= 32;
@@ -126,11 +129,13 @@ float CLANRING_DISABLE_VOTE			= 4;
 // float CLANRING_NO_QUAD    			= 512;
 // float CLANRING_NO_RING    			= 1024;
 // float CLANRING_NO_SPOOGE    			= 2048;
-float CLANRING_POWERUP_DROP			= 4096;
+float CLANRING_POWERUP_DROP				= 4096;
 // float CLANRING_RUNES			    	= 8192;
 // float CLANRING_RUNETOSS    		    = 16384;
-// float CLANRING_SPAWNFRAG_PROTECTION 	= 32768;
+float CLANRING_SPAWNFRAG_PROTECTION 	= 32768;
+float CLANRING_SEQUENTIAL_SPAWNS		= 65536;
 // float CLANRING_BREAKAWAY_HOOK		= 0;
+float CLANRING_DROP_DEATH_SHARDS		= 1048576;
 
 // server .state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
@@ -252,26 +257,10 @@ vector 	clanring_angle;					// used for both autoss and intermission
 .vector clanring_ptwep;             // vector to keep track of pent weapon stats	// CRMOD - stats
 .vector clanring_ptkill;            // vector to keep track of pent kill stats		// CRMOD - stats
 .vector clanring_badstats;          // keep track of RL paks and damage done to team
-
-.float loot_stats_ssg;				//
-.float loot_stats_ng;				//
-.float loot_stats_sng;				//
-.float loot_stats_gl;				//
-.float loot_stats_rl;				//
-.float loot_stats_lg;				//
-.float loot_stats_shells;			//
-.float loot_stats_nails;			//
-.float loot_stats_rockets;			//
-.float loot_stats_cells;			//
-.float loot_stats_health;			//
-.float loot_stats_mega;				//
-.float loot_stats_biosuit;			//
-.float loot_stats_redarmor;			//
-.float loot_stats_yellowarmor;		//
-.float loot_stats_greenarmor;		//
-.float loot_stats_backpacks;		//
-.float loot_stats_runes;			//
-
+.vector clanring_backpacks;			// track rl|lg|gl lost/taken backpacks
+.vector deathorigin;
+//.float killed_who[16];				// players you killed; the number of times killed_who[playerno].netname
+//.float who_killed[16];				// players who killed you; how many times you died by who_killed[playerno].netname
 .entity clanring_othertarget;       // entity to focus on in tourneycam		// CRMOD - tourneycam
 .entity clanring_inflicted;         // stores entity last attacked			// CRMOD - combat
 .float  clanring_chase_score;       // same as above, also used by cameras
@@ -478,10 +467,38 @@ float	clanring_afk_check;
 float	clanring_afk_timeout;
 .float	afk_time;
 
-.float  stats_gl_frac;
-.float  stats_gl_tot;
-float	stats_timelimit;
-float	stats_matchtype;
+.float stats_item_ssg;				//
+.float stats_item_ng;				//
+.float stats_item_sng;				//
+.float stats_item_gl;				//
+.float stats_item_rl;				//
+.float stats_item_lg;				//
+.float stats_item_shells;			//
+.float stats_item_nails;			//
+.float stats_item_rockets;			//
+.float stats_item_cells;			//
+.float stats_item_health;			//
+.float stats_item_mega;				//
+.float stats_item_biosuit;			//
+.float stats_item_redarmor;			//
+.float stats_item_yellowarmor;		//
+.float stats_item_greenarmor;		//
+.float stats_item_backpacks;		//
+.float stats_item_runes;			//
+.float stats_avenge_teammate;		//
+.float stats_defense_teammate;      //
+.float stats_defense_dropped_flag;  //
+.float stats_defense_backpack;      //
+.float stats_defense_powerup;       //
+.float stats_defense_weapon;        //
+.float stats_defense_armor;         //
+.float stats_discharge_kills;       //
+.float stats_gl_frac;               //
+.float stats_gl_tot;                //
+.float enemy_hurt_time;				// timestamp of when you last hurt an opponent.
+
+float stats_timelimit;
+float stats_matchtype;
 
 .float  csqc_enabled;
 
