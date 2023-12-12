@@ -630,7 +630,7 @@ entity () SelectSpawnPoint =
 	if (clanring_gameconfig & CLANRING_SEQUENTIAL_SPAWNS)
 	{
 		spot = find(lastspawn, classname, "info_player_deathmatch");
-		if ((spot == world)||(SpotNearBadOrigin(spot.origin)))//check if this is where we last spawned or just died
+		if (spot == world)
 			spot = find(spot, classname, "info_player_deathmatch");
 		lastspawn = spot;
 		return spot;
@@ -642,7 +642,7 @@ entity () SelectSpawnPoint =
 	pcount = floor(pcount);
 
 	spot = world;	//Start from the beginning...
-
+	
 	while (pcount > 0)
 	{
 		spot = find(spot, classname, "info_player_deathmatch");
