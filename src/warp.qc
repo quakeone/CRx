@@ -92,7 +92,7 @@ void() select_episode =
 	}
 	else
 	{
-		self.warp_episode = self.finaldest_z; // (Zero Based array)
+		self.warp_episode = self.finaldest_z - 1; // (Zero Based array)
 		self.use = select_map;
 		warp_show_map_menu();
 	}
