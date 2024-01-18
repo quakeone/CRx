@@ -66,7 +66,8 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias airshot cmd airshot\n");
 	stuffcmd(self, "alias powerupdrop cmd powerupdrop;\n");
 	// number aliases
-	stuffcmd(self, "alias 0 impulse 230\n");
+	stuffcmd(self, "alias 0 cmd 0\n");
+/*	
 	stuffcmd(self, "alias 1 impulse 231\n");
 	stuffcmd(self, "alias 2 impulse 232\n");
 	stuffcmd(self, "alias 3 impulse 233\n");
@@ -81,7 +82,7 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias 12 impulse 242\n");
 	stuffcmd(self, "alias 13 impulse 243\n");
 	stuffcmd(self, "alias 14 impulse 244\n");
-	stuffcmd(self, "alias 15 impulse 245\n");
+	stuffcmd(self, "alias 15 impulse 245\n");*/
 	// send this LAST to make sure that client received all impulses
 	stuffcmd(self, "alias crx_ignorethis \"impulse 180;\"\n");
 	self = temp;
@@ -255,14 +256,14 @@ void() votables_request_change_level =
 		return;
 	}
 
-	level = (self.warp_episode * 15) + (self.warp_map);//new r00k
+	level = (self.warp_episode * WARP_MAPLIST_SIZE) + (self.warp_map);
 	newmap = sprintf("%s (%s)", warpmap[level].name, warpmap[level].title);
 
 	//clear warp_flags;
 	self.warp_episode=0;
 	self.warp_map=0;
 
-	if (newmap == "")
+	if (warpmap[level].name == "")
 	{
 		sprint(self, "Invalid level\n");
 		return;

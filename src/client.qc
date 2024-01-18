@@ -584,7 +584,7 @@ float (vector sp) SpotNearBadOrigin =
 
 	if (d < 32)
 	{
-		sprint(self, "spot near death origin.\n");
+	//	sprint(self, "spot near death origin.\n");
 		return TRUE;
 	}
 	
@@ -592,10 +592,10 @@ float (vector sp) SpotNearBadOrigin =
 	
 	if (d < 32)
 	{
-		sprint(self, "spot near last spawn.\n");
+	//	sprint(self, "spot near last spawn.\n");
 		return TRUE;
 	}
-	sprint(self, "spawnpoint clear.\n");
+	//sprint(self, "spawnpoint clear.\n");
 	return FALSE;
 };
 
@@ -758,7 +758,7 @@ void() PutClientInServer =
 			
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		if (!(clanring_state & CLANRING_MATCH_STARTED))
+//		if (!(clanring_state & CLANRING_MATCH_STARTED))
 		{	
 			if ((self.client == "Quake"))//||(self.client == "QSS-M")) //not ezq, fte, qss
 				pqc_ping_times();
@@ -2757,6 +2757,34 @@ void () client_afk_off =
 	}
 };
 
+float (string s) FindNumericalInput =
+{	
+	float pass;
+
+	pass = 0;
+
+	if (self.use)
+	{
+		float n;
+
+		if ((strlen(s)) > 2) // User entered a subsequent command; exit out and issue the command
+		{
+			n = 0;
+			pass = 0;
+		}
+		else
+		{
+			n = stof(s);
+			pass = 1;
+		}
+
+		self.finaldest_z = n;	  
+		self.use ();		
+	}
+		
+	return pass;
+}
+
 void(string cmd) SV_ParseClientCommand =
 {
     local float args, modecmd, mapnumber=0;
@@ -2775,6 +2803,12 @@ void(string cmd) SV_ParseClientCommand =
     	arg1 = argv(1);
 	if (args > 2)
     	arg2 = argv(2);
+
+	
+	if (FindNumericalInput(arg0))
+	{
+		return;
+	}
 
     switch (arg0)
     {

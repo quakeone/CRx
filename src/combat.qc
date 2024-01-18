@@ -243,7 +243,7 @@ void(entity targ, entity attacker) Killed =
 		return;
 	}
 
-	if ((targ.enemy_hurt_time > time) && (targ.enemy.health) && (!(targ.enemy == attacker)))		// Killed an opponent who was attacking a teammate.
+	if ((targ.enemy_hurt_time > time) && (targ.enemy.health) && (targ.enemy != attacker))		// Hurt an opponent who was attacking a teammate.
 	{
 //#message !!precache this sound "crx/defense.wav"
 //		sound (self, CHAN_VOICE, "crx/defense.wav", 1, ATTN_NORM);
@@ -251,7 +251,7 @@ void(entity targ, entity attacker) Killed =
 		bprint(attacker.netname," defends their teammate ",targ.enemy.netname,".\n"); 				// Testing remove this afterwards...
 	}
 	else
-	if ((targ.enemy_hurt_time > time) && (!(targ.enemy.health)) && (!(targ.enemy == attacker)))		// Killing an opponent who just killed a teammate.
+	if ((targ.enemy_hurt_time > time) && (!(targ.enemy.health)) && (targ.enemy != attacker))		// Killing an opponent who just killed a teammate.
 	{
 //#message !!precache this sound "crx/avenger.wav"
 //		sound (self, CHAN_VOICE, "crx/avenger.wav", 1, ATTN_NORM);

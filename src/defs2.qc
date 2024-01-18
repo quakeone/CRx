@@ -92,29 +92,32 @@ float CLANRING_RA_MODE				= 8388608;
 
 /*
 	P L A Y M O D E
-	server .playmode - stored in cvar 'samelevel' and preserved across levels
+	clanring_playmode - stored in cvar 'samelevel' and preserved across levels
 	eg. (clanring_playmode & CLANRING_PRACTICE_MODE)
 
-
-float CLANRING_NORMAL_MODE    		=
-float CLANRING_MATCH_MODE    		=
-float CLANRING_PRACTICE_MODE    	=
-float CLANRING_SERVER_INITIALIZED   =
-float CLANRING_CAPTURE_THE_FLAG		=
-float CLANRING_TEAM_DEATHMATCH		=
-float CLANRING_WIPEOUT_MODE			=
-float CLANRING_AIRSHOT_MODE			=
-float CLANRING_FREEZETAG			=
-float CLANRING_SPEEDBALL			=
-float CLANRING_DMM4_MODE			=
-float CLANRING_CA_MODE				=
-float CLANRING_RA_MODE				=
+float CLANRING_FREEFORALL_MODE    = 1;        // teamplay 0 dm; normal mode
+float CLANRING_PICKUP_DM_MODE     = 2;        // teamplay 1 dm; no friendly fire; normal mode
+float CLANRING_MATCH_TDM_MODE     = 4;        // teamplay 2 dm; friendlyfire; match mode
+float CLANRING_PRACTICE_DM_MODE   = 8;        // teamplay 0 dm; self damage; practice full inventory
+float CLANRING_PICKUP_CTF_MODE    = 16;       // teamplay 1 ctf; no friendly fire; normal mode
+float CLANRING_MATCH_CTF_MODE     = 32;       // teamplay 1 ctf; match timer
+float CLANRING_PRACTICE_CTF_MODE  = 64;       // teamplay 0 ctf; hook enabled; practice full inventory
+float CLANRING_CLAN_ARENA_MODE    = 128;      // Clan Arena
+float CLANRING_FREEZETAG_MODE     = 256;      // sub mode of ClanArena, you respawn by teammate intervention.
+float CLANRING_WIPEOUT_MODE       = 512;      // sub mode of ClanArena, you respawn at set time intervals.
+float CLANRING_ELIMINATION_MODE   = 1024;     // Sub mode of ClanArena, you respawn when your killer dies.
+float CLANRING_AIRSHOT_MODE       = 2048;     //
+float CLANRING_DMM4_MODE          = 4096;     //
+float CLANRING_ROCKET_ARENA_MODE  = 8192;     //
+float CLANRING_SPEEDBALL_MODE     = 16384;    //
+float CLANRING_INSTAGIB_MODE      = 32768;    //
+float CLANRING_SERVER_INITIALIZED = 0;
 */
 /*
 	G A M E C O N F I G
-	server .gameconfig - stored in cvar 'gamecfg' and preserved across levels
+	clanring_gameconfig - preserved across levels in cvar 'gamecfg'
 	eg. (clanring_gameconfig & CLANRING_NO_HOOK)
-	*/
+*/
 // TODO: enumflags
 
 // float CLANRING_AUTO_PAUSE    		= 1;
@@ -135,9 +138,10 @@ float CLANRING_POWERUP_DROP				= 4096;
 float CLANRING_SPAWNFRAG_PROTECTION 	= 32768;
 float CLANRING_SEQUENTIAL_SPAWNS		= 65536;
 // float CLANRING_BREAKAWAY_HOOK		= 0;
+// float CLANRING_QW_ROCKET_DAMAGE		= 0;		//set rocket damage to 110 eliminate the ' + random () * 20 '
 float CLANRING_DROP_DEATH_SHARDS		= 1048576;
 
-// server .state - not preserved across level changes
+// clanring_state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
 float CLANRING_MATCH_STARTED    	= 2;
 float CLANRING_MATCH_PAUSED    		= 4;
@@ -509,9 +513,12 @@ typedef struct
 	string	author; 
 }servermap_t;
 
-servermap_t warpmap[250];
+#define WARP_CATEGORY_SIZE 50	// Change the value in server.qc: clanring_set_aliases, if you exceed 50
+#define WARP_MAPLIST_SIZE 30	// Above 15 and most users have to scroll.
+servermap_t warpmap[WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE];
 
-string warpmenutop[15]; // Customizable map categories for the warp menu contents.
+string warpmenutop[WARP_CATEGORY_SIZE]; // Customizable map categories for the warp menu contents.
+
 
 string default_nextmap;
 

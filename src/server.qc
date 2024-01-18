@@ -363,10 +363,10 @@ void () clanring_init_world =
 	
 	//CRMOD - string to be used throughout code to show version number.
 	//version.year.month.day 
-	clanring_version        = "CRx \b(v1.23.06)";     // This is used in the server console, the help display, and on connect.
-	clanring_version_info   = "CRx (v1.23.06)";       // This is the value for the forced server infokey named "mod".
-	clanring_version_number = "(v1.23.06)";           // This is only used once when typing 'commands' in the server console. :|
-	clanring_version_red    = "\bcrx (v\b1.23.06\b)"; // This isn't used anywhere :(
+	clanring_version        = "CRx (v1.24.02)";       // This is used in the server console, the help display, and on connect.
+	clanring_version_info   = "CRx (v1.24.02)";       // This is the value for the forced server infokey named "mod".
+	clanring_version_number = "(v1.24.02)";           // This is only used once when typing 'commands' in the server console. :|
+	clanring_version_red    = "\bcrx (v\b1.24.02\b)"; // This isn't used anywhere :(
 	
 	// Initialize sentinel
 	clanring_sentinel = spawn();
@@ -863,6 +863,11 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias dstats cmd dstats\n");
 	stuffcmd(self, "alias wtstats cmd wtstats\n");
 	stuffcmd(self, "alias itstats cmd itstats\n");
+	// R00k: allow 0 to 50 as commands for console input for menus
+	for (float i = 50; i > 0; i -= 1)
+	{
+		stuffcmd (self, sprintf("alias %g cmd %g\n", i, i));
+	}
 
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
@@ -1589,7 +1594,8 @@ void () watch_commands =
 		sprint(self, "\n");
 		sprint(self, " \bautocam\b\n");
 		sprint(self, " \bautochase\b\n");
-		sprint(self, " \bautoeye\b\n");
+		sprint(self, " \bchase\b\n");
+		sprint(self, " \bautopov\b\n");
 		sprint(self, " \beyecam [e]\b\n");
 		sprint(self, " \bflyme\b\n");
 		sprint(self, "\n");
