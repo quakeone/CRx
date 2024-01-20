@@ -65,26 +65,16 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias ctfdmm4 cmd ctfdmm4\n");
 	stuffcmd(self, "alias airshot cmd airshot\n");
 	stuffcmd(self, "alias powerupdrop cmd powerupdrop;\n");
-	// number aliases
-	stuffcmd(self, "alias 0 cmd 0\n");
-/*	
-	stuffcmd(self, "alias 1 impulse 231\n");
-	stuffcmd(self, "alias 2 impulse 232\n");
-	stuffcmd(self, "alias 3 impulse 233\n");
-	stuffcmd(self, "alias 4 impulse 234\n");
-	stuffcmd(self, "alias 5 impulse 235\n");
-	stuffcmd(self, "alias 6 impulse 236\n");
-	stuffcmd(self, "alias 7 impulse 237\n");
-	stuffcmd(self, "alias 8 impulse 238\n");
-	stuffcmd(self, "alias 9 impulse 239\n");
-	stuffcmd(self, "alias 10 impulse 240\n");
-	stuffcmd(self, "alias 11 impulse 241\n");
-	stuffcmd(self, "alias 12 impulse 242\n");
-	stuffcmd(self, "alias 13 impulse 243\n");
-	stuffcmd(self, "alias 14 impulse 244\n");
-	stuffcmd(self, "alias 15 impulse 245\n");*/
-	// send this LAST to make sure that client received all impulses
+
+	// R00k: allow 0 to 50 as commands for console input for menus
+	for (float i = 50; i >= 0; i -= 1)
+	{
+		stuffcmd (self, sprintf("alias %g cmd %g\n", i, i));
+	}
+
+	// send this LAST to make sure that the client received all impulses
 	stuffcmd(self, "alias crx_ignorethis \"impulse 180;\"\n");
+
 	self = temp;
 	remove(self);
 };

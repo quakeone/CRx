@@ -707,24 +707,20 @@ void (float value) clanring_set_fraglimit =
 	}
 };
 
-void () clanring_set_warpaliases =
+void () clanring_set_warp_aliases =
 {
-	local entity temp;
-	local float ep_index, index, n;
+	entity temp;
+	float index;
 
 	temp = self;
 	self = self.owner;
 
 	//send map warp aliases
-	for (ep_index = 1; ep_index < 16; ep_index += 1)
+	for (index = 1 ; index < (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
 	{
-		for (index = 1 ; index < 16 ; index += 1)
+		if (warpmap[index].name != "")
 		{
-			n = (ep_index * 15) + index;
-			if (warpmap[n].name != "")
-			{
-				stuffcmd(self, sprintf("alias %s cmd %s\n", warpmap[n].name, warpmap[n].name));
-			}
+			stuffcmd(self, sprintf("alias %s cmd %s\n", warpmap[index].name, warpmap[index].name));
 		}
 	}
 
@@ -863,18 +859,13 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias dstats cmd dstats\n");
 	stuffcmd(self, "alias wtstats cmd wtstats\n");
 	stuffcmd(self, "alias itstats cmd itstats\n");
-	// R00k: allow 0 to 50 as commands for console input for menus
-	for (float i = 50; i > 0; i -= 1)
-	{
-		stuffcmd (self, sprintf("alias %g cmd %g\n", i, i));
-	}
 
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
     // remove the temporary entity
 	self = temp;
 	self.nextthink = time + 0.02;
-	self.think = clanring_set_warpaliases;
+	self.think = clanring_set_warp_aliases;
 };
 
 //
