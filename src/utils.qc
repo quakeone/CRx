@@ -1224,6 +1224,16 @@ void (void () dofunc) utils_do_players =
     self = oldself;
 };
 
+void (entity whodat, void() dofunc) utils_do_player =
+{
+    local entity oldself;
+
+    oldself = self;
+    self = whodat;
+    dofunc();
+    self = oldself;
+};
+
 /*
 void (void () dofunc) utils_do_players_event =
 {
@@ -1472,26 +1482,20 @@ vector (vector m1, vector m2) Rvec =
 // returns true if the maparg matches a name in the warp list
 float(string maparg) found_in_warp_list =
 {
-	local float ep_index, index, n, mapfound = FALSE;
+	float index, mapfound = FALSE;
 
 	if (maparg == "")
 		return FALSE;
 
-	for (ep_index = 1; ep_index < 16; ep_index += 1)
+	for (index = 1 ; index < (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
 	{
-		for (index = 1 ; index < 16 ; index += 1)
+		if (warpmap[index].name != "" && warpmap[index].name == maparg)
 		{
-			n = (ep_index * 15) + index;
-			if (warpmap[n].name != "" && warpmap[n].name == maparg)
-			{
-				mapfound = n;
-				break;
-			}
-		}
-		if (mapfound)
+			mapfound = index;
 			break;
+		}
 	}
-	return (mapfound);
+	return mapfound;
 };
 
 // used to determine mode from client command
@@ -1787,3 +1791,4 @@ float () prematch_rules =
 		return TRUE;
 	return FALSE;
 }
+
