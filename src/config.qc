@@ -171,22 +171,37 @@ void(string command, string value) config_command =
 				utils_toggle_sflag (CLANRING_MODE_VOTE, "Mode voting");
 			break;
 		}
-/*TODO:
+
 		case "allvoteoff":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (clanring_playmode & CLANRING_DISABLE_VOTE)
-				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			if (!(clanring_gameconfig & CLANRING_DISABLE_VOTE))
+				utils_toggle_gflag (CLANRING_DISABLE_VOTE, "All voting");
 			break;
 		}
 		case "allvoteon":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (clanring_playmode & CLANRING_DISABLE_VOTE)
-				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			if (clanring_gameconfig & CLANRING_DISABLE_VOTE)
+				utils_toggle_gflag (CLANRING_DISABLE_VOTE, "All voting");
 			break;
 		}
-*/		
+
+		case "powerupdropoff":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+				utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+			break;
+		}
+		case "powerupdropon":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (!(clanring_gameconfig & CLANRING_POWERUP_DROP))
+				utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+			break;
+		}
+
 		case "obitson":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
@@ -488,14 +503,17 @@ void () exec_warp_main_menu =
 		return;
 	}
 
-	while ((line = fgets(f)) && (i < 15))
+	while ((line = fgets(f)) && (i < WARP_CATEGORY_SIZE))
 	{
 		float argc = tokenize(line);
+
 		if (!argc)
 			continue;		
-		if (argv(0) == "//" || argv(0) == "#") continue;
-		warpmenutop[i] = strzone(line);
+
+		if (argv(0) == "//" || argv(0) == "#") 
+			continue;
 		i++;
+		warpmenutop[i] = strzone(line);		
 	}
 
 	fclose(f);
@@ -505,36 +523,63 @@ void() exec_warp_cfg =
 {
 	filestream f = fopen("configs/warp.cfg", FILE_READ);
 	string line = "", mapfile = "";
-	float menunum = 1, level = 0, mapnum = 0;//Ya, 0 - 15 are reserved. warpmap[16] == e1m1. (menu1, map1)
+	float menunum = 0, level = 0, mapnum = 0;
 	
 	if (f < 0)
 	{
 		return;
 	}
 
+	float limit = (WARP_MAPLIST_SIZE * WARP_CATEGORY_SIZE);
+
 	while ((line = fgets(f)))
 	{
 		float argc = tokenize(line);
+
 		if (!argc)
 			continue;		
 
 		mapfile = argv(0);
 		
-		if (mapfile == "//" || mapfile == "#" ) continue;	// Skip comments
-		if ((mapfile == "****") || (level > 15))
+		if (mapfile == "//" || mapfile == "#") continue;	// Skip comments
+
+		if (mapfile == "****")
 		{
 			menunum += 1;
 			level = 0;
+			if (menunum > WARP_CATEGORY_SIZE)
+			{
+				break;
+			}
 			continue;
 		}
 
 		level += 1;
-		mapnum = (menunum * 15) + level;
 
-		warpmap[mapnum].name = strzone(mapfile);
-		warpmap[mapnum].title = strzone(fgets(f));
-		warpmap[mapnum].author = strzone(fgets(f));
-		//dprint(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
+		// Assume someone forgot the '****' or lost count
+		if (level > WARP_MAPLIST_SIZE)
+		{
+			print(sprintf("***WARNING!\n After warp category #%s, we've hit map #%s, before a **** category separator\n", ftos(menunum), ftos(level)));
+			print("Assuming a new category... fix the file 'warp.cfg' please!\n");
+			menunum += 1;
+			level = 0;
+			
+			if (menunum > WARP_CATEGORY_SIZE)
+			{
+				break;
+			}
+		}
+
+		mapnum = (menunum * WARP_MAPLIST_SIZE) + level;
+
+		if (mapnum < limit)
+		{
+			warpmap[mapnum].name = strzone(mapfile);
+			warpmap[mapnum].title = strzone(fgets(f));
+			warpmap[mapnum].author = strzone(fgets(f));
+			//print(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));			
+		}
+		else print((sprintf("**ERROR: mapnum > WARP_MAPLIST_SIZE (Too many [%s] warp menus/maps)(1024 maps 32 categories maximum)",ftos(mapnum)),"\n"));//todo remove limits
 	}
 	fclose(f);
 }
@@ -590,7 +635,7 @@ void() clanring_nextlevel_config =
 		{
 			while ((line = fgets(f)))
 			{
-				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
+				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))// todo: add [ra] 
 				{
 					break;
 				}
@@ -825,6 +870,7 @@ void (string filename, float recordset) write_player_stats =
 		fclose(f);
 	}
 }
+
 void () write_capture_stats =
 {
 	write_player_stats(sprintf("%s_captimes.crx", mapname), 0);

@@ -348,6 +348,9 @@ void() worldspawn =
 	precache_sound ("misc/basekey.wav"); //flag dropped notification
 	precache_sound("buttons/switch04.wav"); //match timer countdown
 	precache_sound("crx/prepare.wav");
+
+	precache_sound("enforcer/sight3.wav");//Item tossing "You There!"
+	precache_sound ("ra/laugh.wav"); // Powerup Denied sound.
 	
 	//
 	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.

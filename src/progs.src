@@ -39,6 +39,7 @@ keydata.qc
 customsounds.qc //mapper-settable custom sound effects for monsters - iw
 custom_mdls.qc //mapper-settable custom models for monsters - iw
 items.qc
+json.qc
 console.qc
 config.qc
 options.qc

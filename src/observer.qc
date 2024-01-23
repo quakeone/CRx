@@ -296,6 +296,8 @@ void () observer_camera_start =
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
+	stuffcmd(self, "cmd observing off\n");
+	stuffcmd(self, "cmd setinfo observer camera\n");
 };
 
 //
@@ -352,6 +354,9 @@ void () observer_chase_start =
 			centerprint(self,sprintf("chasecam \[%s\]", self.movetarget.netname));
 		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
 	}
+
+	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname) );
+	stuffcmd(self, "cmd setinfo observer chasecam\n");
 };
 
 //
@@ -397,18 +402,25 @@ void () observer_demo_start =
     self.oflags = self.oflags | OBSERVER_DEMO;
     self.finaldest_y = self.movetype = MOVETYPE_FLY;
     self.view_ofs = '0 0 22';
-    msg_entity = self;
-    WriteByte(MSG_ONE, SVC_SETVIEWPORT);
-    WriteEntity(MSG_ONE, self.movetarget);
-    setmodel(self, string_null);
-    observer_set_demo_position();
-    stuffcmd(self, "v_centerspeed 0\n");
-    sprint(self, "eyecam mode\n");
-   // if (!(self.style & CLANRING_HEADS_UP))
-        //sprint(self, "type 'headsup' for fullscreen display\n");
-	//sprint(self, "type 'smooth' to eliminate choppines\n");
-	stuffcmd(self, "cmd setinfo observer eyecam\n");// woods
 
+	msg_entity = self;
+	WriteByte(MSG_ONE, SVC_SETVIEWPORT);
+	WriteEntity(MSG_ONE, self.movetarget);
+	
+	setmodel(self, string_null);
+	observer_set_demo_position();
+
+	stuffcmd(self, "v_centerspeed 0\n");
+	sprint(self, "eyecam mode\n");
+    
+	// if (!(self.style & CLANRING_HEADS_UP))
+    // 	sprint(self, "type 'headsup' for fullscreen display\n");
+	// sprint(self, "type 'smooth' to eliminate choppines\n");
+	
+	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname) );
+	stuffcmd(self, "cmd setinfo observer eyecam\n");
+
+	
 	//R00k: added auto pov
 	if (self.oflags & OBSERVER_GO_AUTO)
 	{
@@ -418,7 +430,7 @@ void () observer_demo_start =
 	}
 	else
 	{
-		sprint(self, "type 'autopov' for automatic eyecam switching\n");
+		sprint(self, "type '\bautopov\b' for automatic eyecam switching\n");
 	}
 
 	self.nextthink = -1;
@@ -592,7 +604,7 @@ void () observer_start =
 
 	if (clanring_playmode & CLANRING_CA_MODE)
 	{
-		if (((self.ca_player_flag == PF_DEAD)||(self.ca_player_flag == PF_WAITING))&&(boss.state == CA_MATCH_PLAYING))//
+		if (((self.ca_player_flag == PF_DEAD)||(self.ca_player_flag == PF_WAITING))&&(boss.state == CA_MATCH_PLAYING))
 		{
 			observer_next_target();
 			observer_chase_start();
@@ -774,21 +786,27 @@ entity (entity e) observer_find_target =
 //  F I N D  T E A M T A R G E T
 //
 //  Returns the next teammate to watch
-//
-entity () observer_find_team_target =
+//	Arena mode only.
+
+entity (entity e) observer_find_team_target =
 {
-	local entity targ;
+	local entity p;
 
-	targ = find (world, classname, "player");
+	p = e.chain_gang;
 
-	while ((!targ) || ((IS_CA_OBSERVER(targ)) || !(targ.style & CLANRING_CONNECTED) || self.next_team.team2 != targ.next_team.team2))
-		targ = find (targ, classname, "player");
-
-	if (targ == world)
+	while (p)
 	{
-		targ = observer_find_target(world);//Find the winner of the match if opponent
+        if ((p.deadflag == DEAD_NO) && (IS_CA_OBSERVER(p) == FALSE) && ((p.style & CLANRING_CONNECTED)))
+			return p;
+		p = p.chain_gang;
 	}
-	return targ;
+	
+	if (p == world)
+	{
+		p = observer_find_target(world); // Find the winner of the match if opponent
+	}
+
+	return p;
 };
 
 //
@@ -798,17 +816,23 @@ entity () observer_find_team_target =
 //
 void () observer_next_target =
 {
-	// if (mode_is_arena() && boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
-	// {
-	// 	observer_walk_start ();
-	// 	return;
-	// }
-
-    self.movetarget = observer_find_target(self.movetarget);
-
-	if /*(mode_is_arena() && */(self.movetarget == world)//)
+	if (mode_is_arena() && (boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART))
 	{
-		observer_walk_start ();
+		observer_fly_start();
+		return;
+	}
+
+	if ((mode_is_arena()) && (boss.state == CA_MATCH_PLAYING) && (self.next_team != world))
+	{
+		if (self.movetarget.ca_player_flag != PF_PLAYING) // Re-Affirm why we are here finding another team-mate...
+			self.movetarget = observer_find_team_target (self.next_team);
+	}
+	else
+		self.movetarget = observer_find_target (self.movetarget);
+	
+	if (self.movetarget == world)
+	{	
+		observer_fly_start();
 		return;
 	}
 
@@ -1604,7 +1628,7 @@ void () observer_update_display =
         aval = strings_get_armour_val(player);
         healthammo = strings_get_health_ammo(player);
         ammo = ftos(player.currentammo);
-    	pad_top = "\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    	pad_top = TeamSetStatRes2(self);//R00k : position the display based on the observer's .statstate value.
 		centerprint7(self, pad_top, player.netname, w, armour, aval, healthammo, ammo);
     }
 	else
@@ -1874,7 +1898,7 @@ void () observer_pre_think =
 		{
 			if ((self.movetarget.ca_player_flag == PF_DEAD) || (IS_CA_OBSERVER(self.movetarget)))
 			{
-				if (boss.state == CA_MATCH_PLAYING)//Dont switch between rounds.
+				if (boss.state == CA_MATCH_PLAYING) // Dont switch between rounds.
 					observer_next_target ();
 				else
 					observer_walk_start();

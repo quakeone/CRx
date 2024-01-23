@@ -64,25 +64,17 @@ void() votables_send_aliases =
 	stuffcmd(self, "alias dmm4 cmd dmm4\n");
 	stuffcmd(self, "alias ctfdmm4 cmd ctfdmm4\n");
 	stuffcmd(self, "alias airshot cmd airshot\n");
-	// number aliases
-	stuffcmd(self, "alias 0 impulse 230\n");
-	stuffcmd(self, "alias 1 impulse 231\n");
-	stuffcmd(self, "alias 2 impulse 232\n");
-	stuffcmd(self, "alias 3 impulse 233\n");
-	stuffcmd(self, "alias 4 impulse 234\n");
-	stuffcmd(self, "alias 5 impulse 235\n");
-	stuffcmd(self, "alias 6 impulse 236\n");
-	stuffcmd(self, "alias 7 impulse 237\n");
-	stuffcmd(self, "alias 8 impulse 238\n");
-	stuffcmd(self, "alias 9 impulse 239\n");
-	stuffcmd(self, "alias 10 impulse 240\n");
-	stuffcmd(self, "alias 11 impulse 241\n");
-	stuffcmd(self, "alias 12 impulse 242\n");
-	stuffcmd(self, "alias 13 impulse 243\n");
-	stuffcmd(self, "alias 14 impulse 244\n");
-	stuffcmd(self, "alias 15 impulse 245\n");
-	// send this LAST to make sure that client received all impulses
+	stuffcmd(self, "alias powerupdrop cmd powerupdrop;\n");
+
+	// R00k: allow 0 to 50 as commands for console input for menus
+	for (float i = 50; i >= 0; i -= 1)
+	{
+		stuffcmd (self, sprintf("alias %g cmd %g\n", i, i));
+	}
+
+	// send this LAST to make sure that the client received all impulses
 	stuffcmd(self, "alias crx_ignorethis \"impulse 180;\"\n");
+
 	self = temp;
 	remove(self);
 };
@@ -118,7 +110,6 @@ void() votables_set_hook =
 					self = tmp;
 					p.weapon = IT_AXE;
 				}			
-				//self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));
 				p.hook2 = (p.hook2 - (p.hook2 & HOOK_OUT)); //not this?
 				p.items = p.items - (p.items & IT_HOOK);
 			}
@@ -159,12 +150,6 @@ void() votables_set_hook =
 void() votables_request_set_hook =
 {
 	local string newstate = "", newstate2 = "";
-
-	if (clanring_request)
-	{
-		sprint(self, "There is already a vote in progress\n");
-		return;
-	}
 
 	if (self.style & CLANRING_ADMINISTRATOR)
 	{
@@ -218,7 +203,22 @@ void () votables_change_level =
 		changelevel("start");
 	}
 	else
-	changelevel (request_mapname);
+	{
+		local entity player;
+
+		player = find(world, classname, "player");
+		while (player)
+		{		
+		 	if (player.style & CLANRING_CONNECTED)
+		 	{
+				if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
+		 			stuffcmd(player, "setinfo observing off\n"); //Need a better function to reset all observer infokeys...
+//				stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
+		 	}
+			player = find(player, classname, "player");
+		}
+		changelevel (request_mapname);
+	}	
 };
 
 
@@ -246,14 +246,14 @@ void() votables_request_change_level =
 		return;
 	}
 
-	level = (self.warp_episode * 15) + (self.warp_map);//new r00k
+	level = (self.warp_episode * WARP_MAPLIST_SIZE) + (self.warp_map);
 	newmap = sprintf("%s (%s)", warpmap[level].name, warpmap[level].title);
 
 	//clear warp_flags;
 	self.warp_episode=0;
 	self.warp_map=0;
 
-	if (newmap == "")
+	if (warpmap[level].name == "")
 	{
 		sprint(self, "Invalid level\n");
 		return;
@@ -565,14 +565,15 @@ void() votables_set_gametype_mode_map =
 
 	player = find(world, classname, "player");
 	while (player)
-	{
-		if ((player.style & CLANRING_CONNECTED) && (player.style & CLANRING_OBSERVER) && (player.movetarget != world))
+	{		
+		if (player.style & CLANRING_CONNECTED)
 		{
-			stuffcmd(player, "setinfo observing off\n");
+			if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
+				stuffcmd(player, "setinfo observing off\n");
+			//stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
 		}
 		player = find(player, classname, "player");
-	}
-
+	}	
 	changelevel (newmapname);
 };
 
@@ -1748,3 +1749,37 @@ void() votables_request_abortmatch =
 		}
 	}
 };
+
+//
+//  S E T  D R O P  P O W E R U P S
+//
+//  Enable/disable powerup dropping
+//
+void() votables_set_powerupdrop =
+{
+	utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+};
+
+//
+//  R E Q U E S T  S E T  D R O P  P O W E R U P S
+//
+//  Request to enable/disable powerup dropping
+//
+void() votables_request_set_powerupdrop =
+{
+	// Do it right away if we're an administrator, otherwise vote
+	if (self.style & CLANRING_ADMINISTRATOR)
+		utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+	else
+	{
+		local string newstate;
+		if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+			newstate = "\bdisable\b";
+		else
+			newstate = "\benable\b";
+
+		if (vote_init(newstate, " \bpowerup dropping\b", votables_set_powerupdrop))
+			vote_yes();
+	}
+};
+

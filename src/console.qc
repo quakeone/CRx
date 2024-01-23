@@ -926,6 +926,8 @@ void() console_autodump =
 		
 		if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 			console_show_fstats ();
+		
+		json_encode_players();//R00k: dump player stat values to file
 	}
 };
 

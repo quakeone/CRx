@@ -285,24 +285,7 @@ void () wipeout_init_teams =
 
 // 	return world;
 // };
-
-void () powerup_denied =
-{
-    local entity e;
-    local float dist;
-
-    e = find (world, classname, "player");
-    while (e)
-    {
-        if (e != other && e.health > 0)
-        {
-            dist = vlen (self.origin - e.origin);
-            if (dist < 125)
-                sprint (e, "{141} \bdenied!\n");
-        }
-        e = find (e, classname, "player");
-    }
-};
+void () powerup_denied;
 
 void () wipeout_drop_quad_touch =
 {

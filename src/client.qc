@@ -438,12 +438,11 @@ void() trigger_changelevel =
 
 void() set_suicide_frame;
 
-void(entity ent) CreateDeadBody;
+//void(entity ent) CreateDeadBody;
 // called by ClientKill and DeadThink
 void() respawn =
 {
-	//Don't leave dead bodies anymore
-//	CopyToBodyQue (self);//R00k remove bodies when player respawns.
+//	if (!(clanring_gameconfig & CLANRING_DEADBODY_FILTER))
 //	CreateDeadBody (self);//R00k new corpse routine.
 	SetNewParms2 ();
 
@@ -461,7 +460,7 @@ void() ClientKill =
 	if (IS_CA_OBSERVER(self))
 		return;
 
-	if (mode_is_arena())	//R00k: What's the point?
+	if (mode_is_arena())
 	{		
 		return;
 	}
@@ -471,7 +470,6 @@ void() ClientKill =
 
 	if (self.style & CLANRING_OBSERVER)
 		return;
-
 
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 	{
@@ -483,12 +481,18 @@ void() ClientKill =
 		return;
 
 	announce2(self.netname, " suicides");
-	set_suicide_frame ();
+
+	if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+		powerup_drop();
+
 	DropRune();
-	if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
-	{
-		DropBackpack();
-	}
+
+	// if (clanring_gameconfig & CLANRING_SUICIDE_BACKPACK)
+	// if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
+	// {
+	// 	DropBackpack();
+	// }
+
 	if ((clanring_playmode & CLANRING_MATCH_MODE)&&(!(clanring_state & CLANRING_MATCH_STARTED)))
 		TeamCaptureDropFlagOfPlayer (self, 1);	//During Capture Time Trials (prematch); a suicide will return the flag back to base.
 	else
@@ -497,6 +501,8 @@ void() ClientKill =
 	UnHookPlayer();
 	self.hook2 = (self.hook2 - (self.hook2 & HOOK_OUT));//added for server mod hook
 	self.modelindex = modelindex_player;
+
+	set_suicide_frame();
 
 	// ELOHIM_MOD
 	//
@@ -570,6 +576,29 @@ entity () TeamCaptureSpawn =
 	return team2_lastspawn;
 };
 
+// S p o t  N e a r  B a d  O r i g i n
+// Find if 'sp' is near where we last died or where we last spawned.
+float (vector sp) SpotNearBadOrigin =
+{
+	float d = vlen(sp - self.deathorigin);	// Distance to the Last place of death.
+
+	if (d < 32)
+	{
+	//	sprint(self, "spot near death origin.\n");
+		return TRUE;
+	}
+	
+	d = vlen(sp - self.trigger_field.origin);	// Distance to the Last place spawned.
+	
+	if (d < 32)
+	{
+	//	sprint(self, "spot near last spawn.\n");
+		return TRUE;
+	}
+	//sprint(self, "spawnpoint clear.\n");
+	return FALSE;
+};
+
 /*
 ============
 SelectSpawnPoint
@@ -584,6 +613,10 @@ entity () SelectSpawnPoint =
 	local float	pcount;
 	local float	loop_count;	
 
+	spot = find(world, classname, "info_player_deathmatch");
+	if (spot == world)
+		objerror ("Can not find an 'info_player_deathmatch' spawnpoint on this map!");
+
 	if ((self.killed == FALSE) && (clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (!(self.style & CLANRING_OBSERVER)) && (!(clanring_playmode & CLANRING_PRACTICE_MODE)))
 	{
 		spot = TeamCaptureSpawn();
@@ -594,14 +627,21 @@ entity () SelectSpawnPoint =
 		return spot;
 	}
 
-	loop_count = 64;
+	if (clanring_gameconfig & CLANRING_SEQUENTIAL_SPAWNS)
+	{
+		spot = find(lastspawn, classname, "info_player_deathmatch");
+		if (spot == world)
+			spot = find(spot, classname, "info_player_deathmatch");
+		lastspawn = spot;
+		return spot;
+	}
+
+	loop_count = 64;//crash test
 	
 	pcount = random() * (dm_num_spawns - 0.001);
 	pcount = floor(pcount);
-	spot = find(world, classname, "info_player_deathmatch");
 
-	if (spot == world)
-		objerror ("Can not find an 'info_player_deathmatch' spawnpoint on this map!");
+	spot = world;	//Start from the beginning...
 	
 	while (pcount > 0)
 	{
@@ -610,52 +650,22 @@ entity () SelectSpawnPoint =
 		if (spot != world)
 			pcount = pcount - 1;
 	}
-	
-	lastspawn = spot;
 
-// SPAWNFRAG_PROTECTION: dont pick a spawnpoint that will telefrag any player -- BEGIN	
-//	if (clanring_playmode & CLANRING_SPAWNFRAG_PROTECTION)
-//	{
-		while (loop_count)
-		{
-			if (spot != world)
+	while (loop_count)
+	{
+		spot = find(spot, classname, "info_player_deathmatch");		
+		loop_count -= 1; //testing...
+
+		if ((spot == world)||(SpotNearBadOrigin(spot.origin)))//check if this is where we last spawned or just died
+			pcount = 1;
+		else
+		{	// SPAWNFRAG_PROTECTION: dont pick a spawnpoint that will telefrag any player -- BEGIN				
+			//if (clanring_gameconfig & CLANRING_SPAWNFRAG_PROTECTION)//TODO only protect spawns at match start.
 			{
-				if (spot == self.trigger_field)
-					pcount = 1;
-				else
-				{
-					thing = findradius (spot.origin, 128);
-					while (thing)
-					{
-						if (((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && (!(thing.style & CLANRING_OBSERVER)) && (thing.health))//r00k: added .health
-						{
-							pcount = 1;
-							thing = world;
-						}
-						else
-						{
-							thing = thing.chain;
-						}
-					}
-				}
-				if (pcount == 0)
-				{
-					return spot;
-				}
-				pcount = 0;
-			}
-
-			spot = find(spot, classname, "info_player_deathmatch");
-
-			if (spot == lastspawn)
-			{
-				pcount = 0;
-
-				thing = findradius (self.trigger_field.origin, 128);
-
+				thing = findradius (spot.origin, 128);
 				while (thing)
 				{
-					if ((((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && !(thing.style & CLANRING_OBSERVER)))
+					if (((thing.classname == "player") && (thing.style & CLANRING_CONNECTED)) && (!(thing.style & CLANRING_OBSERVER)) && (thing.health))//r00k: added .health
 					{
 						pcount = 1;
 						thing = world;
@@ -665,17 +675,12 @@ entity () SelectSpawnPoint =
 						thing = thing.chain;
 					}
 				}
-				if (pcount == 0)
-				{
-					return self.trigger_field;
-				}
-				return lastspawn;//someone is gonna get hurt! :P
 			}
-			loop_count = loop_count - 1; //let's not get a runaway here...
-		}
-//	}
-//	else return spot;
-// SPAWNFRAG_PROTECTION: dont pick a spawnpoint that will telefrag any player	-- END
+		}	
+		if (pcount == 0)
+			return spot;
+		pcount = 0;
+	}
 
 	if (serverflags)
 	{
@@ -751,6 +756,15 @@ void() PutClientInServer =
 {
 	local entity spot = world;
 			
+	if (clanring_playmode & CLANRING_MATCH_MODE)
+	{
+//		if (!(clanring_state & CLANRING_MATCH_STARTED))
+		{	
+			if ((self.client == "Quake"))//||(self.client == "QSS-M")) //not ezq, fte, qss
+				pqc_ping_times();
+		}
+	}
+
 	DecodeLevelParms ();	
 	
 	if (self.style & CLANRING_CONNECTED)
@@ -803,8 +817,7 @@ void() PutClientInServer =
 		sprint(self, "Finding a better spawnpoint...\n");
 		spot = SelectSpawnPoint();
 	}
-	
-	self.trigger_field			= spot;
+	self.trigger_field			= spot;	// Our last spawn point.
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 		self.origin = self.oldorigin = airshot_droptofloor(spot);	
 	self.classname 				= "player";
@@ -854,7 +867,6 @@ void() PutClientInServer =
 	self.th_pain 			= player_pain;
 	self.th_die 			= PlayerDie;
 	self.deadflag 			= DEAD_NO;	
-
 	//self.angles 			= spot.angles;
 	//self.fixangle 		= TRUE;
 	angles_fixangle(spot.angles);
@@ -1112,23 +1124,23 @@ void() PlayerDeathThink =
 
 		//R00k 1.55 look at enemy when dead
 		if ((self.enemy.classname == "player") && (self.enemy != self))
-				self.movetarget = self.enemy;
-
-		if (time < self.ca_deathcamtime)
 		{
-			if (self.movetarget.ca_player_flag == PF_PLAYING)
+			if (time < self.ca_deathcamtime)
 			{
-				makevectors (self.v_angle);
-				traceline (self.origin, self.movetarget.origin, TRUE, self.movetarget);
-				if (trace_fraction == 1)
+				if (self.enemy.ca_player_flag == PF_PLAYING)
 				{
-					angle = angles_bestaim (self.origin, self.movetarget.origin);
-					angles_fixangle (angle);
+					makevectors (self.v_angle);
+					traceline (self.origin, self.enemy.origin, TRUE, self.enemy);
+					if (trace_fraction == 1)
+					{
+						angle = angles_bestaim (self.origin, self.enemy.origin);
+						angles_fixangle (angle);
+					}
 				}
 			}
 		}
-		if (!(clanring_playmode & CLANRING_WIPEOUT_MODE) || 
-			((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait > 0)))
+
+		if (!(clanring_playmode & CLANRING_WIPEOUT_MODE) || ((clanring_playmode & CLANRING_WIPEOUT_MODE) && (boss.wait > 0)))
 			return;
 	}
 	// wait for all buttons released
@@ -1483,10 +1495,13 @@ void() CheckPowerups =
 			setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 			player_run();
 
-			if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+			if (clanring_playmode & CLANRING_MATCH_MODE)
 			{
-				if (self.team == RED)   self.skin = 1;
-				if (self.team == BLUE)  self.skin = 3;
+				if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+				{
+					if (self.team == RED)   self.skin = 1;
+					if (self.team == BLUE)  self.skin = 3;
+				}
 			}
 		}// end
 		else
@@ -1530,10 +1545,13 @@ void() CheckPowerups =
 				setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 				player_run();
 
-				if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+				if (clanring_playmode & CLANRING_MATCH_MODE)
 				{
-					if (self.team == RED)   self.skin = 1;
-					if (self.team == BLUE)  self.skin = 3;
+					if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+					{
+						if (self.team == RED)   self.skin = 1;
+						if (self.team == BLUE)  self.skin = 3;
+					}
 				}
 			}
 		}
@@ -1856,9 +1874,18 @@ void() PlayerPostThink =
 		if (!(self.style & CLANRING_OBSERVER))
 		{
 			if (!(self.style & CLANRING_READY))
-				self.effects |= EF_RED;
+			{
+				if (clanring_numteams > 0) //Woods: "can we disable red glow if you are the only player not ready? so it only activates if >= 1 people ready"
+				{
+					if (!(self.effects & EF_RED))
+						self.effects |= EF_RED;
+				}
+			}
 			else
+			{
+				if (self.effects & EF_RED)
 				self.effects = self.effects - (self.effects & EF_RED);
+			}
 		}
 	}
 
@@ -1869,7 +1896,7 @@ void() PlayerPostThink =
 		self.jump_flag = self.velocity_z;
 
 		//Normalize bunnyhopping at all ticrates/client protocols (ie sv_nqplayerphysics 0)
-		if (isFTEserver && (cvar("nqfriction")))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
+		if ((cvar("sv_nqplayerphysics") == 0) && (cvar("nqfriction")))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
 		{
 			if ((!(self.flags & FL_BHOP))&&(time - self.jump_time < 0.2)) 
 			{
@@ -1980,9 +2007,6 @@ called when a player disconnects from a server
 */
 void() ClientDisconnect =
 {
-	local string s;
-	local string pl;//R00k added
-
 	// ELOHIM_MOD - check to see if we've already done this
 	// (can happen since elohim_kick_player calls ClientDisconnect directly
 	if (!(self.style & CLANRING_CONNECTED))
@@ -2000,24 +2024,22 @@ void() ClientDisconnect =
 		setsize (self, VEC_HULL_MIN, VEC_HULL_MAX);
 	}
 
-	s = ftos(self.frags);
-	pl = strings_szplural(self.frags);//R00k added
-
 	if (!self.plag)
 	{
-		if (self.frags > 0)
-			announce5(self.netname, " left the game with ", s, " frag", pl);
-		else 
+		if (kick_target != self)
 		{
-			if ((self.frags < 1) && (self.frags > -99))
-				announce5(self.netname, " rage-quit with ", s, " frag", pl);
-			else
+			local string s = ftos(self.frags);
+			local string pl = strings_szplural(self.frags);
+		
+			if (self.frags > 0)
+				announce5(self.netname, " left the game with ", s, " frag", pl);
+			else 
 			{
-				if (clanring_kick_mode == KICK_LAGOUT)
-				{}
+				if ((self.frags < 1) && (self.frags > -99))
+					announce5(self.netname, " rage-quit with ", s, " frag", pl);
 				else
 					announce2(self.netname, " disconnected.");	//observers
-			}				
+			}
 		}
 	}
 	// ELOHIM_MOD - play gib sound if client was kicked for suiciding
@@ -2032,6 +2054,7 @@ void() ClientDisconnect =
 	TeamCaptureDropFlagOfPlayer (self, 0);
 	if (!(self.style & CLANRING_OBSERVER))
 	{
+		powerup_drop(); // Spite the rage-quitter
 		DropRune();
 		if (!(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
 		{
@@ -2320,7 +2343,7 @@ void(entity targ, entity attacker) ClientObituary =
 						}
 					}
 					
-					deathstring2 = ", with just his bare hands.\n";
+					deathstring2 = ", with just his bare hands.\n";
 					
 					if (attacker.weapon == IT_ROCKET_LAUNCHER)
 						deathstring2 = ", with a Rocket Launcher.";
@@ -2333,7 +2356,7 @@ void(entity targ, entity attacker) ClientObituary =
 					if ((attacker.weapon == IT_SUPER_SHOTGUN))
 						deathstring2 = ", with a Super Shotgun.";
 					if ((attacker.weapon == IT_NAILGUN))
-						deathstring2 = ", with a Nailgun.";
+						deathstring2 = ", with a Nailgun.";
 					if ((attacker.weapon == IT_SHOTGUN))
 						deathstring2 = ", with a Shotgun.";
 					if ((attacker.weapon == IT_AXE))
@@ -2354,16 +2377,10 @@ void(entity targ, entity attacker) ClientObituary =
 						if (((targ.flag_carrier) && (targ.team != attacker.team)))
 						{
 							attacker.last_fragged_carrier = time;
-							if (((targ.flag_since + TEAM_CAPTURE_CARRIER_FLAG_SINCE_TIMEOUT) > time))
-							{
-								attacker.fcfrags = (attacker.fcfrags + 1);
-							}
-							else
-							{
-								attacker.fcfrags = (attacker.fcfrags + 1);
-								// what you get for fragging enemy flag carrier
+							attacker.fcfrags += 1;
+							// what you get for fragging enemy flag carrier
+							if (((targ.flag_since + TEAM_CAPTURE_CARRIER_FLAG_SINCE_TIMEOUT) < time))
 								client_frag (attacker, TEAM_CAPTURE_FRAG_CARRIER_BONUS);
-							}
 						}
 						flag_radius = 0;
 						flag_carrier_radius = 0;
@@ -2403,7 +2420,10 @@ void(entity targ, entity attacker) ClientObituary =
 										client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
 										flag_radius = 1;
 										announce4(attacker.netname," defends the ",s," flag");
-										attacker.fdefenses = (attacker.fdefenses + 1);
+										if (head.cnt == FLAG_AT_BASE)
+											attacker.fdefenses = (attacker.fdefenses + 1);
+										else
+											attacker.stats_defense_dropped_flag += 1;	//
 									}
 								}
 								head = head.chain;
@@ -2423,10 +2443,16 @@ void(entity targ, entity attacker) ClientObituary =
 								}
 								if (((((attacker.team == RED) && (head.classname == "item_flag_team1")) || ((attacker.team == BLUE) && (head.classname == "item_flag_team2"))) && !flag_radius))
 								{
+									//if (head.cnt == FLAG_AT_BASE) client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS + 1);
+									//else
 									client_frag (attacker, TEAM_CAPTURE_FLAG_DEFENSE_BONUS);
+
 									flag_radius = 1;
 									announce4(attacker.netname," defends the ",s," flag");
-									attacker.fdefenses = (attacker.fdefenses + 1);
+									if (head.cnt == FLAG_AT_BASE)
+										attacker.fdefenses = (attacker.fdefenses + 1);
+									else
+										attacker.stats_defense_dropped_flag += 1;
 								}
 								head = head.chain;
 							}
@@ -2469,9 +2495,11 @@ void(entity targ, entity attacker) ClientObituary =
 									{
 										deathstring = " was blown to chunks by ";
 									}
-
-									deathstring2 = "'s grenade";
 								}
+								if (targ.teleport_time > time) // when a player gets out of the water, their teleport_time is time + 2, their feet are wet...
+								{
+									deathstring = " slips on ";
+								}	
 							}
 							else
 							{
@@ -2729,6 +2757,34 @@ void () client_afk_off =
 	}
 };
 
+float (string s) FindNumericalInput =
+{	
+	float pass;
+
+	pass = 0;
+
+	if (self.use)
+	{
+		float n;
+
+		if ((strlen(s)) > 2) // 00 to 99
+		{
+			n = 0;
+			pass = 0;
+		}
+		else
+		{
+			n = stof(s);
+			pass = 1;
+		}
+
+		self.finaldest_z = n;	  
+		self.use();
+	}
+		
+	return pass;
+}
+
 void(string cmd) SV_ParseClientCommand =
 {
     local float args, modecmd, mapnumber=0;
@@ -2740,7 +2796,7 @@ void(string cmd) SV_ParseClientCommand =
 		return;
 	}
 
-    args = tokenize(cmd);
+	args = tokenize(cmd);
 	if (args > 0)
     	arg0 = argv(0);
 	if (args > 1)
@@ -2753,9 +2809,34 @@ void(string cmd) SV_ParseClientCommand =
 		case "afkon":
 			client_afk_on();
 			return;
+
 		case "afkoff":
 			client_afk_off();
 			return;
+
+		case "wtstats":
+			if ((self.style & CLANRING_OBSERVER)||(gameover)||((clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_state & CLANRING_MATCH_STARTED))))
+				stats_show_weapon_items_taken_stats();
+			else
+				sprint(self,"\bYou may not view these stats during a game as a player.\n");
+			return;		
+
+		case "itstats":
+			if ((self.style & CLANRING_OBSERVER)||(gameover)||((clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_state & CLANRING_MATCH_STARTED))))
+				stats_show_items_taken_stats();
+			else
+				sprint(self,"\bYou may not view these stats during a game as a player.\n");
+			return;		
+
+		case "dstats":
+				stats_show_defense_stats();
+				return;
+				
+		case "powerupdrop":
+		case "pudrop":
+				votables_request_set_powerupdrop();
+				return;			
+	
 		case "dm":
 			if (arg2 != "")
 			{
@@ -2956,6 +3037,7 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			votables_request_set_gametype_mode_map(3, -1, 0);
 			return;
+
 		default:
 			if (arg0 != "")
 			{
@@ -2968,6 +3050,12 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			break;
 	}
+
+	if (FindNumericalInput(arg0))
+	{
+		return;
+	}
+
 	clientcommand(self, cmd);
 	return;
 };

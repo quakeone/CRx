@@ -1224,6 +1224,16 @@ void (void () dofunc) utils_do_players =
     self = oldself;
 };
 
+void (entity whodat, void() dofunc) utils_do_player =
+{
+    local entity oldself;
+
+    oldself = self;
+    self = whodat;
+    dofunc();
+    self = oldself;
+};
+
 /*
 void (void () dofunc) utils_do_players_event =
 {
@@ -1365,6 +1375,26 @@ void (float flag, string name) utils_toggle_sflag =
 	utils_set_cvar ("samelevel", clanring_playmode);
 };
 
+// R00k
+//  T O G G L E  G F L A G
+//
+//  Toggles the specified flag in clanring_gameconfig
+//
+void (float flag, string name) utils_toggle_gflag =
+{
+	if (clanring_gameconfig & flag)
+	{
+		clanring_gameconfig = clanring_gameconfig - (clanring_gameconfig & flag);
+		announce2(name, " disabled");
+	}
+	else
+	{
+		clanring_gameconfig = (clanring_gameconfig | flag);
+		announce2(name, " enabled");
+	}
+	utils_set_cvar("gamecfg", clanring_gameconfig);
+};
+
 // CRMOD
 // S T U F F  T O  P L A Y E R
 //      by Paul Baker
@@ -1452,26 +1482,20 @@ vector (vector m1, vector m2) Rvec =
 // returns true if the maparg matches a name in the warp list
 float(string maparg) found_in_warp_list =
 {
-	local float ep_index, index, n, mapfound = FALSE;
+	float index, mapfound = FALSE;
 
 	if (maparg == "")
 		return FALSE;
 
-	for (ep_index = 1; ep_index < 16; ep_index += 1)
+	for (index = 1 ; index < (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
 	{
-		for (index = 1 ; index < 16 ; index += 1)
+		if (warpmap[index].name != "" && warpmap[index].name == maparg)
 		{
-			n = (ep_index * 15) + index;
-			if (warpmap[n].name != "" && warpmap[n].name == maparg)
-			{
-				mapfound = n;
-				break;
-			}
-		}
-		if (mapfound)
+			mapfound = index;
 			break;
+		}
 	}
-	return (mapfound);
+	return mapfound;
 };
 
 // used to determine mode from client command
@@ -1700,32 +1724,38 @@ float (entity e) client_ping =
 	local float ping;
 
 	ping = stof(infokey(e,INFOKEY_P_PING));
-	return ping;
+	return ping * 1000;			// R00k: whoops!
 };
 
-void ()pqc_ping_times =
+// U P D A T E  P I N G  T I M E S
+//
+// when we use SVC_UPDATENAME to put 'READY' on the scoreboard, all other elements become immutable
+// so, this specifically updates the ping element; for Proquake compatible clients.
+
+void () pqc_ping_times =
 {	
 	local entity e;
 	local float i, ping;
 
-	WriteByte(MSG_ALL, SVC_STUFFCMD);
-	WriteByte(MSG_ALL, MOD_PROQUAKE);
-	WriteByte(MSG_ALL, PQC_PING_TIMES);
+	msg_entity = self;
+
+	WriteByte(MSG_ONE, SVC_STUFFCMD);
+	WriteByte(MSG_ONE, MOD_PROQUAKE);
+	WriteByte(MSG_ONE, PQC_PING_TIMES);
 
 	e = world;
 	for (i = 0; i < 16; i = i + 1)
 	{		
-		e = nextent (e);
-		
-		if ((e.style & CLANRING_CONNECTED) && e.ping_time)
+		e = nextent (e);		
+		if ((e.classname == "player") && (e.style & CLANRING_CONNECTED) && e.ping_time)
 		{
 			ping = e.ping_time;
-			WriteShortPQ (MSG_ALL, ping + (i * 4096));
+			WriteShortPQ (MSG_ONE, ping + (i * 4096));
 		}
 	}
 
-	WriteShortPQ (MSG_ALL, 0);
-	WriteString(MSG_ALL, string_null);
+	WriteShortPQ (MSG_ONE, 0);
+	WriteString(MSG_ONE, string_null);
 };
 
 float () ammo_is_infinite =
@@ -1761,3 +1791,4 @@ float () prematch_rules =
 		return TRUE;
 	return FALSE;
 }
+

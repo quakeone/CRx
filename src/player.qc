@@ -550,9 +550,10 @@ void() dead_name;
 
 void() PlayerDead =
 {
-	self.nextthink 	= -1;
-	self.deadflag 	= DEAD_DEAD;// allow respawn after a certain time
-	self.jump_flag = 0; // CLANRING_MOD - fix "falling after discharge" bug
+	self.nextthink = -1;
+	self.deadflag = DEAD_DEAD;			// allow respawn after a certain time
+	self.jump_flag = 0; 				// CLANRING_MOD - fix "falling after discharge" bug
+	self.deathorigin = self.origin;		// Mark where we died.
 
 	if (clanring_playmode & CLANRING_CA_MODE)
 		dead_name();//R00k v3.51
@@ -567,7 +568,7 @@ void() PlayerDead =
 		if (!gameover)			
 		{
 			self.think = respawn;
-			if ((deathmatch == 4) || (deathmatch == 5))
+			if (deathmatch == 4)
 			{
 				self.nextthink = time + 1;
 			}
@@ -697,6 +698,9 @@ void() GibPlayer =
 void() PlayerDie =
 {
 	local float i;
+
+	if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+	   powerup_drop();
 
 	if (mode_is_arena())
 	{

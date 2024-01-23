@@ -344,7 +344,7 @@ void () server_set_infokey_modes =
 		else if (clanring_playmode & CLANRING_AIRSHOT_MODE) zmode = "airshot";	
 	//else if (clanring_playmode & CLANRING_FREEZETAG_MODE) zmode = "freezetag";	
 	}
-
+	forceinfokey(world, "gametype", zmode);	//for json output; gamemode = gametype + playmode ("CTF PickUp", "CA Match", "TDM Practice")
 	forceinfokey(world, "mode", zmode);
 	forceinfokey(world, "playmode", pmode);
 };
@@ -361,15 +361,19 @@ void () clanring_init_world =
 	local string szmode;
 	local float temp;
 	
-	clanring_version = "crx v1.23.03nq";
-	clanring_version_info = "crx v1.23.03";
-	clanring_version_number = "1.23.03";	//version.year.month.day CRMOD - string to be used throughout code to show version number.
-	clanring_version_red = "\bcrx v1.23.03nq";
+	//CRMOD - string to be used throughout code to show version number.
+	//version.year.month.day 
+	clanring_version        = "CRx (v1.24.02)";       // This is used in the server console, the help display, and on connect.
+	clanring_version_info   = "CRx (v1.24.02)";       // This is the value for the forced server infokey named "mod".
+	clanring_version_number = "(v1.24.02)";           // This is only used once when typing 'commands' in the server console. :|
+	clanring_version_red    = "\bcrx (v\b1.24.02\b)"; // This isn't used anywhere :(
+	
 	// Initialize sentinel
 	clanring_sentinel = spawn();
 	banent = spawn();
 	
 	clanring_playmode = cvar("samelevel");
+	clanring_gameconfig = cvar("gamecfg");	//R00k TODO: migrate settings 
 	
 	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 	{
@@ -436,7 +440,10 @@ void () clanring_init_world =
 
 		serverflags	= 0;
 		
-		//clanring_playmode 	= clanring_playmode | CLANRING_NO_SPOOGE;//Discharge protection, FIXME: Move this to classic-mode init.
+		// TODO:
+		// clanring_gameconfig 	= clanring_gameconfig | CLANRING_EXTENDED_OBITS;
+		// clanring_gameconfig 	= clanring_gameconfig | CLANRING_RUNETOSS;	//can toss runes on by default.
+		
 		clanring_playmode 	= clanring_playmode | CLANRING_EXTENDED_OBITS;
 		clanring_playmode 	= clanring_playmode | CLANRING_RUNETOSS;	//can toss runes on by default.
 		clanring_playmode 	= clanring_playmode | CLANRING_MATCH_MODE;
@@ -444,7 +451,8 @@ void () clanring_init_world =
 		clanring_playmode 	= clanring_playmode | CLANRING_SERVER_INITIALIZED;
 		clanring_state 		= clanring_state 	| CLANRING_TEAM_CAPTURE_CUSTOM;
 		
-		utils_set_cvar("samelevel", clanring_playmode);		
+		utils_set_cvar("samelevel", clanring_playmode);	
+		utils_set_cvar("gamecfg", clanring_gameconfig);	
 	}//initialized
 	
 	// Get/set console variables
@@ -569,6 +577,12 @@ void () clanring_init_world =
 		clanring_precache_matchsounds();
 	}
 
+	if (clanring_gameconfig & CLANRING_DROP_DEATH_SHARDS)
+	{
+		precache_model ("progs/armshr.mdl");
+		precache_sound ("items/armsh1.wav");
+	}
+
 	// schedule the config files for a bit later so that they don't
 	// get loaded twice on startup
 	utils_make_scheduled_event(clanring_exec_configs, 1);
@@ -578,7 +592,7 @@ void () clanring_init_world =
 	utils_make_scheduled_event(clanring_remove_start_teleport, 3);
 
 	// woods set serverinfo mod name
-	forceinfokey(world, "mod", "crx");
+	forceinfokey(world, "mod", clanring_version_info);
 	server_set_infokey_modes();
 };
 
@@ -627,7 +641,7 @@ void (float value) clanring_set_teamplay =
 	if (value != -1)
 		teamplay = value;
 	temp = ftos(teamplay);
-	localcmd5("teamplay \"", temp, "?CRx v", clanring_version_number, "\"\n");
+	localcmd3("teamplay \"", temp, "\"\n");
 };
 
 //
@@ -693,24 +707,20 @@ void (float value) clanring_set_fraglimit =
 	}
 };
 
-void () clanring_set_warpaliases =
+void () clanring_set_warp_aliases =
 {
-	local entity temp;
-	local float ep_index, index, n;
+	entity temp;
+	float index;
 
 	temp = self;
 	self = self.owner;
 
 	//send map warp aliases
-	for (ep_index = 1; ep_index < 16; ep_index += 1)
+	for (index = 1 ; index < (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
 	{
-		for (index = 1 ; index < 16 ; index += 1)
+		if (warpmap[index].name != "")
 		{
-			n = (ep_index * 15) + index;
-			if (warpmap[n].name != "")
-			{
-				stuffcmd(self, sprintf("alias %s cmd %s\n", warpmap[n].name, warpmap[n].name));
-			}
+			stuffcmd(self, sprintf("alias %s cmd %s\n", warpmap[index].name, warpmap[index].name));
 		}
 	}
 
@@ -845,13 +855,17 @@ void () clanring_set_aliases =
 	stuffcmd(self, "alias misc impulse 185\n");
 	stuffcmd(self, "alias modhelp impulse 186\n");
 	stuffcmd(self, "alias shortcuts impulse 187\n");
-	
+	stuffcmd(self, "alias itemstats cmd itemstats\n");
+	stuffcmd(self, "alias dstats cmd dstats\n");
+	stuffcmd(self, "alias wtstats cmd wtstats\n");
+	stuffcmd(self, "alias itstats cmd itstats\n");
+
 	self.style = self.style | CLANRING_FOUND_BINDINGS;
 
     // remove the temporary entity
 	self = temp;
 	self.nextthink = time + 0.02;
-	self.think = clanring_set_warpaliases;
+	self.think = clanring_set_warp_aliases;
 };
 
 //
@@ -1155,29 +1169,37 @@ void () clanring_client_connect =
 
 		self.afk_time = time + 20;
 		
-	//Identify/advertise the player's client in use.
-		if (substring(infokey(self, "*client"), 0, 7) == "ezQuake")
+		//Identify/advertise the player's client in use.
+		string myClient;
+
+		myClient = string_null;
+		
+		myClient = infokey(self,"*ver");						//FTE and QSS
+		
+		if (myClient != "")
 		{
-			self.client = "ezQuake";
-			text = (sprintf(" with %s.\n",(infokey(self,"*client"))));
+			if (substring(myClient, 0, 5) == "QSS-M")
+				self.client = "QSS-M";
+
+			if (substring(myClient, 0, 3) == "FTE")
+				self.client = "FTE";
+			
+			text = (sprintf(" with %s.\n", myClient));						
 		}
 		else
-		if (substring(infokey(self, "*ver"), 0, 3) == "FTE")
 		{
-			self.client = "FTE";                
-			text = (sprintf(" with %s.\n",(infokey(self,"*ver"))));
-		}
-		else
-		if (substring(infokey(self, "*ver"), 0, 5) == "QSS-M")
-		{
-			self.client = "QSS-M";                
-			text = (sprintf(" with %s.\n",(infokey(self,"*ver"))));
-		}
-		else
-		{
-			self.client = "quake";
-			text = (".\n");			
-		}
+			myClient = infokey(self,"*client");					//ezQuake
+			if (myClient != "")
+			{
+				text = (sprintf(" with %s.\n", myClient));		
+				self.client = "ezQuake";
+			}
+			else
+			{
+				text = ".\n";										//anything else
+				self.client = "Quake";
+			}
+		}			
 		bprint (self.netname," has connected", text);
 	}
 	else self.afk_time = time;
@@ -1361,10 +1383,13 @@ void () clanring_put_client_in_server =
 			}
 		}
 
-		if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
-		{	
-			if (self.team == RED)  self.skin = 1;				
-			if (self.team == BLUE) self.skin = 3;								
+		if (clanring_playmode & CLANRING_MATCH_MODE)
+		{
+			if (clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)
+			{	
+				if (self.team == RED)  self.skin = 1;				
+				if (self.team == BLUE) self.skin = 3;								
+			}
 		}
 
 		if (mode_is_arena())
@@ -1560,7 +1585,8 @@ void () watch_commands =
 		sprint(self, "\n");
 		sprint(self, " \bautocam\b\n");
 		sprint(self, " \bautochase\b\n");
-		sprint(self, " \bautoeye\b\n");
+		sprint(self, " \bchase\b\n");
+		sprint(self, " \bautopov\b\n");
 		sprint(self, " \beyecam [e]\b\n");
 		sprint(self, " \bflyme\b\n");
 		sprint(self, "\n");
@@ -1773,12 +1799,15 @@ void () clanring_show_rules =
 		sprint(self, "\bOFF\n");
 	else
 		sprint(self, "on\n");
-
+	
 	sprint(self, "ring®®®®®®®®®");
 	if (clanring_playmode & CLANRING_NO_RING)
 		sprint(self, "\bOFF\n");
 	else
 		sprint(self, "on\n");
+
+	if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+		sprint(self, "powerupDrops®", "on\n");
 
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
@@ -1803,6 +1832,7 @@ void () clanring_show_rules =
 	
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 		sprint(self, "next®map®®®®®",nextmap,"\n");
+
 	sprint(self, "\n");
 };
 
@@ -2019,9 +2049,8 @@ void (float quakever) clanring_wingl_detect =
 	else if (quakever == 2)
 		self.style = self.style | CLANRING_GLQUAKE;
 };
-
-//-----------------------------------------------------------------------------------
 /*
+//-----------------------------------------------------------------------------------
 void () Practice_Object_Remove =
 {
 	local entity e;
@@ -2115,7 +2144,7 @@ void () practice_spawn =
 // shoot object from gun
 //
 	makevectors (self.v_angle);
-	e.velocity = e.velocity * 500;
+	e.velocity = e.velocity * v_forward * 500;
 	sound (self, CHAN_WEAPON, "misc/r_tele4.wav", 1, ATTN_NORM);
 };
 */
@@ -2443,7 +2472,7 @@ void () clanring_periodic_checks =
 		}	
 	}
 	
-	self.ping_time = client_ping(self);//Fixme this wont work for Qrack clients; revert back to pq method for those clients.
+	self.ping_time = client_ping(self);
 
 	inactive = time - self.afk_time;//Seconds of inactivity
 
@@ -2625,7 +2654,6 @@ void () clanring_start_frame =
 				timelimit 	= cvar("timelimit") * 60;
 				fraglimit 	= cvar("fraglimit");
 				teamplay 	= cvar("teamplay");
-				clanring_playmode 	= cvar("samelevel");
 
 				player = find(world, classname, "player");
 				while (player != world)
@@ -2675,9 +2703,7 @@ void () clanring_start_frame =
 				auto_schedule_cameras();
 				utils_make_scheduled_event(auto_chase, 0.3);
 				utils_make_scheduled_event(auto_camera, 0.6);				
-				
-				pqc_ping_times();
-														
+													
 				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 				{
 					float tl = rint(timelimit - time);
@@ -2693,22 +2719,23 @@ void () clanring_start_frame =
 							bprint("\n\bGame ends in\b 30 \bseconds\n\n");
 							break;
 						case 10:
-							bprint("\n\bGame ends in\b  \bseconds\n\n");
+							bprint("\n\bGame ends in\b 10 \bseconds\n\n");
 							break;
 						case 5:
-							bprint("\[ — ‘\n");
+							bprint("5\n");
 							break;
 						case 4:
-							bprint("\[ – ‘\n");
+							bprint("4\n");
 						break;
 						case 3:
-							bprint("\[ • ‘\n");
+							bprint("3\n");
 						break;
 						case 2:
-							bprint("\[ ” ‘\n");
+							bprint("2\n");
 						break;
 						case 1:
-							bprint("\[ “ ‘\n\n");
+							bprint("1\n");
+							bprint("\n");
 						break;
 					}
 				}									

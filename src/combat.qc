@@ -173,6 +173,53 @@ float(entity targ, entity inflictor, string dtype) CanDamage =	// 1998-10-04 Hit
 	return FALSE;
 };
 
+void (entity t, entity e) CheckDefenseBonus =
+{
+	entity what = findradius(t.origin, 300);
+	while (what)
+	{
+		if (what.touch == weapon_touch)
+		{
+			if ((what.classname == "weapon_rocketlauncher")||(what.classname == "weapon_lightning"))
+				e.stats_defense_weapon += 1;	
+			what = world;
+		}
+		else
+		{
+			if (what.touch == powerup_touch)
+			{
+				if ((what.classname == "item_artifact_super_damage")||(what.classname == "item_artifact_invulnerability"))
+					e.stats_defense_powerup += 1;
+			}
+			else
+			{
+				if (what.touch == armor_touch)
+				{
+					if ((what.classname == "item_armorInv")||(what.classname == "item_armor2"))
+						e.stats_defense_armor += 1;	// TODO: play a sound?
+				}
+				else
+				{
+					if (what.touch == BackpackTouch)
+					{
+						if ((what.items == IT_LIGHTNING) || (what.items == IT_GRENADE_LAUNCHER) || (what.items == IT_ROCKET_LAUNCHER))
+						{
+							if (t.team != e.team)
+							{
+								if (what.nextthink - time < 118)	// if the backpack has been sitting here for more than 2 seconds.
+								{
+									e.stats_defense_backpack += 1;	// attacker gets 1 defense point for defending this backpack.
+								}
+							}					
+						}
+					}
+				}
+			}
+		}
+			what = what.chain;
+	}
+		
+};
 /*
 ============
 Killed
@@ -194,6 +241,22 @@ void(entity targ, entity attacker) Killed =
 		self.th_die ();
 		self = oself;
 		return;
+	}
+
+	if ((targ.enemy_hurt_time > time) && (targ.enemy.health) && (targ.enemy != attacker))		// Hurt an opponent who was attacking a teammate.
+	{
+//#message !!precache this sound "crx/defense.wav"
+//		sound (self, CHAN_VOICE, "crx/defense.wav", 1, ATTN_NORM);
+		attacker.stats_defense_teammate += 1;
+		bprint(attacker.netname," defends their teammate ",targ.enemy.netname,".\n"); 				// Testing remove this afterwards...
+	}
+	else
+	if ((targ.enemy_hurt_time > time) && (!(targ.enemy.health)) && (targ.enemy != attacker))		// Killing an opponent who just killed a teammate.
+	{
+//#message !!precache this sound "crx/avenger.wav"
+//		sound (self, CHAN_VOICE, "crx/avenger.wav", 1, ATTN_NORM);
+		attacker.stats_avenge_teammate +=1;															// avenge_stats
+		bprint(attacker.netname," avenged their teammate ",targ.enemy.netname,".\n"); 				// Testing remove this afterwards...
 	}
 	
 	self.enemy = attacker;
@@ -228,7 +291,7 @@ void(entity targ, entity attacker) Killed =
 	self.touch = SUB_Null;
 	
 	self.th_die ();
-
+	
 	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		if ((attacker != world) && (attacker.classname == "player") && (attacker.next_team != world))
@@ -361,25 +424,25 @@ void(entity targ, entity attacker) Killed =
 			}
 			pqc_team_frags(attacker.next_team.team2, attacker.frags);
 		}
+		if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+		{
+			if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
+			{
+				//TODO: too many messages? or show [rounddeaths] in obituary?
+				if (targ.next_team.teamalive > 1)
+				{
+					rtime = wipeout_get_respawn(targ.rounddeaths);
+					bprint4(targ.netname, " will respawn in ", ftos(rtime), " seconds\n");
+				}
+			}
+		}
+		else if (clanring_playmode & CLANRING_CA_MODE)
+		{
+			CheckForLastTwoPlayers();
+		}
 	}
 
 	self = oself;
-	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
-	{
-		if ((targ != world) && (targ.classname == "player") && (targ.next_team != world))
-		{
-			//TODO: too many messages? or show [rounddeaths] in obituary?
-			if (targ.next_team.teamalive > 1)
-			{
-				rtime = wipeout_get_respawn(targ.rounddeaths);
-				bprint4(targ.netname, " will respawn in ", ftos(rtime), " seconds\n");
-			}
-		}
-	}
-	else if (clanring_playmode & CLANRING_CA_MODE)
-	{
-		CheckForLastTwoPlayers();
-	}
 };
 
 
@@ -452,6 +515,9 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 							if ((attacker.waterlevel <= 1)	// don't count discharges
 								&& (targ.classname != "button"))					//R00k: dont count button damage in stats.
 								attacker.dest2_z = attacker.dest2_z + damage;
+							else
+							if ((targ.deathtype == "discharge")&&(targ.team != attacker.team))
+								attacker.stats_discharge_kills += 1; // Discharge stats of killed opponents; teammates are recorded in Badstats.
 						}
 					}
 				}
@@ -522,7 +588,10 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	damage_attacker = attacker;
 	
 	if ((attacker.classname == "player") && (targ.classname == "player"))
-		targ.enemy = attacker;//R00k: OOPS! We forgot this!! used for cameras
+	{
+		attacker.enemy_hurt_time = time + 3;	//R00k: Used for stats; this is the bonus-window from last time they hurt/killed your teammate. bonus for killing them within this time. 
+		targ.enemy = attacker;					//R00k: Used for cameras/stats
+	}
 	
 	teamdamage = TRUE;
 	
@@ -592,20 +661,21 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 	{
+		//BAM: Airshot Mod --R00k rewrote 5/31/2017 12:23AM
 		targ.airborn_pos = 0;
 		if (targ.waterlevel < 2)
-		{
-			old_damage = damage; // save back the original damage
-			damage = airshot_damage_z (targ, old_damage); // Modify damage to the target based on the distance they are from the ground; save the height in airborn_pos.
-			if (old_damage < 100) // Ignore splash damage caused by missing the target and hitting walls.
-				damage = 0;
-			else if ((attacker.super_damage_finished <= time) || ((attacker.super_damage_finished > time) && (old_damage >= 400)))
-				attacker.direct_hit = attacker.direct_hit + 1;
+		{		
+			old_damage = damage;							// save back the original damage
 
-			if (targ.airborn_pos < 45) // This was 'if (targ.flags & FL_ONGROUND)'; take minimal damage when jumping over rockets, but still kick them up.
+			damage = airshot_damage_z (targ, old_damage); 	// Modify damage to the target based on the distance they are from the ground; save the height in airborn_pos.
+
+			if (old_damage < 100) 							// Ignore splash damage caused by missing the target and hitting walls.
+				damage = 0;
+
+			if (targ.airborn_pos < 45)						// This was 'if (targ.flags & FL_ONGROUND)'; take minimal damage when jumping over rockets, but still kick them up.
 			{
-				// if (targ.classname == "practice_object")
-				// 	targ.flags = targ.flags - (targ.flags & FL_ONGROUND);
+				if (targ.classname == "practice_object")
+					targ.flags = targ.flags - (targ.flags & FL_ONGROUND);
 
 				dir = targ.origin - ((inflictor.absmin + inflictor.absmax) * 0.5);
 				dir = normalize (dir);
@@ -616,22 +686,20 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 				{	
 					targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 6));
 				}
-				save = ceil(targ.armortype*old_damage);
-				if (save >= targ.armorvalue)
-				{
-					save = targ.armorvalue;
-					targ.armortype = 0;	// lost all armor
-					targ.items = targ.items - (targ.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3));
-				}
-				
-				targ.armorvalue = targ.armorvalue - save;
 				return;
 			}
 		}
 	}
-	else if ((damage >= 100) && ((inflictor.classname == "missile") || (inflictor.classname == "grenade")))
+	else if ((damage > 99) && ((inflictor.classname == "missile") || (inflictor.classname == "grenade")))
 	{
-		attacker.direct_hit = attacker.direct_hit + 1;
+		if (inflictor.classname == "missile")
+		{
+			float d = vlen((inflictor.origin - ((targ.absmax + targ.absmin) * 0.5))); // R00k: Shot hits near middle of target
+			if (d < 33)
+				attacker.direct_hit = attacker.direct_hit + 1;
+		}
+		else
+			attacker.direct_hit = attacker.direct_hit + 1;
 	}
 
 	if ((teamdamage)&&(!(match_prewar())))
@@ -799,6 +867,11 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 
 	if (targ.health <= 0)
 	{
+		if (clanring_gameconfig & CLANRING_DROP_DEATH_SHARDS)
+		{
+			if ((targ.armorvalue)&&(!(clanring_playmode & CLANRING_MATCH_MODE)))
+				DropShard(targ.origin, targ.armorvalue);
+		}
 		// ELOHIM_MOD - print info for practice mode
 		if (clanring_playmode & CLANRING_PRACTICE_MODE)
 		{
@@ -811,8 +884,11 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			}
 		}
 		// END_MOD
-		Killed (targ, attacker);
+		targ.enemy = attacker;
+		CheckDefenseBonus(targ, attacker); 
 
+		Killed (targ, attacker);
+		
 		if (!(clanring_playmode & CLANRING_AIRSHOT_MODE))
 		{
 			if ((targ.classname == "player") && (inflictor != world) && (inflictor.classname == "missile"))

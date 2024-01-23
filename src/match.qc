@@ -274,6 +274,38 @@ void() match_gib_player =
 	}
 };
 
+void() match_update_score_info =
+{
+	local string score;
+	local string temp, tc = "";
+
+	if (clanring_first_place != clanring_sentinel)
+	{
+		score = ftos(clanring_first_place.frags);
+		tc = strings_get_colour(clanring_first_place.height);
+		temp = sprintf("teamscore1:%s ",tc);
+
+		forceinfokey (world, temp, score);
+
+		if (clanring_second_place != clanring_sentinel)
+		{
+			score = ftos(clanring_second_place.frags);
+			tc = strings_get_colour(clanring_second_place.height);
+			temp = sprintf("teamscore2:%s ",tc);
+			forceinfokey (world, temp, score);
+		}
+		else
+		{
+			forceinfokey (world, "teamscore2:none","0");
+		}
+	}
+	else
+	{
+		forceinfokey (world, "teamscore1:none","0");
+		forceinfokey (world, "teamscore2:none","0");
+	}
+};
+
 //
 //  B P R I N T  S C O R E
 //
@@ -291,6 +323,7 @@ void() match_bprint_score =
 		temp = strings_szplural(clanring_second_place.frags);
 		announce6(clanring_szthe, clanring_second_place.netname, " has ", score, " frag", temp);
 	}
+	match_update_score_info();
 };
 
 //
@@ -644,7 +677,7 @@ void() match_remove_start =
 //
 //  R E M O V E  S T A R T S
 //
-//  2 seconds into the match all start points revert to start points.
+//  2 seconds into the match all spawn points revert to start points.
 //
 void() match_remove_starts =
 {
@@ -752,18 +785,14 @@ void() match_begin =
 
 	clanring_state = clanring_state | CLANRING_MATCH_STARTED;
 	announce("The match has begun!");//Moved up here for autodemo
+	utils_do_players(match_gib_player);//r00k after additional spawns...
+
 	clanring_new_record_player = "";	// .netname of the person who set the current top record.(only used in stats output)
 	utils_do_projectiles(SUB_Remove);
-	utils_do_players(match_gib_player);//3.19k : placed before rune remove
+
 	utils_do_item(SUB_Remove, "item_backpack");
 	utils_do_arena_players(arena_fight_and_shoot);
 	
-	if (clanring_playmode & CLANRING_RUNES)
-	{
-		utils_do_item(SUB_Remove, "item_rune");
-		StartRuneSpawn();
-	}
-
 	// Set the team size so that unwanted A-holes can't join in
 	match_get_maxsize();
 	//temp = ftos(clanring_maxsize);
@@ -793,11 +822,14 @@ void() match_begin =
 	utils_do_item(match_reset_owner, "item_artifact_super_damage");
 
 	// Temporarily turn the extra start points into spawn points if necessary
-	if (match_count_players() > dm_num_spawns)
+	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 	{
-		utils_do_item(match_add_spawn, "clanring_start_point");
-		dm_num_spawns = dm_num_spawns + clanring_num_starts;
-		utils_make_scheduled_event(match_remove_starts, 2);
+		if (match_count_players() > dm_num_spawns)
+		{
+			utils_do_item(match_add_spawn, "clanring_start_point");
+			dm_num_spawns = dm_num_spawns + clanring_num_starts;
+			utils_make_scheduled_event(match_remove_starts, 2);
+		}
 	}
 
 	score_resend_scoreboard();
@@ -908,29 +940,33 @@ void() match_timer_think1 =
 		{
 			if (self.count <= 10)
 			{
-				if (self.count == 10)
-				{
-					//announce("Match begins in T minus");
-					sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
-					//quaketag_clear();
-				}
-				else if (self.count == 9)
-				{
-					if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-						TeamCaptureRegenFlags();// respawn flags
-					
-					clanring_state = clanring_state | CLANRING_NULL_FLAG;
-				}
-				else if (self.count == 6)
-				{
-					//play pre-match sound sometimes
-					//match_pregame_sound();
-				}
 				if (self.count <= 3)
 					sound (world, CHAN_AUTO, "buttons/switch04.wav", 1, ATTN_NONE);
+
 				if (self.count == 1)
 				{
 					self.think = match_begin;
+				}
+				else
+				{
+					if (self.count == 10)
+					{
+						//announce("Match begins in T minus");
+						sound (world, CHAN_AUTO, "items/protect2.wav", 1, ATTN_NONE);
+						//quaketag_clear();
+						if (clanring_playmode & CLANRING_RUNES)
+						{
+							utils_do_item(SUB_Remove, "item_rune");
+							StartRuneSpawn();// Spawn runes now so they have a chance to migrate away from the spawnpoint.
+						}
+					}
+					else if (self.count == 9)
+					{
+						if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+							TeamCaptureRegenFlags();// respawn flags
+
+						clanring_state = clanring_state | CLANRING_NULL_FLAG;
+					}
 				}
 			}
 		}
@@ -998,7 +1034,8 @@ float () match_put_player_in_team =
 	{
 		clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_OVER);
 		match_delete_teams();
-		score_resend_scoreboard();		
+		score_resend_scoreboard();
+		match_update_score_info();
 	}
 
 	if (self.next_team)
@@ -1389,7 +1426,7 @@ void(entity ghostent) match_restore_ghost =
 	{
 		setorigin(self, ghostent.origin);
 		self.frame = ghostent.frame;
-		self.effects = ghostent.effects;
+		self.effects = self.effects | ghostent.effects;
 		self.angles = ghostent.angles;
 		self.waterlevel = ghostent.waterlevel;
 		self.watertype = ghostent.watertype;
@@ -1398,7 +1435,9 @@ void(entity ghostent) match_restore_ghost =
 		self.nextthink = ghostent.nextthink - 1000000;
 		self.think = ghostent.think;
 		self.health = ghostent.health;
-		self.items = ghostent.items;
+		self.items = (self.items | ghostent.items);
+		if (self.items & IT_QUAD)
+			sprint(self, "You regained your Quad\n");
 		self.armortype = ghostent.armortype;
 		self.armorvalue = ghostent.armorvalue;
 		self.weapon = ghostent.weapon;
@@ -1409,19 +1448,19 @@ void(entity ghostent) match_restore_ghost =
 		self.ammo_nails = ghostent.ammo_nails;
 		self.ammo_rockets = ghostent.ammo_rockets;
 		self.ammo_cells = ghostent.ammo_cells;
-		self.flags = ghostent.flags;
+		self.flags = self.flags | ghostent.flags;
 		self.walkframe = ghostent.walkframe;
 		self.attack_finished = ghostent.attack_finished;
 		self.pain_finished = ghostent.pain_finished;
 		self.air_finished = ghostent.air_finished;
-		self.invincible_finished = ghostent.invincible_finished;
-		self.invisible_finished = ghostent.invisible_finished;
-		self.super_damage_finished = ghostent.super_damage_finished;
-		self.radsuit_finished = ghostent.radsuit_finished;
 		self.invincible_time = ghostent.invincible_time;
+		self.invincible_finished = ghostent.invincible_time;
 		self.invisible_time = ghostent.invisible_time;
+		self.invisible_finished = ghostent.invisible_time;
 		self.super_time = ghostent.super_time;
+		self.super_damage_finished = ghostent.super_time;
 		self.rad_time = ghostent.rad_time;
+		self.radsuit_finished = ghostent.rad_time;
 		self.show_hostile = ghostent.show_hostile;
 		self.jump_flag = ghostent.jump_flag;
 		self.swim_flag = ghostent.swim_flag;
@@ -1492,6 +1531,29 @@ void(entity ghostent) match_restore_ghost =
 		vote_yes();
 };
 
+void() match_no_ring_check = 
+{
+	if (clanring_maxsize < 3) // if less than 3 members per team...
+	{
+		if (!(clanring_playmode & CLANRING_NO_RING)) // If ring is on...	disable now.
+		{
+			utils_do_item(votables_disable_item, "item_artifact_invisibility");
+			announce("Ring of shadows disabled");
+			clanring_playmode = clanring_playmode | CLANRING_NO_RING; // This change will not be perminent.
+		}
+	}
+	else
+	{
+		if (clanring_playmode & CLANRING_NO_RING)	// Turn back on if it was voted or set in the config...
+		{
+			clanring_playmode = clanring_playmode  - CLANRING_NO_RING;
+			clanring_playmode = clanring_playmode | (cvar("samelevel") & CLANRING_NO_RING);
+			if (!(clanring_playmode & CLANRING_NO_RING))
+				announce("Ring of shadows enabled");
+		}
+	}	
+}
+
 float request_timelimit;
 //
 //  R E A D Y
@@ -1532,18 +1594,19 @@ void() match_ready =
 	}
 
 	self.style = self.style | CLANRING_READY;
-
-	//R00k: adjust timelimit based on team size automatically.
+	
 	if (!(clanring_state & CLANRING_MATCH_STARTED))
 	{
-		if (clanring_timelimit != request_timelimit)//hack to see if we already voted
-		{
-			match_get_maxsize();
-			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;
-			forceinfokey(world, "matchtime", ftos(clanring_timelimit));//R00k: requested by Woods.
+		match_get_maxsize();
+		if (clanring_timelimit != request_timelimit)						// hack to see if we already voted
+		{			
+			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;			// R00k: adjust timelimit based on team size automatically.
+			forceinfokey(world, "matchtime", ftos(clanring_timelimit));		// R00k: update infokey 'matchtime'; requested by Woods.
 			match_show_timelimit();
 		}
+		match_no_ring_check();												// R00k: disable invisibility for smaller games automatically.
 	}
+	
 	// check to see if we need to start the timer
 	if (clanring_numteams > 1 && !(clanring_state & CLANRING_TIMER_STARTED) && match_all_ready())
 	{
@@ -1589,16 +1652,18 @@ void(entity player) match_remove_player =
 		plast.next_team = player.next_team;
 		clanring_numteams = clanring_numteams - 1;
 	}
-	//R00k: adjust timelimit based on team size automatically.
+
 	if (!(clanring_state & CLANRING_MATCH_STARTED))
-	{
-		if (clanring_timelimit != request_timelimit)//hack to see if we already voted
+	{		
+		match_get_maxsize();
+
+		if (clanring_timelimit != request_timelimit)				// hack to see if we already voted
 		{
-			match_get_maxsize();
-			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;
+			clanring_timelimit = (clanring_maxsize > 2) ? 20 : 10;	// R00k: adjust timelimit based on team size automatically.
 			match_show_timelimit();
 		}
-	}	
+		match_no_ring_check();										// R00k: disable invisibility for smaller games automatically.
+	}
 };
 
 //
@@ -1947,6 +2012,22 @@ void() match_pause =
 	match_show_pause();
 };
 
+//  C O U N T D O W N  P A U S E
+// 
+//
+void() match_countdown_pause =
+{
+	if (self.owner.next_team.pausetime > 3)
+	{
+		remove(self);		
+		match_pause();
+		return;
+	}
+	bprint(sprintf("\[%g\]\n", (4 - self.owner.next_team.pausetime)));
+	self.owner.next_team.pausetime += 1;
+	self.nextthink = time + 1;
+};
+
 //
 //  R E Q U E S T  P A U S E
 //
@@ -1970,9 +2051,9 @@ void() match_request_pause =
 	{
 		if (self.next_team.pausetime == FALSE)//give the team one free match pause...
 		{
-			bprint(sprintf("The %s used their \bone\b free match pause.\n", self.next_team.netname));
+			bprint(sprintf("%s used the %s's \bone\b free match pause.\n", self.netname, self.next_team.netname));
 			self.next_team.pausetime = TRUE;
-			match_pause();
+			utils_make_scheduled_event(match_countdown_pause, 1);
 			return;
 		}
 	}
@@ -2075,10 +2156,9 @@ void() match_abort_pause_timeout =
 	remove(clanring_match_timer);
 	clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
 	clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
-	clanring_state = ((clanring_state | CLANRING_MATCH_OVER) | CLANRING_MATCH_WAIT);
+	clanring_state = (clanring_state | CLANRING_MATCH_OVER);
 	//TODO: Play some custom sound here... 
 	clanring_sentinel.movetarget = world;
-
 	utils_do_match_spawns(spawns_restore_model);
 }
 
@@ -2502,8 +2582,7 @@ void(entity player) match_disconnect_notify =
 		match_remove_player (player);
 
 	//A player readies up, types notready, then disconnects; which causes the match_start_timer to halt.
-	//We want to proceed with match_start_timer if there are enough players.
-	
+	//We want to proceed with match_start_timer if there are enough players.	
 	if (!(player.style & CLANRING_READY))
 	{
 		// Check to see if we need to start the timer
@@ -2598,7 +2677,7 @@ void(entity player) match_disconnect_notify =
 					self.owner.nextthink = self.nextthink + 1000000;
 					self.owner.think = self.think;
 					self.owner.health = self.health;
-
+					self.owner.items = self.items;
 					self.owner.items = self.items - (self.items & (IT_KEY1 | IT_KEY2));//just in case.
 					self.owner.armortype = self.armortype;
 					self.owner.armorvalue = self.armorvalue;
@@ -2619,10 +2698,10 @@ void(entity player) match_disconnect_notify =
 					self.owner.invisible_finished = self.invisible_finished;
 					self.owner.super_damage_finished = self.super_damage_finished;
 					self.owner.radsuit_finished = self.radsuit_finished;
-					self.owner.invincible_time = self.invincible_time;
-					self.owner.invisible_time = self.invisible_time;
-					self.owner.super_time = self.super_time;
-					self.owner.rad_time = self.rad_time;
+					self.owner.invincible_time = self.invincible_finished - time; // R00k: how many seconds remain
+					self.owner.invisible_time = self.invisible_finished - time;
+					self.owner.super_time = self.super_damage_finished - time;
+					self.owner.rad_time = self.radsuit_finished - time;
 					self.owner.show_hostile = self.show_hostile;
 					self.owner.jump_flag = self.jump_flag;
 					self.owner.swim_flag = self.swim_flag;

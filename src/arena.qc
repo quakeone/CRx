@@ -43,7 +43,7 @@ void () arena_precache =
 	precache_sound ("crx/two.wav");
 	precache_sound ("crx/three.wav");
 	precache_sound ("crx/fight.wav");
-	precache_sound ("ra/laugh.wav");
+	//precache_sound ("ra/laugh.wav"); Moved to world.qc --R00k
 	//precache_sound ("ra/flawless.wav");  //not used
 	precache_sound ("ra/outstand.wav");	
 	//precache_sound ("ra/excellent.wav");	

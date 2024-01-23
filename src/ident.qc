@@ -57,10 +57,13 @@ string (entity e) ident_get_armor_type =
 
 void(entity who, float b) ident_update_display =
 {	
-	string rname = who.netname;
-
+	string rname = who.netname, res;
+	
 	if (prematch_rules())//avoid centerprint war
 		return;
+
+	res	= TeamSetStatRes2(self);//r00K: Position the idenifier based on the player's .statstate setting (impulse 71 - 81)
+
 /*
 	woods — in prewar it should identify everyone with only name
 */
@@ -69,16 +72,16 @@ void(entity who, float b) ident_update_display =
 		if (b)
 		{
 			rname = redify(who.netname);	//R00k: display teammates out of pov in red.
-			centerprint(self, rname, "\n\n\n\n\n\n");
+			centerprint(self, res, rname);
 		}
 		else
-			centerprint(self, who.netname, "\n\n\n\n\n\n");	//otherwise white for in pov.
+			centerprint(self, res, who.netname);	//otherwise white for in pov.
 		return;
 	}
-//FIXME: stzone these???
+//FIXME: strzone these???
 	local string armour;
-	local string aval, hval, rtype, weap, ammo, it; 
-	local string line1 = "", line2 = "";
+	local string aval, hval, rtype, weap, ammo, it;
+	local string line1 = "", line2 = "";	
 	
 	armour	= ident_get_armor_type(who);
 	aval 	= strings_ftos_gold(who.armorvalue);
@@ -88,7 +91,7 @@ void(entity who, float b) ident_update_display =
 	ammo 	= ftos(who.currentammo);
 	it		= ident_get_other_weapons(who);
 	
-	line1 = sprintf("\n\b[\b%s%s\.%s%s\b]", armour, aval, hval, rtype);
+	line1 	= sprintf("\b[\b%s%s\.%s%s\b]", armour, aval, hval, rtype);
 
 	if (who.currentammo)
 		line2 = sprintf("\[%s\.%s\]%s", weap, ammo, it);
@@ -101,12 +104,11 @@ void(entity who, float b) ident_update_display =
 	if (b)
 	{
 		rname = redify(who.netname);
-		centerprint(self, rname, line1, line2, "\n\n\n\n\n");
+		centerprint(self, res, rname, line1, line2, "\n\n\n\n\n");
 	}
 	else
-		centerprint(self, who.netname, line1, line2, "\n\n\n\n\n");
+		centerprint(self, res, who.netname, line1, line2, "\n\n\n\n\n");
 };
-
 /*
 =============
 infront
