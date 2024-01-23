@@ -2767,7 +2767,7 @@ float (string s) FindNumericalInput =
 	{
 		float n;
 
-		if ((strlen(s)) > 2) // User entered a subsequent command; exit out and issue the command
+		if ((strlen(s)) > 2) // 00 to 99
 		{
 			n = 0;
 			pass = 0;
@@ -2779,7 +2779,7 @@ float (string s) FindNumericalInput =
 		}
 
 		self.finaldest_z = n;	  
-		self.use ();		
+		self.use();
 	}
 		
 	return pass;
@@ -2803,12 +2803,6 @@ void(string cmd) SV_ParseClientCommand =
     	arg1 = argv(1);
 	if (args > 2)
     	arg2 = argv(2);
-
-	
-	if (FindNumericalInput(arg0))
-	{
-		return;
-	}
 
     switch (arg0)
     {
@@ -3056,6 +3050,12 @@ void(string cmd) SV_ParseClientCommand =
 			}
 			break;
 	}
+
+	if (FindNumericalInput(arg0))
+	{
+		return;
+	}
+
 	clientcommand(self, cmd);
 	return;
 };
