@@ -731,3 +731,5 @@ float STATE_INVISIBLE = 8;
 
 float isFTEserver; //Is the server running on FTE or QSS/M?
 string clanring_new_record_player;
+
+.entity enemy_target;

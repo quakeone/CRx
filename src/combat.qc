@@ -243,22 +243,25 @@ void(entity targ, entity attacker) Killed =
 		return;
 	}
 
-	if ((targ.enemy_hurt_time > time) && (targ.enemy.health) && (targ.enemy != attacker))		// Hurt an opponent who was attacking a teammate.
-	{
-//#message !!precache this sound "crx/defense.wav"
-//		sound (self, CHAN_VOICE, "crx/defense.wav", 1, ATTN_NORM);
-		attacker.stats_defense_teammate += 1;
-		bprint(attacker.netname," defends their teammate ",targ.enemy.netname,".\n"); 				// Testing remove this afterwards...
+	if (teamplay)
+	{ 	// Killed an opponent who was attacking a teammate. 																		 (== attacker.team so CA, with 3 teams, works also).
+		if ((targ.enemy_hurt_time > time) && (targ.enemy_target.health) && (targ.enemy_target != attacker) && (targ.enemy_target.team == attacker.team))
+		{
+			//sound (self, CHAN_VOICE, "crx/defense.wav", 1, ATTN_NORM);
+			attacker.stats_defense_teammate += 1;
+			bprint(attacker.netname," defends their teammate ",targ.enemy_target.netname,".\n"); // Testing remove this afterwards...
+		}
+		else
+		// Killing an opponent who just killed a teammate.
+										 	 // targ.enemy_target.health has a 3 second window before the dead player automatically respawns...
+		if ((targ.enemy_hurt_time > time) && (!(targ.enemy_target.health)) && (targ.enemy_target != attacker) && (targ.enemy_target.team == attacker.team))
+		{
+			//sound (self, CHAN_VOICE, "crx/avenger.wav", 1, ATTN_NORM);
+			attacker.stats_avenge_teammate +=1;
+			bprint(attacker.netname," avenged their teammate ",targ.enemy_target.netname,".\n"); // Commentary for observers only (oprint4)?
+		}
 	}
-	else
-	if ((targ.enemy_hurt_time > time) && (!(targ.enemy.health)) && (targ.enemy != attacker))		// Killing an opponent who just killed a teammate.
-	{
-//#message !!precache this sound "crx/avenger.wav"
-//		sound (self, CHAN_VOICE, "crx/avenger.wav", 1, ATTN_NORM);
-		attacker.stats_avenge_teammate +=1;															// avenge_stats
-		bprint(attacker.netname," avenged their teammate ",targ.enemy.netname,".\n"); 				// Testing remove this afterwards...
-	}
-	
+
 	self.enemy = attacker;
 	
 	if (self.enemy.classname == "player")
@@ -589,7 +592,8 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	
 	if ((attacker.classname == "player") && (targ.classname == "player"))
 	{
-		attacker.enemy_hurt_time = time + 3;	//R00k: Used for stats; this is the bonus-window from last time they hurt/killed your teammate. bonus for killing them within this time. 
+		attacker.enemy_hurt_time = time + 10;	//R00k: Used for stats; this is the bonus-window from last time they hurt/killed your teammate. bonus for killing them within this time. 
+		attacker.enemy_target = targ;			//Keep track of who is being hurt
 		targ.enemy = attacker;					//R00k: Used for cameras/stats
 	}
 	
@@ -884,11 +888,12 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 			}
 		}
 		// END_MOD
-		targ.enemy = attacker;
-		CheckDefenseBonus(targ, attacker); 
+
+		if (teamplay)
+			CheckDefenseBonus(targ, attacker); 
 
 		Killed (targ, attacker);
-		
+
 		if (!(clanring_playmode & CLANRING_AIRSHOT_MODE))
 		{
 			if ((targ.classname == "player") && (inflictor != world) && (inflictor.classname == "missile"))
@@ -968,7 +973,8 @@ void(entity inflictor, entity attacker, float damage, entity ignore, string dtyp
 				{
 					if (CanDamage (head, inflictor, dtype))	// 1998-10-04 Hit outside water by a discharge fix by Maddes
 					{
-						head.deathtype = dtype;	// Wrong obituary messages fix
+						if (head.health)
+							head.deathtype = dtype;	// Wrong obituary messages fix
 
 						if ((head.items & IT_SUIT) && (clanring_playmode & CLANRING_NO_SPOOGE) && (dtype == "discharge"))
 							points = points * 0.20;//R00k if biosuit can protect the player by 1/5th against lava why not DC too??

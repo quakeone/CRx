@@ -844,7 +844,9 @@ void() PutClientInServer =
 	self.killstreak				= 0;
 	self.combo_frags 			= 0;
 	self.combo_time 			= 0;
-	
+	self.enemy					= world;	//who shot/killed us
+	self.enemy_target			= world;	//who we last shot/killed
+
 	if ((clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_AIRSHOT_MODE))
 	{
 		if ((self.ca_player_flag == PF_PLAYING) && (boss.state == CA_MATCH_PLAYING) && (boss.wait == 0))

@@ -2057,7 +2057,7 @@ float() backpack_customizeentityforclient =
 
 	return 1;
 }
-
+#pragma warning disable F326 /*Variable "customizeentityforclient" is deprecated*/
 void() DropBackpack =
 {
 	local entity item;
