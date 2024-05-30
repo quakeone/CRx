@@ -291,8 +291,13 @@ void() GotoNextMap =
 {
 	if (nextmap == "")
 	{
-		nextmap = mapname;
-		bprint("\nMap not found. Reloading Current Map...Please Wait.\n");
+		clanring_nextlevel_config();
+
+		if (nextmap == "")
+		{
+			nextmap = mapname;
+			bprint("\nMap not found. Reloading Current Map...Please Wait.\n");
+		}
 	}
 	changelevel (nextmap);
 };
@@ -1086,8 +1091,8 @@ void() NextLevel =
 			nextmap = o.map;
 	}
 
-	if (clanring_playmode & CLANRING_RA_MODE)
-		nextmap = ra_get_next_map();
+	// if (clanring_playmode & CLANRING_RA_MODE)
+	// 	nextmap = ra_get_next_map();
 
 	gameover = TRUE;
 

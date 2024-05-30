@@ -349,6 +349,7 @@ void() votables_clear_playmode_flags =
 	votables_clear_arena_playmode_flags();
 }
 
+void() clanring_nextlevel_config;
 //
 // V O T A B L E S  S E T  G A M E T Y P E  M O D E  M A P
 //
@@ -358,7 +359,7 @@ void() votables_set_gametype_mode_map =
 	if (clanring_state & CLANRING_MATCH_STARTED)
 		return;
 
-	local string newmapname = mapname, request_mapname = "";
+	local string newmapname = "", request_mapname = "";
 	local entity player;
 	if (request_gametype >= 0)
 	{
@@ -411,8 +412,6 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Rocket Arena\n");
-
-			newmapname = ra_get_next_map();
 		}
 		else if (request_gametype == 4)
 		{
@@ -424,7 +423,6 @@ void() votables_set_gametype_mode_map =
 			cvar_set("deathmatch", "4");
 			cvar_set ("scratch2", "0");//overtime
 			bprint("gametype set to dmm4\n");
-
 			newmapname = "povdmm4";
 		}
 		else if (request_gametype == 5)
@@ -449,6 +447,7 @@ void() votables_set_gametype_mode_map =
 			if (deathmatch == 4)
 				cvar_set("deathmatch", "1");
 			bprint("gametype set to Clan Arena Wipeout\n");
+			newmapname = mapname;
 		}
 		else if (request_gametype == 7)
 		{
@@ -468,6 +467,9 @@ void() votables_set_gametype_mode_map =
 		clanring_level = 1;//Reset the map count if we changed modes
 		utils_set_cvar ("scratch1", clanring_level);
 		nextmap = ""; //Reset the nextmap too
+		clanring_nextlevel_config();
+		if (newmapname == "")
+			newmapname = nextmap;
 	}
 	if (request_mode >= 0)
 	{
@@ -539,9 +541,12 @@ void() votables_set_gametype_mode_map =
 		mode = strings_get_mode(request_mode);
 		announce3("playmode set to '", mode, "'");
 		utils_set_cvar("samelevel", clanring_playmode);
+		nextmap = ""; //Reset the nextmap too
 		clanring_level = 1;//Reset the map count if we changed modes
 		utils_set_cvar ("scratch1", clanring_level);
-		nextmap = ""; //Reset the nextmap too
+		clanring_nextlevel_config();
+		if (newmapname == "")
+			newmapname = nextmap;
 	}
 	if (request_mapnum)
 	{
@@ -570,10 +575,13 @@ void() votables_set_gametype_mode_map =
 		{
 			if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
 				stuffcmd(player, "setinfo observing off\n");
-			//stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
 		}
 		player = find(player, classname, "player");
 	}	
+
+	if (newmapname == "")
+		newmapname = mapname;
+
 	changelevel (newmapname);
 };
 
@@ -881,7 +889,7 @@ void() votables_request_vote_exit =
 		return;
 	}
 	
-	if (!(clanring_playmode & CLANRING_NORMAL_MODE))
+	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
 		sprint(self,"Command not allowed in current gamemode.\n");
 		return;

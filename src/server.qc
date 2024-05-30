@@ -363,10 +363,10 @@ void () clanring_init_world =
 	
 	//CRMOD - string to be used throughout code to show version number.
 	//version.year.month.day 
-	clanring_version        = "CRx (v1.24.02)";       // This is used in the server console, the help display, and on connect.
-	clanring_version_info   = "CRx (v1.24.02)";       // This is the value for the forced server infokey named "mod".
-	clanring_version_number = "(v1.24.02)";           // This is only used once when typing 'commands' in the server console. :|
-	clanring_version_red    = "\bcrx (v\b1.24.02\b)"; // This isn't used anywhere :(
+	clanring_version        = "CRx (v1.24.06)";       // This is used in the server console, the help display, and on connect.
+	clanring_version_info   = "CRx (v1.24.06)";       // This is the value for the forced server infokey named "mod".
+	clanring_version_number = "(v1.24.06)";           // This is only used once when typing 'commands' in the server console. :|
+	clanring_version_red    = "\bcrx (v\b1.24.06\b)"; // This isn't used anywhere :(
 	
 	// Initialize sentinel
 	clanring_sentinel = spawn();

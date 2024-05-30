@@ -645,6 +645,10 @@ void() observer_end =
 		self.enemy = world;//R00k, v1.92
 		self.delay = 0;
 		self.wait = time;//11/6/2014 11:29AM
+		//R00k: this is a silly hack to fix RA mode when someone spawns but their viewpoint is elsewhere
+		msg_entity = self;
+		WriteByte(MSG_ONE, SVC_SETVIEWPORT);
+		WriteEntity (MSG_ONE, self);
 	}
 	self.style 	= self.style - (self.style & CLANRING_OBSERVER);
 	self.dmg_tally = 0;
@@ -653,6 +657,7 @@ void() observer_end =
 
 	self.killed = 0;
 	observer_check_demo_end();
+
 //	stuffcmd(self, "sm0\n");// CRMOD - smoothing off
 //	stuffcmd(self, "v_centerspeed 500\n");
 	stuffcmd(self, "cmd setinfo observer off\n");// woods
@@ -1209,6 +1214,9 @@ void () observer_set_chase_position =
 //
 void () observer_set_demo_position =
 {
+	if ((self.movetarget == world)||(self.movetarget.style & CLANRING_OBSERVER)||(!(self.movetarget.style & CLANRING_CONNECTED)))
+	 	return;
+
 	if (self.oflags & OBSERVER_AUTO)
 	{
 		if (self.oflags & OBSERVER_DEMO)

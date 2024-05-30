@@ -593,132 +593,133 @@ void() exec_warp_cfg =
 //  clanring_levelcount	- This is used throughout to check that levels.cfg has been read...
 //  clanring_lastcount	- used to count how many maps are listed in levels.cfg so we know when to recycle.
 
+void(string mode) clanring_count_maps =
+{
+    string line = "";
+    float mapCount = 0;
+
+    filestream f = fopen("configs/levels.cfg", FILE_READ);
+
+    if (f < 0) {cprint("levels.cfg not found.\n");return;}
+
+    while ((line = fgets(f))) 
+	{
+        float argc = tokenize(line);
+
+        if (!argc) continue;
+        if (argv(0) == "//" || argv(0) == "#") continue;
+
+        if (argv(0) == mode) 
+		{
+            while ((line = fgets(f))) 
+			{
+				argc = tokenize(line);
+		        if (!argc) continue;
+		        if (argv(0) == "//" || argv(0) == "#") continue;
+
+                if ((argv(0) == "-ctf-") || (argv(0) == "-ca-") || (argv(0) == "-dm-") || (argv(0) == "-ra-"))
+                    break;
+
+                if (found_in_warp_list(argv(0))) 
+				{
+                    mapCount++;
+                }
+            }
+            break; // Found the correct mode section
+        }
+    }
+    fclose(f);
+
+    clanring_lastcount = mapCount;
+    cprint(sprintf("%s maps in rotation for mode: %s\n", ftos(mapCount), mode));
+}
+
 void() clanring_nextlevel_config =
 {
-	string 	line = "", mode ="";
-	float 	i = 1, done = 0;
-	
-	nextmap = "";
-	
-	if (clanring_level < 1)
-		clanring_level = 1;
+    string line = "", mode = "";
+    float i = 1;
 
-	//Find the current mode we are in.
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		mode = "[ctf]";
-	else if (clanring_playmode & CLANRING_CA_MODE)
-		mode = "[ca]";
-	else
-		mode = "[dm]";
+    nextmap = "";
 
-	filestream f = fopen("configs/levels.cfg", FILE_READ);
-	cprint("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
+    if (clanring_level < 1)
+        clanring_level = 1;
 
-	if (f < 0)
-	{
-		nextmap = strzone(default_nextmap);
-		clanring_levelcount	= -1;	// This is used throughout to check that levels.cfg has been read...
-									// just disable nextlevel but allow the mod to run.
-		cprint("levels.cfg not found.\n");								
-		return;
-	}
+    // Determine the current mode
+    if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+        mode = "-ctf-";
+    else if (clanring_playmode & CLANRING_CA_MODE)
+        mode = "-ca-";
+    else if (clanring_playmode & CLANRING_RA_MODE)
+        mode = "-ra-";
+    else
+        mode = "-dm-";
 
-	// Count installed maps so we know when to recycle
-	while ((line = fgets(f)))
-	{
-		float argc = tokenize(line);
+	clanring_count_maps(mode);	//Set clanring_lastcount for this mode.
 
-		if (!argc) continue;		
-		if (argv(0) == "//" || argv(0) == "#") continue;
-		
-		if (argv(0) == mode) 
-		{
-			while ((line = fgets(f)))
-			{
-				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))// todo: add [ra] 
-				{
-					break;
-				}
-				if (found_in_warp_list(line))
-				{
-					if (mapname == line)
-						continue;
-					clanring_lastcount++;
-				}
-			}
-			done = TRUE; // We've bumped into the next section or reached the EOF.
-		}		
-		else 
-		{
-			if (done == FALSE)
-				continue;
-		}
-	}
-	fclose(f);
+    filestream f = fopen("configs/levels.cfg", FILE_READ);
 
-	done = FALSE;
+    if (f < 0)
+    {
+        nextmap = strzone(default_nextmap);
+        clanring_levelcount = -1;
+        cprint("**[ WARNING ]** 'levels.cfg' not found.\n");
+        return;
+    }
 
-	f = fopen("configs/levels.cfg", FILE_READ);
+    cprint("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
 
-	while ((line = fgets(f)))
-	{
-		argc = tokenize(line);
+    while ((line = fgets(f)))
+    {
+        float argc = tokenize(line);
 
-		if (!argc) continue;		
+        if (!argc) continue;
+        
 		if (argv(0) == "//" || argv(0) == "#") continue;
 
-		if (argv(0) == mode) 
-		{
-			while ((line = fgets(f)))
-			{
-				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
-				{
-					break;
-				}
-				if (found_in_warp_list(line))
-				{
-					if (mapname == line)	//If the next map will be the same map we are on, just skip to the one after it.
-					{
-						i++;
-						continue;
-					}
+        if (argv(0) == mode)
+        {
+            while ((line = fgets(f)))
+            {
+		        argc = tokenize(line);
+		        string token0 = argv(0);
+				if (!argc) continue;
+        		
+				if (token0 == "//" || token0 == "#") continue;
+                
+				if ((token0 == "-ctf-") || (token0 == "-ca-") || (token0 == "-dm-") || (token0 == "-ra-")) break; //bumped into the next section, exit...
 
-					if (i >= clanring_level)
-					{
-						nextmap = strzone(line);//strzone is required for qss, not FTE ... (Nextmap is dm6. Host_Error: cannot find map maps/6.bsp)				
-						break;
-					}
-					i++;
-				}
-			}
-			done = TRUE;
-		}		
-		else 
-		{
-			if (done == FALSE)
-				continue;
-		}
-	}
-	fclose(f);
+                if (found_in_warp_list(token0))
+                {
+                    if (i >= clanring_level)
+                    {
+                        nextmap = strzone(token0);
+                        break;
+                    }
+                    i++;
+                }
+            }
+            break; // Found the correct mode section, no need to continue.
+        }
+    }
+    fclose(f);
 
-	if (nextmap == "")
-	{
-		//strunzone(nextmap);
-		nextmap = strzone(mapname);	// Ugh, just reload the current map...
-		bprint("Nextmap not found, reloading \b", nextmap, "\b.\n");
-	}
-	else
-	{
-		cprint(sprintf("Nextmap is %s.\n", nextmap));
-		clanring_level++;
-		if (clanring_level > clanring_lastcount)
-			clanring_level = 1;
-		utils_set_cvar ("scratch1", clanring_level);	// save out the next map to load.
-	}
+    if (nextmap == "")
+    {
+        nextmap = strzone(mapname); // Reload the current map.
+        bprint("Nextmap not found, reloading ", nextmap, ".\n");
+    }
+    else
+    {
+        cprint(sprintf("    Nextmap is %s.\n", nextmap));
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (cvar("noexit") != 1))
-		bprint("Exits activated\n");
+        clanring_level++;
 
+        if (clanring_level > clanring_lastcount)
+            clanring_level = 1;
+
+        utils_set_cvar("scratch1", clanring_level);
+    }
+	
 	clanring_levelcount	= -1;	// This is used throughout to check that levels.cfg has been read...
 }
 
@@ -946,6 +947,7 @@ void() clanring_exec_configs =
 	clanring_main_config();
 	clanring_warp_config();
 	clanring_map_config();
+	clanring_nextlevel_config();
 //	clanring_ent_config();//(FIXME)
 //	clanring_cam_config();//(FIXME)
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
@@ -961,13 +963,9 @@ void() clanring_exec_configs =
 	// 	read_longrange_stats();
 	// }
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE))
+	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		clanring_nextlevel_config();
-	}
-	else
-	{
-		if ((clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
+		if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 		{
 			cvar_set("teamplay","2");		
 			clanring_set_teamplay(2);	

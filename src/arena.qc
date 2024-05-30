@@ -1761,21 +1761,25 @@ void (float x,float y) announce_winner =
 	if (x == 200 && y == 100)
 	{
 		sound(world, CHAN_AUTO, "crx/flawless.wav", 1, ATTN_NONE);// Health = 100 Armor == 200 = 300
+		ctprint("Flawless Victory");
 	}
 	else
 	if (x >= 100 && y >= 75)
 	{
 		sound(world, CHAN_AUTO, "ra/outstand.wav", 1, ATTN_NONE);// Health >= 75 Armor >= 100 = 175
+		ctprint("Outstanding");
 	}
 	else
 	if (x >= 75 && y >= 50)
 	{
 		sound(world, CHAN_AUTO, "crx/excell2.wav", 1, ATTN_NONE);// Health >= 50 Armor >= 75 == 125
+		ctprint("Excellent");
 	}
 	else
 	if (x >= 50 && y >= 50)
 	{
 		sound(world, CHAN_AUTO, "ra/welldone.wav", 1, ATTN_NONE);// Health >=50 Armor >= 50 == 100
+		ctprint("Well Done");
 	}
 };
 
