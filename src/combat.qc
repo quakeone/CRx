@@ -175,6 +175,9 @@ float(entity targ, entity inflictor, string dtype) CanDamage =	// 1998-10-04 Hit
 
 void (entity t, entity e) CheckDefenseBonus =
 {
+	if ((e == world) || (t == world)) 
+		return;
+
 	entity what = findradius(t.origin, 300);
 	while (what)
 	{
@@ -216,9 +219,8 @@ void (entity t, entity e) CheckDefenseBonus =
 				}
 			}
 		}
-			what = what.chain;
-	}
-		
+		what = what.chain;
+	}		
 };
 /*
 ============
@@ -254,7 +256,7 @@ void(entity targ, entity attacker) Killed =
 		else
 		// Killing an opponent who just killed a teammate.
 										 	 // targ.enemy_target.health has a 3 second window before the dead player automatically respawns...
-		if ((targ.enemy_hurt_time > time) && (!(targ.enemy_target.health)) && (targ.enemy_target != attacker) && (targ.enemy_target.team == attacker.team))
+		if ((targ.enemy_hurt_time > time) && ((targ.enemy_target.health < 1)) && (targ.enemy_target != attacker) && (targ.enemy_target.team == attacker.team))
 		{
 			//sound (self, CHAN_VOICE, "crx/avenger.wav", 1, ATTN_NORM);
 			attacker.stats_avenge_teammate +=1;
