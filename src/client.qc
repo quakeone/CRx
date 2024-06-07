@@ -309,27 +309,43 @@ IntermissionThink
 When the player presses attack or jump, change to the next level
 ============
 */
+void ()VoteMenu_Print;
 
 void() IntermissionThink =
 {
-	// ELOHIM_MOD - hack for autoss to work
-	if (!(self.style & CLANRING_OBSERVER) || (self.style & CLANRING_ADMINISTRATOR))
-	{
-		self.angles = self.v_angle = clanring_angle;
-		self.fixangle = TRUE;		
-	}
-	// END_MOD
+	VoteMenu_Print();
 
-	if (time < intermission_exittime)
-	{
-		return;
+	if ((self.impulse > 0) && (self.impulse < 6))
+	{	
+		if (!(self.warp_map))
+		{
+			self.warp_map = self.impulse;
+
+			map_choices[self.warp_map] += 1;
+
+			VOTE_MENU_TEXTLINE[self.warp_map] = redify(VOTE_MENU_TEXTLINE[self.warp_map]);
+			self.impulse = 0;
+		}
+		else
+		{
+			sprint (self,"You have already voted, press 6 to deselect your vote.\n");
+			self.impulse = 0;
+		}
 	}
-	if (self.button0 || self.button2)
+	else
+	if (self.impulse == 6)
 	{
-		clear_afk_status(self);		//AFK status carries over.
-		GotoNextMap ();
-	}	
+		if (self.warp_map)
+		{
+			//stuffcmd(self, ";play \n");
+			map_choices[self.warp_map] -= 1;
+			VOTE_MENU_TEXTLINE[self.warp_map] = VOTE_MENU_TEXTLINE[(self.warp_map + 6)];
+			self.warp_map = 0;
+		}
+	}
 };
+
+void() VoteMenu_Init;
 
 void() execute_changelevel =
 {
@@ -337,15 +353,28 @@ void() execute_changelevel =
 //	local float bcount;
 
 	intermission_running = 1;
+	VoteMenu_Init();
 
 	// enforce a wait time before allowing changelevel
-	intermission_exittime = time + 5;
+	intermission_exittime = time + 20;
 	lightstyle(0, "f");// R00k: -added- dim light on intermission
 /*
 	WriteByte(MSG_ALL, SVC_CDTRACK);
 	WriteByte(MSG_ALL, 3);
 	WriteByte(MSG_ALL, 3);
 */
+
+/*
+	if (clanring_matchsound_count)
+	{
+		prnd = floor(random() * clanring_matchsound_count);
+		if (matchsound[prnd] != "")
+		{
+			sound (world, CHAN_AUTO, matchsound[prnd], 1, ATTN_NONE);
+		}
+	}
+*/
+
 	intermission_pos = FindIntermission ();
 	clanring_angle = intermission_pos.mangle;
 	other = find(world, classname, "player");
@@ -363,6 +392,11 @@ void() execute_changelevel =
 		other.finaldest_y = MOVETYPE_NONE;
 		other.modelindex = 0;
 		other.model = "";
+		other.weaponmodel = "";
+		other.weapon = 0;
+		other.items = 0;
+		other.effects = 0;
+
 		setorigin(other, intermission_pos.origin);
 
 		tmp   = self;
@@ -372,7 +406,7 @@ void() execute_changelevel =
 
 		other = find(other, classname, "player");
 	}	
-	WriteByte(MSG_ALL, SVC_INTERMISSION);
+	//WriteByte(MSG_ALL, SVC_INTERMISSION);
 };
 
 void() pre_execute_changelevel =

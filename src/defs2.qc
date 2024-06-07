@@ -508,17 +508,23 @@ float stats_matchtype;
 
 typedef struct 
 {
-	string 	name;	// filename WITHOUT '.bsp'
-	string 	title;	
-	string	author; 
+	string	name;	// filename WITHOUT '.bsp'
+	string	title;	// Welcome to Quake
+	string	author; // John Romero
+	string	type;	// CTF, DM, CA, RA, DMM4
+	string	image;  // 'data/mapshots/mymap.tga'
+	float	size;	// 1v1, 2v2, 4v4, 8v8
 }servermap_t;
 
 #define WARP_CATEGORY_SIZE 50	// Change the value in server.qc: clanring_set_aliases, if you exceed 50
 #define WARP_MAPLIST_SIZE 30	// Above 15 and most users have to scroll.
+
 servermap_t warpmap[WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE];
 
 string warpmenutop[WARP_CATEGORY_SIZE]; // Customizable map categories for the warp menu contents.
+string vote_map_choices[6];
 
+float map_choices[6];
 
 string default_nextmap;
 

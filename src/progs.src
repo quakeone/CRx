@@ -17,6 +17,7 @@ debug.qc
 status.qc
 warp.qc
 angles.qc
+votemenu.qc
 server.qc
 ctf.qc
 arena.qc

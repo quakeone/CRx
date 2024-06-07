@@ -2700,10 +2700,11 @@ void () clanring_start_frame =
 
 			if (time >= clanring_nextcheck2)
 			{
+				auto_check_current_camera();	//R00k: moved up here. (6/4/2024)
 				auto_schedule_cameras();
 				utils_make_scheduled_event(auto_chase, 0.3);
-				utils_make_scheduled_event(auto_camera, 0.6);				
-													
+				utils_make_scheduled_event(auto_camera, 0.6);			
+
 				if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
 				{
 					float tl = rint(timelimit - time);
@@ -2738,13 +2739,33 @@ void () clanring_start_frame =
 							bprint("\n");
 						break;
 					}
-				}									
+				}	
+							
 				clanring_nextcheck2 = time + 1;
-			}
-			auto_check_current_camera();
+			}			
 		}
 	}
-
+	else
+	{
+		if (intermission_running)
+		if ((time > intermission_exittime))
+		{
+			string temp = "";
+			for (float i = 1; i < 6; i++)
+			{
+				if (map_choices[i] >= map_choices[0]) //if a tie then the last one voted for wins... :|
+				{
+					temp = vote_map_choices[i];
+					map_choices[0] = map_choices[i];
+				}
+			}
+			tokenize(temp);
+			nextmap = argv(0);
+			if (nextmap == "")
+				nextmap = "dm3";
+			changelevel(nextmap);
+		}
+	}
 	sys_ticrate = cvar("sys_ticrate");//R00k Added
 	//sv_friction = cvar("sv_friction");//R00k Added
 
