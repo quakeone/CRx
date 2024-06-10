@@ -363,17 +363,16 @@ void() execute_changelevel =
 	WriteByte(MSG_ALL, 3);
 	WriteByte(MSG_ALL, 3);
 */
-
-/*
 	if (clanring_matchsound_count)
 	{
-		prnd = floor(random() * clanring_matchsound_count);
+		float prnd = floor(random() * clanring_matchsound_count);
+		cprint(sprintf("Playing matchsound[%g]: %s\n",prnd, matchsound[prnd]));
 		if (matchsound[prnd] != "")
 		{
 			sound (world, CHAN_AUTO, matchsound[prnd], 1, ATTN_NONE);
 		}
+		clanring_matchsound_count = 0;//just in case this gets called twice somehow
 	}
-*/
 
 	intermission_pos = FindIntermission ();
 	clanring_angle = intermission_pos.mangle;
@@ -381,23 +380,23 @@ void() execute_changelevel =
 	while (other != world)
 	{
 //		bcount = bcount + 1;
-		other.view_ofs = '0 0 0';
-		other.v_angle = intermission_pos.mangle;
-		other.angles = intermission_pos.mangle;
-		other.fixangle = TRUE;
-		other.nextthink = time + 0.5;
-		other.takedamage = DAMAGE_NO;
-		other.solid = SOLID_NOT;
-		other.movetype = MOVETYPE_NONE;
-		other.finaldest_y = MOVETYPE_NONE;
-		other.modelindex = 0;
-		other.model = "";
-		other.weaponmodel = "";
-		other.weapon = 0;
-		other.items = 0;
-		other.effects = 0;
-
 		setorigin(other, intermission_pos.origin);
+
+		other.view_ofs 		= '0 0 0';
+		other.v_angle 		= clanring_angle;
+		other.angles 		= clanring_angle;
+		other.fixangle 		= TRUE;
+		other.nextthink 	= time + 0.5;
+		other.takedamage 	= DAMAGE_NO;
+		other.solid 		= SOLID_NOT;
+		other.movetype 		= MOVETYPE_NONE;
+		other.finaldest_y 	= MOVETYPE_NONE;
+		other.modelindex 	= 0;
+		other.model 		= "";
+		other.weaponmodel 	= "";
+		other.weapon 		= 0;
+		other.items 		= 0;
+		other.effects 		= 0;
 
 		tmp   = self;
 		self  = other;

@@ -511,9 +511,9 @@ typedef struct
 	string	name;	// filename WITHOUT '.bsp'
 	string	title;	// Welcome to Quake
 	string	author; // John Romero
-	string	type;	// CTF, DM, CA, RA, DMM4
-	string	image;  // 'data/mapshots/mymap.tga'
-	float	size;	// 1v1, 2v2, 4v4, 8v8
+	// string	type;	// CTF, DM, CA, RA, DMM4
+	// string	image;  // 'data/mapshots/mymap.tga'
+	// float	size;	// 1v1, 2v2, 4v4, 8v8
 }servermap_t;
 
 #define WARP_CATEGORY_SIZE 50	// Change the value in server.qc: clanring_set_aliases, if you exceed 50
@@ -528,10 +528,11 @@ float map_choices[6];
 
 string default_nextmap;
 
-float MAX_CUSTOM_MATCH_SOUNDS = 10;
+float MAX_CUSTOM_MATCH_SOUNDS = 20;	//Upped
 float clanring_matchsound_count;
 float clanring_matchsound_rematch_count;
 float clanring_matchsound_blowout_count;
+
 string matchsound[MAX_CUSTOM_MATCH_SOUNDS];
 string matchsound_rematch[MAX_CUSTOM_MATCH_SOUNDS];
 string matchsound_blowout[MAX_CUSTOM_MATCH_SOUNDS];

@@ -577,6 +577,7 @@ void() exec_warp_cfg =
 			warpmap[mapnum].name = strzone(mapfile);
 			warpmap[mapnum].title = strzone(fgets(f));
 			warpmap[mapnum].author = strzone(fgets(f));
+			//warpmap[mapnum].type = strzone(fgets(f));
 			//print(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));			
 		}
 		else print((sprintf("**ERROR: mapnum > WARP_MAPLIST_SIZE (Too many [%s] warp menus/maps)(1024 maps 32 categories maximum)",ftos(mapnum)),"\n"));//todo remove limits
@@ -995,19 +996,22 @@ void() clanring_exec_configs =
 // 2 - blowout sounds
 void (float soundtype) clanring_read_matchsounds =
 {
-	string line;
+	string line, fname = "";
 	filestream f;
 	float i = 0;
 
 	if (soundtype == 1)
-		f = fopen("configs/matchsounds_rematch.cfg", FILE_READ);
+		fname = "configs/matchsounds_rematch.cfg";
 	else if (soundtype == 2)
-		f = fopen("configs/matchsounds_blowout.cfg", FILE_READ);
+		fname = "configs/matchsounds_blowout.cfg";
 	else
-		f = fopen("configs/matchsounds.cfg", FILE_READ);
+		fname = "configs/matchsounds.cfg";
+
+	f = fopen(fname, FILE_READ);
 
 	if (f < 0)
 	{
+		cprint(sprintf("(OPTIONAL)File not found: %s\n", fname));
 		return;
 	}
 
@@ -1019,21 +1023,29 @@ void (float soundtype) clanring_read_matchsounds =
 		if (argv(0) == "//" || argv(0) == "#") continue;
 
 		if (soundtype == 1)
-			matchsound_rematch[i] = (line);
+		{
+			if (matchsound_rematch[i] != "")
+				strunzone(matchsound_rematch[i]);
+			matchsound_rematch[i] = strzone(line);
+			clanring_matchsound_rematch_count = i;
+		}
 		else if (soundtype == 2)
-			matchsound_blowout[i] = (line);
+		{			
+			if (matchsound_blowout[i] != "")
+				strunzone(matchsound_blowout[i]);
+			matchsound_blowout[i] = strzone(line);
+			clanring_matchsound_blowout_count = i;
+		}
 		else
-			matchsound[i] = (line);
+		{			
+			if (matchsound[i] != "")
+				strunzone(matchsound[i]);
+			matchsound[i] = strzone(line);
+			clanring_matchsound_count = i;
+		}
 		i++;
 	}
 	fclose(f);
-
-	if (soundtype == 1)
-		clanring_matchsound_rematch_count = i;
-	else if (soundtype == 2)
-		clanring_matchsound_blowout_count = i;
-	else
-		clanring_matchsound_count = i;
 };
 
 void () clanring_precache_matchsounds =
