@@ -248,7 +248,7 @@ void() votables_request_change_level =
 
 	level = (self.warp_episode * WARP_MAPLIST_SIZE) + (self.warp_map);
 	newmap = sprintf("%s (%s)", warpmap[level].name, warpmap[level].title);
-
+	
 	//clear warp_flags;
 	self.warp_episode=0;
 	self.warp_map=0;
@@ -969,13 +969,14 @@ void() votables_get_fraglimit =
 };
 void() votables_select_fraglimit =
 {
-	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE))
+	if ((clanring_playmode & CLANRING_AIRSHOT_MODE) || (clanring_playmode & CLANRING_DMM4_MODE) || (clanring_playmode & CLANRING_RA_MODE))
 	{
 		if ((boss != world) && (boss.state == CA_MATCH_PLAYING))
 		{
 			sprint(self, "Cannot change frag limit while match is in progress.\n");
 			return;
 		}
+		sprint(self, "You must have admin access.\nuse cmd fragset 123\n");
 	}
 	else
 	{

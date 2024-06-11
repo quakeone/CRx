@@ -2846,6 +2846,11 @@ void(string cmd) SV_ParseClientCommand =
 
     switch (arg0)
     {
+		case "fragset": 
+			if (self.style & CLANRING_ADMINISTRATOR)
+				clanring_set_fraglimit(stof(arg1));
+			return;
+
 		case "afkon":
 			client_afk_on();
 			return;
