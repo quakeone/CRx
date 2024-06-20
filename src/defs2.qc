@@ -140,7 +140,8 @@ float CLANRING_SEQUENTIAL_SPAWNS		= 65536;
 // float CLANRING_BREAKAWAY_HOOK		= 0;
 // float CLANRING_QW_ROCKET_DAMAGE		= 0;		//set rocket damage to 110 eliminate the ' + random () * 20 '
 float CLANRING_DROP_DEATH_SHARDS		= 1048576;
-
+// float CLANRING_VOTE_MAJORITY_PASS	= 0;
+float CLANRING_ENABLE_MATCHSOUNDS = 2097152;
 // clanring_state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
 float CLANRING_MATCH_STARTED    	= 2;
@@ -288,6 +289,7 @@ float 	CLANRING_ANGLE_SMOOTHING    = 0.6; // CRMOD use this instead of typing th
  * helpers. -- from cspreee
  */
  #define redify(s) strconv(0,2,2,s)
+ #define whitey(s) strconv(0,1,1,s)
  #define alternate(s) strconv(0,5 + ((time*4)&1), 5 + ((time*4)&1),s)
  #define flash(s) strconv(0,1 + ((time*4)&1), 1 + ((time*4)&1),s)
  #define goldnmbr(s) strconv(0,3,3,s)

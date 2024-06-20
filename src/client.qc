@@ -315,33 +315,75 @@ void() IntermissionThink =
 {
 	VoteMenu_Print();
 
+	if (self.button0 || self.button2) 								//Jump or fire to wake up
+		self.style -= (self.style & CLANRING_AFK_CLIENT);
+
 	if ((self.impulse > 0) && (self.impulse < 6))
 	{	
-		if (!(self.warp_map))
-		{
-			self.warp_map = self.impulse;
+		stuffcmd(self, "play buttons/switch04.wav\n");
 
-			map_choices[self.warp_map] += 1;
-
-			VOTE_MENU_TEXTLINE[self.warp_map] = redify(VOTE_MENU_TEXTLINE[self.warp_map]);
-			self.impulse = 0;
-		}
-		else
+		if ((self.warp_map) && ((self.warp_map) == self.impulse))
 		{
-			sprint (self,"You have already voted, press 6 to deselect your vote.\n");
+			map_choices[self.warp_map] -= 1;
+			self.warp_map = 0;
 			self.impulse = 0;
+			self.centerTime = 0;	//Update now.
+			centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
+			return;
 		}
-	}
-	else
-	if (self.impulse == 6)
-	{
+
 		if (self.warp_map)
 		{
-			//stuffcmd(self, ";play \n");
 			map_choices[self.warp_map] -= 1;
-			VOTE_MENU_TEXTLINE[self.warp_map] = VOTE_MENU_TEXTLINE[(self.warp_map + 6)];
 			self.warp_map = 0;
+			centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
 		}
+
+		self.warp_map = self.impulse;
+		map_choices[self.warp_map] += 1;
+
+//		if (clanring_gameconfig & CLANRING_VOTE_MAJORITY_PASS)
+		{
+			entity p = find(world, classname, "player");
+			float c = 0;
+
+			while (p != world)											
+			{
+				c += 1;
+				p = find (p, classname, "player");
+			}
+
+			string temp = "";
+			for (float i = 1; i < 6; i++)
+			{
+				if (map_choices[i] >= map_choices[0]) 
+				{
+					temp = vote_map_choices[i];
+					map_choices[0] = map_choices[i];
+				}
+			}
+			//Check if we have a majority already...
+			if (c && ((map_choices[0]) > (c * 0.5)))
+			{
+				tokenize(temp);
+				if (nextmap != "")
+					strunzone(nextmap);
+				nextmap = strzone(argv(0));
+				if (nextmap == "")
+					nextmap = strzone(vote_map_choices[0]);
+				intermission_running = FALSE;
+				self.impulse = 0;
+				self.centerTime = 0;
+				VoteMenu_Cleanup();
+				changelevel(nextmap);
+				strunzone(nextmap);
+				nextmap = "";
+				//return;
+			}
+		}
+
+		self.centerTime = 0;	//Update now.
+		self.impulse = 0;
 	}
 };
 
@@ -352,28 +394,27 @@ void() execute_changelevel =
 	local entity tmp;
 //	local float bcount;
 
-	intermission_running = 1;
-	VoteMenu_Init();
-
-	// enforce a wait time before allowing changelevel
-	intermission_exittime = time + 20;
+	intermission_running = 1;	// enforce a wait time before allowing changelevel
+	intermission_exittime = time + 19;
 	lightstyle(0, "f");// R00k: -added- dim light on intermission
 /*
 	WriteByte(MSG_ALL, SVC_CDTRACK);
 	WriteByte(MSG_ALL, 3);
 	WriteByte(MSG_ALL, 3);
 */
-	if (clanring_matchsound_count)
+	if (clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS)
 	{
-		float prnd = floor(random() * clanring_matchsound_count);
-		cprint(sprintf("Playing matchsound[%g]: %s\n",prnd, matchsound[prnd]));
-		if (matchsound[prnd] != "")
+		if (clanring_matchsound_count)
 		{
-			sound (world, CHAN_AUTO, matchsound[prnd], 1, ATTN_NONE);
+			float prnd = floor(random() * clanring_matchsound_count);
+			print(sprintf("Playing matchsound[%g]: %s\n",prnd, matchsound[prnd]));
+			if (matchsound[prnd] != "")
+			{
+				sound (self, CHAN_AUTO, matchsound[prnd], 1, ATTN_NONE);
+			}
+			clanring_matchsound_count = 0;//just in case this gets called twice somehow
 		}
-		clanring_matchsound_count = 0;//just in case this gets called twice somehow
 	}
-
 	intermission_pos = FindIntermission ();
 	clanring_angle = intermission_pos.mangle;
 	other = find(world, classname, "player");
@@ -1120,12 +1161,14 @@ void() NextLevel =
 				o.map = mapname;
 			}
 		}
-		if (o.map != string_null) //just in case.
-			nextmap = o.map;
+		if (nextmap != "") strunzone(nextmap);
+		if (o.map != string_null) //just in case.		
+			nextmap = strzone(o.map);
 	}
 
-	// if (clanring_playmode & CLANRING_RA_MODE)
-	// 	nextmap = ra_get_next_map();
+	if (clanring_playmode & CLANRING_RA_MODE)
+	if (nextmap == "")							//If there is no -ra- section in their levels.cfg, grab a known hardcoded map.
+		nextmap = strzone(ra_get_next_map());
 
 	gameover = TRUE;
 
@@ -2832,7 +2875,7 @@ void(string cmd) SV_ParseClientCommand =
 
 	if (!(self.style & CLANRING_CONNECTED))
 	{
-		clientcommand(self, cmd); //just passing by...
+		clientcommand(self, cmd); //this client has not finished connecting, or has lagged out.
 		return;
 	}
 
@@ -2846,9 +2889,11 @@ void(string cmd) SV_ParseClientCommand =
 
     switch (arg0)
     {
-		case "fragset": 
-			if (self.style & CLANRING_ADMINISTRATOR)
+		case "fragset":			
+			if ((self.style & CLANRING_ADMINISTRATOR) && (argv(1) != ""))
 				clanring_set_fraglimit(stof(arg1));
+			else
+				votables_select_fraglimit();
 			return;
 
 		case "afkon":

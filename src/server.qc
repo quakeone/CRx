@@ -227,7 +227,7 @@ void () match_impulse;
 void () match_init_world;
 void (entity player) match_disconnect_notify;
 void () vote_impulse;
-void () execute_changelevel;
+//void () execute_changelevel;
 void () NextLevel;
 void (vector org, entity death_owner) spawn_tdeath;
 void () player_stand1;
@@ -363,10 +363,10 @@ void () clanring_init_world =
 	
 	//CRMOD - string to be used throughout code to show version number.
 	//version.year.month.day 
-	clanring_version        = "CRx (v1.24.06)";       // This is used in the server console, the help display, and on connect.
-	clanring_version_info   = "CRx (v1.24.06)";       // This is the value for the forced server infokey named "mod".
-	clanring_version_number = "(v1.24.06)";           // This is only used once when typing 'commands' in the server console. :|
-	clanring_version_red    = "\bcrx (v\b1.24.06\b)"; // This isn't used anywhere :(
+	clanring_version        = "\bClanRing\b\nCRx (v1.24.06.19)";// This is used in the server console, the help display, and on connect.
+	clanring_version_info   = "CRx (v1.24.06.19)";       		// This is the value for the forced server infokey named "mod".
+	clanring_version_number = "(v1.24.06.19)";           		// This is only used once when typing 'commands' in the server console. :|
+	clanring_version_red    = "\bcrx (v\b1.24.06.19\b)"; 		// This isn't used anywhere :(
 	
 	// Initialize sentinel
 	clanring_sentinel = spawn();
@@ -393,7 +393,7 @@ void () clanring_init_world =
 	match_init_world();
 	//quaketag_init_world();
 	if (isFTEserver)
-	autocvar(nqfriction, "0");	//Set this to 1 if using FTE as a server with sv_nqplayerphysics 0 to simulate NQ bunnyhopping but allowing QW clients to use prediction.
+		autocvar(nqfriction, "1");	//Set this to 1 if using FTE as a server with sv_nqplayerphysics 0 to simulate NQ bunnyhopping but allowing QW clients to use prediction.
 	
 	temp = 0;
 
@@ -429,7 +429,7 @@ void () clanring_init_world =
 	if (!(clanring_playmode & CLANRING_SERVER_INITIALIZED))
 	{
 		print("Initializing Server...[");
-		print(clanring_version,"]\n");
+		print(clanring_version_info,"]\n");
 		// Set aliases for console commands
 		console_set_aliases ();
 		
@@ -569,13 +569,11 @@ void () clanring_init_world =
 	if (mode_is_arena() == TRUE)
 	{
 		arena_precache();
-
 		arena_init_world();
 	}
-	else
-	{
+
+	if (clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS)
 		clanring_precache_matchsounds();
-	}
 
 	if (clanring_gameconfig & CLANRING_DROP_DEATH_SHARDS)
 	{
@@ -883,7 +881,7 @@ void () clanring_pre_set_aliases =
 		else if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)			//R00k
 			sprint(self.owner, "Type \bRED\b or \bBLUE\b to join\n");
 	}
-
+	sprint(self.owner, sprintf("NextMap is %s.\n", nextmap));
 	self.think = clanring_set_aliases;
 	self.nextthink = time + 1;
 };
@@ -1686,7 +1684,7 @@ void () clanring_bad_impulse =
 //
 void () clanring_vinfo =
 {
-	sprint3(self, "\n", clanring_version_info, "\n\n");
+	sprint3(self, "\n", clanring_version, "\n\n");
 	if (self.csqc_enabled)
 		sprint(self, "CSQC Enabled\n");
 	else 
@@ -2749,8 +2747,12 @@ void () clanring_start_frame =
 	{
 		if (intermission_running)
 		if ((time > intermission_exittime))
-		{
+		{			
+			intermission_running = FALSE;
+			// V O T E M E N U   C H E C K   M A J O R I T Y -- start
 			string temp = "";
+
+			// Count the votes and store the best one in temp (by name) and map_choices[0] (by number of votes).
 			for (float i = 1; i < 6; i++)
 			{
 				if (map_choices[i] >= map_choices[0]) //if a tie then the last one voted for wins... :|
@@ -2759,11 +2761,25 @@ void () clanring_start_frame =
 					map_choices[0] = map_choices[i];
 				}
 			}
+
+			if (map_choices[0] == 0) 			// no one voted.
+				temp = vote_map_choices[0];		// Default 'nextmap' filename from levels.cfg
+
 			tokenize(temp);
-			nextmap = argv(0);
-			if (nextmap == "")
-				nextmap = "dm3";
+			
+			if (nextmap != "") 
+				strunzone(nextmap);
+
+			if (!(found_in_warp_list(argv(0))))	// in case the tempstring gets garbled
+				nextmap = default_nextmap;
+			else
+				nextmap = strzone(argv(0));
+
+			VoteMenu_Cleanup();
+			// V O T E M E N U   C H E C K   M A J O R I T Y -- end
 			changelevel(nextmap);
+			strunzone(nextmap); // zoned mem carries over, over changelevels, so we need to free it now.
+			nextmap = "";
 		}
 	}
 	sys_ticrate = cvar("sys_ticrate");//R00k Added

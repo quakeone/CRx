@@ -95,44 +95,52 @@ void (string s1, string s2, string s3, string s4, string s5, string s6, string s
 
 void (string s1) cprint =
 {
-	localcmd2("echo ", s1);
+	print(s1);
+	//localcmd2("echo ", s1);
 };
 
 void (string s1, string s2) cprint2 =
 {
-	localcmd3("echo ", s1, s2);
+	print(s1, s2);
+	//localcmd3("echo ", s1, s2);
 };
 
 void (string s1, string s2, string s3) cprint3 =
 {
-	localcmd4("echo ", s1, s2, s3);
+	print(s1, s2, s3);
+	//localcmd4("echo ", s1, s2, s3);
 };
 
 void (string s1, string s2, string s3, string s4) cprint4 =
 {
-	localcmd5("echo ", s1, s2, s3, s4);
+	print(s1, s2, s3, s4);
+	//localcmd5("echo ", s1, s2, s3, s4);
 };
 
 void (string s1, string s2, string s3, string s4, string s5) cprint5 =
 {
-	localcmd6("echo ", s1, s2, s3, s4, s5);
+	print(s1, s2, s3, s4, s5);
+	//localcmd6("echo ", s1, s2, s3, s4, s5);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6) cprint6 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+	print(s1, s2, s3, s4, s5, s6);
+	//localcmd7("echo ", s1, s2, s3, s4, s5, s6);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6, string s7) cprint7 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
-	localcmd(s7);
+	print(s1, s2, s3, s4, s5, s6, s7);
+	//localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+	//localcmd(s7);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6, string s7, string s8) cprint8 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
-	localcmd2(s7, s8);
+	print(s1, s2, s3, s4, s5, s6, s7, s8);
+// 	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+// 	localcmd2(s7, s8);
 };
 
 void (string s1) announce =
@@ -565,6 +573,37 @@ void (float t) utils_bprint_time =
 	//--------------------
 };
 
+//
+// G E T   T I M E   M I N U T E S   A N D   S E C O N D S
+//
+// Returns a string of t in mm:ss format, t is seconds
+//
+string (float t) utils_get_time_m_s =
+{
+	float minutes, seconds = 0;
+	string tmin="",tsec="";
+
+	minutes = floor((t/60));
+	seconds = floor((((t/60)-minutes)*60));
+
+	if ((minutes < 10))
+		tmin = sprintf("0%g", minutes);
+	else
+		tmin = sprintf("%g", minutes);
+
+	if ((seconds < 10))
+		tsec = sprintf("0%g", seconds);
+	else
+		tsec = sprintf("%g", seconds);
+
+	return sprintf("%s:%s", tmin, tsec);
+};
+
+//	
+// G E T   T I M E   w it h   M I L L I S E C O N D S
+//
+// Returns a string of t in mm:ss.ms format, t is seconds
+//
 string (float t) utils_get_time =
 {
 	local float minutes;
@@ -1385,12 +1424,14 @@ void (float flag, string name) utils_toggle_gflag =
 	if (clanring_gameconfig & flag)
 	{
 		clanring_gameconfig = clanring_gameconfig - (clanring_gameconfig & flag);
-		announce2(name, " disabled");
+		bprint(name, " disabled\n");
+		print(name, " disabled\n");
 	}
 	else
 	{
 		clanring_gameconfig = (clanring_gameconfig | flag);
-		announce2(name, " enabled");
+		bprint(name, " enabled\n");
+		print(name, " enabled\n");
 	}
 	utils_set_cvar("gamecfg", clanring_gameconfig);
 };

@@ -1556,7 +1556,7 @@ void() arena_restart_player =
 	self.nextthink = time + 0.1;
 }
 
-void () execute_changelevel;
+//void () execute_changelevel;
 void() reset_match =
 {
 	utils_do_arena_players (arena_reset_player);
@@ -1640,8 +1640,10 @@ void () arena_match_end =
 				report_mvp_game();
 
 				bprint ("The match is over\n");//required for Qrack cl_autodemo 2
-				sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
-
+	
+				if ((!(clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS)) || (!clanring_matchsound_count))
+					sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+	
 				NextLevel();
 				return;
 			}

@@ -466,6 +466,7 @@ void() votables_set_gametype_mode_map =
 		utils_set_cvar ("samelevel", clanring_playmode);
 		clanring_level = 1;//Reset the map count if we changed modes
 		utils_set_cvar ("scratch1", clanring_level);
+		if (nextmap != "") strunzone(nextmap);
 		nextmap = ""; //Reset the nextmap too
 		clanring_nextlevel_config();
 		if (newmapname == "")
@@ -541,6 +542,7 @@ void() votables_set_gametype_mode_map =
 		mode = strings_get_mode(request_mode);
 		announce3("playmode set to '", mode, "'");
 		utils_set_cvar("samelevel", clanring_playmode);
+		if (nextmap != "") strunzone(nextmap);
 		nextmap = ""; //Reset the nextmap too
 		clanring_level = 1;//Reset the map count if we changed modes
 		utils_set_cvar ("scratch1", clanring_level);
@@ -976,7 +978,6 @@ void() votables_select_fraglimit =
 			sprint(self, "Cannot change frag limit while match is in progress.\n");
 			return;
 		}
-		sprint(self, "You must have admin access.\nuse cmd fragset 123\n");
 	}
 	else
 	{

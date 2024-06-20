@@ -890,7 +890,7 @@ void() stats_show_weapon_items_taken_stats =
     local entity e;
     
     sprint(self, "\n");
-    sprint(self, "\bweapon items taken stats\n");
+    sprint(self, "\bweapon items taken stats\n\n");
     sprint(self, "\b     weapons taken        ammo taken\n");
     sprint(self, "ssg\b|\b ng\b|\bsng\b|\b gl\b|\b rl\b|\b lg\b|\bshl\b|\bnls\b|\brox\b|\bcls\b|\b name\n");
     sprint(self, "\b---+---+---+---+---+---+---+---+---+---+---------------\n");
@@ -1019,6 +1019,7 @@ void() stats_autodump =
 		sprint(self, "\n");		
 		sprint(self, sprintf("map: %s\n",mapname));
 		string date = strftime(TRUE, "%m-%d-%Y %H:%M");
+		
 		local string hname = infokey(world,"hostname");
 		sprint(self, sprintf("%s\n%s\n",date,hname));
 

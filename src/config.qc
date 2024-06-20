@@ -11,6 +11,22 @@ void(string command, string value) config_command =
 {
 	switch(command)
 	{
+		case "matchsoundson":
+		{
+			if (!(clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS))
+			{
+				utils_toggle_gflag (CLANRING_ENABLE_MATCHSOUNDS, "Extended Match Sounds");
+			}
+			break;
+		}
+		case "matchsoundsoff": 
+		{
+			if (clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS)
+			{
+				utils_toggle_gflag (CLANRING_ENABLE_MATCHSOUNDS, "Extended Match Sounds");
+			}
+			break;
+		}
 		case "ctfticrate":
 		{
 			clanring_ctf_ticrate = stof(value);
@@ -247,7 +263,7 @@ void(string command, string value) config_command =
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
 			clanring_state = (clanring_state | CLANRING_NO_PRACTICE);
-			cprint("practice mode disabled\n");
+			print("practice mode disabled\n");
 			break;
 		}
 		case "autopauseon":
@@ -601,7 +617,7 @@ void(string mode) clanring_count_maps =
 
     filestream f = fopen("configs/levels.cfg", FILE_READ);
 
-    if (f < 0) {cprint("levels.cfg not found.\n");return;}
+    if (f < 0) {print("levels.cfg not found.\n");return;}
 
     while ((line = fgets(f))) 
 	{
@@ -632,7 +648,7 @@ void(string mode) clanring_count_maps =
     fclose(f);
 
     clanring_lastcount = mapCount;
-    cprint(sprintf("%s maps in rotation for mode: %s\n", ftos(mapCount), mode));
+ //   print(sprintf("%s maps in rotation for mode: %s\n", ftos(mapCount), mode));
 }
 
 void() clanring_nextlevel_config =
@@ -663,11 +679,11 @@ void() clanring_nextlevel_config =
     {
         nextmap = strzone(default_nextmap);
         clanring_levelcount = -1;
-        cprint("**[ WARNING ]** 'levels.cfg' not found.\n");
+        print("**[ WARNING ]** 'levels.cfg' not found.\n");
         return;
     }
 
-    cprint("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
+    print("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
 
     while ((line = fgets(f)))
     {
@@ -711,7 +727,7 @@ void() clanring_nextlevel_config =
     }
     else
     {
-        cprint(sprintf("    Nextmap is %s.\n", nextmap));
+        print(sprintf("NextMap is %s.\n", nextmap));
 
         clanring_level++;
 
@@ -750,9 +766,9 @@ void(string cfg) exec_clanring_cfg =
 
 void() clanring_warp_config =
 {
-	cprint("Loading ClanRing Configuration File: \"configs/warp_main_menu.cfg\"\n");
+	print("Loading ClanRing Configuration File: \"configs/warp_main_menu.cfg\"\n");
 	exec_warp_main_menu();
-	cprint("Loading ClanRing Configuration File: \"configs/warp.cfg\"\n");
+	print("Loading ClanRing Configuration File: \"configs/warp.cfg\"\n");
 	exec_warp_cfg();
 }
 
@@ -902,30 +918,30 @@ void () write_airshot_streak_stats =
 void() clanring_ent_config =
 {
 	//Entity Files
-	cprint("Loading Entities Configuration File: entities/", mapname, ".ent\"\n");
-	cprint("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+	print("Loading Entities Configuration File: entities/", mapname, ".ent\"\n");
+	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("entities/", mapname, ".ent")));
 };
 
 void() clanring_cam_config =
 {
 	//Camera Files
-	cprint("Loading Camera Configuration File: \"camera/", mapname, ".cam\"\n");
-	cprint("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+	print("Loading Camera Configuration File: \"camera/", mapname, ".cam\"\n");
+	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("cameras/", mapname, ".cam")));
 };
 
 void() clanring_map_config =
 {
 	//Map specific settings
-	cprint(sprintf("Loading Map Configuration File: \"configs/%s.cfg\n", mapname));
-	cprint("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+	print(sprintf("Loading Map Configuration File: \"configs/%s.cfg\n", mapname));
+	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("configs/", mapname, ".cfg")));
 };
 
 void() clanring_main_config =
 {
-	cprint("Loading ClanRing Configuration File: \"configs/clanring.cfg\"\n");
+	print("Loading ClanRing Configuration File: \"configs/clanring.cfg\"\n");
 	exec_clanring_cfg("configs/clanring.cfg");
 	config_command("-done-", ""); //finalize settings
 	localcmd("sv_aim 1\n");	//forced, no vertical aim assist.
@@ -949,6 +965,7 @@ void() clanring_exec_configs =
 	clanring_warp_config();
 	clanring_map_config();
 	clanring_nextlevel_config();
+	VoteMenu_Init();
 //	clanring_ent_config();//(FIXME)
 //	clanring_cam_config();//(FIXME)
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
@@ -972,7 +989,7 @@ void() clanring_exec_configs =
 			clanring_set_teamplay(2);	
 		}	
 		clanring_levelcount = -1;
-		nextmap = mapname;//just restart samelevel
+		nextmap = strzone(mapname);//just restart samelevel
 	}
 
 	//R00k: ticrate defaults for different modes :|
@@ -1011,7 +1028,7 @@ void (float soundtype) clanring_read_matchsounds =
 
 	if (f < 0)
 	{
-		cprint(sprintf("(OPTIONAL)File not found: %s\n", fname));
+		print(sprintf("(OPTIONAL)File not found: %s\n", fname));
 		return;
 	}
 

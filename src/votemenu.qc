@@ -2,7 +2,7 @@
     ---------------------------------------------------
     G A M E O V E R   N E X T M A P   V O T E   M E N U
     ---------------------------------------------------
-
+    ---------------------------------------------------
 	June 2024
 */
 
@@ -44,12 +44,34 @@ string (string maparg) VoteMenu_get_map_by_name =
 
 string VOTE_MENU_TEXTLINE[12];
 
+void () VoteMenu_Cleanup = 
+{
+	strunzone(vote_map_choices[0]);
+	strunzone(vote_map_choices[1]);
+	strunzone(vote_map_choices[2]);
+	strunzone(vote_map_choices[3]);
+	strunzone(vote_map_choices[4]);
+	strunzone(vote_map_choices[5]);
+
+	strunzone(VOTE_MENU_TEXTLINE[1]);
+	strunzone(VOTE_MENU_TEXTLINE[2]);
+	strunzone(VOTE_MENU_TEXTLINE[3]);
+	strunzone(VOTE_MENU_TEXTLINE[4]);
+	strunzone(VOTE_MENU_TEXTLINE[5]);
+
+	strunzone(VOTE_MENU_TEXTLINE[7]);
+	strunzone(VOTE_MENU_TEXTLINE[8]);
+	strunzone(VOTE_MENU_TEXTLINE[9]);
+	strunzone(VOTE_MENU_TEXTLINE[10]);
+	strunzone(VOTE_MENU_TEXTLINE[11]);
+}
+
 //
 //	V O T E   M E N U   I N I T 
 //
 //	Initialize all the wacky strings to construct the menu
 //
-void() VoteMenu_Init =
+void () VoteMenu_Init =
 {
 	string	nextmap_textline1 = VoteMenu_get_map_by_name(nextmap);						// Grab the filename and title for the `nextmap` of levels.cfg.
 	float	nindex = VoteMenu_get_index_for_map(nextmap);								// Find it's placement in the warpmaps array.
@@ -58,40 +80,52 @@ void() VoteMenu_Init =
 	string 	nextmap_textline4 = (VoteMenu_get_map_by_number(nindex + 3));				// ...
 	string 	nextmap_textline5 = (VoteMenu_get_map_by_number(nindex + 4));				// for the next four maps.
 
-	map_choices[1] = 1;	//1 vote for default nextmap from levels.cfg
-
-	vote_map_choices[0] = nextmap_textline1;//default
-	vote_map_choices[1] = nextmap_textline1;
-	vote_map_choices[2] = nextmap_textline2;
-	vote_map_choices[3] = nextmap_textline3;
-	vote_map_choices[4] = nextmap_textline4;
-	vote_map_choices[5] = nextmap_textline5;
+	vote_map_choices[0] = strzone(nextmap_textline1); //default
+	vote_map_choices[1] = strzone(nextmap_textline1);
+	vote_map_choices[2] = strzone(nextmap_textline2);
+	vote_map_choices[3] = strzone(nextmap_textline3);
+	vote_map_choices[4] = strzone(nextmap_textline4);
+	vote_map_choices[5] = strzone(nextmap_textline5);
 
 	VOTE_MENU_TEXTLINE[0] = "\(\=\=\=\=\=\= Vote for the Next Map \=\=\=\=\=\=\)\n\n\n";
-
 	VOTE_MENU_TEXTLINE[1] = "  \1 A\n\n";
 	VOTE_MENU_TEXTLINE[2] = "  \2 A\n\n";
 	VOTE_MENU_TEXTLINE[3] = "  \3 A\n\n";
 	VOTE_MENU_TEXTLINE[4] = "  \4 A\n\n";
-	VOTE_MENU_TEXTLINE[5] = "  \5 A\n\n\n";
-
-	VOTE_MENU_TEXTLINE[6] = "\n\nPress \6 to clear your vote\n\n\n\(\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\)\n";
+	VOTE_MENU_TEXTLINE[5] = "  \5 A\n\n";
+	VOTE_MENU_TEXTLINE[6] = "\n\n";
 
 	VOTE_MENU_TEXTLINE[1] = strreplace("A", (strpad(31, nextmap_textline1)), VOTE_MENU_TEXTLINE[1]);
-	VOTE_MENU_TEXTLINE[7] = VOTE_MENU_TEXTLINE[1];
+	VOTE_MENU_TEXTLINE[7] = redify(VOTE_MENU_TEXTLINE[1]);
+
 	VOTE_MENU_TEXTLINE[2] = strreplace("A", (strpad(31, nextmap_textline2)), VOTE_MENU_TEXTLINE[2]);
-	VOTE_MENU_TEXTLINE[8] = VOTE_MENU_TEXTLINE[2];
+	VOTE_MENU_TEXTLINE[8] = redify(VOTE_MENU_TEXTLINE[2]);
+
 	VOTE_MENU_TEXTLINE[3] = strreplace("A", (strpad(31, nextmap_textline3)), VOTE_MENU_TEXTLINE[3]);
-	VOTE_MENU_TEXTLINE[9] = VOTE_MENU_TEXTLINE[3];
-	VOTE_MENU_TEXTLINE[4] = strreplace("A", (strpad(31, nextmap_textline4)), VOTE_MENU_TEXTLINE[4]);
-	VOTE_MENU_TEXTLINE[10] = VOTE_MENU_TEXTLINE[4];
-	VOTE_MENU_TEXTLINE[5] = strreplace("A", (strpad(31, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
-	VOTE_MENU_TEXTLINE[11] = VOTE_MENU_TEXTLINE[5];
+	VOTE_MENU_TEXTLINE[9] = redify(VOTE_MENU_TEXTLINE[3]);
+
+	VOTE_MENU_TEXTLINE[4]  = strreplace("A", (strpad(31, nextmap_textline4)), VOTE_MENU_TEXTLINE[4]);
+	VOTE_MENU_TEXTLINE[10] = redify(VOTE_MENU_TEXTLINE[4]);
+
+	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(31, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
+	VOTE_MENU_TEXTLINE[11] = redify(VOTE_MENU_TEXTLINE[5]);
+
+	VOTE_MENU_TEXTLINE[1] = strzone(VOTE_MENU_TEXTLINE[1]);
+	VOTE_MENU_TEXTLINE[2] = strzone(VOTE_MENU_TEXTLINE[2]);
+	VOTE_MENU_TEXTLINE[3] = strzone(VOTE_MENU_TEXTLINE[3]);
+	VOTE_MENU_TEXTLINE[4] = strzone(VOTE_MENU_TEXTLINE[4]);
+	VOTE_MENU_TEXTLINE[5] = strzone(VOTE_MENU_TEXTLINE[5]);
+
+	VOTE_MENU_TEXTLINE[7]  = strzone(VOTE_MENU_TEXTLINE[7]);
+	VOTE_MENU_TEXTLINE[8]  = strzone(VOTE_MENU_TEXTLINE[8]);
+	VOTE_MENU_TEXTLINE[9]  = strzone(VOTE_MENU_TEXTLINE[9]);
+	VOTE_MENU_TEXTLINE[10] = strzone(VOTE_MENU_TEXTLINE[10]);
+	VOTE_MENU_TEXTLINE[11] = strzone(VOTE_MENU_TEXTLINE[11]);
 };
 
 .float centerTime;
 
-void() VoteMenu_Print =
+void () VoteMenu_Print =
 {	
 	if (self.style & CLANRING_AFK_CLIENT)
 		return;
@@ -105,14 +139,33 @@ void() VoteMenu_Print =
 	{
 		float n = 0;
 
-		n = floor(intermission_exittime - time);
-		
-		tstring = sprintf("time left : %g", n);
-
-		VOTE_MENU_TEXTLINE[6] = strcat(tstring, "\n\nPress \6 to clear your vote\n\n\n\(\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\=\)\n");	
+		n = rint(intermission_exittime - time);
+	
+		if (n)
+			pqc_match_time (0, n);
+		else
+			pqc_match_time (0, 0.0f);
 
 		centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
 
+		switch (self.warp_map)
+		{
+			case 1: 
+				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[7], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
+				break;
+			case 2: 
+				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[8], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
+				break;
+			case 3: 
+				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[9], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
+				break;
+			case 4: 
+				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[10], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
+				break;
+			case 5: 
+				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[11], VOTE_MENU_TEXTLINE[6]);
+				break;
+		}
 		self.centerTime = time + 1;
 	}
 }
