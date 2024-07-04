@@ -2,15 +2,13 @@
     ---------------------------------------------------
     G A M E O V E R   N E X T M A P   V O T E   M E N U
     ---------------------------------------------------
-    ---------------------------------------------------
-	June 2024
 */
 
 string (float n) VoteMenu_get_map_by_number =
 {
 	if ((n != 0) && ((strlen(warpmap[n].name) != 0)) && (n <= (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE)))
 	{
-		return (sprintf("%s %s",warpmap[n].name, warpmap[n].title));
+		return (sprintf("%s %s",warpmap[n].name, substring(warpmap[n].title, 0, 20)));
 	}	
 	return (sprintf("%s %s",warpmap[n - 5].name, warpmap[n - 5].title));//go back a few if we are at the end...
 };
@@ -36,7 +34,7 @@ string (string maparg) VoteMenu_get_map_by_name =
 	{
 		if (warpmap[index].name != "" && warpmap[index].name == maparg)
 		{
-			return (sprintf("%s %s",warpmap[index].name, warpmap[index].title));
+			return (sprintf("%s %s",substring(warpmap[index].name, 0, 16), substring(warpmap[index].title, 0, 19)));
 		}
 	}	
 	return "Invalid (VoteMenu_get_map_by_name)";
@@ -133,18 +131,9 @@ void () VoteMenu_Print =
 	if (!(self.style & CLANRING_CONNECTED))
 		return;
 	
-	string tstring = "";
-
 	if (self.centerTime < time)
 	{
-		float n = 0;
-
-		n = rint(intermission_exittime - time);
-	
-		if (n)
-			pqc_match_time (0, n);
-		else
-			pqc_match_time (0, 0.0f);
+		pqc_match_time (0, (floor(intermission_exittime - time)));
 
 		centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
 

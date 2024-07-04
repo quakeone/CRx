@@ -42,7 +42,7 @@ void() info_null =
         SetNewParms ();
         DecodeLevelParms ();
      
-        W_SetCurrentAmmo ();
+        W_SetCurrentAmmo(TRUE);
         self.weapon = 16;
         self.armorvalue = 200;
         self.armortype = 0.8;

@@ -235,7 +235,7 @@ void (vector org) spawn_tfog;
 
 void () observer_start;
 void () W_ChangeWeapon;
-void () W_SetCurrentAmmo;
+void (float reset) W_SetCurrentAmmo;
 void () TeamFlagStatusReport;
 void () UnHookPlayer;
 void () votables_request_set_runes;
@@ -363,10 +363,12 @@ void () clanring_init_world =
 	
 	//CRMOD - string to be used throughout code to show version number.
 	//version.year.month.day 
-	clanring_version        = "\bClanRing\b\nCRx (v1.24.06.19)";// This is used in the server console, the help display, and on connect.
-	clanring_version_info   = "CRx (v1.24.06.19)";       		// This is the value for the forced server infokey named "mod".
-	clanring_version_number = "(v1.24.06.19)";           		// This is only used once when typing 'commands' in the server console. :|
-	clanring_version_red    = "\bcrx (v\b1.24.06.19\b)"; 		// This isn't used anywhere :(
+	string vstring = "24.07.04";
+
+	clanring_version        = strzone(sprintf("\bClanRing\b\nCRx (v1.%s)",vstring));	// This is used in the server console, the help display, and on connect.
+	clanring_version_info   = strzone(sprintf("CRx (v1.%s)",vstring));					// This is the value for the forced server infokey named "mod".
+	clanring_version_number = strzone(sprintf("(v1.%s)",vstring));						// This is only used once when typing 'commands' in the server console. :|
+	//clanring_version_red    = strzone(sprintf("\bClanRing\b\nCRx (v1.%s)",vstring));	// This isn't used anywhere :(
 	
 	// Initialize sentinel
 	clanring_sentinel = spawn();
@@ -669,6 +671,8 @@ void (float value) clanring_set_fraglimit =
 
 		if (teamplay)
 			localcmd("Match\"\n");
+		else
+			localcmd("Duel\"\n");
 	}
 	else if (mode_is_arena())
 	{

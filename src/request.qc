@@ -258,7 +258,7 @@ void() Request_Poll_Announce =
 		self.think = SUB_Null;
 
 		bprint("The request has expired.\n");
-		sound(world, CHAN_AUTO, "misc/power.wav", 1, ATTN_NONE);	// R00k: Fizzly disconnect sound.
+		sound(world, CHAN_AUTO, "demon/dland2.wav", 1, ATTN_NONE);//R00k: sounds better.
 		Request_Poll_Cleanup();
 	}
 	else

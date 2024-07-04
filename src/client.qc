@@ -353,32 +353,16 @@ void() IntermissionThink =
 				p = find (p, classname, "player");
 			}
 
-			string temp = "";
 			for (float i = 1; i < 6; i++)
 			{
 				if (map_choices[i] >= map_choices[0]) 
-				{
-					temp = vote_map_choices[i];
 					map_choices[0] = map_choices[i];
-				}
 			}
 			//Check if we have a majority already...
 			if (c && ((map_choices[0]) > (c * 0.5)))
 			{
-				tokenize(temp);
-				if (nextmap != "")
-					strunzone(nextmap);
-				nextmap = strzone(argv(0));
-				if (nextmap == "")
-					nextmap = strzone(vote_map_choices[0]);
-				intermission_running = FALSE;
-				self.impulse = 0;
-				self.centerTime = 0;
-				VoteMenu_Cleanup();
-				changelevel(nextmap);
-				strunzone(nextmap);
-				nextmap = "";
-				//return;
+				sound (self, CHAN_AUTO, "misc/power.wav", 1, ATTN_NONE);
+				intermission_exittime = time;
 			}
 		}
 
@@ -387,15 +371,14 @@ void() IntermissionThink =
 	}
 };
 
-void() VoteMenu_Init;
-
 void() execute_changelevel =
 {
-	local entity tmp;
+	entity tmp;
+	float prnd = 0;
 //	local float bcount;
 
 	intermission_running = 1;	// enforce a wait time before allowing changelevel
-	intermission_exittime = time + 19;
+	intermission_exittime = time + 20;
 	lightstyle(0, "f");// R00k: -added- dim light on intermission
 /*
 	WriteByte(MSG_ALL, SVC_CDTRACK);
@@ -403,18 +386,9 @@ void() execute_changelevel =
 	WriteByte(MSG_ALL, 3);
 */
 	if (clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS)
-	{
-		if (clanring_matchsound_count)
-		{
-			float prnd = floor(random() * clanring_matchsound_count);
-			print(sprintf("Playing matchsound[%g]: %s\n",prnd, matchsound[prnd]));
-			if (matchsound[prnd] != "")
-			{
-				sound (self, CHAN_AUTO, matchsound[prnd], 1, ATTN_NONE);
-			}
-			clanring_matchsound_count = 0;//just in case this gets called twice somehow
-		}
-	}
+	if (clanring_matchsound_count)
+		prnd = floor(random() * clanring_matchsound_count);
+
 	intermission_pos = FindIntermission ();
 	clanring_angle = intermission_pos.mangle;
 	other = find(world, classname, "player");
@@ -439,6 +413,12 @@ void() execute_changelevel =
 		other.items 		= 0;
 		other.effects 		= 0;
 
+		if (prnd)
+		{
+			stuffcmd(other, ";play ");
+			stuffcmd(other, matchsound[prnd]);
+			stuffcmd(other, ";\n");
+		}
 		tmp   = self;
 		self  = other;
 		teamplay_final_stats();//display score and stats
@@ -492,7 +472,6 @@ void() changelevel_touch =
 	self.think = pre_execute_changelevel;
 	self.nextthink = (time + 0.1);
 };
-
 
 /*QUAKED trigger_changelevel (0.5 0.5 0.5) ? NO_INTERMISSION
 When the player touches this, he gets sent to the map listed in the "map" variable.  Unless the NO_INTERMISSION flag is set, the view will go to the info_intermission spot and display stats.
@@ -940,7 +919,7 @@ void() PutClientInServer =
 		}
 	}
 
-	W_SetCurrentAmmo ();
+	W_SetCurrentAmmo (TRUE);
 
 	self.attack_finished 	= time;
 	//Todo enable this with a votable so dm2's quad team-boost works
@@ -1525,7 +1504,7 @@ void() PlayerPreThink =
 			if (time > self.attack_finished)
 			{
 				self.weapon = W_BestWeapon();
-				W_SetCurrentAmmo();
+				W_SetCurrentAmmo(TRUE);
 			}
 		}
 	}

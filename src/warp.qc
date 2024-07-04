@@ -100,6 +100,16 @@ void() select_episode =
 
 void() client_select_warp =
 {
+	if (intermission_running)
+	{
+		sprint(self, "A vote is already in progress\n");
+		sprint(self,"\bcanceled\n");
+		self.use=SUB_Null;
+		self.warp_episode=0;
+		self.warp_map=0;
+		return;
+	}
+
 	if (clanring_levelcount != -1)
 	{
 		sprint(self, "Wait for map to initialize\n");

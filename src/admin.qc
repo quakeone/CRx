@@ -21,7 +21,7 @@ void() admin_do_ban;
 
 void() options_start_setting;
 void() SUB_Freeze;
-void() W_SetCurrentAmmo;
+void(float reset) W_SetCurrentAmmo;
 
 // global variables
 entity kick_target;         // Player to kick
@@ -920,7 +920,7 @@ void() admin_dm3_screenshot_cleanup =
 					local entity oself;
 					oself = self;
 					self = other;
-					W_SetCurrentAmmo ();
+					W_SetCurrentAmmo (TRUE);
 					self = oself;
 				}
 				other.angles = other.v_angle = other.clanring_oldangle;
@@ -1267,6 +1267,7 @@ void() admin_impulse =
 		votables_request_set_weaponstay();
 	else if (self.impulse == 219)
 		votables_select_fraglimit();
+	//else if (self.impulse == 220) voteables_set_teamplay_fraglimit();
 	else if (self.impulse == 221)
 		votables_request_set_quad();
 	else if (self.impulse == 222)

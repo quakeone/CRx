@@ -437,7 +437,7 @@ float 	KICK_LAGOUT	= 4;	//R00k
 float 	sys_ready;//hold on the server is loading!!
 float 	debug = 0;
 .float 	ctime;
-string	clanring_version_red;
+//string	clanring_version_red;
 .entity hookentity;
 .string client;
 

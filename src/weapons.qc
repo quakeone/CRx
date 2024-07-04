@@ -598,7 +598,7 @@ void() W_FireLightning =
 	if (self.ammo_cells < 1)
 	{
 		self.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo ();
+		W_SetCurrentAmmo(TRUE);
 		return;
 	}
 
@@ -607,7 +607,7 @@ void() W_FireLightning =
 	{
 		cells = self.ammo_cells;
 		self.ammo_cells = 0;
-		W_SetCurrentAmmo ();
+		W_SetCurrentAmmo(TRUE);
 
 		if (mode_is_arena())
 		{
@@ -656,7 +656,7 @@ void() W_FireLightning =
 	{
 		cells = self.ammo_cells;		
 	  	self.ammo_cells = 0;	  
-		W_SetCurrentAmmo ();
+		W_SetCurrentAmmo(TRUE);
 
 		if (mode_is_arena())
 		{
@@ -689,7 +689,7 @@ void() W_FireLightning =
 	self.dest1_z = self.dest1_z + 30;// ELOHIM_MOD - stats
 	// CRMOD - count damage fired with quad.
     if (self.super_damage_finished > time)                     // ELOHIM_MOD - stats
-    	self.clanring_qdwep_y = self.clanring_qdwep_y + 120;             // ELOHIM_MOD - stats
+    	self.clanring_qdwep_y = self.clanring_qdwep_y + 120;   
     if (self.invincible_finished > time)
     	self.clanring_ptwep_y = self.clanring_ptwep_y + 30;
 	LightningDamage (org, trace_endpos + v_forward * 4, self, 30);
@@ -745,7 +745,7 @@ void() W_FireGrenade =
 		{
 			self.items = self.items - (self.items & IT_GRENADE_LAUNCHER);
 			self.weapon = W_BestWeapon ();
-			W_SetCurrentAmmo ();
+			W_SetCurrentAmmo(TRUE);
 			sprint(self, "\b\< Grenade spam protection activated \>\n");
 			return;
 		}
@@ -898,7 +898,7 @@ void(float ox) W_FireSpikes =
 	if (self.ammo_nails < 1)
 	{
 		self.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo ();
+		W_SetCurrentAmmo(TRUE);
 		return;
 	}
 
@@ -1013,7 +1013,7 @@ PLAYER WEAPON USE
 */
 
 
-void() W_SetCurrentAmmo =
+void(float reset) W_SetCurrentAmmo =
 {
 	if (self.health <= 0) // bug fix (thanks to QIP [www.inside3d.com/qip]
 		return;
@@ -1029,70 +1029,72 @@ void() W_SetCurrentAmmo =
 			self.weaponmodel = "progs/v_star.mdl";
 		else
 			self.weaponmodel = "progs/v_axe.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 	}
 	else
 	if (self.weapon == IT_AXE)
 	{
 		self.currentammo = 0;
 		self.weaponmodel = "progs/v_axe.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 	}
 	else if (self.weapon == IT_SHOTGUN)
 	{
 		self.currentammo = self.ammo_shells;
 		self.weaponmodel = "progs/v_shot.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 		self.items = self.items | IT_SHELLS;
 	}
 	else if (self.weapon == IT_SUPER_SHOTGUN)
 	{
 		self.currentammo = self.ammo_shells;
 		self.weaponmodel = "progs/v_shot2.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 		self.items = self.items | IT_SHELLS;
 	}
 	else if (self.weapon == IT_NAILGUN)
 	{
 		self.currentammo = self.ammo_nails;
 		self.weaponmodel = "progs/v_nail.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 		self.items = self.items | IT_NAILS;
 	}
 	else if (self.weapon == IT_SUPER_NAILGUN)
 	{
 		self.currentammo = self.ammo_nails;
 		self.weaponmodel = "progs/v_nail2.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 		self.items = self.items | IT_NAILS;
 	}
 	else if (self.weapon == IT_GRENADE_LAUNCHER)
 	{
 		self.currentammo = self.ammo_rockets;
 		self.weaponmodel = "progs/v_rock.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 		self.items = self.items | IT_ROCKETS;
 	}
 	else if (self.weapon == IT_ROCKET_LAUNCHER)
 	{
 		self.currentammo = self.ammo_rockets;
 		self.weaponmodel = "progs/v_rock2.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 		self.items = self.items | IT_ROCKETS;
 	}
 	else if (self.weapon == IT_LIGHTNING)
 	{
 		self.currentammo = self.ammo_cells;
 		self.weaponmodel = "progs/v_light.mdl";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 		self.items = self.items | IT_CELLS;
 	}
 	else
 	{
 		self.currentammo = 0;
 		self.weaponmodel = "";
-		self.weaponframe = 0;
+		// self.weaponframe = 0;
 	}	
+	if (reset)
+		self.weaponframe = 0;
 };
 
 float() W_BestWeapon =
@@ -1126,7 +1128,7 @@ float() W_CheckNoAmmo =
 	
 	self.weapon = W_BestWeapon ();
 
-	W_SetCurrentAmmo ();
+	W_SetCurrentAmmo(TRUE);
 	
 // drop the weapon down
 	return FALSE;
@@ -1374,7 +1376,7 @@ void() W_ChangeWeapon =
 	
 	self.weapon = fl;
 
-	W_SetCurrentAmmo ();
+	W_SetCurrentAmmo(TRUE);
 };
 
 
@@ -1459,7 +1461,7 @@ void() CycleWeaponCommand =
 
 		if ( (it & self.weapon) && am == 0)
 		{
-			W_SetCurrentAmmo ();
+			W_SetCurrentAmmo(TRUE);
 			return;
 		}
 	}
@@ -1540,7 +1542,7 @@ void() CycleWeaponReverseCommand =
 
 		if ( (it & self.weapon) && am == 0)
 		{
-			W_SetCurrentAmmo ();
+			W_SetCurrentAmmo(TRUE);
 			return;
 		}
 	}
@@ -1588,7 +1590,7 @@ void() PreviousWeaponCommand =
 	if (am)
 		self.weapon = W_BestWeapon ();
 
-	W_SetCurrentAmmo ();
+	W_SetCurrentAmmo(TRUE);
 };
 
 /*

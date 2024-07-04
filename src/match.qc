@@ -436,11 +436,15 @@ void() match_check_autoss =
 void(float score_diff) match_postgame_sound =
 {
 	local float prnd;
+
+	if ((!(clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS))||(!(clanring_matchsound_count)))
+		return;
+
 	prnd = random();
 	if (prnd < .8)
 	{
 		if (((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 200)) ||
-			(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 40)))
+			(!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG) && (score_diff > 40)))	//Change these to percentile score1/(score1+score2)
 		{
 			if (clanring_matchsound_blowout_count)
 			{

@@ -859,6 +859,8 @@ void() weapon_touch =
 				if (other.weapon != IT_HOOK)
 				{
 					Deathmatch_Weapon (other, self.weapon);
+					if (other.weapon != IT_HOOK)
+						W_SetCurrentAmmo(TRUE);
 				}
 			}
 		}
@@ -872,10 +874,10 @@ void() weapon_touch =
 			if (( other.weapon == best ) && (other.weapon != IT_HOOK))
 			{
 				self.weapon = W_BestWeapon();
+				if (other.weapon != IT_HOOK)
+					W_SetCurrentAmmo(TRUE);
 			}
 		}
-		if (other.weapon != IT_HOOK)
-			W_SetCurrentAmmo();
 
 		self = stemp;
 
@@ -1017,9 +1019,10 @@ void() ammo_touch =
 	if (self.weapon == 1)
 	{
 		if (other.ammo_shells >= 100)
-		donttake = 1;
+			donttake = 1;
 		else
-		other.ammo_shells = other.ammo_shells + self.aflag;
+			other.ammo_shells = other.ammo_shells + self.aflag;
+
 		other.stats_item_shells += 1;
 	}
 
@@ -1071,11 +1074,14 @@ void() ammo_touch =
 		if (( other.weapon == best ) && ( other.weapon != IT_HOOK ))
 		{
 			if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
-				self.weapon = W_BestWeapon();
+				other.weapon = W_BestWeapon();
+					
+				W_SetCurrentAmmo(TRUE);
 		}
 		
 		if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo();
+			W_SetCurrentAmmo(FALSE);
+		
 		self = stemp;
 
 		self.model = string_null;
@@ -1258,13 +1264,6 @@ void() item_weapon =
 	}
 	// 1999-07-10 Enhanced item_weapon function by Athos  end
 };
-/*
-===============================================================================
-
-KEYS
-
-===============================================================================
-*/
 
 /*
 ===============================================================================
@@ -1273,7 +1272,6 @@ KEYS
 
 ===============================================================================
 */
-
 
 void() key_touch =
 {
@@ -1305,7 +1303,6 @@ void() key_touch =
 //	SUB_UseTargets();				// fire all targets / killtargets
 	SUB_UseAndForgetTargets();
 };
-
 
 void() key_setsounds =
 {
@@ -2026,7 +2023,7 @@ void() BackpackTouch =
 			self.weapon = W_BestWeapon();
 	}
 	if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo ();
+		W_SetCurrentAmmo(TRUE);
 };
 
 float() backpack_customizeentityforclient =
@@ -2226,7 +2223,7 @@ void() Team_weapon_touch =
 		}
 	}
 	if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo();
+		W_SetCurrentAmmo(TRUE);
 
 	self = stemp;
 
@@ -2412,7 +2409,7 @@ void() TossWeapon =
 	self.items = self.items - (self.items & (self.weapon));
 
 	self.weapon = W_BestWeapon();
-	W_SetCurrentAmmo();
+	W_SetCurrentAmmo(TRUE);
 
 	setsize(item, '-16 -16 0', '16 16 56');
 	item.touch = Team_weapon_touch;
@@ -2496,7 +2493,7 @@ void() Team_Ammo_Touch=
 		etemp=self;
 		self=other;
 		if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo();
+		W_SetCurrentAmmo(TRUE);
 		self=etemp;
 		self.model = string_null;
 		self.solid = SOLID_NOT;
@@ -2647,7 +2644,7 @@ void() TossAmmo =
 	item.nextthink = time + 20;//must remove or else we will run out of server entities
 
 	item.think = SUB_Remove;
-	W_SetCurrentAmmo();
+	W_SetCurrentAmmo(TRUE);
 };
 
 /*
