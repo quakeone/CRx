@@ -287,10 +287,9 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 		return FALSE;
 	}
 
-	if (clanring_request)
+	if (clanring_request != world)
 	{
-		stuffcmd(self,"play doors/runetry.wav\n");
-		sprint(self, "Nope, a vote is already in progress.\n");		
+		bprint("\n\bThere is already a vote in progress to ", clanring_request.noise1, clanring_request.noise2, "\n");
 		return FALSE;
 	}
 
@@ -311,7 +310,7 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 	clanring_request.health = 50;					// This will be the time-limit for how long to wait for everyone to cast a vote.
 	clanring_request.touch = passfunc;				// Call this function if the poll is positive
 
-	if ((Request_Poll_Votes_Needed(1) > 0))					// if there is only one player on the server then there is no need to announce the vote.
+	if ((Request_Poll_Votes_Needed(1) > 0))			// if there is only one player on the server then there is no need to announce the vote.
 	{
 		sound(world, CHAN_AUTO, "misc/menu1.wav", 1, ATTN_NONE);
 		bprint("\n\[ vote request \]\n");

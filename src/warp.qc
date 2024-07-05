@@ -138,6 +138,7 @@ void() client_select_warp =
 
 	if (self.warp_map)
 	{
+		self.use = SUB_Null;
 		votables_request_change_level();
 	}
 };

@@ -232,8 +232,6 @@ void() votables_request_change_level =
 	local float level;
 	local string newmap = "";
 
-	self.use = SUB_Null;
-
 	if (clanring_levelcount != -1)
 	{
 		sprint(self, "Wait for map to initialize\n");
@@ -609,6 +607,12 @@ void() votables_set_gametype_mode_map =
 void(float newtype, float newmode, float newmap) votables_request_set_gametype_mode_map =
 {
 	local string mode = "", request_mapname = "";
+
+	if (clanring_request != world)
+	{
+		bprint("\n\bThere is already a vote in progress to ", clanring_request.noise1, clanring_request.noise2, "\n");
+		return;
+	}
 
 	if (clanring_state & CLANRING_MATCH_STARTED)
 	{
