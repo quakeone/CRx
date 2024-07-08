@@ -41,7 +41,7 @@ void() W_Precache =
 	precache_sound ("knight/sword1.wav");		//server modules hook
 	precache_sound ("shambler/smack.wav");  	// hook tear
 
-	//if (/*(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)*/ || (mode_is_arena()))
+	if ((clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM) || (mode_is_arena())) //FIXME: Forcing these precaches requires all connecting clients to have these assets, even in pub modes :|
 	{		
 		precache_sound ("weapons/chain1.wav");
 		precache_sound ("weapons/chain2.wav");

@@ -260,7 +260,8 @@ void() T_HookTouch =
 				self.owner.ltime = (time + 0.5);
 				self.nextthink = (time + sys_ticrate);
 				self.think = HookPull;
-				self.touch = SUB_Null;				
+				self.touch = SUB_Null;		
+				self.solid = SOLID_NOT;		
 			}
 			else
 			{

@@ -2750,40 +2750,45 @@ void () clanring_start_frame =
 	else
 	{
 		if (intermission_running)
-		if ((time > intermission_exittime))
-		{			
-			intermission_running = FALSE;
-			// V O T E M E N U   C H E C K   M A J O R I T Y -- start
-			string temp = "";
-
-			// Count the votes and store the best one in temp (by name) and map_choices[0] (by number of votes).
-			for (float i = 1; i < 6; i++)
+		{
+			if (time >= intermission_exittime)
 			{
-				if (map_choices[i] >= map_choices[0]) //if a tie then the last one voted for wins... :|
+				intermission_running = FALSE;
+
+				pqc_match_time (0, 0);
+				
+				// V O T E M E N U   C H E C K   M A J O R I T Y -- start
+				string temp = "";
+
+				// Count the votes and store the best one in temp (by name) and map_choices[0] (by number of votes).
+				for (float i = 1; i < 6; i++)
 				{
-					temp = vote_map_choices[i];
-					map_choices[0] = map_choices[i];
+					if (map_choices[i] >= map_choices[0]) //if a tie then the last one voted for wins... :|
+					{
+						temp = vote_map_choices[i];
+						map_choices[0] = map_choices[i];
+					}
 				}
+
+				if (map_choices[0] == 0) 			// no one voted.
+					temp = vote_map_choices[0];		// Default 'nextmap' filename from levels.cfg
+
+				tokenize(temp);
+				
+				if (nextmap != "") 
+					strunzone(nextmap);
+
+				if (!(found_in_warp_list(argv(0))))	// in case the tempstring gets garbled
+					nextmap = default_nextmap;
+				else
+					nextmap = strzone(argv(0));
+
+				VoteMenu_Cleanup();
+				// V O T E M E N U   C H E C K   M A J O R I T Y -- end
+				changelevel(nextmap);
+				strunzone(nextmap); // zoned mem carries over, over changelevels, so we need to free it now.
+				nextmap = "";
 			}
-
-			if (map_choices[0] == 0) 			// no one voted.
-				temp = vote_map_choices[0];		// Default 'nextmap' filename from levels.cfg
-
-			tokenize(temp);
-			
-			if (nextmap != "") 
-				strunzone(nextmap);
-
-			if (!(found_in_warp_list(argv(0))))	// in case the tempstring gets garbled
-				nextmap = default_nextmap;
-			else
-				nextmap = strzone(argv(0));
-
-			VoteMenu_Cleanup();
-			// V O T E M E N U   C H E C K   M A J O R I T Y -- end
-			changelevel(nextmap);
-			strunzone(nextmap); // zoned mem carries over, over changelevels, so we need to free it now.
-			nextmap = "";
 		}
 	}
 	sys_ticrate = cvar("sys_ticrate");//R00k Added

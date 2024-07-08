@@ -213,7 +213,6 @@ void () votables_change_level =
 		 	{
 				if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
 		 			stuffcmd(player, "setinfo observing off\n"); //Need a better function to reset all observer infokeys...
-//				stuffcmd(player, "reconnect\n");	// R00k: HACK ALERT!				
 		 	}
 			player = find(player, classname, "player");
 		}
@@ -466,9 +465,6 @@ void() votables_set_gametype_mode_map =
 		utils_set_cvar ("scratch1", clanring_level);
 		if (nextmap != "") strunzone(nextmap);
 		nextmap = ""; //Reset the nextmap too
-		clanring_nextlevel_config();
-		if (newmapname == "")
-			newmapname = nextmap;
 	}
 	if (request_mode >= 0)
 	{
@@ -544,9 +540,6 @@ void() votables_set_gametype_mode_map =
 		nextmap = ""; //Reset the nextmap too
 		clanring_level = 1;//Reset the map count if we changed modes
 		utils_set_cvar ("scratch1", clanring_level);
-		clanring_nextlevel_config();
-		if (newmapname == "")
-			newmapname = nextmap;
 	}
 	if (request_mapnum)
 	{

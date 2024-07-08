@@ -13,6 +13,7 @@ void(string command, string value) config_command =
 	{
 		case "matchsoundson":
 		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
 			if (!(clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS))
 			{
 				utils_toggle_gflag (CLANRING_ENABLE_MATCHSOUNDS, "Extended Match Sounds");
@@ -21,6 +22,7 @@ void(string command, string value) config_command =
 		}
 		case "matchsoundsoff": 
 		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
 			if (clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS)
 			{
 				utils_toggle_gflag (CLANRING_ENABLE_MATCHSOUNDS, "Extended Match Sounds");

@@ -131,7 +131,7 @@ void () VoteMenu_Print =
 	if (!(self.style & CLANRING_CONNECTED))
 		return;
 	
-	if (self.centerTime < time)
+	if (self.centerTime <= time)
 	{
 		pqc_match_time (0, (floor(intermission_exittime - time)));
 
