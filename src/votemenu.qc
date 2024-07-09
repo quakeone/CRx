@@ -105,7 +105,7 @@ void () VoteMenu_Init =
 	VOTE_MENU_TEXTLINE[4]  = strreplace("A", (strpad(36, nextmap_textline4)), VOTE_MENU_TEXTLINE[4]);
 	VOTE_MENU_TEXTLINE[10] = redify(VOTE_MENU_TEXTLINE[4]);
 
-	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(35, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
+	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(36, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
 	VOTE_MENU_TEXTLINE[11] = redify(VOTE_MENU_TEXTLINE[5]);
 
 	VOTE_MENU_TEXTLINE[1] = strzone(VOTE_MENU_TEXTLINE[1]);
