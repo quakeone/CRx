@@ -363,7 +363,7 @@ void () clanring_init_world =
 	
 	//CRMOD - string to be used throughout code to show version number.
 	//version.year.month.day 
-	string vstring = "24.07.04";
+	string vstring = "24.07";
 
 	clanring_version        = strzone(sprintf("\bClanRing\b\nCRx (v1.%s)",vstring));	// This is used in the server console, the help display, and on connect.
 	clanring_version_info   = strzone(sprintf("CRx (v1.%s)",vstring));					// This is the value for the forced server infokey named "mod".

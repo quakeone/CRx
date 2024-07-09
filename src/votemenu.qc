@@ -8,7 +8,7 @@ string (float n) VoteMenu_get_map_by_number =
 {
 	if ((n != 0) && ((strlen(warpmap[n].name) != 0)) && (n <= (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE)))
 	{
-		return (sprintf("%s %s",warpmap[n].name, substring(warpmap[n].title, 0, 20)));
+		return (sprintf("%s %s",substring(warpmap[n].name, 0, 16), substring(warpmap[n].title, 0, 16)));
 	}	
 	return (sprintf("%s %s",warpmap[n - 5].name, warpmap[n - 5].title));//go back a few if we are at the end...
 };
@@ -93,19 +93,19 @@ void () VoteMenu_Init =
 	VOTE_MENU_TEXTLINE[5] = "  \5 A\n\n";
 	VOTE_MENU_TEXTLINE[6] = "\n\n";
 
-	VOTE_MENU_TEXTLINE[1] = strreplace("A", (strpad(36, nextmap_textline1)), VOTE_MENU_TEXTLINE[1]);
+	VOTE_MENU_TEXTLINE[1] = strreplace("A", (strpad(34, nextmap_textline1)), VOTE_MENU_TEXTLINE[1]);
 	VOTE_MENU_TEXTLINE[7] = redify(VOTE_MENU_TEXTLINE[1]);
 
-	VOTE_MENU_TEXTLINE[2] = strreplace("A", (strpad(36, nextmap_textline2)), VOTE_MENU_TEXTLINE[2]);
+	VOTE_MENU_TEXTLINE[2] = strreplace("A", (strpad(34, nextmap_textline2)), VOTE_MENU_TEXTLINE[2]);
 	VOTE_MENU_TEXTLINE[8] = redify(VOTE_MENU_TEXTLINE[2]);
 
-	VOTE_MENU_TEXTLINE[3] = strreplace("A", (strpad(36, nextmap_textline3)), VOTE_MENU_TEXTLINE[3]);
+	VOTE_MENU_TEXTLINE[3] = strreplace("A", (strpad(34, nextmap_textline3)), VOTE_MENU_TEXTLINE[3]);
 	VOTE_MENU_TEXTLINE[9] = redify(VOTE_MENU_TEXTLINE[3]);
 
-	VOTE_MENU_TEXTLINE[4]  = strreplace("A", (strpad(36, nextmap_textline4)), VOTE_MENU_TEXTLINE[4]);
+	VOTE_MENU_TEXTLINE[4]  = strreplace("A", (strpad(34, nextmap_textline4)), VOTE_MENU_TEXTLINE[4]);
 	VOTE_MENU_TEXTLINE[10] = redify(VOTE_MENU_TEXTLINE[4]);
 
-	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(36, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
+	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(34, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
 	VOTE_MENU_TEXTLINE[11] = redify(VOTE_MENU_TEXTLINE[5]);
 
 	VOTE_MENU_TEXTLINE[1] = strzone(VOTE_MENU_TEXTLINE[1]);
