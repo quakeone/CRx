@@ -93,19 +93,19 @@ void () VoteMenu_Init =
 	VOTE_MENU_TEXTLINE[5] = "  \5 A\n\n";
 	VOTE_MENU_TEXTLINE[6] = "\n\n";
 
-	VOTE_MENU_TEXTLINE[1] = strreplace("A", (strpad(31, nextmap_textline1)), VOTE_MENU_TEXTLINE[1]);
+	VOTE_MENU_TEXTLINE[1] = strreplace("A", (strpad(36, nextmap_textline1)), VOTE_MENU_TEXTLINE[1]);
 	VOTE_MENU_TEXTLINE[7] = redify(VOTE_MENU_TEXTLINE[1]);
 
-	VOTE_MENU_TEXTLINE[2] = strreplace("A", (strpad(31, nextmap_textline2)), VOTE_MENU_TEXTLINE[2]);
+	VOTE_MENU_TEXTLINE[2] = strreplace("A", (strpad(36, nextmap_textline2)), VOTE_MENU_TEXTLINE[2]);
 	VOTE_MENU_TEXTLINE[8] = redify(VOTE_MENU_TEXTLINE[2]);
 
-	VOTE_MENU_TEXTLINE[3] = strreplace("A", (strpad(31, nextmap_textline3)), VOTE_MENU_TEXTLINE[3]);
+	VOTE_MENU_TEXTLINE[3] = strreplace("A", (strpad(36, nextmap_textline3)), VOTE_MENU_TEXTLINE[3]);
 	VOTE_MENU_TEXTLINE[9] = redify(VOTE_MENU_TEXTLINE[3]);
 
-	VOTE_MENU_TEXTLINE[4]  = strreplace("A", (strpad(31, nextmap_textline4)), VOTE_MENU_TEXTLINE[4]);
+	VOTE_MENU_TEXTLINE[4]  = strreplace("A", (strpad(36, nextmap_textline4)), VOTE_MENU_TEXTLINE[4]);
 	VOTE_MENU_TEXTLINE[10] = redify(VOTE_MENU_TEXTLINE[4]);
 
-	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(31, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
+	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(35, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
 	VOTE_MENU_TEXTLINE[11] = redify(VOTE_MENU_TEXTLINE[5]);
 
 	VOTE_MENU_TEXTLINE[1] = strzone(VOTE_MENU_TEXTLINE[1]);

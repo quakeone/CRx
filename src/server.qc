@@ -235,7 +235,7 @@ void (vector org) spawn_tfog;
 
 void () observer_start;
 void () W_ChangeWeapon;
-void (float reset) W_SetCurrentAmmo;
+//void (float reset) W_SetCurrentAmmo;
 void () TeamFlagStatusReport;
 void () UnHookPlayer;
 void () votables_request_set_runes;

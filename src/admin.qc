@@ -21,7 +21,7 @@ void() admin_do_ban;
 
 void() options_start_setting;
 void() SUB_Freeze;
-void(float reset) W_SetCurrentAmmo;
+void() W_SetCurrentAmmo;
 
 // global variables
 entity kick_target;         // Player to kick
@@ -920,7 +920,7 @@ void() admin_dm3_screenshot_cleanup =
 					local entity oself;
 					oself = self;
 					self = other;
-					W_SetCurrentAmmo (TRUE);
+					W_SetCurrentAmmo();
 					self = oself;
 				}
 				other.angles = other.v_angle = other.clanring_oldangle;

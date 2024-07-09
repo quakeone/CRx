@@ -598,7 +598,7 @@ void() W_FireLightning =
 	if (self.ammo_cells < 1)
 	{
 		self.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo(TRUE);
+		W_SetCurrentAmmo();
 		return;
 	}
 
@@ -607,7 +607,7 @@ void() W_FireLightning =
 	{
 		cells = self.ammo_cells;
 		self.ammo_cells = 0;
-		W_SetCurrentAmmo(TRUE);
+		W_SetCurrentAmmo();
 
 		if (mode_is_arena())
 		{
@@ -656,7 +656,7 @@ void() W_FireLightning =
 	{
 		cells = self.ammo_cells;		
 	  	self.ammo_cells = 0;	  
-		W_SetCurrentAmmo(TRUE);
+		W_SetCurrentAmmo();
 
 		if (mode_is_arena())
 		{
@@ -745,7 +745,7 @@ void() W_FireGrenade =
 		{
 			self.items = self.items - (self.items & IT_GRENADE_LAUNCHER);
 			self.weapon = W_BestWeapon ();
-			W_SetCurrentAmmo(TRUE);
+			W_SetCurrentAmmo();
 			sprint(self, "\b\< Grenade spam protection activated \>\n");
 			return;
 		}
@@ -898,7 +898,7 @@ void(float ox) W_FireSpikes =
 	if (self.ammo_nails < 1)
 	{
 		self.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo(TRUE);
+		W_SetCurrentAmmo();
 		return;
 	}
 
@@ -1013,7 +1013,7 @@ PLAYER WEAPON USE
 */
 
 
-void(float reset) W_SetCurrentAmmo =
+void() W_SetCurrentAmmo =
 {
 	if (self.health <= 0) // bug fix (thanks to QIP [www.inside3d.com/qip]
 		return;
@@ -1093,8 +1093,7 @@ void(float reset) W_SetCurrentAmmo =
 		self.weaponmodel = "";
 		// self.weaponframe = 0;
 	}	
-	if (reset)
-		self.weaponframe = 0;
+	self.weaponframe = 0;
 };
 
 float() W_BestWeapon =
@@ -1128,7 +1127,7 @@ float() W_CheckNoAmmo =
 	
 	self.weapon = W_BestWeapon ();
 
-	W_SetCurrentAmmo(TRUE);
+	W_SetCurrentAmmo();
 	
 // drop the weapon down
 	return FALSE;
@@ -1376,7 +1375,7 @@ void() W_ChangeWeapon =
 	
 	self.weapon = fl;
 
-	W_SetCurrentAmmo(TRUE);
+	W_SetCurrentAmmo();
 };
 
 
@@ -1461,7 +1460,7 @@ void() CycleWeaponCommand =
 
 		if ( (it & self.weapon) && am == 0)
 		{
-			W_SetCurrentAmmo(TRUE);
+			W_SetCurrentAmmo();
 			return;
 		}
 	}
@@ -1542,7 +1541,7 @@ void() CycleWeaponReverseCommand =
 
 		if ( (it & self.weapon) && am == 0)
 		{
-			W_SetCurrentAmmo(TRUE);
+			W_SetCurrentAmmo();
 			return;
 		}
 	}
@@ -1590,7 +1589,7 @@ void() PreviousWeaponCommand =
 	if (am)
 		self.weapon = W_BestWeapon ();
 
-	W_SetCurrentAmmo(TRUE);
+	W_SetCurrentAmmo();
 };
 
 /*

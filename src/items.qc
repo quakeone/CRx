@@ -860,7 +860,7 @@ void() weapon_touch =
 				{
 					Deathmatch_Weapon (other, self.weapon);
 					if (other.weapon != IT_HOOK)
-						W_SetCurrentAmmo(TRUE);
+						W_SetCurrentAmmo();
 				}
 			}
 		}
@@ -875,7 +875,7 @@ void() weapon_touch =
 			{
 				self.weapon = W_BestWeapon();
 				if (other.weapon != IT_HOOK)
-					W_SetCurrentAmmo(TRUE);
+					W_SetCurrentAmmo();
 			}
 		}
 
@@ -1076,11 +1076,8 @@ void() ammo_touch =
 			if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 				other.weapon = W_BestWeapon();
 					
-				W_SetCurrentAmmo(TRUE);
+				W_SetCurrentAmmo();
 		}
-		
-		if (other.weapon != IT_HOOK)
-			W_SetCurrentAmmo(FALSE);
 		
 		self = stemp;
 
@@ -2023,7 +2020,7 @@ void() BackpackTouch =
 			self.weapon = W_BestWeapon();
 	}
 	if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo(TRUE);
+		W_SetCurrentAmmo();
 };
 
 float() backpack_customizeentityforclient =
@@ -2223,7 +2220,7 @@ void() Team_weapon_touch =
 		}
 	}
 	if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo(TRUE);
+		W_SetCurrentAmmo();
 
 	self = stemp;
 
@@ -2409,7 +2406,7 @@ void() TossWeapon =
 	self.items = self.items - (self.items & (self.weapon));
 
 	self.weapon = W_BestWeapon();
-	W_SetCurrentAmmo(TRUE);
+	W_SetCurrentAmmo();
 
 	setsize(item, '-16 -16 0', '16 16 56');
 	item.touch = Team_weapon_touch;
@@ -2493,7 +2490,7 @@ void() Team_Ammo_Touch=
 		etemp=self;
 		self=other;
 		if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo(TRUE);
+		W_SetCurrentAmmo();
 		self=etemp;
 		self.model = string_null;
 		self.solid = SOLID_NOT;
@@ -2644,7 +2641,7 @@ void() TossAmmo =
 	item.nextthink = time + 20;//must remove or else we will run out of server entities
 
 	item.think = SUB_Remove;
-	W_SetCurrentAmmo(TRUE);
+	W_SetCurrentAmmo();
 };
 
 /*

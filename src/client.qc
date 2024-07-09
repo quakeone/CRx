@@ -379,6 +379,7 @@ void() execute_changelevel =
 
 	intermission_running = 1;	// enforce a wait time before allowing changelevel
 	intermission_exittime = time + 20;
+	pqc_match_time (0, 20);
 	lightstyle(0, "f");// R00k: -added- dim light on intermission
 /*
 	WriteByte(MSG_ALL, SVC_CDTRACK);
@@ -919,7 +920,7 @@ void() PutClientInServer =
 		}
 	}
 
-	W_SetCurrentAmmo (TRUE);
+	W_SetCurrentAmmo ();
 
 	self.attack_finished 	= time;
 	//Todo enable this with a votable so dm2's quad team-boost works
@@ -1504,7 +1505,7 @@ void() PlayerPreThink =
 			if (time > self.attack_finished)
 			{
 				self.weapon = W_BestWeapon();
-				W_SetCurrentAmmo(TRUE);
+				W_SetCurrentAmmo();
 			}
 		}
 	}
