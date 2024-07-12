@@ -742,3 +742,5 @@ float isFTEserver; //Is the server running on FTE or QSS/M?
 string clanring_new_record_player;
 
 .entity enemy_target;
+string levels[128];//levels.cfg
+//eof

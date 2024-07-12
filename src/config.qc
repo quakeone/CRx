@@ -616,10 +616,14 @@ void(string mode) clanring_count_maps =
 {
     string line = "";
     float mapCount = 0;
+	float i = 0;
 
     filestream f = fopen("configs/levels.cfg", FILE_READ);
 
     if (f < 0) {print("levels.cfg not found.\n");return;}
+
+	for (i = 0; i < 1024; i++)
+		levels[i] = "";
 
     while ((line = fgets(f))) 
 	{
@@ -639,9 +643,10 @@ void(string mode) clanring_count_maps =
                 if ((argv(0) == "-ctf-") || (argv(0) == "-ca-") || (argv(0) == "-dm-") || (argv(0) == "-ra-"))
                     break;
 
-                if (found_in_warp_list(argv(0))) 
-				{
-                    mapCount++;
+                if (found_in_warp_list(argv(0))) //The map must be installed in the warp.cfg so that we can grab the title string.
+				{                    
+					mapCount++;
+					levels[mapCount] = argv(0);
                 }
             }
             break; // Found the correct mode section
@@ -707,7 +712,7 @@ void() clanring_nextlevel_config =
                 
 				if ((token0 == "-ctf-") || (token0 == "-ca-") || (token0 == "-dm-") || (token0 == "-ra-")) break; //bumped into the next section, exit...
 
-                if (found_in_warp_list(token0))
+                if (found_in_warp_list(token0)) //The map must be installed in the warp.cfg so that we can grab the title string.
                 {
                     if (i >= clanring_level)
                     {

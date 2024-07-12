@@ -2759,7 +2759,8 @@ void () clanring_start_frame =
 				
 				// V O T E M E N U   C H E C K   M A J O R I T Y -- start
 				string temp = "";
-
+				float c = 0;
+				
 				// Count the votes and store the best one in temp (by name) and map_choices[0] (by number of votes).
 				for (float i = 1; i < 6; i++)
 				{
@@ -2767,6 +2768,7 @@ void () clanring_start_frame =
 					{
 						temp = vote_map_choices[i];
 						map_choices[0] = map_choices[i];
+						c = i;
 					}
 				}
 
@@ -2785,6 +2787,14 @@ void () clanring_start_frame =
 
 				VoteMenu_Cleanup();
 				// V O T E M E N U   C H E C K   M A J O R I T Y -- end
+        	
+				if ((map_choices[0] != 0) && (c > 1))		// Someone voted, but other than the default nextmap...
+				{
+					clanring_level--;	// If someone voted, then repeat the levels.cfg sequence again.
+					if (clanring_level > clanring_lastcount)
+						clanring_level = 1;
+					utils_set_cvar("scratch1", clanring_level);
+				}
 				changelevel(nextmap);
 				strunzone(nextmap); // zoned mem carries over, over changelevels, so we need to free it now.
 				nextmap = "";

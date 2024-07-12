@@ -4,24 +4,7 @@
     ---------------------------------------------------
 */
 
-string (float n) VoteMenu_get_map_by_number =
-{
-	if ((n != 0) && ((strlen(warpmap[n].name) != 0)) && (n <= (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE)))
-	{
-		return (sprintf("%s %s",substring(warpmap[n].name, 0, 16), substring(warpmap[n].title, 0, 16)));
-	}	
-	return (sprintf("%s %s",warpmap[n - 5].name, warpmap[n - 5].title));//go back a few if we are at the end...
-};
-
-float (string maparg) VoteMenu_get_index_for_map =
-{
-	for (float index = 1 ; index <= (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
-	{
-		if (warpmap[index].name != "" && warpmap[index].name == maparg)
-			return index;
-	}	
-	return 0;
-};
+string VOTE_MENU_TEXTLINE[12];
 
 //
 // V o t e M e n u  G e t  M a p   b y   N a m e
@@ -30,17 +13,16 @@ float (string maparg) VoteMenu_get_index_for_map =
 //
 string (string maparg) VoteMenu_get_map_by_name =
 {
-	for (float index = 1 ; index <= (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
+	for (float index = 1 ; index < (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
 	{
 		if (warpmap[index].name != "" && warpmap[index].name == maparg)
 		{
-			return (sprintf("%s %s",substring(warpmap[index].name, 0, 16), substring(warpmap[index].title, 0, 19)));
+			return (sprintf("%s %s",strpad(16,substring(warpmap[index].name, 0, 16)), strpad(26,substring(warpmap[index].title, 0, 26))));
 		}
 	}	
 	return "Invalid (VoteMenu_get_map_by_name)";
 };
 
-string VOTE_MENU_TEXTLINE[12];
 
 void () VoteMenu_Cleanup = 
 {
@@ -70,13 +52,34 @@ void () VoteMenu_Cleanup =
 //	Initialize all the wacky strings to construct the menu
 //
 void () VoteMenu_Init =
-{
-	string	nextmap_textline1 = VoteMenu_get_map_by_name(nextmap);						// Grab the filename and title for the `nextmap` of levels.cfg.
-	float	nindex = VoteMenu_get_index_for_map(nextmap);								// Find it's placement in the warpmaps array.
-	string 	nextmap_textline2 = (VoteMenu_get_map_by_number(nindex + 1));				// From the warpmap array, get the next entry in line
-	string 	nextmap_textline3 = (VoteMenu_get_map_by_number(nindex + 2));			    // ...
-	string 	nextmap_textline4 = (VoteMenu_get_map_by_number(nindex + 3));				// ...
-	string 	nextmap_textline5 = (VoteMenu_get_map_by_number(nindex + 4));				// for the next four maps.
+{	
+	string nextmap_textline1 = "";	
+	string nextmap_textline2 = "";
+	string nextmap_textline3 = "";
+	string nextmap_textline4 = "";
+	string nextmap_textline5 = "";
+
+	float nextlevel;
+
+	nextlevel = clanring_level;
+
+	nextmap_textline1 = VoteMenu_get_map_by_name(nextmap);
+
+	if ((nextlevel) > clanring_lastcount)	
+		nextlevel = 1;
+	nextmap_textline2 = VoteMenu_get_map_by_name((levels[nextlevel]));
+
+	if ((nextlevel + 1) > clanring_lastcount)	
+		nextlevel = 1;
+	nextmap_textline3 = VoteMenu_get_map_by_name(levels[nextlevel+1]);
+
+	if ((nextlevel + 2) > clanring_lastcount)
+		nextlevel = 1;
+	nextmap_textline4 = VoteMenu_get_map_by_name(levels[nextlevel+2]);
+
+	if ((nextlevel + 3) > clanring_lastcount)
+		nextlevel = 1;
+	nextmap_textline5 = VoteMenu_get_map_by_name(levels[nextlevel+3]);
 
 	vote_map_choices[0] = strzone(nextmap_textline1); //default
 	vote_map_choices[1] = strzone(nextmap_textline1);
@@ -85,12 +88,12 @@ void () VoteMenu_Init =
 	vote_map_choices[4] = strzone(nextmap_textline4);
 	vote_map_choices[5] = strzone(nextmap_textline5);
 
-	VOTE_MENU_TEXTLINE[0] = "\(\=\=\=\=\=\= Vote for the Next Map \=\=\=\=\=\=\)\n\n\n";
-	VOTE_MENU_TEXTLINE[1] = "  \1 A\n\n";
-	VOTE_MENU_TEXTLINE[2] = "  \2 A\n\n";
-	VOTE_MENU_TEXTLINE[3] = "  \3 A\n\n";
-	VOTE_MENU_TEXTLINE[4] = "  \4 A\n\n";
-	VOTE_MENU_TEXTLINE[5] = "  \5 A\n\n";
+	VOTE_MENU_TEXTLINE[0] = "\(\=\=\=\=\=\= Vote for the Next Map \=\=\=\=\=\=\)\n\n\n";	
+	VOTE_MENU_TEXTLINE[1] = "\1 A\n\n";
+	VOTE_MENU_TEXTLINE[2] = "\2 A\n\n";
+	VOTE_MENU_TEXTLINE[3] = "\3 A\n\n";
+	VOTE_MENU_TEXTLINE[4] = "\4 A\n\n";
+	VOTE_MENU_TEXTLINE[5] = "\5 A\n\n";
 	VOTE_MENU_TEXTLINE[6] = "\n\n";
 
 	VOTE_MENU_TEXTLINE[1] = strreplace("A", (strpad(34, nextmap_textline1)), VOTE_MENU_TEXTLINE[1]);
