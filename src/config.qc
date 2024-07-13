@@ -622,7 +622,7 @@ void(string mode) clanring_count_maps =
 
     if (f < 0) {print("levels.cfg not found.\n");return;}
 
-	for (i = 0; i < 1024; i++)
+	for (i = 0; i < 128; i++)
 		levels[i] = "";
 
     while ((line = fgets(f))) 
