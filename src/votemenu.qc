@@ -17,7 +17,7 @@ string (string maparg) VoteMenu_get_map_by_name =
 	{
 		if (warpmap[index].name != "" && warpmap[index].name == maparg)
 		{
-			return (sprintf("%s %s",strpad(16,substring(warpmap[index].name, 0, 16)), strpad(26,substring(warpmap[index].title, 0, 26))));
+			return (sprintf("%s %s", strpad(16, substring(maparg, 0, 16)), redify(strpad(26,substring(warpmap[index].title, 0, 26)))));
 		}
 	}	
 	return "Invalid (VoteMenu_get_map_by_name)";
@@ -53,40 +53,20 @@ void () VoteMenu_Cleanup =
 //
 void () VoteMenu_Init =
 {	
-	string nextmap_textline1 = "";	
-	string nextmap_textline2 = "";
-	string nextmap_textline3 = "";
-	string nextmap_textline4 = "";
-	string nextmap_textline5 = "";
+	string nextmap_textline[6];
 
 	float nextlevel;
 
-	nextlevel = clanring_level;
-
-	nextmap_textline1 = VoteMenu_get_map_by_name(nextmap);
-
-	if ((nextlevel) > clanring_lastcount)	
-		nextlevel = 1;
-	nextmap_textline2 = VoteMenu_get_map_by_name((levels[nextlevel]));
-
-	if ((nextlevel + 1) > clanring_lastcount)	
-		nextlevel = 1;
-	nextmap_textline3 = VoteMenu_get_map_by_name(levels[nextlevel+1]);
-
-	if ((nextlevel + 2) > clanring_lastcount)
-		nextlevel = 1;
-	nextmap_textline4 = VoteMenu_get_map_by_name(levels[nextlevel+2]);
-
-	if ((nextlevel + 3) > clanring_lastcount)
-		nextlevel = 1;
-	nextmap_textline5 = VoteMenu_get_map_by_name(levels[nextlevel+3]);
-
-	vote_map_choices[0] = strzone(nextmap_textline1); //default
-	vote_map_choices[1] = strzone(nextmap_textline1);
-	vote_map_choices[2] = strzone(nextmap_textline2);
-	vote_map_choices[3] = strzone(nextmap_textline3);
-	vote_map_choices[4] = strzone(nextmap_textline4);
-	vote_map_choices[5] = strzone(nextmap_textline5);
+	nextlevel = (clanring_level < 1 ? 1 : clanring_level);
+	
+	for (float j = 1; j < 6; j++)
+	{
+		nextmap_textline[j] = VoteMenu_get_map_by_name(levels[nextlevel]);
+		vote_map_choices[j] = strzone(nextmap_textline[j]);
+		dprint(sprintf("`%s` [%g] '%s'\n", vote_map_choices[j], nextlevel, levels[nextlevel]));
+		nextlevel++;
+		if (nextlevel > clanring_lastcount) nextlevel =  1;
+	}		
 
 	VOTE_MENU_TEXTLINE[0] = "\(\=\=\=\=\=\= Vote for the Next Map \=\=\=\=\=\=\)\n\n\n";	
 	VOTE_MENU_TEXTLINE[1] = "\1 A\n\n";
@@ -96,19 +76,19 @@ void () VoteMenu_Init =
 	VOTE_MENU_TEXTLINE[5] = "\5 A\n\n";
 	VOTE_MENU_TEXTLINE[6] = "\n\n";
 
-	VOTE_MENU_TEXTLINE[1] = strreplace("A", (strpad(34, nextmap_textline1)), VOTE_MENU_TEXTLINE[1]);
+	VOTE_MENU_TEXTLINE[1] = strreplace("A", (strpad(34, vote_map_choices[1])), VOTE_MENU_TEXTLINE[1]);
 	VOTE_MENU_TEXTLINE[7] = redify(VOTE_MENU_TEXTLINE[1]);
 
-	VOTE_MENU_TEXTLINE[2] = strreplace("A", (strpad(34, nextmap_textline2)), VOTE_MENU_TEXTLINE[2]);
+	VOTE_MENU_TEXTLINE[2] = strreplace("A", (strpad(34, vote_map_choices[2])), VOTE_MENU_TEXTLINE[2]);
 	VOTE_MENU_TEXTLINE[8] = redify(VOTE_MENU_TEXTLINE[2]);
 
-	VOTE_MENU_TEXTLINE[3] = strreplace("A", (strpad(34, nextmap_textline3)), VOTE_MENU_TEXTLINE[3]);
+	VOTE_MENU_TEXTLINE[3] = strreplace("A", (strpad(34, vote_map_choices[3])), VOTE_MENU_TEXTLINE[3]);
 	VOTE_MENU_TEXTLINE[9] = redify(VOTE_MENU_TEXTLINE[3]);
 
-	VOTE_MENU_TEXTLINE[4]  = strreplace("A", (strpad(34, nextmap_textline4)), VOTE_MENU_TEXTLINE[4]);
+	VOTE_MENU_TEXTLINE[4]  = strreplace("A", (strpad(34, vote_map_choices[4])), VOTE_MENU_TEXTLINE[4]);
 	VOTE_MENU_TEXTLINE[10] = redify(VOTE_MENU_TEXTLINE[4]);
 
-	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(34, nextmap_textline5)), VOTE_MENU_TEXTLINE[5]);
+	VOTE_MENU_TEXTLINE[5]  = strreplace("A", (strpad(34, vote_map_choices[5])), VOTE_MENU_TEXTLINE[5]);
 	VOTE_MENU_TEXTLINE[11] = redify(VOTE_MENU_TEXTLINE[5]);
 
 	VOTE_MENU_TEXTLINE[1] = strzone(VOTE_MENU_TEXTLINE[1]);

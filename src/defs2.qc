@@ -742,5 +742,6 @@ float isFTEserver; //Is the server running on FTE or QSS/M?
 string clanring_new_record_player;
 
 .entity enemy_target;
-string levels[128];//levels.cfg
+#define INSTALLED_NEXTMAPS_LIMIT 200
+string levels[INSTALLED_NEXTMAPS_LIMIT];//levels.cfg
 //eof
