@@ -11,7 +11,7 @@ string VOTE_MENU_TEXTLINE[12];
 //
 // returns a string with mapname and title from the warpmap array, ex: "DM3 The Abandoned Base"
 //
-string (string maparg) VoteMenu_get_map_by_name =
+string VoteMenu_get_map_by_name(string maparg) =
 {
 	for (float index = 1 ; index < (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
 	{
@@ -19,12 +19,11 @@ string (string maparg) VoteMenu_get_map_by_name =
 		{
 			return (sprintf("%s %s", strpad(16, substring(maparg, 0, 16)), redify(strpad(26,substring(warpmap[index].title, 0, 26)))));
 		}
-	}	
+	}
 	return "Invalid (VoteMenu_get_map_by_name)";
 };
 
-
-void () VoteMenu_Cleanup = 
+void() VoteMenu_Cleanup =
 {
 	strunzone(vote_map_choices[0]);
 	strunzone(vote_map_choices[1]);
@@ -47,28 +46,46 @@ void () VoteMenu_Cleanup =
 }
 
 //
-//	V O T E   M E N U   I N I T 
+//	V O T E   M E N U   I N I T
 //
 //	Initialize all the wacky strings to construct the menu
 //
 void () VoteMenu_Init =
-{	
+{
 	string nextmap_textline[6];
+    float usedIndices[6];
+    float nextlevel, index = 1, canUse = FALSE;
 
-	float nextlevel;
+    nextlevel = (clanring_level < 1 ? 1 : clanring_level);
+	nextmap_textline[1] = VoteMenu_get_map_by_name(levels[nextlevel]);		//First option is ALWAYS the nextlevel
+	vote_map_choices[1] = strzone(nextmap_textline[1]);
+	usedIndices[1] = nextlevel;
+	nextlevel++;
+	if (nextlevel > clanring_lastcount) nextlevel =  1;
 
-	nextlevel = (clanring_level < 1 ? 1 : clanring_level);
-	
-	for (float j = 1; j < 6; j++)
+	for (float j = 2; j < 6; j++)											//The other four are random.
 	{
-		nextmap_textline[j] = VoteMenu_get_map_by_name(levels[nextlevel]);
-		vote_map_choices[j] = strzone(nextmap_textline[j]);
-		dprint(sprintf("`%s` [%g] '%s'\n", vote_map_choices[j], nextlevel, levels[nextlevel]));
-		nextlevel++;
-		if (nextlevel > clanring_lastcount) nextlevel =  1;
-	}		
+		while (canUse == FALSE)
+		{
+			index = ceil(random() * clanring_lastcount);
+			canUse = TRUE;
 
-	VOTE_MENU_TEXTLINE[0] = "\(\=\=\=\=\=\= Vote for the Next Map \=\=\=\=\=\=\)\n\n\n";	
+			for (float i = 1; i < 6; i++)
+			{
+				if (usedIndices[i] == index)
+				{
+					canUse = FALSE;
+					break;
+				}
+			}
+	    }
+		usedIndices[j] = index;
+		nextmap_textline[j] = VoteMenu_get_map_by_name(levels[index]);
+		vote_map_choices[j] = strzone(nextmap_textline[j]);
+		canUse = FALSE;
+	}
+
+	VOTE_MENU_TEXTLINE[0] = "\(\=\=\=\=\=\= Vote for the Next Map \=\=\=\=\=\=\)\n\n\n";
 	VOTE_MENU_TEXTLINE[1] = "\1 A\n\n";
 	VOTE_MENU_TEXTLINE[2] = "\2 A\n\n";
 	VOTE_MENU_TEXTLINE[3] = "\3 A\n\n";
@@ -107,13 +124,13 @@ void () VoteMenu_Init =
 .float centerTime;
 
 void () VoteMenu_Print =
-{	
+{
 	if (self.style & CLANRING_AFK_CLIENT)
 		return;
 
 	if (!(self.style & CLANRING_CONNECTED))
 		return;
-	
+
 	if (self.centerTime <= time)
 	{
 		pqc_match_time (0, (floor(intermission_exittime - time)));
@@ -122,19 +139,19 @@ void () VoteMenu_Print =
 
 		switch (self.warp_map)
 		{
-			case 1: 
+			case 1:
 				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[7], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
 				break;
-			case 2: 
+			case 2:
 				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[8], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
 				break;
-			case 3: 
+			case 3:
 				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[9], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
 				break;
-			case 4: 
+			case 4:
 				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[10], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
 				break;
-			case 5: 
+			case 5:
 				centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[11], VOTE_MENU_TEXTLINE[6]);
 				break;
 		}

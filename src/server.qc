@@ -2787,12 +2787,7 @@ void () clanring_start_frame =
 
 				VoteMenu_Cleanup();
 				// V O T E M E N U   C H E C K   M A J O R I T Y -- end
-        	
-				// if ((map_choices[0] != 0) && (c > 1))		// Someone voted, but other than the default nextmap...
-				// {
-				// 	clanring_level--;	// If someone voted, then repeat the levels.cfg sequence again.
-				// 	utils_set_cvar("scratch1", clanring_level);
-				// }
+
 				changelevel(nextmap);
 				strunzone(nextmap); // zoned mem carries over, over changelevels, so we need to free it now.
 				nextmap = "";
