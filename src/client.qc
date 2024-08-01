@@ -321,10 +321,14 @@ void() IntermissionThink =
 	if ((self.impulse > 0) && (self.impulse < 6))
 	{	
 		stuffcmd(self, "play buttons/switch04.wav\n");
+	   	tokenize(vote_map_choices[self.impulse]);
+
+	   	string myVoteMapName = strzone(argv(0));
+		string myVoteMapTitle = strzone(redify(argv(1)));
 
 		if ((self.warp_map) && ((self.warp_map) == self.impulse))
 		{
-			bprint(sprintf("%s \bREMOVED\b their vote for %s.\n",self.netname, vote_map_choices[self.warp_map]));
+			bprint(sprintf("%s \bREMOVED\b their vote for %s %s\n",self.netname, myVoteMapName, myVoteMapTitle));
 			map_choices[self.warp_map] -= 1;
 			self.warp_map = 0;
 			self.impulse = 0;
@@ -335,7 +339,7 @@ void() IntermissionThink =
 
 		if ((self.warp_map) && ((self.warp_map) != self.impulse))
 		{
-			bprint(sprintf("%s changed their vote...\[-1 %s \]\n",self.netname, vote_map_choices[self.warp_map]));
+			bprint(sprintf("%s \bREMOVED\b their vote for %s %s\n",self.netname, myVoteMapName, myVoteMapTitle));
 			map_choices[self.warp_map] -= 1;
 			self.warp_map = 0;
 			centerprint(self, VOTE_MENU_TEXTLINE[0], VOTE_MENU_TEXTLINE[1], VOTE_MENU_TEXTLINE[2], VOTE_MENU_TEXTLINE[3], VOTE_MENU_TEXTLINE[4], VOTE_MENU_TEXTLINE[5], VOTE_MENU_TEXTLINE[6]);
@@ -343,8 +347,10 @@ void() IntermissionThink =
 
 		self.warp_map = self.impulse;
 		map_choices[self.warp_map] += 1;
-		bprint(sprintf("%s voted for %s.\n",self.netname, vote_map_choices[self.warp_map]));
-
+		bprint(sprintf("%s voted for %s %s\n",self.netname, myVoteMapName, myVoteMapTitle));
+		
+		strunzone(myVoteMapName);
+		strunzone(myVoteMapTitle);
 
 //		if (clanring_gameconfig & CLANRING_VOTE_MAJORITY_PASS)
 		{
