@@ -2725,19 +2725,19 @@ void () clanring_start_frame =
 							bprint("\n\bGame ends in\b 10 \bseconds\n\n");
 							break;
 						case 5:
-							bprint("5\n");
+							bprint("\x90 5 \x91\n");
 							break;
 						case 4:
-							bprint("4\n");
+							bprint("\x90 4 \x91\n");
 						break;
 						case 3:
-							bprint("3\n");
+							bprint("\x90 3 \x91\n");
 						break;
 						case 2:
-							bprint("2\n");
+							bprint("\x90 2 \x91\n");
 						break;
 						case 1:
-							bprint("1\n");
+							bprint("\x90 1 \x91\n");
 							bprint("\n");
 						break;
 					}
