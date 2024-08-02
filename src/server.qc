@@ -2754,7 +2754,7 @@ void () clanring_start_frame =
 			if (time >= intermission_exittime)
 			{
 				intermission_running = FALSE;
-
+				forceinfokey (world, "intermission","off");
 				pqc_match_time (0, 0);
 
 				// V O T E M E N U   C H E C K   M A J O R I T Y -- start
