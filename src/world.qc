@@ -178,6 +178,8 @@ void() worldspawn =
 		cvar_set ("sv_gravity", "800");
 	}
 
+	forceinfokey (world, "intermission","off");
+	
 	// the area based ambient sounds MUST be the first precache_sounds
 	
 	// player precaches	
