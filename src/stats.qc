@@ -1034,13 +1034,15 @@ void() stats_autodump =
 
 		if (!(clanring_playmode & CLANRING_NO_QUAD) && !(mode_is_arena()))//R00k -added-
 		{
-			stats_show_quadstats ();
+			if (clanring_quad != world)	//No quad on the map
+				stats_show_quadstats ();
 			//sprint(self, "\n");
 		}
 
 		if (!(clanring_playmode & CLANRING_NO_PENT) && !(mode_is_arena()))
 		{
-			stats_show_pentstats ();
+			if (clanring_pent != world) //No Pent on the map.
+				stats_show_pentstats ();
 			//sprint(self, "\n");
 		}
 
