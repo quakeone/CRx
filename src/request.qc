@@ -20,8 +20,6 @@
 	See file, 'gnu_gpl.txt', for details.
 */
 
-.float vote;    //client flag that holds their vote
-
 void() Request_Poll_Cleanup =
 {
 	local entity trash_disco;	
@@ -134,6 +132,7 @@ float(float ballot) Request_Poll_Votes_Needed =
 void(entity player, float cast) Request_Poll_Vote =
 {
 	local float votes_needed = 99;
+	
 	clear_afk_status(player);	//R00k
 
 	if (clanring_request == world)
@@ -307,7 +306,7 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 	clanring_request.classname = pollname;			// We can use the classname to determine criteria for certain requests.
 	clanring_request.nextthink = time + 10;			// Announce the request every 10 seconds.
 	clanring_request.think = Request_Poll_Announce;
-	clanring_request.health = 50;					// This will be the time-limit for how long to wait for everyone to cast a vote.
+	clanring_request.health = 20;					// This will be the time-limit for how long to wait for everyone to cast a vote.
 	clanring_request.touch = passfunc;				// Call this function if the poll is positive
 
 	if ((Request_Poll_Votes_Needed(1) > 0))			// if there is only one player on the server then there is no need to announce the vote.

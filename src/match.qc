@@ -572,6 +572,7 @@ void() match_end =
 	//stats_copy_statistics();
 	match_bprint_score();//R00k adding here again, this will be closest to their cursor so it will be the first thing they want to read.
 	utils_do_match_spawns(spawns_restore_model);
+	utils_do_items(SUB_regen);// respawn all items (R00k:9/1/2024)
 };
 
 //
@@ -1630,6 +1631,11 @@ void() match_ready =
 void(entity player) match_remove_player =
 {
 	local entity plast;
+
+	if (player.next_team == world)
+		return;
+
+	announce3(player.netname, " left the ", player.next_team.mdl);
 
 	// remove from team & linked list
 	plast = clanring_sentinel;

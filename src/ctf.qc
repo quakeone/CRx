@@ -140,7 +140,7 @@ void(entity flg) TeamDropFlag =
 	}
 
 	p.fctime += (time - p.flag_since);
-
+	p.next_team.fctime += (time - p.flag_since);
 	flg.owner      	= world;
 	flg.origin     	= p.origin - '0 0 16';	
 	flg.cnt        	= FLAG_DROPPED;

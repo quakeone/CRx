@@ -910,6 +910,9 @@ void () RemoveFromTeam =
 
 	clear_name();
 
+	if (clanring_playmode & CLANRING_CA_MODE)
+    	motd_playercount();// R00k
+
 	self.ca_player_flag = PF_WAITING;
 	self.movetarget 	= world;
 	self.frags 			= -99;
@@ -1049,7 +1052,9 @@ void(float whichteam) Join_Team =
 
 	motd_top5 = string_null;
 	motd_top6 = string_null;
+	motd_playercount();
 	stats_reset_player (); //BAM MOVED
+
 };
 
 float (float n) join_team2 =

@@ -724,6 +724,9 @@ void() PlayerDie =
 	if (self.items & IT_ROCKET_LAUNCHER)
 		quaketv_lost_rl (self);
 
+	if (self.items & IT_LIGHTNING)
+		quaketv_lost_lg(self);
+
 	if (deathmatch && !(clanring_playmode & CLANRING_PRACTICE_MODE) && !(mode_is_arena()))
 	{
 		DropBackpack ();

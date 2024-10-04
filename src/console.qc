@@ -26,7 +26,7 @@ void() info_player_team1;
 void() info_player_team2;
 void() console_set_aliases =
 {
-    // set local aliases (server console commands)
+    // set  aliases (server console commands)
 
 	// immediate mode commands
 	localcmd("alias sping temp1 1\n");
@@ -147,7 +147,7 @@ void() console_set_aliases =
 // 
 void(entity player) console_print_ping =
 {
-	local float p;
+	 float p;
 
 	p = floor(stof(infokey(self, INFOKEY_P_PING)));
 	if (p < 1000)
@@ -164,7 +164,7 @@ void(entity player) console_print_ping =
 //
 void() console_ping =
 {
-	local entity player;
+	 entity player;
 
 	cprint("Client ping times:\n");
 	player = find(world, classname, "player");
@@ -186,8 +186,8 @@ void() console_ping =
 //
 void() console_show_time = 
 {
-    local float h, m, s, t;
-    local string temp;
+     float h, m, s, t;
+     string temp;
 
     h = floor(time / 3600);
     t = time - h * 3600;
@@ -218,15 +218,15 @@ void() console_show_time =
 //
 void() console_show_status = 
 {
-    local float mode;
-    local string szmode;
+     float mode;
+     string szmode;
 
     cprint("\n");
     mode = options_get_mode();
     szmode = strings_get_mode(mode);
     cprint2(szmode, " mode\n");
     console_show_time();
-    localcmd("status;echo\n");
+    localcmd(";status;\n");
 	cprint("\n");
 };
 
@@ -238,13 +238,13 @@ void() console_show_status =
 //
 void() console_show_debug_info =
 {
-	local entity e;
+	 entity e;
 
 	cprint("clients:\n");
 	e = find(world, classname, "player");
 	while (e)
 	{
-		local string temp;
+		 string temp;
 		temp = ftos(e.colormap);
 		if (e.style & CLANRING_CONNECTED)
 			cprint4(temp, " \"", e.netname, "\" - Connected\n");
@@ -261,7 +261,7 @@ void() console_show_debug_info =
 //
 void() console_show_score =
 {
-	local string temp;//R00k moved up here
+	 string temp;//R00k moved up here
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE))
 	{
@@ -272,7 +272,7 @@ void() console_show_score =
 	{
 		if (clanring_state & CLANRING_TIMER_STARTED)
 		{
-			local string s, pl;
+			 string s, pl;
 			s = ftos(clanring_match_timer.count);
 			pl = strings_szplural(clanring_match_timer.count);
 			cprint5("Match begins in ", s, " second", pl, "\n");
@@ -290,7 +290,7 @@ void() console_show_score =
 			cprint("Sudden death overtime\n");
 		else
 		{
-//			local string temp;
+//			 string temp;
 			temp = ftos(clanring_match_timer.lip);
 			cprint3("\"Time remaining:  ", temp, ":");
 			temp = ftos(clanring_match_timer.count);
@@ -304,7 +304,7 @@ void() console_show_score =
 
 	if (clanring_first_place != clanring_sentinel)
 	{
-		local string score;
+		 string score;
 		score = ftos(clanring_first_place.frags);
 		temp = strings_szplural(clanring_first_place.frags);
 		cprint8("\"", clanring_szthe, clanring_first_place.netname, "\" has ", score, " frag", temp, "\n");
@@ -323,7 +323,7 @@ void() console_show_score =
 //
 void() console_list_ghosts =
 {
-	local entity e;
+	 entity e;
 	e = find(world, classname, "clanring_ghost");
    if (!e)
     {
@@ -338,8 +338,8 @@ void() console_list_ghosts =
     cprint("------+------------+-------+-----------------\n");
     while (e)
     {
-        local string num, szTeam, pad;
-        local float frag;
+         string num, szTeam, pad;
+         float frag;
         num = ftos(e.count);
         cprint3("\"  ", num, "  | ");
     
@@ -376,8 +376,8 @@ void() console_list_ghosts =
 //
 void() console_show_killstats =
 {
-	local entity player;
-	local float c;
+	 entity player;
+	 float c;
 
 	c = 16;//Workaround for lagout players corrupting the link list...
 	
@@ -448,8 +448,8 @@ void(float frac, float tot) console_print_percent4 =
 {
     if (tot)
     {
-        local float n;
-        local string temp;
+         float n;
+         string temp;
 
         n = floor(100 * frac / tot);
         if (n < 100)
@@ -470,9 +470,9 @@ void(float frac, float tot) console_print_percent4 =
 //
 void() console_show_quadstats =
 {
-	local entity player, pteam;
-	local float useteams;
-//	local string teamname;
+	 entity player, pteam;
+	 float useteams;
+//	 string teamname;
 
 	if ((clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)) && teamplay)
 		useteams = TRUE;
@@ -515,8 +515,8 @@ void() console_show_quadstats =
 
 void() console_show_pentstats =
 {
-	local entity player, pteam;
-	local float useteams;
+	 entity player, pteam;
+	 float useteams;
 
 	if ((clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)) && teamplay)
 		useteams = TRUE;
@@ -560,9 +560,9 @@ void() console_show_pentstats =
 //
 void() console_show_badstats =
 {
-	local entity player;
-	local float tot_enemy;
-	local float tot_done;
+	 entity player;
+	 float tot_enemy;
+	 float tot_done;
 
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) || !teamplay)
 	{
@@ -599,8 +599,8 @@ void() console_show_badstats =
 //
 void() console_show_efficiency =
 {
-	local entity player;
-	local float tot_fired, tot_done;
+	 entity player;
+	 float tot_fired, tot_done;
 	
 	cprint("\"------------------\"\n");
 	cprint("\" Efficiency Stats \"\n");
@@ -635,7 +635,7 @@ void() console_show_efficiency =
 //
 void() console_show_fstats =
 {
-	local entity player;
+	 entity player;
 
 	player = find(world, classname, "player");//flagstats in normal mode too
 
@@ -695,9 +695,9 @@ void() console_show_fstats =
 //
 void() console_show_stats =
 {
-	local entity player;
-	local float wfrac, wtot, kfrac, ktot, useteams;
-	local string teamname;
+	 entity player;
+	 float wfrac, wtot, kfrac, ktot, useteams;
+	 string teamname;
 
 	if ((clanring_state & CLANRING_MATCH_STARTED) && teamplay)
 		useteams = TRUE;
@@ -750,7 +750,7 @@ void() console_show_stats =
 //
 void(vector v) console_format_vector =
 {
-	local string s;
+	 string s;
 
 	localcmd("| ");
 	if (v_x < 10)
@@ -772,8 +772,8 @@ void(vector v) console_format_vector =
 //
 void() console_show_teamstats =
 {
-	local entity pteam;
-	local string s;
+	 entity pteam;
+	 string s;
 
 	if (!(teamplay && (clanring_playmode & CLANRING_MATCH_MODE)))
 	{
@@ -860,8 +860,8 @@ void() console_show_teamstats =
 
 	while (pteam)
 	{
-		local float f;
-		local float control;
+		 float f;
+		 float control;
 		control = 100 * pteam.mangle_x / clanring_sentinel.cnt;
 		f = floor(control);
 		s = ftos(f);
@@ -885,7 +885,7 @@ void() console_show_teamstats =
 //
 void() console_autodump =
 {
-	local string temp;
+	 string temp;
 	
 //	if ((clanring_playmode & CLANRING_CONSOLE_STATS))
 	{
@@ -969,8 +969,8 @@ void() console_commands =
 //
 void() console_debug_client =
 {
-	local float id;
-	local entity client;
+	 float id;
+	 entity client;
 
 	id = cvar ("skill");
 	client = find(world, classname, "player");
@@ -994,8 +994,8 @@ void() console_debug_client =
 //
 void() console_stuff_impulse =
 {
-	local float temp;
-	local string s;
+	 float temp;
+	 string s;
 
 	if (!clanring_debug_client)
 	{
@@ -1017,8 +1017,8 @@ void() console_stuff_impulse =
 //
 void() console_stuff_colour =
 {
-	local float temp;
-	local string s;
+	 float temp;
+	 string s;
 
 	if (!clanring_debug_client)
 	{
@@ -1199,7 +1199,7 @@ void() console_debug_help =
 //
 void() console_client_info =
 {
-	local string temp;
+	 string temp;
 
 	if (!clanring_debug_client)
 	{
@@ -1227,68 +1227,17 @@ void() console_version_info =
 };
 
 //
-//  C H E C K  L E V E L
-//
-//  Check to see if we've found the next level in levels.cfg
-//
-/*
-void(float newlevel) console_check_level =
-{
-	local string s;
-	
-	s = strings_get_mapname (newlevel);
-
-	// if clanring_levelcount == -1 then we haven't executed levels.cfg, so
-	// change levels immediately.
-	if (clanring_levelcount == -1)
-	{
-		changelevel (s);
-		return;
-	}
-	if (clanring_levelcount == 1)
-	{
-		clanring_firstlevel = s;
-		utils_set_cvar ("scratch1", 2);
-	}
-    // To choose the next level, we should set nextmap when
-    // clanring_levelcount == clanring_level.  If the current level is the
-    // last one in the list then this will never occur, so we should also
-    // set nextmap when we see the first level in the list.
-	if (clanring_levelcount == clanring_level)
-	{
-		nextmap = s;
-		utils_set_cvar ("scratch1", clanring_levelcount + 1);
-	}
-	clanring_levelcount += 1;
-};
-
-//
-//  G E T  U S E R  N E X T L E V E L
-//
-//  Check for a user-defined level sequence (dedicated only).
-//
-void() console_get_user_nextlevel =
-{
-	clanring_levelcount = 1;
-	clanring_lastcount = -1;
-	clanring_firstlevel = "";
-//	localcmd("exec levels.cfg\n");//FIXME
-	clanring_nextcheck = 0;
-	remove(self);
-};
-*/
-//
 //  G E T  O R I G I N
 //
 //  Return the vector 'scr_ofsx scr_ofsy scr_ofsz'
 //
 vector () console_get_origin =
 {
-    local vector v;
+     vector v;
 
-    v_x = cvar("scr_ofsx");
-    v_y = cvar("scr_ofsy");
-    v_z = cvar("scr_ofsz");
+    v_x = stof(argv(1));//cvar("scr_ofsx");
+    v_y = stof(argv(2));//cvar("scr_ofsy");
+    v_z = stof(argv(3));//cvar("scr_ofsz");
     return v;
 };
 
@@ -1299,11 +1248,11 @@ vector () console_get_origin =
 //
 vector () console_get_angles =
 {
-    local vector v;
+     vector v;
 
-    v_x = cvar("v_ipitch_level");
-    v_y = cvar("v_iyaw_level");
-    v_z = cvar("v_iroll_level");
+    v_x = stof(argv(1));
+    v_y = stof(argv(2));
+    v_z = stof(argv(3));
     return v;
 };
 
@@ -1315,8 +1264,8 @@ vector () console_get_angles =
 //
 void(string name, float angleflags) console_make_entity =
 {
-    local entity newent;
-    local string temp;
+     entity newent;
+     string temp;
 
     // create entity
     newent = spawn();
@@ -1357,9 +1306,9 @@ void(string name, float angleflags) console_make_entity =
 //
 void(string name) console_kill_entity =
 {
-	local vector location;
-	local entity e;
-	local string temp;
+	 vector location;
+	 entity e;
+	 string temp;
 
 	location = console_get_origin ();
 	temp = vtos (location);
@@ -1369,7 +1318,7 @@ void(string name) console_kill_entity =
 	{
 		if (e.style != CLANRING_MANUAL_SPAWN)
 		{
-			local vector v;
+			 vector v;
 			v = e.origin - location;
 			if (vlen(v) < 20)
 			{
@@ -1392,8 +1341,8 @@ void(string name) console_kill_entity =
 //
 void() console_kill_item =
 {
-	local vector v;
-	local float dz;
+	 vector v;
+	 float dz;
 
 	if (self.style == CLANRING_MANUAL_SPAWN)
 		return;
@@ -1403,7 +1352,7 @@ void() console_kill_item =
 	v_z = 0;
 	if (vlen(v) < 20 && dz < 100)
 	{
-		local string temp;
+		 string temp;
 		temp = vtos(self.origin);
 		cprint5("removed ", self.classname, " at ", temp, "\n");
 		remove(self);
@@ -1417,11 +1366,11 @@ void() console_kill_item =
 //
 void() console_make_item = 
 {
-	local float item;
-	local entity oself;
-    local string temp;
+	string item;
+	entity oself;
+	string temp;
 
-	item = cvar("skill");
+	item = argv(4);//cvar("skill");
 	oself = self;
 
     // create entity
@@ -1433,7 +1382,7 @@ void() console_make_item =
     self.angles = '0 0 0';
 	self.style = CLANRING_MANUAL_SPAWN;
 
-	if (item < 4)
+/*	if (item == "item_health")
 	{
 		self.classname = "item_health";
 		if (item == 1)
@@ -1519,10 +1468,10 @@ void() console_make_item =
 		item_artifact_envirosuit();
 	}
 	else if (item == 22)
-	{
+	{*/
 		self.classname = "item_artifact_super_damage";
 		item_artifact_super_damage();
-	}
+/*	}
 	else if (item == 23)
 	{
 		self.classname = "item_artifact_invulnerability";
@@ -1539,7 +1488,7 @@ void() console_make_item =
 		self = oself;
 		return;
 	}
-
+*/
     temp = vtos(self.origin);
     cprint4(self.classname, " created at ", temp, "\n");
 
@@ -1554,9 +1503,9 @@ void() console_make_item =
 //
 void() console_change_item = 
 {
-	local vector v;
-	local string temp;
-	local float dz;
+	 vector v;
+	 string temp;
+	 float dz;
 
 	if (self.style == CLANRING_MANUAL_SPAWN)
 		return;
@@ -1590,8 +1539,8 @@ void(float val) console_onoff =
 //
 void() console_show_settings = 
 {
-	local float temp;
-	local string sz;
+	 float temp;
+	 string sz;
 
 	cprint("\n");
 
@@ -1673,9 +1622,9 @@ void(float maxteams) console_set_max_teams =
 //
 void() console_admins =
 {
-	local entity e;
-	local string s;
-	local float found;
+	 entity e;
+	 string s;
+	 float found;
 
 	found = 0;
 	e = find(world, classname, "player");
@@ -1713,7 +1662,9 @@ void() console_admins =
 //
 void(float command) console_command =
 {
-	local float arg;
+	 float arg;
+
+     dprint(sprintf("%s\n", ftos(command)));
 
 	if (command >= 20 && command <= 48)
 	{
@@ -1724,13 +1675,7 @@ void(float command) console_command =
 			return;
 		}
 	}
-/*R00k: removed. replaced in config.qc
-	if (command >= 100 && command < 200)
-	{
-		console_check_level(command - 100);
-		return;
-	}
-*/
+
 	if (command >= 80 && command <= 89)
 	{
 		arg = cvar("skill");
@@ -2084,7 +2029,7 @@ void(float command) console_command =
 
 void () CaptureHighScores_sprint =
 {
-	local string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
+	string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
 	if (playerrecord[0].statvalue > 0)
 	{
 		s1 = sprintf("\1  %s %s %-16s\n", utils_get_time(playerrecord[0].statvalue), get_team_letter(playerrecord[0].teamcolor), playerrecord[0].player);
@@ -2124,7 +2069,7 @@ void () CaptureHighScores_sprint =
 
 void () AirshotHighScores_sprint =
 {
-	local string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
+	 string s1="",s2="",s3="",s4="",ts1="",ts2="",ts3="";
 
 	//TODO: update for higher PLAYER_RECORDS_MAX_COUNT?
 	if (playerrecord[0].statvalue > 0)
@@ -2168,7 +2113,7 @@ void () AirshotHighScores_sprint =
 
 void () LongRangeGibs_sprint =
 {
-	local string s1="",s2="",s3="",s4="";
+	 string s1="",s2="",s3="",s4="";
 
 	//TODO: update for higher PLAYER_RECORDS_MAX_COUNT?
 	if (playerrecord2[0].statvalue > 0)

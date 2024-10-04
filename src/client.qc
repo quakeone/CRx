@@ -321,9 +321,9 @@ void() IntermissionThink =
     if ((self.impulse > 0) && (self.impulse < 6))
     {
         stuffcmd(self, "play buttons/switch04.wav\n");
-           tokenize(vote_map_choices[self.impulse]);
+        tokenize(vote_map_choices[self.impulse]);
 
-           string myVoteMapName = strzone(argv(0));
+        string myVoteMapName = strzone(argv(0));
         string myVoteMapTitle = strzone(redify(argv(1)));
 
         if ((self.warp_map) && ((self.warp_map) == self.impulse))
@@ -826,14 +826,15 @@ void() PutClientInServer =
 {
     local entity spot = world;
 
-    if (clanring_playmode & CLANRING_MATCH_MODE)
-    {
-//		if (!(clanring_state & CLANRING_MATCH_STARTED))
-        {
-            if ((self.client == "Quake"))//||(self.client == "QSS-M")) //not ezq, fte, qss
-                pqc_ping_times();
-        }
-    }
+    //R00k: when the player presses TAB the client should request pings (removed Sept '24)
+    //  if (clanring_playmode & CLANRING_MATCH_MODE)
+    // {
+	// 	if (!(clanring_state & CLANRING_MATCH_STARTED))
+    //     {
+    //         if ((self.client == "Quake"))//||(self.client == "QSS-M")) //not ezq, fte, qss
+    //             pqc_ping_times();
+    //     }
+    // }
 
     DecodeLevelParms ();
 
@@ -931,7 +932,7 @@ void() PutClientInServer =
         }
     }
 
-    W_SetCurrentAmmo ();
+    W_SetCurrentAmmo();
 
     self.attack_finished 	= time;
     //Todo enable this with a votable so dm2's quad team-boost works
@@ -1033,8 +1034,9 @@ void() info_player_team1 =
     if (clanring_playmode & CLANRING_MATCH_MODE)
     {
         self.mdl = "progs/player.mdl";
-        self.frame = 17;
+        self.frame = 139;
         self.alpha = 0.4;
+        self.skin = 1;
         spawns_restore_model();
     }
 };
@@ -1044,8 +1046,9 @@ void() info_player_team2 =
     if (clanring_playmode & CLANRING_MATCH_MODE)
     {
         self.mdl = "progs/player.mdl";
-        self.frame = 17;
+        self.frame = 119;
         self.alpha = 0.4;
+        self.skin = 3;
         spawns_restore_model();
     }
 };

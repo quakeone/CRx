@@ -327,7 +327,6 @@ void(string command, string value) config_command =
 			break;
 		}
 // entity file commands
-/*
 		case "newspawn":
 		{
 			console_make_entity("info_player_deathmatch", 1);
@@ -365,7 +364,6 @@ void(string command, string value) config_command =
 			utils_do_items(console_change_item);
 			break;
 		}
-*/
 // control commands
 		case "-init-":
 		case "-ffa-":		// basic normal dm
@@ -898,7 +896,7 @@ void() clanring_ent_config =
 {
 	//Entity Files
 	print("Loading Entities Configuration File: entities/", mapname, ".ent\"\n");
-	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+//	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("entities/", mapname, ".ent")));
 };
 
@@ -906,7 +904,7 @@ void() clanring_cam_config =
 {
 	//Camera Files
 	print("Loading Camera Configuration File: \"camera/", mapname, ".cam\"\n");
-	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+//	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("cameras/", mapname, ".cam")));
 };
 
@@ -914,7 +912,7 @@ void() clanring_map_config =
 {
 	//Map specific settings
 	print(sprintf("Loading Map Configuration File: \"configs/%s.cfg\n", mapname));
-	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+//	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("configs/", mapname, ".cfg")));
 };
 
@@ -945,7 +943,7 @@ void() clanring_exec_configs =
 	clanring_map_config();
 	clanring_nextlevel_config();
 
-//	clanring_ent_config();//(FIXME)
+	clanring_ent_config();//(FIXME)
 //	clanring_cam_config();//(FIXME)
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{

@@ -1013,12 +1013,14 @@ PLAYER WEAPON USE
 */
 
 
-void() W_SetCurrentAmmo =
+void W_SetCurrentAmmo(void) =
 {
 	if (self.health <= 0) // bug fix (thanks to QIP [www.inside3d.com/qip]
 		return;
 
 	player_run ();		// get out of any weapon firing states
+	self.weaponframe = 0;
+	
 
 	self.items = self.items - ( self.items & (IT_SHELLS | IT_NAILS | IT_ROCKETS | IT_CELLS) );
 
@@ -1029,71 +1031,60 @@ void() W_SetCurrentAmmo =
 			self.weaponmodel = "progs/v_star.mdl";
 		else
 			self.weaponmodel = "progs/v_axe.mdl";
-		// self.weaponframe = 0;
 	}
 	else
 	if (self.weapon == IT_AXE)
 	{
 		self.currentammo = 0;
 		self.weaponmodel = "progs/v_axe.mdl";
-		// self.weaponframe = 0;
 	}
 	else if (self.weapon == IT_SHOTGUN)
 	{
 		self.currentammo = self.ammo_shells;
 		self.weaponmodel = "progs/v_shot.mdl";
-		// self.weaponframe = 0;
 		self.items = self.items | IT_SHELLS;
 	}
 	else if (self.weapon == IT_SUPER_SHOTGUN)
 	{
 		self.currentammo = self.ammo_shells;
 		self.weaponmodel = "progs/v_shot2.mdl";
-		// self.weaponframe = 0;
 		self.items = self.items | IT_SHELLS;
 	}
 	else if (self.weapon == IT_NAILGUN)
 	{
 		self.currentammo = self.ammo_nails;
 		self.weaponmodel = "progs/v_nail.mdl";
-		// self.weaponframe = 0;
 		self.items = self.items | IT_NAILS;
 	}
 	else if (self.weapon == IT_SUPER_NAILGUN)
 	{
 		self.currentammo = self.ammo_nails;
 		self.weaponmodel = "progs/v_nail2.mdl";
-		// self.weaponframe = 0;
 		self.items = self.items | IT_NAILS;
 	}
 	else if (self.weapon == IT_GRENADE_LAUNCHER)
 	{
 		self.currentammo = self.ammo_rockets;
 		self.weaponmodel = "progs/v_rock.mdl";
-		// self.weaponframe = 0;
 		self.items = self.items | IT_ROCKETS;
 	}
 	else if (self.weapon == IT_ROCKET_LAUNCHER)
 	{
 		self.currentammo = self.ammo_rockets;
 		self.weaponmodel = "progs/v_rock2.mdl";
-		// self.weaponframe = 0;
 		self.items = self.items | IT_ROCKETS;
 	}
 	else if (self.weapon == IT_LIGHTNING)
 	{
 		self.currentammo = self.ammo_cells;
 		self.weaponmodel = "progs/v_light.mdl";
-		// self.weaponframe = 0;
 		self.items = self.items | IT_CELLS;
 	}
 	else
 	{
 		self.currentammo = 0;
 		self.weaponmodel = "";
-		// self.weaponframe = 0;
 	}	
-	self.weaponframe = 0;
 };
 
 float() W_BestWeapon =

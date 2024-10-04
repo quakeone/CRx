@@ -1457,7 +1457,10 @@ void (float response) observer_confirm_leave_response =
 	}
 
 	if (response)
+	{
+		bprint(sprintf("%s became an \bobserver\b.\n", self.netname));
 		observer_start ();
+	}
 	else
 		sprint(self, "Cancelled\n");
 };
@@ -1845,8 +1848,8 @@ void() observer_fly_move =
 	self.velocity_z = self.velocity_z + z;
 	z = vlen(self.velocity);
 	
-	if (z > 500)
-		self.velocity = (self.velocity) * (500 / z);
+	if (z > 1000)
+		self.velocity = v_forward * 1000;
 	
 	// if (self.button0)
 	// 	observer_fly_through_obstacle ();

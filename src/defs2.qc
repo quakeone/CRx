@@ -471,7 +471,8 @@ float 	PQC_PING_TIMES	=	7;
 
 float	clanring_afk_check;
 float	clanring_afk_timeout;
-.float	afk_time;
+.float 	afk_time;
+.float 	vote;    //client flag that holds their vote
 
 .float stats_item_ssg;				//
 .float stats_item_ng;				//
