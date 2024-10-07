@@ -73,7 +73,7 @@ float () item_customizeentityforclient =
 
         if ((self.nextthink > time) && (a < 1))
         {
-            self.alpha -= 0.015;
+            self.alpha -= 0.0125;
             self.scale += 0.05; 
         }
         else
@@ -88,17 +88,11 @@ float () item_customizeentityforclient =
                 }
 
                 float b = (1 / a);
-                self.alpha = clamp(b, 0.01, 0.666);
+                self.alpha = clamp(b, 0.01, 0.6);
                 self.scale = clamp(self.scale + b, 1.0, 3);
             }
         }
-    }
-    else
-    {
-        self.alpha = 0;
-        self.scale = 1;
-    }          
-
+    }    
     return TRUE;
 }
 // ----------------------------------------------
@@ -151,8 +145,6 @@ void() PlaceItem =
         }
     }
     
-    self.customizeentityforclient = item_customizeentityforclient;
-
     if (!droptofloor())
     {
         dprint ("Bonus item fell out of level at ");
@@ -665,6 +657,7 @@ void() item_armor1 =
     self.touch = armor_touch;
     // precache_model ("progs/armor.mdl");  CLANRING_MOD - moved to world.qc
     setmodel (self, "progs/armor.mdl");
+    self.customizeentityforclient = item_customizeentityforclient;
     self.skin = 0;
     setsize (self, '-16 -16 0', '16 16 56');
     StartItem ();
@@ -677,6 +670,7 @@ void() item_armor2 =
     self.touch = armor_touch;
     // precache_model ("progs/armor.mdl");  CLANRING_MOD - moved to world.qc
     setmodel (self, "progs/armor.mdl");
+    self.customizeentityforclient = item_customizeentityforclient;
     self.skin = 1;
     setsize (self, '-16 -16 0', '16 16 56');
     StartItem ();
@@ -961,6 +955,7 @@ void() weapon_supershotgun =
     self.touch = weapon_touch;
     setsize (self, '-16 -16 0', '16 16 56');
     self.particles_offset = '0 0 33';
+    self.customizeentityforclient = item_customizeentityforclient;
     StartItem ();
 };
 
@@ -974,6 +969,7 @@ void() weapon_nailgun =
     self.touch = weapon_touch;
     setsize (self, '-16 -16 0', '16 16 56');
     self.particles_offset = '0 0 31';
+    self.customizeentityforclient = item_customizeentityforclient;
     StartItem ();
 };
 
@@ -987,6 +983,7 @@ void() weapon_supernailgun =
     self.touch = weapon_touch;
     setsize (self, '-16 -16 0', '16 16 56');
     self.particles_offset = '0 0 34';
+    self.customizeentityforclient = item_customizeentityforclient;
     StartItem ();
 };
 
@@ -1000,6 +997,7 @@ void() weapon_grenadelauncher =
     self.touch = weapon_touch;
     setsize (self, '-16 -16 0', '16 16 56');
     self.particles_offset = '0 0 28';
+    self.customizeentityforclient = item_customizeentityforclient;
     StartItem ();
 };
 
@@ -1013,6 +1011,7 @@ void() weapon_rocketlauncher =
     self.touch = weapon_touch;
     setsize (self, '-16 -16 0', '16 16 56');
     self.particles_offset = '0 0 32';
+    self.customizeentityforclient = item_customizeentityforclient;
     StartItem ();
 };
 
@@ -1026,6 +1025,7 @@ void() weapon_lightning =
     self.touch = weapon_touch;
     setsize (self, '-16 -16 0', '16 16 56');
     self.particles_offset = '0 0 31';
+    self.customizeentityforclient = item_customizeentityforclient;
     StartItem ();
 };
 
@@ -1818,6 +1818,7 @@ void() item_artifact_invulnerability =
     self.mdl = "progs/invulner.mdl";	// ELOHIM_MOD - so disable/enable works
     self.netname = "Pentagram of Protection";
     self.items = IT_INVULNERABILITY;
+    self.customizeentityforclient = item_customizeentityforclient;
     setsize (self, '-16 -16 -24', '16 16 32');
     if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
         self.particles_offset = '0 0 16';
@@ -1859,6 +1860,7 @@ void() item_artifact_invisibility =
     self.noise = "items/inv1.wav";
     setmodel (self, "progs/invisibl.mdl");
     self.mdl = "progs/invisibl.mdl";	// ELOHIM_MOD - so disable/enable works
+    self.customizeentityforclient = item_customizeentityforclient;
     self.netname = "Ring of Shadows";
     self.items = IT_INVISIBILITY;
     setsize (self, '-16 -16 -24', '16 16 32');
@@ -1872,19 +1874,6 @@ void() item_artifact_invisibility =
 /*QUAKED item_artifact_super_damage (0 .5 .8) (-16 -16 -24) (16 16 32)
 The next attack from the player will do 4x damage
 */
-float () quad_customizeentityforclient = 
-{
-    if ((self.nextthink > time) && (self.nextthink -  5 < time))
-    {
-        setmodel(self,self.mdl);
-        self.effects = self.effects | EF_BRIGHTFIELD;
-    }
-    else
-        self.effects = self.effects - (self.effects & EF_BRIGHTFIELD);
-        
-    return TRUE;
-};
-
 void() item_artifact_super_damage =
 {
     self.touch = powerup_touch;
