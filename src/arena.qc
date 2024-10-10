@@ -11,7 +11,6 @@ void () ra_select_team;
 void() Request_Poll_Cleanup;
 float (string captiona, string captionb, void() passfunc, string pollname = "") vote_init;
 float () W_BestWeapon;
-void () score_update_time;
 void () SUB_regen;
 void (float dm) ThrowHead;
 void () match_reset_powerup;

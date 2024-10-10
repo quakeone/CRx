@@ -1923,6 +1923,14 @@ void() PlayerPostThink =
 
     CheckCombos();
 
+    //R00k: moved this out 
+    if (self.delayed_impulse)
+	{
+		self.impulse = self.delayed_impulse;
+		self.delayed_impulse = 0;
+		ImpulseCommands ();
+	}
+
     // ELOHIM_NO_POST_THINK is set for gameover, deadflag,
     // setting options and match paused
     if (self.style & CLANRING_NO_POST_THINK)
@@ -1931,8 +1939,8 @@ void() PlayerPostThink =
         return;
     }
 
-    //if (time >= self.attack_finished)//R00k removed so non weapon impulse commands can be handled faster
-    W_WeaponFrame ();
+    if (time >= self.attack_finished)
+        W_WeaponFrame ();
 
     if ((self.style & CLANRING_AUTOID) && (!(self.style & CLANRING_OBSERVER)))//R00k; not observers.
     {

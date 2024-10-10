@@ -1019,8 +1019,7 @@ void W_SetCurrentAmmo(void) =
 		return;
 
 	player_run ();		// get out of any weapon firing states
-	self.weaponframe = 0;
-	
+	self.weaponframe = 0;	
 
 	self.items = self.items - ( self.items & (IT_SHELLS | IT_NAILS | IT_ROCKETS | IT_CELLS) );
 
@@ -1619,12 +1618,6 @@ void() W_WeaponFrame =
 	//if (time < self.attack_finished)
 	//	return;
 
-	if (self.delayed_impulse)
-	{
-		self.impulse = self.delayed_impulse;
-		self.delayed_impulse = 0;
-		ImpulseCommands ();
-	}
 	// END_MOD
 
 	if (self.deadflag)
@@ -1636,7 +1629,7 @@ void() W_WeaponFrame =
 	//BuckSh0t: stop firing during timer countdown
 	if ((match_prewar()) && (clanring_state & CLANRING_TIMER_STARTED))
 	{
-		if (self.weapon != IT_HOOK) //R00k: still allow them to finish their capture time trial
+		if (self.weapon != IT_HOOK) //R00k: allow them to finish their capture time trial
 			return;
 	}
 
@@ -1651,8 +1644,7 @@ void() W_WeaponFrame =
 			clear_afk_status(self);	//R00k:	
 		}
 	}
-	else if (time > self.attack_finished) //R00k added
-		self.style = self.style | CLANRING_OK_TO_SHOOT;
+	else self.style = self.style | CLANRING_OK_TO_SHOOT;
 };
 
 /*

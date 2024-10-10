@@ -521,7 +521,6 @@ void() match_end =
 			{
 				announce("Match tied - Sudden Death Overtime!!");
 			}
-			score_update_time();
 			return;
 		}
 	}
@@ -563,7 +562,7 @@ void() match_end =
 	clanring_match_timer.nextthink = time + 3;
 	clanring_numteams = 0;
 	clanring_sentinel.movetarget = world;
-	score_update_time();
+
 	// Dump statistics for anyone who has autostats set
 	utils_do_players(stats_autodump);
 	console_autodump();//fixme
@@ -598,7 +597,6 @@ void() match_timer_think2 =
 	}
 
 	self.nextthink = time + 1;
-	score_update_time();
 
 	// control stats
 	if (clanring_sentinel.movetarget)
@@ -836,11 +834,10 @@ void() match_begin =
 			utils_make_scheduled_event(match_remove_starts, 2);
 		}
 	}
-
-	score_resend_scoreboard();
 	// Initialize the score module
 	score_init();
 //	stats_delete_copies();//(todo)
+	match_update_score_info(); //R00k: OCT'24
 };
 
 //
@@ -898,8 +895,6 @@ void() match_timer_think1 =
 		self.lip -= 1;
 	}
 	self.nextthink = time + 1;
-
-	score_update_time();
 
 	if (self.count == self.dest_x)
 	{
@@ -1039,7 +1034,6 @@ float () match_put_player_in_team =
 	{
 		clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_OVER);
 		match_delete_teams();
-		score_resend_scoreboard();
 		match_update_score_info();
 	}
 
@@ -1221,8 +1215,6 @@ void() match_start_timer =
 	// 	clanring_match_timer.count 	= 59;
 	// 	announce("Match begins in 1 minute");
 	// }
-
-	score_update_time();
 };
 
 //
@@ -1751,7 +1743,6 @@ void() match_notready =
 		clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
 		clanring_state = clanring_state - (clanring_state & CLANRING_NULL_FLAG);
 		match_show_timelimit();
-		score_resend_scoreboard();
 	}
 };
 
@@ -2501,16 +2492,6 @@ void() match_impulse =
 			match_request_lock();
 			break;
 		}
-		case (131):
-		{
-			score_show_teamscores();
-			break;
-		}
-		case (132):
-		{
-			score_restore_scoreboard();
-			break;
-		}
 		case (133):
 		{
 			match_show_rockets();
@@ -2761,7 +2742,7 @@ void(entity player) match_disconnect_notify =
 			clanring_state = clanring_state - (clanring_state & CLANRING_TIMER_STARTED);
 			clanring_state = clanring_state - (clanring_state & CLANRING_MATCH_STARTED);
 			match_show_timelimit();
-			score_resend_scoreboard();
+			match_update_score_info(); //R00k: OCT'24
 			utils_do_match_spawns(spawns_restore_model);	//R00k
 		}
 		return;

@@ -202,8 +202,6 @@ void (float value) clanring_set_fraglimit;
 void () stats_reset_player;
 void () stats_impulse;
 void () score_init_world;
-void () score_client_connect;
-void () score_client_disconnect;
 void (float command) console_command;
 void () console_set_aliases;
 void () client_select_warp;
@@ -795,8 +793,6 @@ void () clanring_set_aliases =
     stuffcmd(self, "alias score impulse 128\n");
     stuffcmd(self, "alias help-match impulse 129\n");
     stuffcmd(self, "alias lock impulse 130\n");
-    stuffcmd(self, "alias +teamscores \"+showscores;impulse 131\"\n");
-    stuffcmd(self, "alias -teamscores \"-showscores;impulse 132\"\n");
     stuffcmd(self, "alias rockets impulse 133\n");
     stuffcmd(self, "alias observer impulse 140\n");
     stuffcmd(self, "alias walk impulse 141\n");
@@ -1210,11 +1206,10 @@ void () clanring_client_connect =
 
     //utils_make_scheduled_event(clanring_send_detect, 0.8);
 
-    // Check to see if there is a scoreboard conflict
-    if (clanring_playmode & CLANRING_MATCH_MODE)
-        score_client_connect();
-    else
-        clanring_put_player_in_list();
+	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
+	{
+		clanring_put_player_in_list();
+	}
 
     utils_make_scheduled_event(clanring_show_mode, 0.5);
     self.cnt = CLANRING_MAX_SUICIDES;  // numer of suicides allowed
@@ -1291,7 +1286,6 @@ void () clanring_client_disconnect =
     // player is the first person on the team.
     if (clanring_playmode & CLANRING_MATCH_MODE)
     {
-        score_client_disconnect();
         match_disconnect_notify(self);
     }
     else if (mode_is_arena())
