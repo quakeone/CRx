@@ -1128,7 +1128,7 @@ float () match_put_player_in_team =
 	pteam.count 					= 1; 
 	pteam.height 					= self.height;
 	
-	//setcolour(self, pteam.height, pteam.height);//Teams, are solid pants and shirts... fixme?
+	setcolour(self, pteam.height, pteam.height);    // disallow colors 14/15
 
 	//refresh skins
 	if ((self.height + 1) == RED)

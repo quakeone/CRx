@@ -263,6 +263,8 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 			print("ERROR: setcolour: invalid client slot\n"); //output to console for debugging.
 			return;
 		}
+		clientshirt = bound(0,clientshirt,13);  // disallow colors 14/15
+		clientpants = bound(0,clientpants,13);
 		msg_entity = ent;
 		WriteByte(MSG_ALL, SVC_UPDATECOLORS);
 		WriteByte(MSG_ALL, client);
