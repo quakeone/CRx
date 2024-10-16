@@ -9,8 +9,6 @@
 //
 float () match_count_players;
 void () match_end;
-void () score_update_frags;
-void () score_restore_scoreboard;
 
 //
 //  I N I T
@@ -87,8 +85,6 @@ void () score_get_top2 =
 //
 void (entity pteam, float fragval) score_frag =
 {
-	local entity newent;
-	
 	if (pteam == world) return; //R00k
 
 	// update the team score
@@ -154,13 +150,8 @@ void (entity pteam, float fragval) score_frag =
 		clanring_sentinel.think = score_check_sudden_death;
 		clanring_sentinel.nextthink = time + 1;
 	}
-	if (clanring_score_count && teamplay)
-	{
-		newent = utils_make_scheduled_event(score_update_frags, 0.1);
-		newent.next_team = pteam;
-	}
 };
-
+/*
 //
 //  W R I T E  N A M E
 //
@@ -539,3 +530,6 @@ void () score_resend_scoreboard =
 	}	
 	self = oself;
 };
+*/
+
+//eof

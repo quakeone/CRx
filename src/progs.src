@@ -1,8 +1,8 @@
 ./progs.dat
-
+#pragma warning disable F301 //there's lots of non-utf-8 strings. we're not really aiming for forwards compatibility here, but fteextensions.qc kinda assumes you are
+#pragma warning disable F326 /*Variable "customizeentityforclient" is deprecated*/
 #message Targetting engines using QSG extensions (FTE/QSS/DP).
 fteextensions.qc
-#pragma warning disable F301 //there's lots of non-utf-8 strings. we're not really aiming for forwards compatibility here, but fteextensions.qc kinda assumes you are
 defs.qc
 defs2.qc
 newflags.qc
@@ -17,6 +17,7 @@ debug.qc
 status.qc
 warp.qc
 angles.qc
+votemenu.qc
 server.qc
 ctf.qc
 arena.qc
@@ -39,6 +40,7 @@ keydata.qc
 customsounds.qc //mapper-settable custom sound effects for monsters - iw
 custom_mdls.qc //mapper-settable custom models for monsters - iw
 items.qc
+json.qc
 console.qc
 config.qc
 options.qc

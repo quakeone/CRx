@@ -20,8 +20,6 @@
 	See file, 'gnu_gpl.txt', for details.
 */
 
-.float vote;    //client flag that holds their vote
-
 void() Request_Poll_Cleanup =
 {
 	local entity trash_disco;	
@@ -134,6 +132,7 @@ float(float ballot) Request_Poll_Votes_Needed =
 void(entity player, float cast) Request_Poll_Vote =
 {
 	local float votes_needed = 99;
+	
 	clear_afk_status(player);	//R00k
 
 	if (clanring_request == world)
@@ -250,26 +249,29 @@ void(entity player, float cast) Request_Poll_Vote =
 void() Request_Poll_Announce =
 {
 	//self is the clanring_request
-	
 	self.health -= 10;
-
+	
 	if (self.health <= 0)
 	{
 		self.nextthink = -99;
 		self.think = SUB_Null;
 
 		bprint("The request has expired.\n");
+		sound(world, CHAN_AUTO, "demon/dland2.wav", 1, ATTN_NONE);//R00k: sounds better.
 		Request_Poll_Cleanup();
 	}
 	else
 	{
 		sound(world, CHAN_AUTO, "misc/menu1.wav", 1, ATTN_NONE);
+		bprint("\n\[ vote request \]\n");
+		bprint(" ",self.owner.netname, " requests to ", self.noise1, self.noise2, "\n");
+		bprint("\n Type \byes\b or \bno\b in console to cast your vote.\n\n");
 
-		bprint(self.owner.netname, " requests to ", self.noise1, self.noise2, "\n");
-		bprint("\nType \byes\b or \bno\b in console to cast your vote.\n\n");
+		if (self.health < 40)	// 30, 20, 10
+			bprint(sprintf(" request expires in %s seconds.\n", strings_ftos_gold(self.health)));
 
 		self.nextthink = time + 10;
-		self.think = Request_Poll_Announce;										// Doubt we have to refresh this but...
+		self.think = Request_Poll_Announce;	// Doubt we have to refresh this but...
 	}
 };
 
@@ -277,23 +279,22 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 {
     clear_afk_status(self);	//R00k: (1/3/2022 12:54pm)
 
-/*TODO:
-	if (clanring_playmode & CLANRING_DISABLE_VOTE)
+	if (clanring_gameconfig & CLANRING_DISABLE_VOTE)
 	{
+		stuffcmd(self,"play doors/runetry.wav\n");
 		sprint(self, "Voting has been disabled.\n");
 		return FALSE;
 	}
-*/
 
-	if (clanring_request)
+	if (clanring_request != world)
 	{
-		sound (world, CHAN_AUTO, "misc/menu2.wav", 1, ATTN_NONE);
-		sprint(self, "A vote is already in progress.\n");		
+		bprint("\n\bThere is already a vote in progress to ", clanring_request.noise1, clanring_request.noise2, "\n");
 		return FALSE;
 	}
 
    	if ((self.style & CLANRING_OBSERVER) && (clanring_state & CLANRING_MATCH_STARTED))//R00k
 	{
+		stuffcmd(self,"play doors/runetry.wav\n");
 		sprint(self, "Observers cannot initiate votes during match.\n");
 		return FALSE;
 	}
@@ -305,14 +306,15 @@ float (string captiona, string captionb, void() passfunc, string pollname = "") 
 	clanring_request.classname = pollname;			// We can use the classname to determine criteria for certain requests.
 	clanring_request.nextthink = time + 10;			// Announce the request every 10 seconds.
 	clanring_request.think = Request_Poll_Announce;
-	clanring_request.health = 50;					// This will be the time-limit for how long to wait for everyone to cast a vote.
+	clanring_request.health = 20;					// This will be the time-limit for how long to wait for everyone to cast a vote.
 	clanring_request.touch = passfunc;				// Call this function if the poll is positive
 
-	if ((Request_Poll_Votes_Needed(1) > 0))					// if there is only one player on the server then there is no need to announce the vote.
+	if ((Request_Poll_Votes_Needed(1) > 0))			// if there is only one player on the server then there is no need to announce the vote.
 	{
 		sound(world, CHAN_AUTO, "misc/menu1.wav", 1, ATTN_NONE);
-		bprint(clanring_request.owner.netname, " requests to ", clanring_request.noise1, clanring_request.noise2, "\n");
-		bprint("\nType \byes\b or \bno\b in console to cast your vote.\n\n");
+		bprint("\n\[ vote request \]\n");
+		bprint(" ", clanring_request.owner.netname, " requests to ", clanring_request.noise1, clanring_request.noise2, "\n");
+		bprint("\n Type \byes\b or \bno\b in console to cast your vote.\n\n");
 	}
 	return TRUE;
 };

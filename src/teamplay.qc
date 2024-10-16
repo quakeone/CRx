@@ -312,7 +312,8 @@ void() teamplay_final_stats =
 	if (self.style & CLANRING_CONNECTED)
 	{
 		stats_autodump();
-		teamplay_show_final_score();
+		if (teamplay)						//Pub CTF/TDM use RED vs BLUE
+			teamplay_show_final_score();
 	}
 };
 

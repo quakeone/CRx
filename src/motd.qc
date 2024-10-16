@@ -31,60 +31,46 @@ void() motd_init_world =
 
 void() motd_think =
 {	
-	if (self.count == 0)
-	{
-		if (self.owner.style & CLANRING_MOTD)
-		{
-			remove(self);
-			return;
-		}
-		self.owner.button0 = 0;
-	}
+	float bail = FALSE;
 
-	self.owner.style = self.owner.style | CLANRING_MOTD;
-	// remove the MOTD on fire or jump;	(R00k) or paused
-	if ((self.owner.button0) || (self.owner.button2) || (clanring_state & CLANRING_MATCH_PAUSED))
+	if (self.count > 10)
+		bail = TRUE;
+
+	if (self.count == 0)
+		self.owner.button0 = FALSE;
+
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		bail = TRUE;
+
+	if (self.owner.button0 || self.owner.button2 || vlen(self.owner.movement)) //cancel if they start moving too.
+		bail = TRUE;
+	
+	if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
+		bail = TRUE;
+
+	if (intermission_running)
+		bail = TRUE;
+
+	if (bail)
 	{
 		if (clanring_playmode & CLANRING_MATCH_MODE)
-			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
+		{
+			centerprint (self.owner, "\btype \bred\b or \bblue\b in console to join");
+		}
 		else if (!(mode_is_arena()))
-			centerprint(self.owner, "\btype \bready\b in console to join");
-		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
-		remove(self);
-		return;	
-	}
-	else if ((clanring_state & CLANRING_TIMER_STARTED) && !(clanring_state & CLANRING_MATCH_STARTED))
-	{
-		//remove motd if pre-match rules are being printed
+		{
+			centerprint (self.owner, "\btype \bready\b in console to join");
+		}
+
 		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
 		remove(self);
 		return;
 	}
 
-	if (self.count < 240)
-	{
-//		if (self.count == 0)		//outdated, old bots used to detect this phrase then exit.
-//		{			
-//			centerprint(self.owner, "no bots");
-//		}
-//		else
-		{
-			centerprint(self.owner, motd_top1,motd_top2);
-		}
-	
-		self.nextthink = time + 0.1;
-		self.count = self.count + 1;
-	}
-	else
-	{
-		if (clanring_playmode & CLANRING_MATCH_MODE)
-			centerprint(self.owner, "\btype \bred\b or \bblue\b in console to join");
-		else if (!(mode_is_arena()))
-			centerprint(self.owner, "\btype \bready\b in console to join");
-		self.owner.style = self.owner.style - (self.owner.style & CLANRING_MOTD);
-		remove(self);
-	}
-
+	self.owner.style = self.owner.style | CLANRING_MOTD;
+	centerprint(self.owner, motd_top1,motd_top2);
+	self.nextthink = time + 1;
+	self.count = self.count + 1;
 };
 
 //
@@ -125,13 +111,100 @@ void ()motd_print =
 	if (self.ca_player_flag == PF_PLAYING) //R00k: 6/12/2017 9:50AM (airshot practice)
 		return;
 
-	if (((!(self.oflags & OBSERVER_FLY))&&(!(self.oflags & OBSERVER_WALK))) || (self.next_team != world))
+	if ((!(self.oflags & OBSERVER_FLY))&&(!(self.oflags & OBSERVER_WALK)))
 	{
 		self.style = self.style - (self.style & CLANRING_MOTD);
 		return;
 	}
-	
+
+	if (mode_is_arena())
+	{
+		string ts = "choose a team\n\n";
+		
+		if (self.next_team.team2)
+		{
+			switch (self.next_team.team2)
+			{
+				case TEAM_RED:
+					ts = "you are on the \bred\b team\n\n";
+					break;
+				case COLOR_BLUE:
+					ts = "you are on the \bblue\b team\n\n";
+					break;
+				case TEAM_GREEN:
+					ts = "you are on the \bgreen\b team\n\n";
+					break;
+				case TEAM_YELLOW:
+					ts = "you are on the \byellow\b team\n\n";
+					break;
+				case TEAM_SPECTATOR:
+					ts = "choose a team\n\n";
+					break;
+			}
+		}
+	}
 	centerprint7 (self, motd_top1, motd_top2, motd_top3, motd_top4, motd_top5, motd_top6, motd_top7);
+};
+
+void () motd_playercount =
+{
+    local float n;
+    local string s;
+    local string temp;
+    local entity e;
+
+    temp = "\x13 blue   \[B\]\n\x14 red    \[R\]\n\x15 yellow \[Y\]\n\x16 green  \[G\]\n\npress \x17 to uncommit from team\n";
+
+    e = find_team_entity(COLOR_BLUE);
+    if (e != world)
+    {
+        n = number_teammates(e);
+        s = ftos(n);
+        temp = strreplace("B", s, temp);
+    }
+    else
+    {
+        temp = strreplace("B", "0", temp);
+    }
+
+    e = find_team_entity(COLOR_RED);
+    if (e != world)
+    {
+        n = number_teammates(e);
+        s = ftos(n);
+        temp = strreplace("R", s, temp);
+    }
+    else
+    {
+        temp = strreplace("R", "0", temp);
+    }
+
+    e = find_team_entity(COLOR_YELLOW);
+    if (e != world)
+    {
+        n = number_teammates(e);
+        s = ftos(n);
+        temp = strreplace("Y", s, temp);
+    }
+    else
+    {
+        temp = strreplace("Y", "0", temp);
+    }
+
+    e = find_team_entity(COLOR_GREEN);
+    if (e != world)
+    {
+        n = number_teammates(e);
+        s = ftos(n);
+        temp = strreplace("G", s, temp);
+    }
+    else
+    {
+        temp = strreplace("G", "0", temp);
+    }
+ 
+    strunzone(motd_top4);
+    motd_top4 = strzone(temp);
 };
 
 void ()motd_arena_start =
@@ -153,6 +226,7 @@ void ()motd_arena_start =
 			motd_top2 = "\n\x85Clan Arena\x85\n\n";
 		motd_top3 = "\nchoose a team\n\n";
 		motd_top4 = "\x13 blue   \n\x14 red    \n\x15 yellow \n\x16 green  \n\npress \x17 to uncommit from team\n";
+		motd_playercount();
 	}
 	else if (clanring_playmode & CLANRING_RA_MODE)
 	{
