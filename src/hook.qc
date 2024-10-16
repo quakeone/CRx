@@ -323,12 +323,13 @@ void() W_FireHook =
 	hook.touch 		= T_HookTouch;
 	//hook.nextthink  = (time + 5);	//This will never occur on any current CTF map..
 	//hook.think 	 = HookVanish;
-	hook.nextthink 	= time + 0.5;//instead lets check if we let off the button in mid-flight! eh?
+	hook.nextthink 	= time + 0.3;//instead lets check if we let off the button in mid-flight! eh?
 	hook.think 		= Hook_Check;
 
 	if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
 	{
 		setmodel (hook, "progs/v_spike.mdl");
+		hook.effects |= EF_NOMODELFLAGS;	// Remove the trail.
 	}
 	else
 	{
@@ -364,7 +365,7 @@ void() W_FireHook =
 
 		if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
 		{
-			setmodel (link, "progs/s_spike.mdl");//oddly this is hardly seen as the vore's spike trail hides this
+			setmodel (link, "progs/s_spike.mdl");
 		}
 		else
 		{
