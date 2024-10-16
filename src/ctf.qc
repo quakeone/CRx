@@ -25,6 +25,7 @@ void(entity flg) RegenFlag =
 	}
 	else 
 	{
+		flg.effects = flg.effects - (flg.effects & EF_NOMODELFLAGS);
 		flg.mins 	= '-16 -16 -24';
 		flg.maxs	= '16 16 32';
 	}		
@@ -140,7 +141,9 @@ void(entity flg) TeamDropFlag =
 	}
 
 	p.fctime += (time - p.flag_since);
-	p.next_team.fctime += (time - p.flag_since);
+
+//	if (clanring_playmode & CLANRING_MATCH_MODE)
+	//	p.next_team.fctime += (time - p.flag_since);
 	flg.owner      	= world;
 	flg.origin     	= p.origin - '0 0 16';	
 	flg.cnt        	= FLAG_DROPPED;
@@ -456,6 +459,7 @@ void() TeamCaptureFlagTouch =
 	self.movetype	= MOVETYPE_NOCLIP;
 	self.solid		= SOLID_NOT;
 	self.owner		= other;
+	self.effects |= EF_NOMODELFLAGS;
 
 	if ((self.team == RED))
 		forceinfokey (world, "red flag","carried");
