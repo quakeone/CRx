@@ -597,8 +597,12 @@ void() W_FireLightning =
 
 	if (self.ammo_cells < 1)
 	{
-		self.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo();
+		if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+		{
+			self.weapon = W_BestWeapon();
+			W_SetCurrentAmmo();
+		}
+		self.weaponframe = 0;
 		return;
 	}
 
@@ -744,7 +748,7 @@ void() W_FireGrenade =
 		if (self.lip >= 4)
 		{
 			self.items = self.items - (self.items & IT_GRENADE_LAUNCHER);
-			self.weapon = W_BestWeapon ();
+			self.weapon = IT_AXE;//W_BestWeapon ();
 			W_SetCurrentAmmo();
 			sprint(self, "\b\< Grenade spam protection activated \>\n");
 			return;
@@ -897,8 +901,12 @@ void(float ox) W_FireSpikes =
 
 	if (self.ammo_nails < 1)
 	{
-		self.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo();
+		if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+		{
+			self.weapon = W_BestWeapon();
+			W_SetCurrentAmmo();
+		}
+		self.weaponframe = 0;
 		return;
 	}
 
@@ -1088,9 +1096,7 @@ void W_SetCurrentAmmo(void) =
 
 float() W_BestWeapon =
 {
-	local	float	it;
-	
-	it = self.items;
+	float it = self.items;
 
 	if (self.waterlevel <= 2 && self.ammo_cells >= 1 && (it & IT_LIGHTNING))
 		return IT_LIGHTNING;
@@ -1105,22 +1111,6 @@ float() W_BestWeapon =
 	if(self.ammo_shells >= 1 && (it & IT_SHOTGUN))
 		return IT_SHOTGUN;
 	return IT_AXE;
-};
-
-float() W_CheckNoAmmo =
-{
-	if (self.currentammo > 0)
-		return TRUE;
-
-	if (self.weapon == IT_AXE || self.weapon == IT_HOOK)
-		return TRUE;
-	
-	self.weapon = W_BestWeapon ();
-
-	W_SetCurrentAmmo();
-	
-// drop the weapon down
-	return FALSE;
 };
 
 /*
@@ -1139,32 +1129,48 @@ void() player_shot1;
 void() player_nail1;
 void() player_light1;
 void() player_rocket1;
-void()	player_hook1;
-void()  player_hook3;
+void() player_hook1;
+void() player_hook3;
 
 void() W_Attack =
 {
 	local float r;
 
-	if (self.plag)//added lag detection
-	{
-		self.plag = 0;
-	}
+	self.plag = FALSE;
 
+//autoswitch when letting off the fire button, unless SmartWeapon enabled.
 	if ((self.weapon != IT_HOOK) && (self.weapon != IT_AXE))
 	{
-		if (!W_CheckNoAmmo ())
-			return;
+		if (self.currentammo < 1)		
+		{
+			self.attack_finished = time + 0.5;
+			if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+			{
+				self.weapon = W_BestWeapon();
+				W_SetCurrentAmmo();
+			}
+			else
+			{
+				stuffcmd(self,";play weapons/g_click;\n");	// Don't require everyone to precache this.
+
+				if (self.currentammo <= 0)
+				{					
+					self.currentammo = 0.6;
+				}
+				else
+					self.currentammo -= 0.03;
+
+				self.weaponframe = 0;
+				return;
+			}
+		}
 	}
 
-	if (time < self.attack_finished)
-		return;
-		
-	makevectors (self.v_angle);		// calculate forward angle for velocity
-	self.show_hostile = time + 1;	// wake monsters up
+	makevectors (self.v_angle);	// calculate forward angle for velocity
+	self.show_hostile = time;	// FIXME: Use this for something...(last fired shot?)
 
 	// CRMOD - check for live players
-	if (self.weapon != IT_AXE)//A player can type +attack and idle but eventually he will run out of ammo and just be swinging the axe...
+	if (self.weapon != IT_AXE)  // A player can type +attack and idle but eventually he will run out of ammo and just be swinging the axe...
 		self.finaldest_x = time;
 	// END_MOD
 
@@ -1590,9 +1596,10 @@ ImpulseCommands
 */
 void() ImpulseCommands =
 {
-	if (self.impulse >= 1 && self.impulse <= 8)
+	if (self.impulse == 22)
 		W_ChangeWeapon ();
-	else if (self.impulse == 22)
+	else 
+	if (self.impulse >= 1 && self.impulse <= 8)
 		W_ChangeWeapon ();
 	else if (self.impulse == 10)
 		CycleWeaponCommand ();
@@ -1623,6 +1630,13 @@ void() W_WeaponFrame =
 	if (self.deadflag)
 		return;
 	
+    if (self.delayed_impulse)
+	{
+		self.impulse = self.delayed_impulse;
+		self.delayed_impulse = 0;
+		ImpulseCommands ();
+	}
+	
 	if (((mode_is_arena() == TRUE) && (boss.timetofight == FALSE)))
 		return;
 
@@ -1644,7 +1658,22 @@ void() W_WeaponFrame =
 			clear_afk_status(self);	//R00k:	
 		}
 	}
-	else self.style = self.style | CLANRING_OK_TO_SHOOT;
+	else
+	{
+		if ((self.weapon != IT_HOOK)&&(self.weapon != IT_AXE))
+		{
+			if (self.currentammo < 1)
+			{
+				if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+				{
+					self.weapon = W_BestWeapon();
+					W_SetCurrentAmmo();
+				}
+				self.weaponframe = 0;
+			}
+		}
+		self.style = self.style | CLANRING_OK_TO_SHOOT;
+	}
 };
 
 /*

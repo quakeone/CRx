@@ -91,7 +91,7 @@ float () item_customizeentityforclient =
                 self.alpha = clamp(b, 0.01, 0.6);
                 self.scale = clamp(self.scale + b, 1.0, 3);
             }
-        }
+        }        
     }    
     return TRUE;
 }
@@ -898,11 +898,8 @@ void() weapon_touch =
                 if (other.weapon != IT_HOOK)
                 {
                     Deathmatch_Weapon (other, self.weapon);
-                    if (other.weapon != IT_HOOK)
-                    {
-                        if (other.weapon == self.weapon)
-                            W_SetCurrentAmmo();
-                    }
+                    if (other.weapon == self.weapon)
+                        W_SetCurrentAmmo();
                 }
             }
         }
@@ -916,8 +913,7 @@ void() weapon_touch =
             if (( other.weapon == best ) && (other.weapon != IT_HOOK))
             {
                 self.weapon = W_BestWeapon();
-                if (other.weapon != IT_HOOK)
-                    W_SetCurrentAmmo();
+                W_SetCurrentAmmo();
             }
         }
 
@@ -1122,9 +1118,10 @@ void() ammo_touch =
         if (( other.weapon == best ) && ( other.weapon != IT_HOOK ))
         {
             if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
+            {
                 other.weapon = W_BestWeapon();
-                    
                 W_SetCurrentAmmo();
+            }
         }
         
         self = stemp;
@@ -2064,13 +2061,14 @@ void() BackpackTouch =
     remove(self);
     self = other;
 
-    if (( other.weapon == best ) && ( other.weapon != IT_HOOK ))
+    if ((other.weapon == best) && (other.weapon != IT_HOOK))
     {
         if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
+        {
             self.weapon = W_BestWeapon();
+            W_SetCurrentAmmo();
+        }
     }
-    if (other.weapon != IT_HOOK)
-        W_SetCurrentAmmo();
 };
 
 float() backpack_customizeentityforclient =
@@ -2267,10 +2265,9 @@ void() Team_weapon_touch =
         if (( other.weapon == best ) && (other.weapon != IT_HOOK))
         {
             self.weapon = W_BestWeapon();
+            W_SetCurrentAmmo();
         }
     }
-    if (other.weapon != IT_HOOK)
-        W_SetCurrentAmmo();
 
     self = stemp;
 

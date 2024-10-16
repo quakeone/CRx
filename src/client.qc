@@ -888,9 +888,12 @@ void() PutClientInServer =
         sprint(self, "Finding a better spawnpoint...\n");
         spot = SelectSpawnPoint();
     }
+
     self.trigger_field			= spot;	// Our last spawn point.
+
     if (clanring_playmode & CLANRING_AIRSHOT_MODE)
-        self.origin = self.oldorigin = airshot_droptofloor(spot);
+         spot.origin = airshot_droptofloor(spot);
+
     self.classname 				= "player";
     self.health 				= 100;
     self.takedamage 			= DAMAGE_AIM;
@@ -946,10 +949,10 @@ void() PutClientInServer =
 
     self.avelocity 		= '0 0 0';
     self.punchangle		= '0 0 0';
-
-    setorigin(self, spot.origin + '0 0 1');	//R00k: change our origin and relink our edict.
-    self.oldorigin = self.origin;			//R00k: update oldorigin so we dont respawn where we died.
-
+         
+    self.origin = self.oldorigin = spot.origin; //R00k: update oldorigin so we dont respawn where we died.
+    setorigin(self, spot.origin + '0 0 1');	    //R00k: change our origin and relink our edict.
+    
     self.lefty 		= 0;
     self.jump_flag 	= 0; // clear jump velocity to prevent falling damage
 
@@ -1512,7 +1515,7 @@ void() PlayerPreThink =
     else
         self.flags = self.flags | FL_JUMPRELEASED;
 
-    if (!self.currentammo)
+/*    if (!self.currentammo)
     {
         if ((self.weapon != IT_AXE) && (self.weapon != IT_HOOK))
         {
@@ -1522,7 +1525,7 @@ void() PlayerPreThink =
                 W_SetCurrentAmmo();
             }
         }
-    }
+    }*/
 };
 
 //R00k: Silly function for practice mode when an admin get pent
@@ -1894,6 +1897,9 @@ void() PlayerPostThink =
     {
         self.finaldest_x = time;  // player is alive
 
+        if (self.impulse == 22)
+    		W_ChangeWeapon ();
+
         // Redirect impulses 1-10 when player is entering a number
         if (self.use != SUB_Null)
         {
@@ -1922,14 +1928,6 @@ void() PlayerPostThink =
     }
 
     CheckCombos();
-
-    //R00k: moved this out 
-    if (self.delayed_impulse)
-	{
-		self.impulse = self.delayed_impulse;
-		self.delayed_impulse = 0;
-		ImpulseCommands ();
-	}
 
     // ELOHIM_NO_POST_THINK is set for gameover, deadflag,
     // setting options and match paused
