@@ -131,6 +131,9 @@ void(entity flg) TeamDropFlag =
 
 	p = flg.owner;
 	
+	if (p == world)
+		return; //already done.
+		
 	if (p.team == RED)
 	{
 		announce2(p.netname," μοστ the ΒΜΥΕ flag!"); // blue
@@ -140,7 +143,7 @@ void(entity flg) TeamDropFlag =
 		announce2(p.netname," μοστ the ÒΕΔ flag!"); // red
 	}
 
-//	p.fctime += (time - p.flag_since);
+	p.fctime += (time - p.flag_since);
 
 //	if (clanring_playmode & CLANRING_MATCH_MODE)
 	//	p.next_team.fctime += (time - p.flag_since);
