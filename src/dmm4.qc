@@ -214,7 +214,6 @@ void () dmm4_main_loop =
                     boss.lip = clanring_timelimit;
                     boss.count = 0;
                     arena_show_timelimit();
-                    score_update_time();
 
                     stats_matchtype = 1;
                     stats_timelimit = clanring_timelimit;

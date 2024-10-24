@@ -1,7 +1,5 @@
 void () airshot_init_world =
 {
-	local entity oself;
-			
 	boss = spawn ();
     boss.max_rounds 	= 1;
     boss.max_players 	= 1;
@@ -18,14 +16,9 @@ void () airshot_init_world =
     boss.ammo_shells 	= 0;
     boss.ammo_nails  	= 0;
     boss.ammo_rockets	= 100;
-    boss.ammo_cells  	= 0;
-    boss.items = (((IT_AXE | IT_ROCKET_LAUNCHER) | IT_ARMOR3) | IT_GRENADE_LAUNCHER);
-    
-    oself = self;
-    self = boss;
-    self.weapon = IT_ROCKET_LAUNCHER;// W_BestWeapon();
-    self = oself;	
-
+    boss.ammo_cells     = 0;
+    boss.items          = IT_AXE | IT_ROCKET_LAUNCHER | IT_ARMOR3 | IT_GRENADE_LAUNCHER;
+    boss.weapon 		= IT_ROCKET_LAUNCHER;
 	boss.timetofight 	= FALSE;
 	boss.next_team 		= world;
 	boss.busy			= FALSE;
@@ -36,9 +29,8 @@ void () airshot_init_world =
 
 float (entity targ, float damage) airshot_damage_z =
 {
-	local float		dist,rheight,rdamage;
+	local float		dist;
 	local vector 	start, end;
-	local string	s;
 		
 	start 	= targ.origin;
 	end 	= start;
@@ -46,19 +38,15 @@ float (entity targ, float damage) airshot_damage_z =
 	
 	traceline (start, end, TRUE, targ);		
 	
-	dist = (targ.absmin_z - trace_endpos_z);
+	dist = rint(targ.absmin_z - trace_endpos_z);
 
 	if (dist < 1)
 		dist = 0;
 		
     targ.airborn_pos = dist;            
 
-    if (dist > 45) //player jump height is 45
+	if (dist > 45) //player jump height is 45
     {
-		rheight = rint(dist);
-		s = ftos(rheight);
-		bprint3("\x90height: ",s,"\x91\n");
-		
 		if (damage < 100)
 		{
 			bprint("\x90splash dmg\x91\n");
@@ -67,23 +55,16 @@ float (entity targ, float damage) airshot_damage_z =
 		{
 			if (dist > 128)
 			{
-				damage = (damage + ((dist/128)*damage));
+				damage = rint((damage + ((dist/128)*damage)));
 			}
 			else
 			{
-				damage = (damage + ((dist/256)*damage));
+				damage = rint((damage + ((dist/256)*damage)));
 			}
-
-			if (targ.health > damage)
-			{
-				rdamage = rint(damage);
-				s = ftos(rdamage);
-				bprint3("\x90\bdamage\b: ",s,"\x91\n");
-			}
+			bprint3(sprintf("\x90height: %g\x91\n\x90\bdamage\b: %g\x91\n",dist,damage));
 		}
 		return damage;
     }
-
 	return 0;
 };
 

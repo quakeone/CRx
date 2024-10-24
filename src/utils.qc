@@ -95,44 +95,52 @@ void (string s1, string s2, string s3, string s4, string s5, string s6, string s
 
 void (string s1) cprint =
 {
-	localcmd2("echo ", s1);
+	print(s1);
+	//localcmd2("echo ", s1);
 };
 
 void (string s1, string s2) cprint2 =
 {
-	localcmd3("echo ", s1, s2);
+	print(s1, s2);
+	//localcmd3("echo ", s1, s2);
 };
 
 void (string s1, string s2, string s3) cprint3 =
 {
-	localcmd4("echo ", s1, s2, s3);
+	print(s1, s2, s3);
+	//localcmd4("echo ", s1, s2, s3);
 };
 
 void (string s1, string s2, string s3, string s4) cprint4 =
 {
-	localcmd5("echo ", s1, s2, s3, s4);
+	print(s1, s2, s3, s4);
+	//localcmd5("echo ", s1, s2, s3, s4);
 };
 
 void (string s1, string s2, string s3, string s4, string s5) cprint5 =
 {
-	localcmd6("echo ", s1, s2, s3, s4, s5);
+	print(s1, s2, s3, s4, s5);
+	//localcmd6("echo ", s1, s2, s3, s4, s5);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6) cprint6 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+	print(s1, s2, s3, s4, s5, s6);
+	//localcmd7("echo ", s1, s2, s3, s4, s5, s6);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6, string s7) cprint7 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
-	localcmd(s7);
+	print(s1, s2, s3, s4, s5, s6, s7);
+	//localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+	//localcmd(s7);
 };
 
 void (string s1, string s2, string s3, string s4, string s5, string s6, string s7, string s8) cprint8 =
 {
-	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
-	localcmd2(s7, s8);
+	print(s1, s2, s3, s4, s5, s6, s7, s8);
+// 	localcmd7("echo ", s1, s2, s3, s4, s5, s6);
+// 	localcmd2(s7, s8);
 };
 
 void (string s1) announce =
@@ -255,6 +263,8 @@ void (entity ent, float clientshirt, float clientpants) setcolour =
 			print("ERROR: setcolour: invalid client slot\n"); //output to console for debugging.
 			return;
 		}
+		clientshirt = bound(0,clientshirt,13);  // disallow colors 14/15
+		clientpants = bound(0,clientpants,13);
 		msg_entity = ent;
 		WriteByte(MSG_ALL, SVC_UPDATECOLORS);
 		WriteByte(MSG_ALL, client);
@@ -565,6 +575,37 @@ void (float t) utils_bprint_time =
 	//--------------------
 };
 
+//
+// G E T   T I M E   M I N U T E S   A N D   S E C O N D S
+//
+// Returns a string of t in mm:ss format, t is seconds
+//
+string (float t) utils_get_time_m_s =
+{
+	float minutes, seconds = 0;
+	string tmin="",tsec="";
+
+	minutes = floor((t/60));
+	seconds = floor((((t/60)-minutes)*60));
+
+	if ((minutes < 10))
+		tmin = sprintf("0%g", minutes);
+	else
+		tmin = sprintf("%g", minutes);
+
+	if ((seconds < 10))
+		tsec = sprintf("0%g", seconds);
+	else
+		tsec = sprintf("%g", seconds);
+
+	return sprintf("%s:%s", tmin, tsec);
+};
+
+//	
+// G E T   T I M E   w it h   M I L L I S E C O N D S
+//
+// Returns a string of t in mm:ss.ms format, t is seconds
+//
 string (float t) utils_get_time =
 {
 	local float minutes;
@@ -1224,6 +1265,16 @@ void (void () dofunc) utils_do_players =
     self = oldself;
 };
 
+void (entity whodat, void() dofunc) utils_do_player =
+{
+    local entity oldself;
+
+    oldself = self;
+    self = whodat;
+    dofunc();
+    self = oldself;
+};
+
 /*
 void (void () dofunc) utils_do_players_event =
 {
@@ -1365,6 +1416,28 @@ void (float flag, string name) utils_toggle_sflag =
 	utils_set_cvar ("samelevel", clanring_playmode);
 };
 
+// R00k
+//  T O G G L E  G F L A G
+//
+//  Toggles the specified flag in clanring_gameconfig
+//
+void (float flag, string name) utils_toggle_gflag =
+{
+	if (clanring_gameconfig & flag)
+	{
+		clanring_gameconfig = clanring_gameconfig - (clanring_gameconfig & flag);
+		bprint(name, " disabled\n");
+		print(name, " disabled\n");
+	}
+	else
+	{
+		clanring_gameconfig = (clanring_gameconfig | flag);
+		bprint(name, " enabled\n");
+		print(name, " enabled\n");
+	}
+	utils_set_cvar("gamecfg", clanring_gameconfig);
+};
+
 // CRMOD
 // S T U F F  T O  P L A Y E R
 //      by Paul Baker
@@ -1452,26 +1525,20 @@ vector (vector m1, vector m2) Rvec =
 // returns true if the maparg matches a name in the warp list
 float(string maparg) found_in_warp_list =
 {
-	local float ep_index, index, n, mapfound = FALSE;
+	float index, mapfound = FALSE;
 
 	if (maparg == "")
 		return FALSE;
 
-	for (ep_index = 1; ep_index < 16; ep_index += 1)
+	for (index = 1 ; index < (WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE) ; index += 1)
 	{
-		for (index = 1 ; index < 16 ; index += 1)
+		if (warpmap[index].name != "" && warpmap[index].name == maparg)
 		{
-			n = (ep_index * 15) + index;
-			if (warpmap[n].name != "" && warpmap[n].name == maparg)
-			{
-				mapfound = n;
-				break;
-			}
-		}
-		if (mapfound)
+			mapfound = index;
 			break;
+		}
 	}
-	return (mapfound);
+	return mapfound;
 };
 
 // used to determine mode from client command
@@ -1700,32 +1767,38 @@ float (entity e) client_ping =
 	local float ping;
 
 	ping = stof(infokey(e,INFOKEY_P_PING));
-	return ping;
+	return ping * 1000;			// R00k: whoops!
 };
 
-void ()pqc_ping_times =
+// U P D A T E  P I N G  T I M E S
+//
+// when we use SVC_UPDATENAME to put 'READY' on the scoreboard, all other elements become immutable
+// so, this specifically updates the ping element; for Proquake compatible clients.
+
+void () pqc_ping_times =
 {	
 	local entity e;
 	local float i, ping;
 
-	WriteByte(MSG_ALL, SVC_STUFFCMD);
-	WriteByte(MSG_ALL, MOD_PROQUAKE);
-	WriteByte(MSG_ALL, PQC_PING_TIMES);
+	msg_entity = self;
+
+	WriteByte(MSG_ONE, SVC_STUFFCMD);
+	WriteByte(MSG_ONE, MOD_PROQUAKE);
+	WriteByte(MSG_ONE, PQC_PING_TIMES);
 
 	e = world;
 	for (i = 0; i < 16; i = i + 1)
 	{		
-		e = nextent (e);
-		
-		if ((e.style & CLANRING_CONNECTED) && e.ping_time)
+		e = nextent (e);		
+		if ((e.classname == "player") && (e.style & CLANRING_CONNECTED) && e.ping_time)
 		{
 			ping = e.ping_time;
-			WriteShortPQ (MSG_ALL, ping + (i * 4096));
+			WriteShortPQ (MSG_ONE, ping + (i * 4096));
 		}
 	}
 
-	WriteShortPQ (MSG_ALL, 0);
-	WriteString(MSG_ALL, string_null);
+	WriteShortPQ (MSG_ONE, 0);
+	WriteString(MSG_ONE, string_null);
 };
 
 float () ammo_is_infinite =
@@ -1761,3 +1834,4 @@ float () prematch_rules =
 		return TRUE;
 	return FALSE;
 }
+

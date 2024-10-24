@@ -175,6 +175,9 @@ void() TeamCapturePlayerUpdate =
 	local string s3="";
 	local string res="";
 
+	if (intermission_running)
+		return;
+
 	if (clanring_playmode & CLANRING_PRACTICE_MODE)
 		return;
 		

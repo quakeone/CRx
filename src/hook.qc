@@ -260,7 +260,8 @@ void() T_HookTouch =
 				self.owner.ltime = (time + 0.5);
 				self.nextthink = (time + sys_ticrate);
 				self.think = HookPull;
-				self.touch = SUB_Null;				
+				self.touch = SUB_Null;		
+				self.solid = SOLID_NOT;		
 			}
 			else
 			{
@@ -315,19 +316,20 @@ void() W_FireHook =
 
 	if (hookspeedfire < 800)
 		hookspeedfire = 1200;
-		
-	hook.velocity 	= hookspeedfire * aim (self, hookspeedfire);
+
+	hook.velocity 	= hookspeedfire * v_forward;
 	hook.angles 	= vectoangles (hook.velocity);
 	hook.avelocity 	= '0 0 -500';
 	hook.touch 		= T_HookTouch;
 	//hook.nextthink  = (time + 5);	//This will never occur on any current CTF map..
 	//hook.think 	 = HookVanish;
-	hook.nextthink 	= time + 0.5;//instead lets check if we let off the button in mid-flight! eh?
+	hook.nextthink 	= time + 0.3;//instead lets check if we let off the button in mid-flight! eh?
 	hook.think 		= Hook_Check;
 
 	if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
 	{
 		setmodel (hook, "progs/v_spike.mdl");
+		hook.effects |= EF_NOMODELFLAGS;	// Remove the trail.
 	}
 	else
 	{
@@ -359,17 +361,17 @@ void() W_FireHook =
 		link.weapon = (linknum / 6); 
 		link.movetype = MOVETYPE_NOCLIP;
 		link.solid = SOLID_NOT;
-		link.angles = vectoangles(hook.velocity);
+		link.angles = hook.angles;
 
 		if (!(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM))
 		{
-			setmodel (link, "progs/s_spike.mdl");//oddly this is hardly seen as the vore's spike trail hides this
+			setmodel (link, "progs/s_spike.mdl");
 		}
 		else
 		{
 			setmodel (link, "progs/bit.mdl");
 		}
-		makevectors (self.angles);
+		makevectors (self.v_angle);
 		setorigin(link, hook.origin + (((self.origin + (v_up * 16 * (!self.button2)) + (v_forward * 16)) - hook.origin) * (link.weapon)));
 		setsize (link, '0 0 0', '0 0 0');
 		link.nextthink  = (time + sys_ticrate);
