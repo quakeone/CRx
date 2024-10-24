@@ -140,7 +140,7 @@ void(entity flg) TeamDropFlag =
 		announce2(p.netname," μοστ the ÒΕΔ flag!"); // red
 	}
 
-	p.fctime += (time - p.flag_since);
+//	p.fctime += (time - p.flag_since);
 
 //	if (clanring_playmode & CLANRING_MATCH_MODE)
 	//	p.next_team.fctime += (time - p.flag_since);
