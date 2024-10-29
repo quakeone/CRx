@@ -620,6 +620,18 @@ void () clanring_remove_start_teleport =
 void () clanring_find_powerups =
 {
     clanring_quad = find(world, classname, "item_artifact_super_damage");
+    // Count how many Quads are on the map
+    if (clanring_quad != world)
+    {
+        entity t;
+        t = clanring_quad;
+        while (t != world)
+        {
+            clanring_quad.count += 1;
+            t = find(t, classname, "item_artifact_super_damage");
+        }
+    }
+    
     clanring_pent = find(world, classname, "item_artifact_invulnerability");
     remove(self);
 };
@@ -1199,7 +1211,7 @@ void () clanring_client_connect =
         }
         bprint (self.netname," has connected", text);
     }
-    else self.afk_time = time;
+    else self.afk_time = time + parm14;
 
     // send aliases if necessary
     utils_make_scheduled_event(clanring_send_ignore_this, 1);
@@ -2479,6 +2491,31 @@ void () clanring_periodic_checks =
 
     self.ping_time = client_ping(self);
 
+    if (self.client == "QSS-M")
+    {
+        if (self.afk_time < time)
+        {
+            float ic = (infokeyf(self, "chat")); // QSS-M infokey 'chat' support.
+            if (ic > 1)
+            {
+                self.afk_time = time + 5;
+                typing_name(self);
+            }
+            else         
+            {
+                if (ic > 0)
+                {
+                    self.afk_time = time + 5;
+                    afk_name();
+                    stuffcmd(self, "cmd setinfo afk yes\n");
+                    self.style = self.style | CLANRING_AFK_CLIENT;
+                }
+                else
+                    updatename(self,self.netname);
+            }
+        }
+    }
+    
     inactive = time - self.afk_time;//Seconds of inactivity
 
     if (self.style & CLANRING_AFK_CLIENT)

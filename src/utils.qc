@@ -294,6 +294,7 @@ void (entity ent, string c_name) updatename =
 			print("ERROR: updatename: invalid client slot\n"); //output to console for debugging.
 			return;
 		}
+		
 		msg_entity	= ent;
 		WriteByte	(MSG_ALL, SVC_UPDATENAME);
 		WriteByte	(MSG_ALL, client);
@@ -305,6 +306,16 @@ void () clear_name =
 {			
 	if (self.style & CLANRING_CONNECTED)
 		updatename(self,self.netname);		
+};
+
+void (entity who) typing_name =
+{
+	local string text;
+
+	text = " \btyping\b";
+	who.name_ready = strpad(16, who.netname);
+	who.name_ready = strcat (who.name_ready, text);
+	updatename(who,who.name_ready);
 };
 
 void (entity who) wait_name =
@@ -1766,8 +1777,9 @@ float (entity e) client_ping =
 {	
 	local float ping;
 
-	ping = stof(infokey(e,INFOKEY_P_PING));
-	return ping * 1000;			// R00k: whoops!
+	ping = (infokeyf(e,INFOKEY_P_PING));
+	
+	return ping * 1000;
 };
 
 // U P D A T E  P I N G  T I M E S
