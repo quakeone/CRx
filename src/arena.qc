@@ -1641,7 +1641,7 @@ void () arena_match_end =
 				if (team_first_place.chain_gang != world)
 					announce2((team_first_place.chain_gang.netname)," has won the match.");
 
-				report_mvp_game();
+//				report_mvp_game();  Ya, yeah, we know...
 
 				bprint ("The match is over\n");//required for Qrack cl_autodemo 2
 	
@@ -1655,8 +1655,8 @@ void () arena_match_end =
 				announce2((team_first_place.netname)," has won the match.");	
 			bprint ("\n");
 		}
-
-		report_mvp_game();
+		if (number_teammates(team_first_place) > 1)    // Only show MVP for non 1v1 games.
+			report_mvp_game();
 	}
 	else bprint ("Match \baborted\b.\n");//Added v1.4c
 
@@ -1690,7 +1690,7 @@ void () arena_match_end =
 	boss.draw = FALSE;
 
 	temp = ftos(boss.round);
-	localcmd("skill \"", temp, "\"\n");//this still used?
+	localcmd("skill \"", temp, "\"\n");//this still used?    TODO: Replace with infokey
 
 	utils_make_scheduled_event(reset_match, 1);
 	pqc_match_time (0, 0);
