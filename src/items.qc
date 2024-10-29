@@ -92,8 +92,7 @@ float () item_customizeentityforclient =
                 self.scale = clamp(self.scale + b, 1.0, 3);
             }
         }        
-    }
-
+    }    
     return TRUE;
 }
 // ----------------------------------------------
@@ -1735,7 +1734,10 @@ void() powerup_touch =
 
     if (self.items == IT_INVULNERABILITY)
     {
-        sound (other, CHAN_VOICE, self.noise, 1, ATTN_NONE);
+        if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+            sound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
+        else
+            sound (other, CHAN_VOICE, self.noise, 1, ATTN_NONE);
 
         self.solid = SOLID_NOT;
         other.items = other.items | self.items;
@@ -1775,8 +1777,8 @@ void() powerup_touch =
 
     // 1998-12-24 Improved weapon and powerup touch functions by Maddes/Sm�agol  start
     if (self.items == IT_QUAD)
-    {	
-        if (clanring_quad.count > 1)
+    {	// R00k: TODO: count number of quads on the map; if only one then use global attenuation.
+        if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
             sound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
         else
             sound (other, CHAN_VOICE, self.noise, 1, ATTN_NONE);//R00k: most dm maps only have one quad, so announce it globally
