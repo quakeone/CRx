@@ -58,7 +58,7 @@ void(entity flg) TeamCaptureReturnFlag =
 {
 	RegenFlag (flg);
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//  Only show newbie messages in newbie mode.
+//	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//  Only show newbie messages in newbie mode.
 	{
 		local entity p;
 		p = find(world, classname, "player");
@@ -77,15 +77,18 @@ void(entity flg) TeamCaptureReturnFlag =
 				}
 				else
 				{
-					if (p.team != flg.team)
+					if (!(clanring_playmode & CLANRING_MATCH_MODE))	//  Only show newbie messages in newbie mode.
 					{
-						centerprint(p, "Enemy \bflag\b has been returned to base!");
-					}
-					else
-					{
-						if (p.team == flg.team)
+						if (p.team != flg.team)
 						{
-							centerprint (p, "Your \bflag\b has been returned to base!");	
+							centerprint(p, "Enemy \bflag\b has been returned to base!");
+						}
+						else
+						{
+							if (p.team == flg.team)
+							{
+								centerprint (p, "Your \bflag\b has been returned to base!");	
+							}
 						}
 					}
 				}
@@ -539,7 +542,10 @@ void() TeamCaptureFlagThink =
 
 	if (clanring_playmode & CLANRING_PRACTICE_MODE)
 		return;
-		
+
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		return;		
+
 	self.nextthink = (time + sys_ticrate);
 	
 	if (self.cnt == FLAG_AT_BASE)
@@ -551,7 +557,7 @@ void() TeamCaptureFlagThink =
 	if (self.cnt == FLAG_DROPPED)
 	{
 		flag_check_size ();			
-		if (!(clanring_state & CLANRING_MATCH_PAUSED))//3.19k
+//		if (!(clanring_state & CLANRING_MATCH_PAUSED))//3.19k
 		{
 			if ((time - self.super_time) > 30)
 				TeamCaptureReturnFlag (self);
