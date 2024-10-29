@@ -614,14 +614,14 @@ void() match_timer_think2 =
 //			temp = ftos(self.lip);
 			match_show_timelimit();
 //			announce3("Match ends in ", temp, " minutes");
-//			if (self.lip == 5 * floor(self.lip / 5))
-//				match_bprint_score();
+			if (self.lip == 5 * floor(self.lip / 5))
+				match_bprint_score();
 		}
 		else
 		{
 			match_show_timelimit();
 			announce("Match ends in 1 minute");
-//			match_bprint_score();
+			match_bprint_score();
 		}
 	}
 	else
