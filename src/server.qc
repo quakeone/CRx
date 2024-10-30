@@ -1832,7 +1832,7 @@ void () clanring_show_rules =
     if (clanring_playmode & CLANRING_NO_SPOOGE)
         sprint(self, "no spooge®®®®on\n");
 
-    if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+    if (self.style & CLANRING_SMART_WEAPON)
         sprint(self, "autoweapon®®®on\n");
 
     if (!(clanring_playmode & CLANRING_MATCH_MODE))

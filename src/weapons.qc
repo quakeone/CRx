@@ -597,7 +597,7 @@ void() W_FireLightning =
 
 	if (self.ammo_cells < 1)
 	{
-		if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+		if (self.style & CLANRING_SMART_WEAPON)
 		{
 			self.weapon = W_BestWeapon();
 			W_SetCurrentAmmo();
@@ -901,7 +901,7 @@ void(float ox) W_FireSpikes =
 
 	if (self.ammo_nails < 1)
 	{
-		if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+		if (self.style & CLANRING_SMART_WEAPON)
 		{
 			self.weapon = W_BestWeapon();
 			W_SetCurrentAmmo();
@@ -1144,7 +1144,7 @@ void() W_Attack =
 		if (self.currentammo < 1)		
 		{
 			self.attack_finished = time + 0.5;
-			if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+			if (self.style & CLANRING_SMART_WEAPON)
 			{
 				self.weapon = W_BestWeapon();
 				W_SetCurrentAmmo();
@@ -1664,7 +1664,7 @@ void() W_WeaponFrame =
 		{
 			if (self.currentammo < 1)
 			{
-				if ((self.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(self, "w_switch"))))
+				if (self.style & CLANRING_SMART_WEAPON)
 				{
 					self.weapon = W_BestWeapon();
 					W_SetCurrentAmmo();
