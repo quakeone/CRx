@@ -67,8 +67,11 @@ void() HookPull =
 
 	if ((!self.owner.button0 && self.owner.weapon == IT_HOOK) || (self.owner.teleport_time > time ) || (self.owner.deadflag) || (gameover))
 	{
-		HookVanish();
-		return;
+		if (!(self.owner.flags & FL_WATERJUMP))	// R00k: hooking out of water near a wall cancels the hook when waterjump is activated because it sets the teleport_time + 2...
+		{
+			HookVanish();
+			return;
+		}
 	}
 	
 	if (self.enemy.style & CLANRING_OBSERVER)
