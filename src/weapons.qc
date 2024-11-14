@@ -259,6 +259,8 @@ void(float damage, vector dir) TraceAttack =
 {
 	local	vector	vel = '0 0 0', org = '0 0 0';
 
+	org = (trace_endpos - (dir * 4));
+
 	if (trace_ent.takedamage)
 	{
 		if (trace_ent.classname == "player") 
@@ -266,7 +268,6 @@ void(float damage, vector dir) TraceAttack =
 			vel = normalize(dir + v_up*crandom() + v_right*crandom());
 			vel = vel + 2*trace_plane_normal;
 			vel = vel * 200;
-			org = trace_endpos - dir*4;
 			SpawnBlood (org, (vel * 0.2), damage);
 		}
 		else
