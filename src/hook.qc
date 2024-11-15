@@ -65,7 +65,14 @@ void() HookPull =
 		return;
 	}
 
-	if ((!self.owner.button0 && self.owner.weapon == IT_HOOK) || (self.owner.teleport_time > time ) || (self.owner.deadflag) || (gameover))
+    if (self.owner.teleport_time > time + 0.5) // Woods
+    {
+        self.owner.attack_finished = time + sys_ticrate;
+        HookVanish();
+        return;
+    }
+
+	if ((!self.owner.button0 && self.owner.weapon == IT_HOOK) || (self.owner.deadflag) || (gameover))
 	{
 		if (!(self.owner.flags & FL_WATERJUMP))	// R00k: hooking out of water near a wall cancels the hook when waterjump is activated because it sets the teleport_time + 2...
 		{
