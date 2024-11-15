@@ -1940,17 +1940,6 @@ void() PlayerPostThink =
     if (time >= self.attack_finished)
         W_WeaponFrame ();
 
-    if ((self.style & CLANRING_AUTOID) && (!(self.style & CLANRING_OBSERVER)))//R00k; not observers.
-    {
-        if (teamplay)
-        {
-            if (time > self.id_time)
-            {
-                ident_get_target();
-                self.id_time = (time + 0.2);
-            }
-        }
-    }
     //R00k: indicate to the player they are not ready.
     if (clanring_playmode & CLANRING_MATCH_MODE)
     {
@@ -2889,6 +2878,20 @@ void(string cmd) SV_ParseClientCommand =
 
     switch (arg0)
     {
+        case "shownick":
+            if ((!(self.style & CLANRING_OBSERVER)))//R00k; not observers.
+            {
+                if (teamplay)
+                {
+                    if (time > self.id_time)
+                    {
+                        ident_get_target();
+                        self.id_time = (time + 0.2);
+                    }
+                }
+            }
+            return;
+
         case "fragset":
             if ((self.style & CLANRING_ADMINISTRATOR) && (argv(1) != ""))
                 clanring_set_fraglimit(stof(arg1));

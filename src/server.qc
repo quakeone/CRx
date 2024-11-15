@@ -780,7 +780,7 @@ void () clanring_set_aliases =
     stuffcmd(self, "alias no impulse 116\n");
     stuffcmd(self, "alias vinfo impulse 117\n");
     stuffcmd(self, "alias ticrate impulse 118\n");
-    stuffcmd(self, "alias autoid impulse 119\n");//R00k
+    stuffcmd(self, "alias shownick cmd shownick\n");
     stuffcmd(self, "alias ready impulse 120\n");
     stuffcmd(self, "alias notready impulse 121\n");
     stuffcmd(self, "alias unlock impulse 122\n");
@@ -1254,7 +1254,7 @@ void(entity player, float cast) Request_Poll_Vote;
 //            
 void () clanring_client_disconnect =
 {
-    self.style = self.style - (self.style & (CLANRING_CONNECTED | CLANRING_BLUE_TEAM | CLANRING_RED_TEAM | CLANRING_AUTOID | CLANRING_AFK_CLIENT));
+    self.style = self.style - (self.style & (CLANRING_CONNECTED | CLANRING_BLUE_TEAM | CLANRING_RED_TEAM | CLANRING_AFK_CLIENT));
 
     self.plag                  	= 0;
     self.cnt                   	= 0;
@@ -1349,7 +1349,7 @@ void () clanring_put_client_in_server =
 {
     self.movetype    = MOVETYPE_WALK;
     self.finaldest_y = MOVETYPE_WALK;
-    self.style       = self.style | CLANRING_CONNECTED | CLANRING_AUTOID;//placed here before assigning to a team
+    self.style       = self.style | CLANRING_CONNECTED;//placed here before assigning to a team
 
     //utils_make_scheduled_event(clanring_bf_think, 0.1);
 
@@ -1495,7 +1495,7 @@ void () clanring_help_misc =
     sprint(self, " warp       - choose a map for vote to load\n");
     sprint(self, " rules      - view server rules\n");
     sprint(self, " ticrate    - view sys_ticrate\n");
-    sprint(self, " autoid     - toggle auto teammate identify\n");
+    sprint(self, " shownick   - teammate identifier\n");
     sprint(self, " autoweapon - toggle smartweapon\n");
     sprint(self, " autopause  - toggle auto pausing\n");
 };
@@ -2221,11 +2221,6 @@ void () clanring_impulse =
     {
         self.statstate = self.impulse - 71;
         sprint(self, "Status bar set\n");
-    }
-    else if (self.impulse == 119)
-    {
-        if (teamplay)
-            utils_toggle_flag(CLANRING_AUTOID, "Automatic Team Identifier");
     }
     else if (self.impulse == 23)
     {

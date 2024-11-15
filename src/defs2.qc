@@ -30,7 +30,7 @@ float CLANRING_CONNECTED 		= 4096;       	// client has been put in server
 float CLANRING_FOUND_BINDINGS 	= 8192; 		// used to check for bindings
 float CLANRING_SMART_WEAPON    	= 16384;		// whether or not to use `smart' weapon switching
 float CLANRING_OBSERVER    		= 32768;		// set if the client is an observer
-float CLANRING_AUTOID    		= 65536;
+//float CLANRING_AUTOID    		= 65536;
 float CLANRING_SCOREBOARD 		= 131072;		// player is looking at teamscores
 float CLANRING_NO_POST_THINK 	= 262144;		// don't do post think (optimization)
 float CLANRING_WINQUAKE 		= 524288;     	// player is using winquake
@@ -393,7 +393,7 @@ float clanring_tdm_ticrate;
 
 .float 	hurt_together_time;
 .float 	hurt_nextthink;
-.float	id_time;//delay autoidentify teammates
+.float	id_time;//delay to identify teammates
 
 .float	killed;//used to determine base spawn points
 //.float	gibbed;//time to explode player
