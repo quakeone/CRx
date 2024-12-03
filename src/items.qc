@@ -28,7 +28,7 @@ void() SUB_regen =
 {
 	self.model = self.mdl;		// restore original model
 	self.solid = SOLID_TRIGGER;	// allow it to be touched again
-    self.alpha = 0;
+    self.alpha = 1;
 	sound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);	// play respawn sound
 	if (!(deathmatch || (self.spawnflags & ITEM_RESPAWNDM)))	
 		spawn_tfog (self.origin + self.particles_offset);	
@@ -62,40 +62,6 @@ void(entity whatitem, float defaultdelay) CheckItemRespawn =
 	else
 		whatitem.nextthink = time + defaultdelay;
 };
-
-// ----------------------------------------------
-float () item_customizeentityforclient =
-// ----------------------------------------------
-{
-    if ((other.style & CLANRING_OBSERVER))
-    {
-        float a = (self.nextthink - time);
-
-        if ((self.nextthink > time) && (a < 1))
-        {
-            self.alpha -= 0.0125;
-        }
-        else
-        {
-            if ((self.nextthink > time) && (a < 6))
-            {
-            	self.model = self.mdl;
-                float b = (1 / a);
-                self.alpha = clamp(b, 0.01, 0.6);
-            }
-        }        
-    }
-    else
-    {
-        if (self.nextthink > time)
-            self.model = string_null;
-        else
-            self.model = self.mdl;
-        self.alpha = 0;
-    }
-    return TRUE;
-}
-// ----------------------------------------------
 
 /*QUAKED noclass (0 0 0) (-8 -8 -8) (8 8 8)
 prints a warning message when spawned
@@ -655,7 +621,6 @@ void() item_armor1 =
 	self.touch = armor_touch;
 	// precache_model ("progs/armor.mdl");  CLANRING_MOD - moved to world.qc
 	setmodel (self, "progs/armor.mdl");
-    self.customizeentityforclient = item_customizeentityforclient;
 	self.skin = 0;
 	setsize (self, '-16 -16 0', '16 16 56');
 	StartItem ();
@@ -668,7 +633,6 @@ void() item_armor2 =
 	self.touch = armor_touch;
 	// precache_model ("progs/armor.mdl");  CLANRING_MOD - moved to world.qc
 	setmodel (self, "progs/armor.mdl");
-    self.customizeentityforclient = item_customizeentityforclient;
 	self.skin = 1;
 	setsize (self, '-16 -16 0', '16 16 56');
 	StartItem ();
@@ -681,7 +645,6 @@ void() item_armorInv =
 	self.touch = armor_touch;
 	// precache_model ("progs/armor.mdl");  CLANRING_MOD - moved to world.qc
 	setmodel (self, "progs/armor.mdl");
-    self.customizeentityforclient = item_customizeentityforclient;
 	self.skin = 2;
 	setsize (self, '-16 -16 0', '16 16 56');
 	StartItem ();
@@ -710,7 +673,7 @@ void() bound_other_ammo =
 		other.ammo_cells = 100;
 };
 
-
+/*
 float(entity ent, float w) RankForWeapon =
 {
 	if (w == IT_LIGHTNING && ent.waterlevel <= 2)
@@ -727,33 +690,29 @@ float(entity ent, float w) RankForWeapon =
 		return 6;
 	return 7;
 };
-
+*/
 /*
 =============
 Deathmatch_Weapon
 
-Deathmatch weapon change; rules for picking up a weapon
+    rules for picking up a weapon
 
-.float		ammo_shells, ammo_nails, ammo_rockets, ammo_cells;
 =============
 */
 void(entity ent, float new) Deathmatch_Weapon =
 {
-	local float or, nr;
+	if ((ent.weapon == IT_HOOK) || (ent.button0))
+		return;
 
-	if ((ent.weapon == IT_HOOK) || (ent.button0)) return;
+    if (new == IT_GRENADE_LAUNCHER)
+		return;
 
-	or = RankForWeapon (ent, ent.weapon);
-	nr = RankForWeapon (ent, new);
-	if ( nr < or )
-	{
-		if (nr == 1)
-		{
-			if (self.waterlevel > 2)// CLANRING_MOD - if underwater, don't switch to LG
-			return;
-		}
-		ent.weapon = new;
-	}
+    if (((new == IT_LIGHTNING) && (ent.waterlevel > 2)))// CLANRING_MOD - if underwater, don't switch to LG
+		return;
+
+	if (((other.weapon) < new)||(other.weapon == IT_AXE)) // If current weapon is less ranked then choose the new one.
+        other.weapon = new;
+	
 };
 
 /*
@@ -780,11 +739,11 @@ void() weapon_touch =
 	if (other.health < 1)
 		return;
 	
-	// if the player was using his best weapon, change up to the new one if better		
-	stemp = self;
-	self = other;
-	best = W_BestWeapon();
-	self = stemp;
+	// // if the player was using his best weapon, change up to the new one if better		
+	// stemp = self;
+	// self = other;
+	// best = W_BestWeapon(); // Best weapon with ammo
+	// self = stemp;
 
     if (deathmatch > 1) // CLANRING_MOD '|| coop' removed, changed to > 1
 		leave = 1;
@@ -888,24 +847,20 @@ void() weapon_touch =
 
 		bound_other_ammo ();
 
+		other.items = other.items | self.weapon;
+
 // change to the weapon
 		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 		{
 			if (other.weapon != IT_HOOK)
 			{
 				Deathmatch_Weapon (other, self.weapon);
-
-				if (other.weapon == best)
-					other.weapon = W_BestWeapon();
-					
-				stemp = self;
-				self = other;
+					stemp = self;
+					self = other;
 				W_SetCurrentAmmo();
-				self = stemp;
+					self = stemp;
 			}
 		}
-
-		other.items = other.items | self.weapon;
 
 		if (!leave)
 		{
@@ -939,7 +894,6 @@ void() weapon_supershotgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 33';
-    self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -953,7 +907,6 @@ void() weapon_nailgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 31';
-    self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -967,7 +920,6 @@ void() weapon_supernailgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 34';
-    self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -981,7 +933,6 @@ void() weapon_grenadelauncher =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 28';
-    self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -995,7 +946,6 @@ void() weapon_rocketlauncher =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 32';
-    self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1009,7 +959,6 @@ void() weapon_lightning =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 31';
-    self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1803,7 +1752,7 @@ void() item_artifact_invulnerability =
 	self.netname = "Pentagram of Protection";
 	self.items = IT_INVULNERABILITY;
 	setsize (self, '-16 -16 -24', '16 16 32');
-    self.customizeentityforclient = item_customizeentityforclient;
+
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 16';
 
@@ -1847,7 +1796,7 @@ void() item_artifact_invisibility =
 	self.netname = "Ring of Shadows";
 	self.items = IT_INVISIBILITY;
 	setsize (self, '-16 -16 -24', '16 16 32');
-    self.customizeentityforclient = item_customizeentityforclient;
+
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 0';
 	self.noise3 = " is invisible";			// ELOHIM_MOD
@@ -1870,7 +1819,7 @@ void() item_artifact_super_damage =
 	setsize (self, '-16 -16 -24', '16 16 32');
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 16';
-    self.customizeentityforclient = item_customizeentityforclient;
+
 	// ELOHIM_MOD - keep track of who gets it
 	self.noise3 = " got the quad";
 	self.noise4 = " got the \b\<Quad\>\n";
