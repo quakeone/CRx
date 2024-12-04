@@ -183,8 +183,11 @@ void () observer_walk_start =
 	stuffcmd(self, "cmd setinfo observing off\n");// woods
 	if (mode_is_arena())
 	{
-		self.style = self.style - (self.style & CLANRING_MOTD);
-		motd_arena_start();
+		if (boss.state == CA_MATCH_WAITING)
+		{
+			self.style = self.style - (self.style & CLANRING_MOTD);
+			motd_arena_start();
+		}
 	}
 };
 
@@ -214,8 +217,11 @@ void () observer_fly_start =
 	centerprint(self, "fly mode\n");
 	if (mode_is_arena())
 	{
-		self.style = self.style - (self.style & CLANRING_MOTD);
-		motd_arena_start();
+		if (boss.state == CA_MATCH_WAITING)
+		{
+			self.style = self.style - (self.style & CLANRING_MOTD);
+			motd_arena_start();
+		}
 	}
 };
 
@@ -865,6 +871,7 @@ void () observer_next_target =
 		centerprint (self,self.movetarget.netname);
 		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
 	}
+	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname));
 };
 
 //
@@ -905,6 +912,7 @@ void () observer_prev_target =
 		WriteEntity(MSG_ONE, self.movetarget);
 		observer_set_demo_position();
 	}
+	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname));
 };
 
 //
