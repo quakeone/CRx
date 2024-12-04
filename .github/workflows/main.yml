@@ -9,13 +9,36 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Use Docker with Required GLIBC
+      - name: Upgrade GLIBC
         run: |
-          docker run --rm \
-            -v "$(pwd):/workspace" \
-            -w /workspace \
-            ubuntu:22.10 \
-            bash -c "apt update && apt install -y curl unzip libc6 && curl -Ofteqcc.zip https://www.fteqcc.org/dl/fteqcc_linux64.zip && unzip fteqcc_linux64.zip fteqcc64 && ./fteqcc64 -src src"
+          sudo apt-get update
+          sudo apt-get install -y build-essential manpages-dev wget
+          wget http://ftp.gnu.org/gnu/libc/glibc-2.38.tar.gz
+          tar -xvzf glibc-2.38.tar.gz
+          cd glibc-2.38
+          mkdir build
+          cd build
+          ../configure --prefix=/opt/glibc-2.38
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig /opt/glibc-2.38/lib
+
+      - name: Cache fteqcc
+        uses: actions/cache@v3
+        id: cache-dependencies
+        with:
+          path: |
+            fteqcc64
+          key: fteqcc
+
+      - name: Fetch fteqcc
+        run: |
+          curl -Ofteqcc.zip https://www.fteqcc.org/dl/fteqcc_linux64.zip
+          unzip fteqcc_linux64.zip fteqcc64
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+
+      - name: Compile CRMod Plus
+        run: ./fteqcc64 -src src
 
       - name: Collect artifacts
         run: |
