@@ -4,48 +4,35 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Upgrade GLIBC
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential manpages-dev wget
-          wget http://ftp.gnu.org/gnu/libc/glibc-2.38.tar.gz
-          tar -xvzf glibc-2.38.tar.gz
-          cd glibc-2.38
-          mkdir build
-          cd build
-          ../configure --prefix=/opt/glibc-2.38
-          make -j$(nproc)
-          sudo make install
-          sudo ldconfig /opt/glibc-2.38/lib
 
       - name: Cache fteqcc
         uses: actions/cache@v3
         id: cache-dependencies
         with:
           path: |
-            fteqcc64
+            fteqcc64.exe
           key: fteqcc
 
-      - name: Fetch fteqcc
+      - name: Fetch fteqcc (Windows)
         run: |
-          curl -Ofteqcc.zip https://www.fteqcc.org/dl/fteqcc_linux64.zip
-          unzip fteqcc_linux64.zip fteqcc64
+          curl -o fteqcc_win64.zip https://www.fteqcc.org/dl/fteqcc_win64.zip
+          tar -xf fteqcc_win64.zip --include=fteqcc64.exe
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
 
-      - name: Compile CRMod Plus
-        run: ./fteqcc64 -src src
+      - name: Compile CRx
+        run: .\fteqcc64.exe -src src
 
       - name: Collect artifacts
         run: |
-          mv src/progs.dat release/
-          mv src/csprogs.dat release/
+          mkdir release
+          move src\progs.dat release\
+          move src\csprogs.dat release\
       - uses: actions/upload-artifact@v3
         with:
           name: crmod-plus
           path: |
-            release/*
+            release\*
