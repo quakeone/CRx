@@ -26,9 +26,14 @@ jobs:
       - name: Compile CRx
         run: .\fteqcc64.exe -src src
 
+      - name: Ensure release directory exists
+        run: |
+          if (!(Test-Path -Path "release")) {
+            mkdir release
+          }
+
       - name: Collect artifacts
         run: |
-          mkdir release
           move src\progs.dat release\
           move src\csprogs.dat release\
       - uses: actions/upload-artifact@v3
