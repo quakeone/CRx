@@ -1,10 +1,10 @@
-name: crmod-plus
+name: crx
 
 on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -14,25 +14,30 @@ jobs:
         id: cache-dependencies
         with:
           path: |
-            fteqcc64
+            fteqcc64.exe
           key: fteqcc
 
-      - name: Fetch fteqcc
+      - name: Fetch fteqcc (Windows)
         run: |
-          curl -Ofteqcc.zip https://www.fteqcc.org/dl/fteqcc_linux64.zip
-          unzip fteqcc_linux64.zip fteqcc64
+          curl -o fteqcc_win64.zip https://www.fteqcc.org/dl/fteqcc_win64.zip
+          tar -xf fteqcc_win64.zip --include=fteqcc64.exe
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
 
-      - name: Compile CRMod Plus
-        run: ./fteqcc64 -src src
+      - name: Compile CRx
+        run: .\fteqcc64.exe -src src
+
+      - name: Ensure release directory exists
+        run: |
+          if (!(Test-Path -Path "release")) {
+            mkdir release
+          }
 
       - name: Collect artifacts
         run: |
-          mv src/progs.dat release/
-          mv src/csprogs.dat release/
-
-      - uses: actions/upload-artifact@v3
+          move src\progs.dat release\
+          move src\csprogs.dat release\
+      - uses: actions/upload-artifact@v4
         with:
-          name: crmod-plus
+          name: CRx
           path: |
-            release/*
+            release\*
