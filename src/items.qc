@@ -35,34 +35,27 @@ void() SUB_regen =
 	setorigin(self, self.origin);
 };
 
-// Supa, Quoth respawning items support Respawn item like in DM if 'ritem' TRUE,
-// override respawn time with 'respawndelay' if set, inc 'cnt' with each respawn
-// and if 'respawncount' is set we'll remove the item if cnt > respawncount
-// remember that SUB_Regen is already set on every item that can respawn, all we
-// need to do is give a nextthink time in order to trigger it
-.float	ritem,
-		respawndelay,
-		respawncount;
-
-void(entity whatitem, float defaultdelay) CheckItemRespawn =
+float() item_customizeentityforclient = 
 {
-	if (!whatitem.ritem)	// respawn item if true, otherwise abort
-		return;
-
-	whatitem.cnt = whatitem.cnt + 1;	// inc before check to account for zero indexing
-
-	if (whatitem.respawncount)	// limited respawns
-	if (whatitem.respawncount < whatitem.cnt)
-		return;
-
-	// okay, we're clear to set up a respawn
-
-	if (whatitem.respawndelay)	// custom respawn delay?
-		whatitem.nextthink = time + whatitem.respawndelay;
+	if (self.nextthink > time)
+	{
+		self.model = "";
+		if (other.style & CLANRING_OBSERVER)
+		{
+			if (self.nextthink - time < 6)
+			{
+				self.alpha = 0.4;
+				self.model = self.mdl;
+			}
+		}
+	}
 	else
-		whatitem.nextthink = time + defaultdelay;
+	{
+		self.alpha = 0;
+		self.model = self.mdl;
+	}
+	return 1;
 };
-
 /*QUAKED noclass (0 0 0) (-8 -8 -8) (8 8 8)
 prints a warning message when spawned
 */
@@ -485,10 +478,7 @@ void() shard_touch = // this from RMQ shard_touch
 	self.solid = SOLID_NOT;
 	self.model = string_null;
 
-	// Supa, SP respawning items support
-	if (!deathmatch)
-		CheckItemRespawn(self, 30);
-	else if (deathmatch == 1)  // doesn't respawn in "deathmatch 2"
+	if (deathmatch == 1)  // doesn't respawn in "deathmatch 2"
 		self.nextthink = time + 20;
 	self.think = SUB_regen;
 
@@ -623,6 +613,7 @@ void() item_armor1 =
 	setmodel (self, "progs/armor.mdl");
 	self.skin = 0;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -635,6 +626,7 @@ void() item_armor2 =
 	setmodel (self, "progs/armor.mdl");
 	self.skin = 1;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -647,6 +639,7 @@ void() item_armorInv =
 	setmodel (self, "progs/armor.mdl");
 	self.skin = 2;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -725,7 +718,7 @@ float () W_BestWeapon;
 void() weapon_touch =
 {
 	local entity stemp;
-	local float  best, leave, donttake;
+	local float  /*best,*/ leave, donttake;
 
 	if (!(items_are_ready()))
 		return;
@@ -894,6 +887,7 @@ void() weapon_supershotgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 33';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -907,6 +901,7 @@ void() weapon_nailgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 31';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -920,6 +915,7 @@ void() weapon_supernailgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 34';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -933,6 +929,7 @@ void() weapon_grenadelauncher =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 28';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -946,6 +943,7 @@ void() weapon_rocketlauncher =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 32';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -959,6 +957,7 @@ void() weapon_lightning =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 31';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1762,6 +1761,7 @@ void() item_artifact_invulnerability =
 	self.count = self.cnt = 0;	
 	self.owner = world;
 	self.height = 0;	
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1780,6 +1780,7 @@ void() item_artifact_envirosuit =
 	setsize (self, '-16 -16 -24', '16 16 32');
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 32';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1801,6 +1802,7 @@ void() item_artifact_invisibility =
 		self.particles_offset = '0 0 0';
 	self.noise3 = " is invisible";			// ELOHIM_MOD
 	self.noise4 = " is \b\<invisible\>\n";	// ELOHIM_MOD
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1827,7 +1829,7 @@ void() item_artifact_super_damage =
 	self.owner = world;				
 	self.height = 0;				
 	// END_MOD
-
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
