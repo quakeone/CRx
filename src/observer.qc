@@ -181,6 +181,7 @@ void () observer_walk_start =
 */
 	stuffcmd(self, "cmd setinfo observer walk\n");// woods
 	stuffcmd(self, "cmd setinfo observing off\n");// woods
+
 	if (mode_is_arena())
 	{
 		if (boss.state == CA_MATCH_WAITING)
@@ -1844,7 +1845,7 @@ void () observer_fly_through_obstacle =
 //
 void() observer_fly_move =
 {
-	local float z;
+	float z;
 	
 	if (self.button2) 
 		z = 200;
@@ -1856,8 +1857,8 @@ void() observer_fly_move =
 	self.velocity_z = self.velocity_z + z;
 	z = vlen(self.velocity);
 	
-	if (z > 1000)
-		self.velocity = v_forward * 1000;
+	if (z > 2000)
+		self.velocity = (normalize(self.velocity) * 2000);
 	
 	// if (self.button0)
 	// 	observer_fly_through_obstacle ();
