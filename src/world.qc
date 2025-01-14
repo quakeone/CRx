@@ -353,7 +353,7 @@ void() worldspawn =
 
 	precache_sound("enforcer/sight3.wav");//Item tossing "You There!"
 	precache_sound ("ra/laugh.wav"); // Powerup Denied sound.
-	precache_model ("progs/spawn.mdl");
+	//precache_model ("progs/spawn.mdl");
 	
 	//
 	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.
