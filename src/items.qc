@@ -28,41 +28,34 @@ void() SUB_regen =
 {
 	self.model = self.mdl;		// restore original model
 	self.solid = SOLID_TRIGGER;	// allow it to be touched again
-	if (deathmatch || (self.spawnflags & ITEM_RESPAWNDM))	// Respawn with DM effects
-		sound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);	// play respawn sound
-	else
-		spawn_tfog (self.origin + self.particles_offset);	// play teleport sound and display particles
+    self.alpha = 1;
+	sound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);	// play respawn sound
+	if (!(deathmatch || (self.spawnflags & ITEM_RESPAWNDM)))	
+		spawn_tfog (self.origin + self.particles_offset);	
 	setorigin(self, self.origin);
 };
 
-// Supa, Quoth respawning items support Respawn item like in DM if 'ritem' TRUE,
-// override respawn time with 'respawndelay' if set, inc 'cnt' with each respawn
-// and if 'respawncount' is set we'll remove the item if cnt > respawncount
-// remember that SUB_Regen is already set on every item that can respawn, all we
-// need to do is give a nextthink time in order to trigger it
-.float	ritem,
-		respawndelay,
-		respawncount;
-
-void(entity whatitem, float defaultdelay) CheckItemRespawn =
+float() item_customizeentityforclient = 
 {
-	if (!whatitem.ritem)	// respawn item if true, otherwise abort
-		return;
-
-	whatitem.cnt = whatitem.cnt + 1;	// inc before check to account for zero indexing
-
-	if (whatitem.respawncount)	// limited respawns
-	if (whatitem.respawncount < whatitem.cnt)
-		return;
-
-	// okay, we're clear to set up a respawn
-
-	if (whatitem.respawndelay)	// custom respawn delay?
-		whatitem.nextthink = time + whatitem.respawndelay;
+	if (self.nextthink > time)
+	{
+		self.model = "";
+		if (other.style & CLANRING_OBSERVER)
+		{
+			if (self.nextthink - time < 6)
+			{
+				self.alpha = 0.4;
+				self.model = self.mdl;
+			}
+		}
+	}
 	else
-		whatitem.nextthink = time + defaultdelay;
+	{
+		self.alpha = 0;
+		self.model = self.mdl;
+	}
+	return 1;
 };
-
 /*QUAKED noclass (0 0 0) (-8 -8 -8) (8 8 8)
 prints a warning message when spawned
 */
@@ -73,6 +66,11 @@ void() noclass =
 	dprint ("\n");
 	remove(self);
 };
+
+// ELOHIM_MOD - need these prototypes
+void() weapon_touch;
+void() ammo_touch;
+// END_MOD
 
 /*
 ============
@@ -93,6 +91,17 @@ void() PlaceItem =
 	self.origin_z = self.origin_z + 6;
 	oldz = self.origin_z;
 
+	// Transparent weapons and ammo spawns in practice mode
+	if (clanring_playmode & CLANRING_PRACTICE_MODE)
+	{
+		if (self.touch == weapon_touch || self.touch == ammo_touch)
+		{
+			self.solid = SOLID_NOT;
+			self.alpha = 0.33;
+			return;
+		}
+	}
+	
 	if (!droptofloor())
 	{
 		dprint ("Bonus item fell out of level at ");
@@ -121,10 +130,6 @@ void() PlaceItem =
     // END_MOD
 };
 
-// ELOHIM_MOD - need these prototypes
-void() weapon_touch;
-void() ammo_touch;
-// END_MOD
 float() CheckValidTouch;
 void() SUB_UseAndForgetTargets;
 
@@ -137,17 +142,18 @@ Sets the clipping size and plants the object on the floor
 */
 void() StartItem =
 {
-    // ELOHIM_MOD - no weapons or ammo in practice mode
-	if (clanring_playmode & CLANRING_PRACTICE_MODE)
-    {
-        if (self.touch == weapon_touch || self.touch == ammo_touch)
-        {
-            remove(self);
-            return;
-        }
-    }
+    // // ELOHIM_MOD - no weapons or ammo in practice mode
+	// if (clanring_playmode & CLANRING_PRACTICE_MODE)
+    // {
+    //     if (self.touch == weapon_touch || self.touch == ammo_touch)
+    //     {
+    //         remove(self);
+    //         return;
+    //     }
+    // }
     // END_MOD
-	else if (clanring_playmode & CLANRING_WIPEOUT_MODE)
+	/*else*/
+	if (clanring_playmode & CLANRING_WIPEOUT_MODE)
 	{
 		if (self.touch == weapon_touch)
 		{
@@ -349,7 +355,8 @@ void() health_touch =
 			MakeHealthRot(other,self);// create rot entity R00k: fixed
 	
 			other.items = other.items | IT_SUPERHEALTH;
-	
+			other.stats_item_mega += 1;
+
 			//Set this megahealth's respawn to default 125 seconds.
 			if (deathmatch != 2 && deathmatch != 4 && deathmatch != 5)	// deathmatch 2 is silly old rules
 			{
@@ -369,6 +376,7 @@ void() health_touch =
 				self.nextthink = time + 20;
 				self.think = SUB_regen;
 			}
+			other.stats_item_health += 1;
 		}
 	}
 	activator = other;
@@ -424,56 +432,62 @@ void() shard_touch = // this from RMQ shard_touch
 	// from Copper -- dumptruck_ds
 	if (!CheckValidTouch()) return;
 
-	local	float	bit;
+	local float c;
 
-	if ((other.items & IT_ARMOR1)	||
-	(other.items & IT_ARMOR2)	||
-	(other.items & IT_ARMOR3)	)	// has armor
+	c = floor(other.armorvalue + self.armorvalue);
+
+	//If player has pent always allow touch and up to 250
+	if (other.items & IT_INVULNERABILITY)
 	{
-		// Supa, check bounds, original armourvalue + 25
-		if (other.items & IT_ARMOR1 && other.armorvalue >= 125)	return;
-		if (other.items & IT_ARMOR2 && other.armorvalue >= 175)	return;
-		if (other.items & IT_ARMOR3 && other.armorvalue >= 225)	return;
-
-		other.armorvalue = other.armorvalue + 5;	// was 2, RMQ team
-
-		// Supa, now cap armourvalue to bounds
-		if		(other.items & IT_ARMOR1 && other.armorvalue >= 125)	other.armorvalue = 125;
-		else if (other.items & IT_ARMOR2 && other.armorvalue >= 175)	other.armorvalue = 175;
-		else if (other.items & IT_ARMOR3 && other.armorvalue >= 225)	other.armorvalue = 225;
+		other.armorvalue = clamp(c, 5, 250);
 	}
 	else
 	{
-		other.armortype = 0.3;	// shard = Green armor level
-		other.armorvalue = 5;
-		bit = IT_ARMOR1;
-		other.items = other.items - (other.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + bit;
+		if (other.items & IT_ARMOR1)
+		{
+			if (other.armorvalue >= 125)	
+				return;
+			other.armorvalue = clamp(c, 5, 125);
+		}
+		else
+		{
+			if (other.items & IT_ARMOR2)
+			{
+				if (other.armorvalue >= 175)	
+					return;
+				other.armorvalue = clamp(c, 5, 175);
+			}
+			else
+			{
+				if (other.items & IT_ARMOR3)
+				{
+					if (other.armorvalue >= 225)	
+						return;
+					other.armorvalue = clamp(c, 5, 225);
+				}
+				else
+				{		
+					other.armortype = 0.3;	
+					other.armorvalue = self.armorvalue;
+					other.items |= IT_ARMOR1; 
+				}
+			}
+		}
 	}
+
 	self.solid = SOLID_NOT;
 	self.model = string_null;
 
-	// Supa, SP respawning items support
-	if (!deathmatch)
-	CheckItemRespawn(self, 30);
-	else if (deathmatch == 1)  // doesn't respawn in "deathmatch 2"
-	self.nextthink = time + 20;
+	if (deathmatch == 1)  // doesn't respawn in "deathmatch 2"
+		self.nextthink = time + 20;
 	self.think = SUB_regen;
 
-	// if (self.obit_name != "")
-	// {
-	// 	sprint (other, "You got ");
-	// 	sprint (other, self.obit_name); // custom armor name
-	// 	sprint (other, "\n");
-	// }
-	// else
-	if (self.armorvalue > 5) //bucksh0t: dont print text for shards
-	sprint(other, "You got armor\n");
-	// armor touch sound
-	// sound(other, CHAN_ITEM, "items/armor1.wav", 1, ATTN_NORM); // dumptruck_ds custom models and sounds START
+	// sprint(other, "You got armor\n");
 	if (self.snd_misc != "")
-	sound_misc(other, CHAN_AUTO, self.snd_misc, 1, ATTN_NORM);
+		sound_misc(other, CHAN_AUTO, self.snd_misc, 1, ATTN_NORM);	// armor touch sound
 	else
-	sound_misc(other, CHAN_AUTO,"dump/armsh1.wav", 1, ATTN_NORM); // dumptruck_ds custom models and sounds END
+		sound_misc(other, CHAN_AUTO,"items/armsh1.wav", 1, ATTN_NORM); // dumptruck_ds custom models and sounds END
+		
 	stuffcmd (other, "bf\n");
 
 	activator = other;
@@ -531,8 +545,23 @@ void() armor_touch =
 		if (other.next_team != world)
 		{
 			other.next_team.dest = (other.next_team.dest + v);
-		}
+		}		
 
+		if (bit == IT_ARMOR1)
+		{
+			other.stats_item_greenarmor += 1;
+		}
+		else
+		if (bit == IT_ARMOR2)
+		{
+			other.stats_item_yellowarmor += 1;
+		}
+		else
+		if (bit == IT_ARMOR3)
+		{
+			other.stats_item_redarmor += 1;
+		}
+	
 		other.armortype 	= type;
 		other.armorvalue 	= value;
 		other.items 		= other.items - (other.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + bit;
@@ -559,17 +588,18 @@ void() item_armor_shard =
 
 	if (!self.mdl_body && world.a_shr_mdl)
 	{
-	  self.mdl_body = world.a_shr_mdl;
+		self.mdl_body = world.a_shr_mdl;
 	}
 
+	self.armorvalue = 5;
 	self.touch = shard_touch;
-	precache_model ("progs/armshr.mdl"); // dumptruck_ds custom models and sounds START
+	//moved to world.qc precache_model ("progs/armshr.mdl"); // dumptruck_ds custom models and sounds START
 	//precache_body_model ("progs/armshr.mdl");
 	// setmodel (self, "progs/armor.mdl");
 	body_model ("progs/armshr.mdl");
-	precache_sound_misc ("dump/armsh1.wav");
+
 	if !(self.skin) // dumptruck_ds custom models and sounds END
-	self.skin = 0;
+		self.skin = 0;
 	setsize (self, '-16 -16 0', '16 16 56');
 	StartItem ();
 };
@@ -583,6 +613,7 @@ void() item_armor1 =
 	setmodel (self, "progs/armor.mdl");
 	self.skin = 0;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -595,6 +626,7 @@ void() item_armor2 =
 	setmodel (self, "progs/armor.mdl");
 	self.skin = 1;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -607,6 +639,7 @@ void() item_armorInv =
 	setmodel (self, "progs/armor.mdl");
 	self.skin = 2;
 	setsize (self, '-16 -16 0', '16 16 56');
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -633,7 +666,7 @@ void() bound_other_ammo =
 		other.ammo_cells = 100;
 };
 
-
+/*
 float(entity ent, float w) RankForWeapon =
 {
 	if (w == IT_LIGHTNING && ent.waterlevel <= 2)
@@ -650,33 +683,29 @@ float(entity ent, float w) RankForWeapon =
 		return 6;
 	return 7;
 };
-
+*/
 /*
 =============
 Deathmatch_Weapon
 
-Deathmatch weapon change rules for picking up a weapon
+    rules for picking up a weapon
 
-.float		ammo_shells, ammo_nails, ammo_rockets, ammo_cells;
 =============
 */
 void(entity ent, float new) Deathmatch_Weapon =
 {
-	local float or, nr;
+	if ((ent.weapon == IT_HOOK) || (ent.button0))
+		return;
 
-	if ((ent.weapon == IT_HOOK) || (ent.button0)) return;
+    if (new == IT_GRENADE_LAUNCHER)
+		return;
 
-	or = RankForWeapon (ent, ent.weapon);
-	nr = RankForWeapon (ent, new);
-	if ( nr < or )
-	{
-		if (nr == 1)
-		{
-			if (self.waterlevel > 2)// CLANRING_MOD - if underwater, don't switch to LG
-			return;
-		}
-		ent.weapon = new;
-	}
+    if (((new == IT_LIGHTNING) && (ent.waterlevel > 2)))// CLANRING_MOD - if underwater, don't switch to LG
+		return;
+
+	if (((other.weapon) < new)||(other.weapon == IT_AXE)) // If current weapon is less ranked then choose the new one.
+        other.weapon = new;
+	
 };
 
 /*
@@ -689,7 +718,7 @@ float () W_BestWeapon;
 void() weapon_touch =
 {
 	local entity stemp;
-	local float  best, leave, donttake;
+	local float  /*best,*/ leave, donttake;
 
 	if (!(items_are_ready()))
 		return;
@@ -703,11 +732,11 @@ void() weapon_touch =
 	if (other.health < 1)
 		return;
 	
-	// if the player was using his best weapon, change up to the new one if better		
-	stemp = self;
-	self = other;
-	best = W_BestWeapon();
-	self = stemp;
+	// // if the player was using his best weapon, change up to the new one if better		
+	// stemp = self;
+	// self = other;
+	// best = W_BestWeapon(); // Best weapon with ammo
+	// self = stemp;
 
     if (deathmatch > 1) // CLANRING_MOD '|| coop' removed, changed to > 1
 		leave = 1;
@@ -722,25 +751,28 @@ void() weapon_touch =
 	}
 	else
 	{
-		if (self.weapon == IT_SHOTGUN || self.weapon == IT_SUPER_SHOTGUN)
+		if (self.weapon == IT_SUPER_SHOTGUN)
 		{
 			other.ammo_shells = other.ammo_shells + 5;
+			//TODO: other.next_team.stats_item_ssg += 1;
+			other.stats_item_ssg += 1;
 		}
 		else
 		{
 			if (self.weapon == IT_NAILGUN || self.weapon == IT_SUPER_NAILGUN)
 			{
 				other.ammo_nails = other.ammo_nails + 30;
-				if (other.next_team != world)
+				if (self.weapon == IT_NAILGUN)
 				{
-					if (self.weapon == IT_NAILGUN)
-					{
+					if (other.next_team != world)
 						other.next_team.pos1_y = other.next_team.pos1_y + 1;
-					}
-					else
-					{
+					other.stats_item_ng += 1;
+				}
+				else
+				{
+					if (other.next_team != world)
 						other.next_team.pos1_x = other.next_team.pos1_x + 1;
-					}
+					other.stats_item_sng += 1;
 				}
 			}
 			else
@@ -749,19 +781,29 @@ void() weapon_touch =
 				{
 					other.ammo_rockets = other.ammo_rockets + 5;
 					
+					if (self.weapon == IT_ROCKET_LAUNCHER)
+					{
+						other.stats_item_rl += 1;
+					}
+					else
+					{
+						other.stats_item_gl += 1;
+					}
+
 					if (!(other.items & IT_ROCKET_LAUNCHER))// CLANRING_MOD - keep track of rocket launchers
 					{
 						quaketv_obtained_rl(other);
 					}
+
 					if (other.next_team != world)
 					{
 						if (self.weapon == IT_ROCKET_LAUNCHER)
 						{
-							other.next_team.dest1_x = other.next_team.dest1_x + 1;
+							other.next_team.dest1_x = other.next_team.dest1_x + 1; //TODO replace next_team.dest1_x with next_team.stats_item_rl
 						}
 						else
 						{
-							other.next_team.dest1_z = other.next_team.dest1_z + 1;
+							other.next_team.dest1_z = other.next_team.dest1_z + 1;//TODO replace next_team.dest1_z with next_team.stats_item_gl (in stats.qc too)
 						}
 					}
 				}
@@ -770,6 +812,8 @@ void() weapon_touch =
 					if (self.weapon == IT_LIGHTNING)
 					{
 						other.ammo_cells = other.ammo_cells + 15;
+						other.stats_item_lg += 1;
+						
 						if (other.next_team != world)
 						{
 							other.next_team.dest1_y = other.next_team.dest1_y + 1;
@@ -796,33 +840,20 @@ void() weapon_touch =
 
 		bound_other_ammo ();
 
+		other.items = other.items | self.weapon;
+
 // change to the weapon
 		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 		{
-			if (!(other.items & self.weapon))
+			if (other.weapon != IT_HOOK)
 			{
-				if (other.weapon != IT_HOOK)
-				{
-					Deathmatch_Weapon (other, self.weapon);
-				}
+				Deathmatch_Weapon (other, self.weapon);
+					stemp = self;
+					self = other;
+				W_SetCurrentAmmo();
+					self = stemp;
 			}
 		}
-		other.items = other.items | self.weapon;
-
-		stemp = self;
-		self = other;
-
-		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
-		{
-			if (( other.weapon == best ) && (other.weapon != IT_HOOK))
-			{
-				self.weapon = W_BestWeapon();
-			}
-		}
-		if (other.weapon != IT_HOOK)
-			W_SetCurrentAmmo();
-
-		self = stemp;
 
 		if (!leave)
 		{
@@ -856,6 +887,7 @@ void() weapon_supershotgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 33';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -869,6 +901,7 @@ void() weapon_nailgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 31';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -882,6 +915,7 @@ void() weapon_supernailgun =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 34';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -895,6 +929,7 @@ void() weapon_grenadelauncher =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 28';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -908,6 +943,7 @@ void() weapon_rocketlauncher =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 32';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -921,6 +957,7 @@ void() weapon_lightning =
 	self.touch = weapon_touch;
 	setsize (self, '-16 -16 0', '16 16 56');
 	self.particles_offset = '0 0 31';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -962,9 +999,11 @@ void() ammo_touch =
 	if (self.weapon == 1)
 	{
 		if (other.ammo_shells >= 100)
-		donttake = 1;
+			donttake = 1;
 		else
-		other.ammo_shells = other.ammo_shells + self.aflag;
+			other.ammo_shells = other.ammo_shells + self.aflag;
+
+		other.stats_item_shells += 1;
 	}
 
 // spikes
@@ -974,6 +1013,7 @@ void() ammo_touch =
 		donttake = 1;
 		else
 		other.ammo_nails = other.ammo_nails + self.aflag;
+		other.stats_item_nails += 1;
 	}
 
 //	rockets
@@ -983,6 +1023,7 @@ void() ammo_touch =
 		donttake = 1;
 		else
 		other.ammo_rockets = other.ammo_rockets + self.aflag;
+		other.stats_item_rockets += 1;
 	}
 
 //	cells
@@ -992,6 +1033,7 @@ void() ammo_touch =
 		donttake = 1;
 		else
 		other.ammo_cells = other.ammo_cells + self.aflag;
+		other.stats_item_cells += 1;
 	}
 
 	if (!donttake)
@@ -1012,11 +1054,11 @@ void() ammo_touch =
 		if (( other.weapon == best ) && ( other.weapon != IT_HOOK ))
 		{
 			if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
-				self.weapon = W_BestWeapon();
+				other.weapon = W_BestWeapon();
+
 		}
+		W_SetCurrentAmmo();		
 		
-		if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo();
 		self = stemp;
 
 		self.model = string_null;
@@ -1199,13 +1241,6 @@ void() item_weapon =
 	}
 	// 1999-07-10 Enhanced item_weapon function by Athos  end
 };
-/*
-===============================================================================
-
-KEYS
-
-===============================================================================
-*/
 
 /*
 ===============================================================================
@@ -1214,7 +1249,6 @@ KEYS
 
 ===============================================================================
 */
-
 
 void() key_touch =
 {
@@ -1246,7 +1280,6 @@ void() key_touch =
 //	SUB_UseTargets();				// fire all targets / killtargets
 	SUB_UseAndForgetTargets();
 };
-
 
 void() key_setsounds =
 {
@@ -1467,6 +1500,126 @@ POWERUPS
 
 ===============================================================================
 */
+void () powerup_denied =
+{
+    local entity e;
+
+	e = findradius(other.origin, 128);
+
+	while (e)
+	{
+        if ( (e != other) && (e.health > 0) && (e.classname == "player") && (!(e.style & CLANRING_OBSERVER)) && (e.team != other.team) )	// Don't jeer your teammates
+        {
+			// TODO: other.stats_denied_powerup += 1;
+			centerprint (e, "\bdenied!\n");
+			sound(other, CHAN_BODY, "ra/laugh.wav", 1, ATTN_NORM);
+		}
+        e = e.chain;		
+    }
+};
+
+//=====================================================
+void () powerup_pickup =
+{
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		return;
+
+	if (other.style & CLANRING_OBSERVER)
+		return;
+    
+	if (other.classname != "player")
+		return;
+
+	if (other.health < 1)
+		return;
+
+	if (self == world) return;	// R00k: just in the slight chance SUB_Remove was called when it was picked up.
+
+	// how much time remains NOW; we cannot just give them the amount of time unused, as there's another quad going to spawn at nextthink + 30...
+	float timeleft = floor(self.nextthink - time); 		// R00k: We use the .nexthink here not timeleft[i] because match_pause_item updates the entity's nextthink 
+		
+	sound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
+	other.items = other.items | self.items; 
+
+	switch (self.items)
+	{
+		case IT_QUAD:
+		{
+			other.super_time = 1;
+			other.effects = other.effects | EF_DIMLIGHT | EF_BLUE;
+			if (other.super_damage_finished > time)
+			{
+				other.super_damage_finished = (min((other.super_damage_finished + timeleft), time + 30));
+				sprint(other, "You got the ", self.netname, ".\ntime remaining: \[ ", ftos(floor(other.super_damage_finished - time)), " \] seconds.\n");
+			}
+			else
+			{
+				other.super_damage_finished = self.nextthink;
+				sprint(other, "You got the ", self.netname, " with ", ftos(timeleft), " seconds remaining.\n");
+			}
+			break;
+		}
+		case IT_INVISIBILITY:
+		{
+			other.invisible_time = 1;	
+			other.invisible_finished = (other.invisible_finished <= time) ? (self.nextthink) : (min((other.invisible_finished + timeleft), time + 30));
+			break;
+		}
+		case IT_SUIT:
+		{
+			other.rad_time = 1;
+			other.radsuit_finished = (other.radsuit_finished <= time) ? (self.nextthink) : (min((other.radsuit_finished + timeleft), time + 30));
+			break;
+		}
+		case IT_INVULNERABILITY:
+		{
+			other.invincible_time = 1;		
+			other.effects = other.effects | EF_DIMLIGHT | EF_RED;
+			other.invincible_finished = (other.invincible_finished <= time) ? (self.nextthink) : (min((other.invincible_finished + timeleft), time + 30));
+			break;
+		}
+	}
+	powerup_denied(); //laugh at anyone who is nearby...
+	activator = other;
+	SUB_UseTargets ();
+	remove(self);
+};
+
+void() powerup_drop =
+{
+	float     it_flag[4] = { IT_QUAD, IT_INVISIBILITY, IT_SUIT, IT_INVULNERABILITY };
+	string      sound[4] = { "items/damage.wav", "items/inv1.wav", "items/suit.wav", "items/protect.wav" };
+	string   filename[4] = { "progs/quaddama.mdl", "progs/invisibl.mdl", "progs/suit.mdl", "progs/invulner.mdl" };
+	string       text[4] = { "Quad", "Ring of Shadows", "Biosuit", "Pentagram of Protection" };
+	string      cname[4] = { "item_artifact_super_damage", "item_artifact_invisibility", "item_artifact_envirosuit", "item_artifact_invulnerability"};
+	float    timeleft[4] = { self.super_damage_finished, self.invisible_finished, self.radsuit_finished, self.invincible_finished };
+
+	float i;
+
+    for (i = 0; i < 4; i++)
+    {
+        if (self.items & it_flag[i])
+        {
+            entity drop = spawn();
+            drop.noise = sound[i];
+            drop.items = it_flag[i];
+            setmodel(drop, filename[i]);
+            drop.netname = text[i];
+            drop.classname = cname[i]; // R00k: we need the classname so we can pause the entity
+            drop.origin = self.origin + '0 0 16';
+            drop.velocity = '0 0 30';
+            drop.flags = FL_ITEM;
+            drop.solid = SOLID_TRIGGER;
+            drop.movetype = MOVETYPE_TOSS;
+            setsize(drop, VEC_HULL_MIN, VEC_HULL_MAX);
+            drop.touch = powerup_pickup;
+			//drop.alpha = (timeleft[i] - time)/16;	// R00k: fade the model based on time remaining			
+            drop.nextthink = timeleft[i];
+			drop.think = SUB_Remove;
+        }
+    }
+};
+
 void() powerup_touch =
 {
     // CLANRING_MOD
@@ -1506,7 +1659,7 @@ void() powerup_touch =
 		self.solid = SOLID_NOT;
 		other.items = other.items | self.items;
 		self.model = string_null;
-	
+		self.stats_item_biosuit += 1;
 //		other.effects = other.effects | EF_GREEN;	
 		other.rad_time = 1;
 		other.radsuit_finished = time + 30;
@@ -1557,9 +1710,9 @@ void() powerup_touch =
 		}
 	}
 
-	// 1998-12-24 Improved weapon and powerup touch functions by Maddes/Sméagol  start
+	// 1998-12-24 Improved weapon and powerup touch functions by Maddes/Smï¿½agol  start
 	if (self.items == IT_QUAD)
-	{
+	{	// R00k: TODO: count number of quads on the map; if only one then use global attenuation.
 		if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 			sound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
 		else
@@ -1598,6 +1751,7 @@ void() item_artifact_invulnerability =
 	self.netname = "Pentagram of Protection";
 	self.items = IT_INVULNERABILITY;
 	setsize (self, '-16 -16 -24', '16 16 32');
+
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 16';
 
@@ -1607,6 +1761,7 @@ void() item_artifact_invulnerability =
 	self.count = self.cnt = 0;	
 	self.owner = world;
 	self.height = 0;	
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1625,6 +1780,7 @@ void() item_artifact_envirosuit =
 	setsize (self, '-16 -16 -24', '16 16 32');
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 32';
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1641,10 +1797,12 @@ void() item_artifact_invisibility =
 	self.netname = "Ring of Shadows";
 	self.items = IT_INVISIBILITY;
 	setsize (self, '-16 -16 -24', '16 16 32');
+
 	if !(self.particles_offset)  // t_fog fix for custom models dumptruck_ds
 		self.particles_offset = '0 0 0';
 	self.noise3 = " is invisible";			// ELOHIM_MOD
-	self.noise4 = " is ŽInvisibleŽ\n";		// ELOHIM_MOD
+	self.noise4 = " is \b\<invisible\>\n";	// ELOHIM_MOD
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1671,7 +1829,7 @@ void() item_artifact_super_damage =
 	self.owner = world;				
 	self.height = 0;				
 	// END_MOD
-
+	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
 
@@ -1717,7 +1875,7 @@ void() BackpackTouch =
 		}
 		else
 		{
-			sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
+			sound (other, CHAN_ITEM, "weapons/lock4.wav", 1, ATTN_NORM);
 			other.health = other.health + 10;
 			if (other.health > 300)
 				other.health = 300;
@@ -1737,19 +1895,37 @@ void() BackpackTouch =
 			acount = 1;
 			sprint(other, "the ");
 			sprint(other, self.netname);
-			if (self.items == IT_ROCKET_LAUNCHER)
+			
+			if ((self.items == IT_LIGHTNING) || (self.items == IT_GRENADE_LAUNCHER) || (self.items == IT_ROCKET_LAUNCHER))
 			{
-				if (other.team != self.owner.team)
+				if ((self.enemy != other) && (other.team == self.enemy.team))	//enemy is the person who killed the owner of this backpack
 				{
-					quaketv_announce4(other.netname, " got ", self.owner.netname, "'s RL");
-					quaketv_sound ("misc/talk.wav");
-					self.owner.clanring_badstats_x = self.owner.clanring_badstats_x + 1;
-					if (other.next_team != world)
+					// If the killer of this backpack is nearby and a teammate picks it up then 
+					// let's assume they were holding it for them ...
+					// Find the distance and check how long the backpack was here... if less than 2 seconds 
+					// then maybe they weren't guarding it.
+					if (self.nextthink - time < 118)
 					{
-						other.next_team.mangle_y = other.next_team.mangle_y + 1;
+						float d = vlen((self.origin - ((self.enemy.absmax + self.enemy.absmin) * 0.5)));  
+						if (d < 180) 								// 180 = 1.5X rocket explosion radius
+							self.enemy.stats_defense_backpack += 1;	// R00k: teammate took backpack
 					}
 				}
-				quaketv_obtained_rl (other);// ELOHIM_MOD - keep track of rocket launchers
+		
+				if (self.items == IT_ROCKET_LAUNCHER)
+				{
+					quaketv_obtained_rl (other);// ELOHIM_MOD - keep track of rocket launchers
+					if (other.team != self.owner.team)
+					{
+						quaketv_announce4(other.netname, " got ", self.owner.netname, "'s RL");
+						quaketv_sound ("misc/talk.wav");
+						self.owner.clanring_badstats_x = self.owner.clanring_badstats_x + 1;
+						if (other.next_team != world)
+						{
+							other.next_team.mangle_y = other.next_team.mangle_y + 1;
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1770,7 +1946,7 @@ void() BackpackTouch =
 	//old = other.items;
 	if (!(other.items & new))
 	{
-		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
+		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))	// b_switch ??
 			Deathmatch_Weapon (other, new);
 	}
 	other.items = (other.items | new);
@@ -1817,7 +1993,8 @@ void() BackpackTouch =
 	}
 	sprint(other, "\n");
 // backpack touch sound
-	sound (other, CHAN_ITEM, "weapons/lock4.wav", WEAPON_SHOTGUN, ATTN_NORM);
+	sound (other, CHAN_ITEM, "weapons/lock4.wav", 1, ATTN_NORM);
+	other.stats_item_backpacks += 1;
 // remove the backpack, change self to the player
 	remove(self);
 	self = other;
@@ -1827,23 +2004,55 @@ void() BackpackTouch =
 		if ((other.style & CLANRING_SMART_WEAPON)&&(!(infokeyf(other, "w_switch"))))
 			self.weapon = W_BestWeapon();
 	}
-	if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo ();
+	W_SetCurrentAmmo();
 };
 
+float() backpack_customizeentityforclient =
+{
+	if (other.style & CLANRING_OBSERVER)
+	{
+		if (self.items == IT_ROCKET_LAUNCHER)
+		{
+			self.effects |= EF_FULLBRIGHT;
+			self.colormod = '7 1 0';
+		}
+		else if (self.items == IT_LIGHTNING)
+		{
+			self.effects |= EF_FULLBRIGHT;
+			self.colormod = '0 1 7';
+		}
+		else
+		{
+			self.effects = 0;
+			self.colormod = '0 0 0';
+		}
+	}
+	else
+	{
+		self.effects = 0;
+		self.colormod = '0 0 0';
+	}
+
+	return 1;
+}
+#pragma warning disable F326 /*Variable "customizeentityforclient" is deprecated*/
 void() DropBackpack =
 {
 	local entity item;
 
 	if (!(self.ammo_shells + self.ammo_nails + self.ammo_rockets + self.ammo_cells))
-	return;	// nothing in it
+		return;	// nothing in it
 	
 	item = spawn();
-	item.origin 	= self.origin - '0 0 24';
+	item.origin	= self.origin - '0 0 24';
     item.classname = "item_backpack";    // ELOHIM_MOD
 	item.owner = self;	// ELOHIM_MOD
-	item.items 	= self.weapon;
-	
+	item.items = self.weapon;
+	item.enemy = self.enemy;	// for backpack stats
+
+	if (deathmatch == 1)
+		item.customizeentityforclient = backpack_customizeentityforclient;
+
 	if (item.items == IT_AXE)
 		item.netname = "Axe";
 	else if (item.items == IT_SHOTGUN)
@@ -1885,10 +2094,7 @@ void() DropBackpack =
 	setmodel (item, "progs/backpack.mdl");
 	setsize (item, '-16 -16 0', '16 16 56');
 	item.touch = BackpackTouch;
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		item.nextthink = time + 60;	//1 minute, ctf has a hook...
-	else
-		item.nextthink = time + 120;	//remove after 2 minutes
+	item.nextthink = time + 120;	//remove after 2 minutes
 	item.think = SUB_Remove;
 };
 
@@ -1997,8 +2203,7 @@ void() Team_weapon_touch =
 			self.weapon = W_BestWeapon();
 		}
 	}
-	if (other.weapon != IT_HOOK)
-		W_SetCurrentAmmo();
+	W_SetCurrentAmmo();
 
 	self = stemp;
 
@@ -2026,7 +2231,7 @@ void() TossWeapon =
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
 	
-	if (self.health < 1) 
+	if (self.health < 1)
 		return;
 	
 	if ((self.weapon == IT_AXE)||(self.weapon == IT_SHOTGUN)||(self.weapon == IT_HOOK)) 
@@ -2170,7 +2375,17 @@ void() TossWeapon =
 		}
 	}
 	
-	self.toss_time = time + 21;
+	// R00k: "You There!" so my teammates will look at me when dropping items...
+	if ((time > self.toss_time)||(self.toss_time == 0))
+	{
+		sound(self, CHAN_VOICE, "enforcer/sight3.wav", 1, ATTN_NORM);
+		self.toss_time = time + 5;
+	}
+	else self.toss_time = time + 2;//more spamming more duration
+	
+	if (deathmatch == 3)
+		self.toss_time = time + 21;
+
 	self.items = self.items - (self.items & (self.weapon));
 
 	self.weapon = W_BestWeapon();
@@ -2257,7 +2472,6 @@ void() Team_Ammo_Touch=
 		sound (other, CHAN_ITEM, "weapons/lock4.wav", 1, ATTN_NORM);
 		etemp=self;
 		self=other;
-		if (other.weapon != IT_HOOK)
 		W_SetCurrentAmmo();
 		self=etemp;
 		self.model = string_null;
@@ -2382,12 +2596,18 @@ void() TossAmmo =
 		}
 	}
 	
+	// R00k: "You There!" so my teammates will look at me when dropping items...
+	if (time > self.toss_time)
+	{
+		sound(self, CHAN_VOICE, "enforcer/sight3.wav", 1, ATTN_NORM);
+		self.toss_time = time + 5;
+	}
+	
 	item = spawn();
 	item.owner = self;
 	makevectors(self.v_angle);
-
 	setorigin(item, self.origin + '0 0 16');
-	item.velocity = aim(self, 320);
+	item.velocity = v_forward;
 	item.velocity = item.velocity * 320;
 	item.flags = FL_ITEM;
 	item.solid = SOLID_TRIGGER;
@@ -2523,25 +2743,76 @@ void() DropVial = //
 	StartItem ();
 };
 
-void() DropShard = //
+void() DropShardTouch = 
 {
-	local entity	item;
+	if (CheckValidTouch() == FALSE)
+		return;
 
+	local float c;
+
+	c = floor(other.armorvalue + self.armorvalue);
+
+	if (other.items & IT_ARMOR1)
+	{
+		if (other.armorvalue >= 125)	
+			return;
+		other.armorvalue = clamp(c, 5, 125);
+	}
+	else
+	{
+		if (other.items & IT_ARMOR2)
+		{
+			if (other.armorvalue >= 175)	
+				return;
+			other.armorvalue = clamp(c, 5, 175);
+		}
+		else
+		{
+			if (other.items & IT_ARMOR3)
+			{
+				if (other.armorvalue >= 225)	
+					return;
+				other.armorvalue = clamp(c, 5, 225);
+			}
+			else
+			{		
+				other.armortype = 0.3;	
+				other.armorvalue = self.armorvalue;
+				other.items |= IT_ARMOR1; 
+			}
+		}
+	}
+
+	sound_misc(other, CHAN_AUTO, self.snd_misc, 1, ATTN_NORM);
+
+	self.solid = SOLID_NOT;
+	self.model = string_null;
+
+	remove(self);
+	activator = other;
+	SUB_UseTargets();
+};
+
+void(vector o, float a) DropShard = //
+{
+	local entity item;
+	
 	item = spawn();
-	item.origin = self.origin - '0 0 24';
 
+	item.owner = item;
+	item.origin = o + '0 0 24';
+	item.armorvalue = a;
 	item.velocity_z = 300;
-	item.velocity_x = -100 + (random() * 200);
-	item.velocity_y = -100 + (random() * 200);
+	item.velocity_x = 0;
+	item.velocity_y = 0;
 
 	setmodel(item, "progs/armshr.mdl");
 	item.solid = SOLID_TRIGGER;
 	item.movetype = MOVETYPE_TOSS;
-	setsize (item, '-16 -16 0', '16 16 56');
-	item.touch = shard_touch;
-	item.snd_misc = "dump/armsh1.wav";
-
-	StartItem ();
+	setsize(item, '-16 -16 0', '16 16 56');
+	item.touch = DropShardTouch;	// R00k
+	item.snd_misc = "items/armsh1.wav";
+	item.flags = FL_ITEM;		// make extra wide
 };
 
 void() DropStuff =
@@ -2562,33 +2833,30 @@ void() DropStuff =
 		}
 	if (self.drop_item == 4)
 		{
-			DropShard();
+			DropShard(self.origin, 5);
 		}
 	if (self.drop_item == 5)
 		{
 			DropVial();
-			DropShard();
+			DropShard(self.origin, 5);
 		}
 	else if (self.drop_item == 6)
 	{
 		rand_drop = rint(random() * 3);
 		if (rand_drop == 1)
 			{
-				DropShard();
+				DropShard(self.origin, 5);
 				DropVial();
 				DropVial();
 			}
 		else if (rand_drop == 2)
 			{
-				DropShard();
-				DropShard();
+				DropShard(self.origin, 10);
 				DropVial();
 			}
 		else if (rand_drop == 0)
 			{
-				DropShard();
-				DropShard();
-				DropShard();
+				DropShard(self.origin, 15);
 			}
 		else
 			{

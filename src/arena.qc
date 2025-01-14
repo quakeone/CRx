@@ -11,7 +11,6 @@ void () ra_select_team;
 void() Request_Poll_Cleanup;
 float (string captiona, string captionb, void() passfunc, string pollname = "") vote_init;
 float () W_BestWeapon;
-void () score_update_time;
 void () SUB_regen;
 void (float dm) ThrowHead;
 void () match_reset_powerup;
@@ -43,7 +42,7 @@ void () arena_precache =
 	precache_sound ("crx/two.wav");
 	precache_sound ("crx/three.wav");
 	precache_sound ("crx/fight.wav");
-	precache_sound ("ra/laugh.wav");
+	//precache_sound ("ra/laugh.wav"); Moved to world.qc --R00k
 	//precache_sound ("ra/flawless.wav");  //not used
 	precache_sound ("ra/outstand.wav");	
 	//precache_sound ("ra/excellent.wav");	
@@ -910,6 +909,9 @@ void () RemoveFromTeam =
 
 	clear_name();
 
+	if (clanring_playmode & CLANRING_CA_MODE)
+    	motd_playercount();// R00k
+
 	self.ca_player_flag = PF_WAITING;
 	self.movetarget 	= world;
 	self.frags 			= -99;
@@ -1049,7 +1051,9 @@ void(float whichteam) Join_Team =
 
 	motd_top5 = string_null;
 	motd_top6 = string_null;
+	motd_playercount();
 	stats_reset_player (); //BAM MOVED
+
 };
 
 float (float n) join_team2 =
@@ -1556,7 +1560,7 @@ void() arena_restart_player =
 	self.nextthink = time + 0.1;
 }
 
-void () execute_changelevel;
+//void () execute_changelevel;
 void() reset_match =
 {
 	utils_do_arena_players (arena_reset_player);
@@ -1637,11 +1641,13 @@ void () arena_match_end =
 				if (team_first_place.chain_gang != world)
 					announce2((team_first_place.chain_gang.netname)," has won the match.");
 
-				report_mvp_game();
+//				report_mvp_game();  Ya, yeah, we know...
 
 				bprint ("The match is over\n");//required for Qrack cl_autodemo 2
-				sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
-
+	
+				if ((!(clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS)) || (!clanring_matchsound_count))
+					sound (world, CHAN_AUTO, "ra/gong.wav", 1 , ATTN_NONE);
+	
 				NextLevel();
 				return;
 			}
@@ -1649,8 +1655,8 @@ void () arena_match_end =
 				announce2((team_first_place.netname)," has won the match.");	
 			bprint ("\n");
 		}
-
-		report_mvp_game();
+		if (number_teammates(team_first_place) > 1)    // Only show MVP for non 1v1 games.
+			report_mvp_game();
 	}
 	else bprint ("Match \baborted\b.\n");//Added v1.4c
 
@@ -1684,7 +1690,7 @@ void () arena_match_end =
 	boss.draw = FALSE;
 
 	temp = ftos(boss.round);
-	localcmd("skill \"", temp, "\"\n");//this still used?
+	localcmd("skill \"", temp, "\"\n");//this still used?    TODO: Replace with infokey
 
 	utils_make_scheduled_event(reset_match, 1);
 	pqc_match_time (0, 0);
@@ -1761,21 +1767,25 @@ void (float x,float y) announce_winner =
 	if (x == 200 && y == 100)
 	{
 		sound(world, CHAN_AUTO, "crx/flawless.wav", 1, ATTN_NONE);// Health = 100 Armor == 200 = 300
+		ctprint("Flawless Victory");
 	}
 	else
 	if (x >= 100 && y >= 75)
 	{
 		sound(world, CHAN_AUTO, "ra/outstand.wav", 1, ATTN_NONE);// Health >= 75 Armor >= 100 = 175
+		ctprint("Outstanding");
 	}
 	else
 	if (x >= 75 && y >= 50)
 	{
 		sound(world, CHAN_AUTO, "crx/excell2.wav", 1, ATTN_NONE);// Health >= 50 Armor >= 75 == 125
+		ctprint("Excellent");
 	}
 	else
 	if (x >= 50 && y >= 50)
 	{
 		sound(world, CHAN_AUTO, "ra/welldone.wav", 1, ATTN_NONE);// Health >=50 Armor >= 50 == 100
+		ctprint("Well Done");
 	}
 };
 

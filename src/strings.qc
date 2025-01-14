@@ -358,15 +358,23 @@ string (float num) strings_get_colour =
 {
 	const string tab[] = 
 	{
-		"brown",	"light blue",
-		"green",	"red",
-		"olive",	"gold",
-		"flesh",	"lavender",
-		"purple",	"beige",
-		"aqua",		"yellow",
+        "white",
+		"brown",	
+        "light blue",
+		"green",	
+        "red",
+		"olive",	
+        "gold",
+		"flesh",	
+        "lavender",
+		"purple",	
+        "beige",
+		"aqua",		
+        "yellow",
 		"blue"
 	};
-	return tab[num-1];
+
+	return tab[num];
 };
 
 //
@@ -592,7 +600,7 @@ string (float mode) strings_get_mode =
 {
 	switch(mode)
 	{
-		case 0:	return "DM";
+		case 0:	return "Normal/FFA";
 		case 1: return "Practice";
 		case 2: return "Match";
 		case 3: return "CTF";

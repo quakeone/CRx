@@ -166,6 +166,7 @@ void (entity player) quaketv_lost_rl =
 
 	if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))
 	{
+		quaketv_announce2(player.netname, " lost a rocket launcher!");	//9/27/24
 		player.next_team.ammo_rockets = player.next_team.ammo_rockets - 1;
 		clanring_sentinel.ammo_rockets = clanring_sentinel.ammo_rockets - 1;
 		if (player.next_team == clanring_sentinel.movetarget)  // team lost control
@@ -177,6 +178,18 @@ void (entity player) quaketv_lost_rl =
 		else if (!player.next_team.ammo_rockets && (clanring_sentinel.ammo_rockets > 1))
 			quaketv_check_control();
 	}
+};
+
+//
+//  L O S T  L G
+//
+void (entity player) quaketv_lost_lg = 
+{
+	if (match_prewar())
+		return;
+	
+	if (teamplay && (clanring_playmode & CLANRING_MATCH_MODE))		
+		quaketv_announce2(player.netname, " lost a lightning gun!");	// 9/27/24
 };
 
 //

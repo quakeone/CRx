@@ -30,7 +30,7 @@ float CLANRING_CONNECTED 		= 4096;       	// client has been put in server
 float CLANRING_FOUND_BINDINGS 	= 8192; 		// used to check for bindings
 float CLANRING_SMART_WEAPON    	= 16384;		// whether or not to use `smart' weapon switching
 float CLANRING_OBSERVER    		= 32768;		// set if the client is an observer
-float CLANRING_AUTOID    		= 65536;
+//float CLANRING_AUTOID    		= 65536;
 float CLANRING_SCOREBOARD 		= 131072;		// player is looking at teamscores
 float CLANRING_NO_POST_THINK 	= 262144;		// don't do post think (optimization)
 float CLANRING_WINQUAKE 		= 524288;     	// player is using winquake
@@ -82,17 +82,67 @@ float CLANRING_AIRSHOT_MODE			= 65536;
 float CLANRING_AUTO_PAUSE    		= 131072;
 float CLANRING_RUNETOSS    		    = 262144;
 float CLANRING_NO_HOOK			    = 524288;
-//float CLANRING_CA_CC_VOTE			= 0;
 //float CLANRING_FREEZETAG			= 0;
 //float CLANRING_SPEEDBALL			= 0;
-//float CLANRING_SPAWNFRAG_PROTECTION = 0;
 //float UNUSED						= 1048576;
 float CLANRING_DMM4_MODE			= 1048576;
 float CLANRING_CONSOLE_STATS   		= 2097152;
 float CLANRING_CA_MODE				= 4194304;
 float CLANRING_RA_MODE				= 8388608;
 
-// server .state - not preserved across level changes
+/*
+	P L A Y M O D E
+	clanring_playmode - stored in cvar 'samelevel' and preserved across levels
+	eg. (clanring_playmode & CLANRING_PRACTICE_MODE)
+
+float CLANRING_FREEFORALL_MODE    = 1;        // teamplay 0 dm; normal mode
+float CLANRING_PICKUP_DM_MODE     = 2;        // teamplay 1 dm; no friendly fire; normal mode
+float CLANRING_MATCH_TDM_MODE     = 4;        // teamplay 2 dm; friendlyfire; match mode
+float CLANRING_PRACTICE_DM_MODE   = 8;        // teamplay 0 dm; self damage; practice full inventory
+float CLANRING_PICKUP_CTF_MODE    = 16;       // teamplay 1 ctf; no friendly fire; normal mode
+float CLANRING_MATCH_CTF_MODE     = 32;       // teamplay 1 ctf; match timer
+float CLANRING_PRACTICE_CTF_MODE  = 64;       // teamplay 0 ctf; hook enabled; practice full inventory
+float CLANRING_CLAN_ARENA_MODE    = 128;      // Clan Arena
+float CLANRING_FREEZETAG_MODE     = 256;      // sub mode of ClanArena, you respawn by teammate intervention.
+float CLANRING_WIPEOUT_MODE       = 512;      // sub mode of ClanArena, you respawn at set time intervals.
+float CLANRING_ELIMINATION_MODE   = 1024;     // Sub mode of ClanArena, you respawn when your killer dies.
+float CLANRING_AIRSHOT_MODE       = 2048;     //
+float CLANRING_DMM4_MODE          = 4096;     //
+float CLANRING_ROCKET_ARENA_MODE  = 8192;     //
+float CLANRING_SPEEDBALL_MODE     = 16384;    //
+float CLANRING_INSTAGIB_MODE      = 32768;    //
+float CLANRING_SERVER_INITIALIZED = 0;
+*/
+/*
+	G A M E C O N F I G
+	clanring_gameconfig - preserved across levels in cvar 'gamecfg'
+	eg. (clanring_gameconfig & CLANRING_NO_HOOK)
+*/
+// TODO: enumflags
+
+// float CLANRING_AUTO_PAUSE    		= 1;
+// float CLANRING_CA_CC_VOTE			= 2;
+float CLANRING_DISABLE_VOTE				= 4;
+// float CLANRING_EXTENDED_OBITS    	= 8;
+// float CLANRING_FAST_START    		= 16;
+// float CLANRING_FRESH_SPAWNS         	= 32;
+// float CLANRING_MODE_VOTE    			= 64;
+// float CLANRING_NO_HOOK			    = 128;
+// float CLANRING_NO_PENT    			= 256;
+// float CLANRING_NO_QUAD    			= 512;
+// float CLANRING_NO_RING    			= 1024;
+// float CLANRING_NO_SPOOGE    			= 2048;
+float CLANRING_POWERUP_DROP				= 4096;
+// float CLANRING_RUNES			    	= 8192;
+// float CLANRING_RUNETOSS    		    = 16384;
+float CLANRING_SPAWNFRAG_PROTECTION 	= 32768;
+float CLANRING_SEQUENTIAL_SPAWNS		= 65536;
+// float CLANRING_BREAKAWAY_HOOK		= 0;
+// float CLANRING_QW_ROCKET_DAMAGE		= 0;		//set rocket damage to 110 eliminate the ' + random () * 20 '
+float CLANRING_DROP_DEATH_SHARDS		= 1048576;
+// float CLANRING_VOTE_MAJORITY_PASS	= 0;
+float CLANRING_ENABLE_MATCHSOUNDS = 2097152;
+// clanring_state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
 float CLANRING_MATCH_STARTED    	= 2;
 float CLANRING_MATCH_PAUSED    		= 4;
@@ -131,6 +181,7 @@ float CLANRING_MANUAL_SPAWN = 1;
 //float   clanring_player_ids;        // used for assigning unique player ID's
 float   clanring_devparam;          // used for development
 float   clanring_playmode;          // current play mode (non volatile flags)
+float	clanring_gameconfig;		// playmode sub-settings (non volatile flags)
 float   clanring_state;             // server state (volatile flags)
 float   clanring_timelimit;         // timelimit for matches (default 20 minutes)
 float   default_timelimit;          // reset timelimit between matches in case of overtime or interrupted match abort
@@ -207,10 +258,14 @@ vector 	clanring_angle;					// used for both autoss and intermission
 
 // client variables
 .vector clanring_qdwep;             // vector to keep track of quad weapon stats	// CRMOD - stats
-.vector clanring_qdkill;            // vector to keep track of quad kill stats	// CRMOD - stats
+.vector clanring_qdkill;            // vector to keep track of quad kill stats		// CRMOD - stats
 .vector clanring_ptwep;             // vector to keep track of pent weapon stats	// CRMOD - stats
-.vector clanring_ptkill;            // vector to keep track of pent kill stats	// CRMOD - stats
+.vector clanring_ptkill;            // vector to keep track of pent kill stats		// CRMOD - stats
 .vector clanring_badstats;          // keep track of RL paks and damage done to team
+.vector clanring_backpacks;			// track rl|lg|gl lost/taken backpacks
+.vector deathorigin;
+//.float killed_who[16];				// players you killed; the number of times killed_who[playerno].netname
+//.float who_killed[16];				// players who killed you; how many times you died by who_killed[playerno].netname
 .entity clanring_othertarget;       // entity to focus on in tourneycam		// CRMOD - tourneycam
 .entity clanring_inflicted;         // stores entity last attacked			// CRMOD - combat
 .float  clanring_chase_score;       // same as above, also used by cameras
@@ -234,6 +289,7 @@ float 	CLANRING_ANGLE_SMOOTHING    = 0.6; // CRMOD use this instead of typing th
  * helpers. -- from cspreee
  */
  #define redify(s) strconv(0,2,2,s)
+ #define whitey(s) strconv(0,1,1,s)
  #define alternate(s) strconv(0,5 + ((time*4)&1), 5 + ((time*4)&1),s)
  #define flash(s) strconv(0,1 + ((time*4)&1), 1 + ((time*4)&1),s)
  #define goldnmbr(s) strconv(0,3,3,s)
@@ -337,7 +393,7 @@ float clanring_tdm_ticrate;
 
 .float 	hurt_together_time;
 .float 	hurt_nextthink;
-.float	id_time;//delay autoidentify teammates
+.float	id_time;//delay to identify teammates
 
 .float	killed;//used to determine base spawn points
 //.float	gibbed;//time to explode player
@@ -381,7 +437,7 @@ float 	KICK_LAGOUT	= 4;	//R00k
 float 	sys_ready;//hold on the server is loading!!
 float 	debug = 0;
 .float 	ctime;
-string	clanring_version_red;
+//string	clanring_version_red;
 .entity hookentity;
 .string client;
 
@@ -415,32 +471,71 @@ float 	PQC_PING_TIMES	=	7;
 
 float	clanring_afk_check;
 float	clanring_afk_timeout;
-.float	afk_time;
+.float 	afk_time;
+.float 	vote;    //client flag that holds their vote
 
-.float  stats_gl_frac;
-.float  stats_gl_tot;
-float	stats_timelimit;
-float	stats_matchtype;
+.float stats_item_ssg;				//
+.float stats_item_ng;				//
+.float stats_item_sng;				//
+.float stats_item_gl;				//
+.float stats_item_rl;				//
+.float stats_item_lg;				//
+.float stats_item_shells;			//
+.float stats_item_nails;			//
+.float stats_item_rockets;			//
+.float stats_item_cells;			//
+.float stats_item_health;			//
+.float stats_item_mega;				//
+.float stats_item_biosuit;			//
+.float stats_item_redarmor;			//
+.float stats_item_yellowarmor;		//
+.float stats_item_greenarmor;		//
+.float stats_item_backpacks;		//
+.float stats_item_runes;			//
+.float stats_avenge_teammate;		//
+.float stats_defense_teammate;      //
+.float stats_defense_dropped_flag;  //
+.float stats_defense_backpack;      //
+.float stats_defense_powerup;       //
+.float stats_defense_weapon;        //
+.float stats_defense_armor;         //
+.float stats_discharge_kills;       //
+.float stats_gl_frac;               //
+.float stats_gl_tot;                //
+.float enemy_hurt_time;				// timestamp of when you last hurt an opponent.
+
+float stats_timelimit;
+float stats_matchtype;
 
 .float  csqc_enabled;
 
 typedef struct 
 {
-	string 	name;	// filename WITHOUT '.bsp'
-	string 	title;	
-	string	author; 
+	string	name;	// filename WITHOUT '.bsp'
+	string	title;	// Welcome to Quake
+	string	author; // John Romero
+	// string	type;	// CTF, DM, CA, RA, DMM4
+	// string	image;  // 'data/mapshots/mymap.tga'
+	// float	size;	// 1v1, 2v2, 4v4, 8v8
 }servermap_t;
 
-servermap_t warpmap[250];
+#define WARP_CATEGORY_SIZE 50	// Change the value in server.qc: clanring_set_aliases, if you exceed 50
+#define WARP_MAPLIST_SIZE 30	// Above 15 and most users have to scroll.
 
-string warpmenutop[15]; // Customizable map categories for the warp menu contents.
+servermap_t warpmap[WARP_CATEGORY_SIZE * WARP_MAPLIST_SIZE];
+
+string warpmenutop[WARP_CATEGORY_SIZE]; // Customizable map categories for the warp menu contents.
+string vote_map_choices[6];
+
+float map_choices[6];
 
 string default_nextmap;
 
-float MAX_CUSTOM_MATCH_SOUNDS = 10;
+float MAX_CUSTOM_MATCH_SOUNDS = 20;	//Upped
 float clanring_matchsound_count;
 float clanring_matchsound_rematch_count;
 float clanring_matchsound_blowout_count;
+
 string matchsound[MAX_CUSTOM_MATCH_SOUNDS];
 string matchsound_rematch[MAX_CUSTOM_MATCH_SOUNDS];
 string matchsound_blowout[MAX_CUSTOM_MATCH_SOUNDS];
@@ -646,3 +741,8 @@ float STATE_INVISIBLE = 8;
 
 float isFTEserver; //Is the server running on FTE or QSS/M?
 string clanring_new_record_player;
+
+.entity enemy_target;
+#define INSTALLED_NEXTMAPS_LIMIT 200
+string levels[INSTALLED_NEXTMAPS_LIMIT];//levels.cfg
+//eof

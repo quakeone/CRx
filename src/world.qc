@@ -178,6 +178,8 @@ void() worldspawn =
 		cvar_set ("sv_gravity", "800");
 	}
 
+	forceinfokey (world, "intermission","off");
+	
 	// the area based ambient sounds MUST be the first precache_sounds
 	
 	// player precaches	
@@ -348,6 +350,10 @@ void() worldspawn =
 	precache_sound ("misc/basekey.wav"); //flag dropped notification
 	precache_sound("buttons/switch04.wav"); //match timer countdown
 	precache_sound("crx/prepare.wav");
+
+	precache_sound("enforcer/sight3.wav");//Item tossing "You There!"
+	precache_sound ("ra/laugh.wav"); // Powerup Denied sound.
+	//precache_model ("progs/spawn.mdl");
 	
 	//
 	// Setup light animation tables. 'a' is total darkness, 'z' is maxbright.

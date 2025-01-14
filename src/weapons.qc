@@ -41,7 +41,7 @@ void() W_Precache =
 	precache_sound ("knight/sword1.wav");		//server modules hook
 	precache_sound ("shambler/smack.wav");  	// hook tear
 
-	//if (/*(clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM)*/ || (mode_is_arena()))
+	if ((clanring_state & CLANRING_TEAM_CAPTURE_CUSTOM) || (mode_is_arena())) //FIXME: Forcing these precaches requires all connecting clients to have these assets, even in pub modes :|
 	{		
 		precache_sound ("weapons/chain1.wav");
 		precache_sound ("weapons/chain2.wav");
@@ -88,6 +88,7 @@ void() W_FireAxe =
 	makevectors (self.v_angle);
 	source = self.origin + '0 0 16';
 	traceline (source, source + v_forward*64, FALSE, self);
+
 	if (trace_fraction == 1.0)
 		return;
 	
@@ -256,17 +257,17 @@ TraceAttack
 */
 void(float damage, vector dir) TraceAttack =
 {
-	local	vector	vel, org;
-	
-	vel = normalize(dir + v_up*crandom() + v_right*crandom());
-	vel = vel + 2*trace_plane_normal;
-	vel = vel * 200;
+	local	vector	vel = '0 0 0', org = '0 0 0';
 
-	org = trace_endpos - dir*4;
+	org = (trace_endpos - (dir * 4));
+
 	if (trace_ent.takedamage)
 	{
 		if (trace_ent.classname == "player") 
 		{
+			vel = normalize(dir + v_up*crandom() + v_right*crandom());
+			vel = vel + 2*trace_plane_normal;
+			vel = vel * 200;
 			SpawnBlood (org, (vel * 0.2), damage);
 		}
 		else
@@ -347,7 +348,7 @@ void() W_FireShotgun =
 	if (!(ammo_is_infinite()))
 	self.currentammo = self.ammo_shells = self.ammo_shells - 1;
 	makevectors(self.v_angle); // ELOHIM_MOD - added this
-	dir = aim (self, 100000);
+	dir = v_forward; // R00k: removed autoaim support 	
 	FireBullets (6, dir, '0.04 0.04 0');
 };
 
@@ -374,7 +375,7 @@ void() W_FireSuperShotgun =
 		self.currentammo = self.ammo_shells = self.ammo_shells - 2;
     // END_MOD
     makevectors(self.v_angle); // ELOHIM_MOD - added this
-	dir = aim (self, 100000);
+	dir = v_forward; // R00k: removed autoaim support 	
 	FireBullets (14, dir, '0.14 0.08 0');
 };
 
@@ -478,8 +479,8 @@ void() T_MissileTouch =
 
 //	sound (self, CHAN_WEAPON, "weapons/r_exp3.wav", 1, ATTN_NORM);
 	self.origin = self.origin - 8*normalize(self.velocity);
-	WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
-	WriteByte(MSG_BROADCAST, TE_EXPLOSION);
+	WriteByte  (MSG_BROADCAST, SVC_TEMPENTITY);
+	WriteByte  (MSG_BROADCAST, TE_EXPLOSION);
 	WriteCoord (MSG_BROADCAST, self.origin_x);
 	WriteCoord (MSG_BROADCAST, self.origin_y);
 	WriteCoord (MSG_BROADCAST, self.origin_z);
@@ -510,8 +511,8 @@ void() W_FireRocket =
 
 // set missile speed		
 	makevectors (self.v_angle);
-	missile.velocity = aim (self, 1000);
-	missile.velocity = missile.velocity * 1000;
+
+	missile.velocity = (v_forward * 1000);
 	missile.angles = vectoangles(missile.velocity);
 	missile.touch = T_MissileTouch;
 
@@ -597,8 +598,12 @@ void() W_FireLightning =
 
 	if (self.ammo_cells < 1)
 	{
-		self.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo ();
+		if (self.style & CLANRING_SMART_WEAPON)
+		{
+			self.weapon = W_BestWeapon();
+			W_SetCurrentAmmo();
+		}
+		self.weaponframe = 0;
 		return;
 	}
 
@@ -607,7 +612,7 @@ void() W_FireLightning =
 	{
 		cells = self.ammo_cells;
 		self.ammo_cells = 0;
-		W_SetCurrentAmmo ();
+		W_SetCurrentAmmo();
 
 		if (mode_is_arena())
 		{
@@ -656,7 +661,7 @@ void() W_FireLightning =
 	{
 		cells = self.ammo_cells;		
 	  	self.ammo_cells = 0;	  
-		W_SetCurrentAmmo ();
+		W_SetCurrentAmmo();
 
 		if (mode_is_arena())
 		{
@@ -689,7 +694,7 @@ void() W_FireLightning =
 	self.dest1_z = self.dest1_z + 30;// ELOHIM_MOD - stats
 	// CRMOD - count damage fired with quad.
     if (self.super_damage_finished > time)                     // ELOHIM_MOD - stats
-    	self.clanring_qdwep_y = self.clanring_qdwep_y + 120;             // ELOHIM_MOD - stats
+    	self.clanring_qdwep_y = self.clanring_qdwep_y + 120;   
     if (self.invincible_finished > time)
     	self.clanring_ptwep_y = self.clanring_ptwep_y + 30;
 	LightningDamage (org, trace_endpos + v_forward * 4, self, 30);
@@ -718,6 +723,7 @@ void() GrenadeTouch =
 		GrenadeExplode ();
 		return;
 	}
+
 	sound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);	// bounce sound
 	if (self.velocity == '0 0 0')
 		self.avelocity = '0 0 0';
@@ -743,8 +749,8 @@ void() W_FireGrenade =
 		if (self.lip >= 4)
 		{
 			self.items = self.items - (self.items & IT_GRENADE_LAUNCHER);
-			self.weapon = W_BestWeapon ();
-			W_SetCurrentAmmo ();
+			self.weapon = IT_AXE;//W_BestWeapon ();
+			W_SetCurrentAmmo();
 			sprint(self, "\b\< Grenade spam protection activated \>\n");
 			return;
 		}
@@ -896,8 +902,12 @@ void(float ox) W_FireSpikes =
 
 	if (self.ammo_nails < 1)
 	{
-		self.weapon = W_BestWeapon ();
-		W_SetCurrentAmmo ();
+		if (self.style & CLANRING_SMART_WEAPON)
+		{
+			self.weapon = W_BestWeapon();
+			W_SetCurrentAmmo();
+		}
+		self.weaponframe = 0;
 		return;
 	}
 
@@ -1012,12 +1022,13 @@ PLAYER WEAPON USE
 */
 
 
-void() W_SetCurrentAmmo =
+void W_SetCurrentAmmo(void) =
 {
 	if (self.health <= 0) // bug fix (thanks to QIP [www.inside3d.com/qip]
 		return;
 
 	player_run ();		// get out of any weapon firing states
+	self.weaponframe = 0;	
 
 	self.items = self.items - ( self.items & (IT_SHELLS | IT_NAILS | IT_ROCKETS | IT_CELLS) );
 
@@ -1028,77 +1039,65 @@ void() W_SetCurrentAmmo =
 			self.weaponmodel = "progs/v_star.mdl";
 		else
 			self.weaponmodel = "progs/v_axe.mdl";
-		self.weaponframe = 0;
 	}
 	else
 	if (self.weapon == IT_AXE)
 	{
 		self.currentammo = 0;
 		self.weaponmodel = "progs/v_axe.mdl";
-		self.weaponframe = 0;
 	}
 	else if (self.weapon == IT_SHOTGUN)
 	{
 		self.currentammo = self.ammo_shells;
 		self.weaponmodel = "progs/v_shot.mdl";
-		self.weaponframe = 0;
 		self.items = self.items | IT_SHELLS;
 	}
 	else if (self.weapon == IT_SUPER_SHOTGUN)
 	{
 		self.currentammo = self.ammo_shells;
 		self.weaponmodel = "progs/v_shot2.mdl";
-		self.weaponframe = 0;
 		self.items = self.items | IT_SHELLS;
 	}
 	else if (self.weapon == IT_NAILGUN)
 	{
 		self.currentammo = self.ammo_nails;
 		self.weaponmodel = "progs/v_nail.mdl";
-		self.weaponframe = 0;
 		self.items = self.items | IT_NAILS;
 	}
 	else if (self.weapon == IT_SUPER_NAILGUN)
 	{
 		self.currentammo = self.ammo_nails;
 		self.weaponmodel = "progs/v_nail2.mdl";
-		self.weaponframe = 0;
 		self.items = self.items | IT_NAILS;
 	}
 	else if (self.weapon == IT_GRENADE_LAUNCHER)
 	{
 		self.currentammo = self.ammo_rockets;
 		self.weaponmodel = "progs/v_rock.mdl";
-		self.weaponframe = 0;
 		self.items = self.items | IT_ROCKETS;
 	}
 	else if (self.weapon == IT_ROCKET_LAUNCHER)
 	{
 		self.currentammo = self.ammo_rockets;
 		self.weaponmodel = "progs/v_rock2.mdl";
-		self.weaponframe = 0;
 		self.items = self.items | IT_ROCKETS;
 	}
 	else if (self.weapon == IT_LIGHTNING)
 	{
 		self.currentammo = self.ammo_cells;
 		self.weaponmodel = "progs/v_light.mdl";
-		self.weaponframe = 0;
 		self.items = self.items | IT_CELLS;
 	}
 	else
 	{
 		self.currentammo = 0;
 		self.weaponmodel = "";
-		self.weaponframe = 0;
 	}	
 };
 
 float() W_BestWeapon =
 {
-	local	float	it;
-	
-	it = self.items;
+	float it = self.items;
 
 	if (self.waterlevel <= 2 && self.ammo_cells >= 1 && (it & IT_LIGHTNING))
 		return IT_LIGHTNING;
@@ -1113,22 +1112,6 @@ float() W_BestWeapon =
 	if(self.ammo_shells >= 1 && (it & IT_SHOTGUN))
 		return IT_SHOTGUN;
 	return IT_AXE;
-};
-
-float() W_CheckNoAmmo =
-{
-	if (self.currentammo > 0)
-		return TRUE;
-
-	if (self.weapon == IT_AXE || self.weapon == IT_HOOK)
-		return TRUE;
-	
-	self.weapon = W_BestWeapon ();
-
-	W_SetCurrentAmmo ();
-	
-// drop the weapon down
-	return FALSE;
 };
 
 /*
@@ -1147,32 +1130,48 @@ void() player_shot1;
 void() player_nail1;
 void() player_light1;
 void() player_rocket1;
-void()	player_hook1;
-void()  player_hook3;
+void() player_hook1;
+void() player_hook3;
 
 void() W_Attack =
 {
 	local float r;
 
-	if (self.plag)//added lag detection
-	{
-		self.plag = 0;
-	}
+	self.plag = FALSE;
 
+//autoswitch when letting off the fire button, unless SmartWeapon enabled.
 	if ((self.weapon != IT_HOOK) && (self.weapon != IT_AXE))
 	{
-		if (!W_CheckNoAmmo ())
-			return;
+		if (self.currentammo < 1)		
+		{
+			self.attack_finished = time + 0.5;
+			if (self.style & CLANRING_SMART_WEAPON)
+			{
+				self.weapon = W_BestWeapon();
+				W_SetCurrentAmmo();
+			}
+			else
+			{
+				stuffcmd(self,";play weapons/g_click;\n");	// Don't require everyone to precache this.
+
+				if (self.currentammo <= 0)
+				{					
+					self.currentammo = 0.6;
+				}
+				else
+					self.currentammo -= 0.03;
+
+				self.weaponframe = 0;
+				return;
+			}
+		}
 	}
 
-	if (time < self.attack_finished)
-		return;
-		
-	makevectors (self.v_angle);		// calculate forward angle for velocity
-	self.show_hostile = time + 1;	// wake monsters up
+	makevectors (self.v_angle);	// calculate forward angle for velocity
+	self.show_hostile = time;	// FIXME: Use this for something...(last fired shot?)
 
 	// CRMOD - check for live players
-	if (self.weapon != IT_AXE)//A player can type +attack and idle but eventually he will run out of ammo and just be swinging the axe...
+	if (self.weapon != IT_AXE)  // A player can type +attack and idle but eventually he will run out of ammo and just be swinging the axe...
 		self.finaldest_x = time;
 	// END_MOD
 
@@ -1373,7 +1372,7 @@ void() W_ChangeWeapon =
 	
 	self.weapon = fl;
 
-	W_SetCurrentAmmo ();
+	W_SetCurrentAmmo();
 };
 
 
@@ -1458,7 +1457,7 @@ void() CycleWeaponCommand =
 
 		if ( (it & self.weapon) && am == 0)
 		{
-			W_SetCurrentAmmo ();
+			W_SetCurrentAmmo();
 			return;
 		}
 	}
@@ -1539,7 +1538,7 @@ void() CycleWeaponReverseCommand =
 
 		if ( (it & self.weapon) && am == 0)
 		{
-			W_SetCurrentAmmo ();
+			W_SetCurrentAmmo();
 			return;
 		}
 	}
@@ -1587,7 +1586,7 @@ void() PreviousWeaponCommand =
 	if (am)
 		self.weapon = W_BestWeapon ();
 
-	W_SetCurrentAmmo ();
+	W_SetCurrentAmmo();
 };
 
 /*
@@ -1598,9 +1597,10 @@ ImpulseCommands
 */
 void() ImpulseCommands =
 {
-	if (self.impulse >= 1 && self.impulse <= 8)
+	if (self.impulse == 22)
 		W_ChangeWeapon ();
-	else if (self.impulse == 22)
+	else 
+	if (self.impulse >= 1 && self.impulse <= 8)
 		W_ChangeWeapon ();
 	else if (self.impulse == 10)
 		CycleWeaponCommand ();
@@ -1626,16 +1626,17 @@ void() W_WeaponFrame =
 	//if (time < self.attack_finished)
 	//	return;
 
-	if (self.delayed_impulse)
+	// END_MOD
+
+	if (self.deadflag)
+		return;
+	
+    if (self.delayed_impulse)
 	{
 		self.impulse = self.delayed_impulse;
 		self.delayed_impulse = 0;
 		ImpulseCommands ();
 	}
-	// END_MOD
-
-	if (self.deadflag)
-		return;
 	
 	if (((mode_is_arena() == TRUE) && (boss.timetofight == FALSE)))
 		return;
@@ -1643,7 +1644,7 @@ void() W_WeaponFrame =
 	//BuckSh0t: stop firing during timer countdown
 	if ((match_prewar()) && (clanring_state & CLANRING_TIMER_STARTED))
 	{
-		if (self.weapon != IT_HOOK) //R00k: still allow them to finish their capture time trial
+		if (self.weapon != IT_HOOK) //R00k: allow them to finish their capture time trial
 			return;
 	}
 
@@ -1658,8 +1659,22 @@ void() W_WeaponFrame =
 			clear_afk_status(self);	//R00k:	
 		}
 	}
-	else if (time > self.attack_finished) //R00k added
+	else
+	{
+		if ((self.weapon != IT_HOOK)&&(self.weapon != IT_AXE))
+		{
+			if (self.currentammo < 1)
+			{
+				if (self.style & CLANRING_SMART_WEAPON)
+				{
+					self.weapon = W_BestWeapon();
+					W_SetCurrentAmmo();
+				}
+				self.weaponframe = 0;
+			}
+		}
 		self.style = self.style | CLANRING_OK_TO_SHOOT;
+	}
 };
 
 /*

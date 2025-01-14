@@ -11,6 +11,24 @@ void(string command, string value) config_command =
 {
 	switch(command)
 	{
+		case "matchsoundson":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (!(clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS))
+			{
+				utils_toggle_gflag (CLANRING_ENABLE_MATCHSOUNDS, "Extended Match Sounds");
+			}
+			break;
+		}
+		case "matchsoundsoff":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (clanring_gameconfig & CLANRING_ENABLE_MATCHSOUNDS)
+			{
+				utils_toggle_gflag (CLANRING_ENABLE_MATCHSOUNDS, "Extended Match Sounds");
+			}
+			break;
+		}
 		case "ctfticrate":
 		{
 			clanring_ctf_ticrate = stof(value);
@@ -73,7 +91,7 @@ void(string command, string value) config_command =
 		}
 		case "setafk":
 		{
-			clanring_afk_check = (stof(value) * 60);//in seconds			
+			clanring_afk_check = (stof(value) * 60);//in seconds
 			break;
 		}
 		case "kickafk":
@@ -134,7 +152,7 @@ void(string command, string value) config_command =
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
 			if (clanring_playmode & CLANRING_NO_PENT)
 				votables_set_pent ();
-			break;			
+			break;
 		}
 		case "pentoff":
 		{
@@ -171,22 +189,37 @@ void(string command, string value) config_command =
 				utils_toggle_sflag (CLANRING_MODE_VOTE, "Mode voting");
 			break;
 		}
-/*TODO:
+
 		case "allvoteoff":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (clanring_playmode & CLANRING_DISABLE_VOTE)
-				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			if (!(clanring_gameconfig & CLANRING_DISABLE_VOTE))
+				utils_toggle_gflag (CLANRING_DISABLE_VOTE, "All voting");
 			break;
 		}
 		case "allvoteon":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
-			if (clanring_playmode & CLANRING_DISABLE_VOTE)
-				utils_toggle_sflag (CLANRING_DISABLE_VOTE, "All voting");
+			if (clanring_gameconfig & CLANRING_DISABLE_VOTE)
+				utils_toggle_gflag (CLANRING_DISABLE_VOTE, "All voting");
 			break;
 		}
-*/		
+
+		case "powerupdropoff":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (clanring_gameconfig & CLANRING_POWERUP_DROP)
+				utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+			break;
+		}
+		case "powerupdropon":
+		{
+			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
+			if (!(clanring_gameconfig & CLANRING_POWERUP_DROP))
+				utils_toggle_gflag (CLANRING_POWERUP_DROP, "Powerup Dropping");
+			break;
+		}
+
 		case "obitson":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
@@ -205,7 +238,7 @@ void(string command, string value) config_command =
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
 			clanring_overtime = (stof(value));
-			utils_set_cvar ("scratch2", clanring_overtime);		
+			utils_set_cvar ("scratch2", clanring_overtime);
 			break;
 		}
 		case "maxteams":
@@ -221,7 +254,7 @@ void(string command, string value) config_command =
 			// 	utils_toggle_sflag (CLANRING_FAST_START, "Fast match starts");
 			break;
 		}
-		case "faststartoff": 
+		case "faststartoff":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
 			// if (clanring_playmode & CLANRING_FAST_START)
@@ -232,7 +265,7 @@ void(string command, string value) config_command =
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
 			clanring_state = (clanring_state | CLANRING_NO_PRACTICE);
-			cprint("practice mode disabled\n");
+			print("practice mode disabled\n");
 			break;
 		}
 		case "autopauseon":
@@ -262,7 +295,7 @@ void(string command, string value) config_command =
 			}
 			break;
 		}
-		case "autostatsoff": 
+		case "autostatsoff":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE) return;
 			if (clanring_playmode & CLANRING_CONSOLE_STATS)
@@ -294,7 +327,6 @@ void(string command, string value) config_command =
 			break;
 		}
 // entity file commands
-/*
 		case "newspawn":
 		{
 			console_make_entity("info_player_deathmatch", 1);
@@ -332,7 +364,6 @@ void(string command, string value) config_command =
 			utils_do_items(console_change_item);
 			break;
 		}
-*/
 // control commands
 		case "-init-":
 		case "-ffa-":		// basic normal dm
@@ -341,7 +372,7 @@ void(string command, string value) config_command =
 		case "-practice-":
 		case "-match-tdm-":	// team deathmatch
 		case "-match-ctf-":	// team CTF subsection
-		case "-done-":		
+		case "-done-":
 		{
 			if (clanring_state & CLANRING_IGNORE_CONSOLE)
 			{
@@ -374,7 +405,7 @@ void(string command, string value) config_command =
 
 			if (command == "-ffa-")
 			{
-				if (!(clanring_playmode & CLANRING_NORMAL_MODE)) 
+				if (!(clanring_playmode & CLANRING_NORMAL_MODE))
 					clanring_state = clanring_state | CLANRING_IGNORE_CONSOLE;
 				else
 				if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
@@ -385,7 +416,7 @@ void(string command, string value) config_command =
 
 			if (command == "-pub-ctf-")
 			{
-				if (!(clanring_playmode & CLANRING_NORMAL_MODE)) 
+				if (!(clanring_playmode & CLANRING_NORMAL_MODE))
 					clanring_state = clanring_state | CLANRING_IGNORE_CONSOLE;
 				else
 				if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
@@ -404,9 +435,9 @@ void(string command, string value) config_command =
 
 			if (command == "-match-tdm-")
 			{
-				if (!(clanring_playmode & CLANRING_MATCH_MODE)) 
+				if (!(clanring_playmode & CLANRING_MATCH_MODE))
 					clanring_state = clanring_state | CLANRING_IGNORE_CONSOLE;
-				else 
+				else
 				if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 					clanring_state = clanring_state | CLANRING_IGNORE_CONSOLE;
 				else
@@ -434,7 +465,7 @@ void(string command, string value) config_command =
 				request_timelimit = 0;//R00k added.
 
 				clanring_set_fraglimit(console_fraglimit);
-				utils_set_cvar("pausable", console_pausable);//why again? we just set this 
+				utils_set_cvar("pausable", console_pausable);//why again? we just set this
 				utils_set_cvar("noexit", console_noexit);
 			}
 			break;
@@ -449,7 +480,7 @@ void(string command, string value) config_command =
 		case "safedischargeon":
 		{
 			clanring_playmode = (clanring_playmode | CLANRING_NO_SPOOGE);
-			utils_set_cvar ("samelevel", clanring_playmode);																											
+			utils_set_cvar ("samelevel", clanring_playmode);
 			break;
 		}
 		case "tossruneoff":
@@ -464,7 +495,7 @@ void(string command, string value) config_command =
 			utils_set_cvar ("samelevel", clanring_playmode);
 			break;
 		}
-		default: 
+		default:
 		{
 			if (!(clanring_state & CLANRING_IGNORE_CONSOLE))
 			{
@@ -488,14 +519,17 @@ void () exec_warp_main_menu =
 		return;
 	}
 
-	while ((line = fgets(f)) && (i < 15))
+	while ((line = fgets(f)) && (i < WARP_CATEGORY_SIZE))
 	{
 		float argc = tokenize(line);
+
 		if (!argc)
-			continue;		
-		if (argv(0) == "//" || argv(0) == "#") continue;
-		warpmenutop[i] = strzone(line);
+			continue;
+
+		if (argv(0) == "//" || argv(0) == "#")
+			continue;
 		i++;
+		warpmenutop[i] = strzone(line);
 	}
 
 	fclose(f);
@@ -505,42 +539,70 @@ void() exec_warp_cfg =
 {
 	filestream f = fopen("configs/warp.cfg", FILE_READ);
 	string line = "", mapfile = "";
-	float menunum = 1, level = 0, mapnum = 0;//Ya, 0 - 15 are reserved. warpmap[16] == e1m1. (menu1, map1)
-	
+	float menunum = 0, level = 0, mapnum = 0;
+
 	if (f < 0)
 	{
 		return;
 	}
 
+	float limit = (WARP_MAPLIST_SIZE * WARP_CATEGORY_SIZE);
+
 	while ((line = fgets(f)))
 	{
 		float argc = tokenize(line);
+
 		if (!argc)
-			continue;		
+			continue;
 
 		mapfile = argv(0);
-		
-		if (mapfile == "//" || mapfile == "#" ) continue;	// Skip comments
-		if ((mapfile == "****") || (level > 15))
+
+		if (mapfile == "//" || mapfile == "#") continue;	// Skip comments
+
+		if (mapfile == "****")
 		{
 			menunum += 1;
 			level = 0;
+			if (menunum > WARP_CATEGORY_SIZE)
+			{
+				break;
+			}
 			continue;
 		}
 
 		level += 1;
-		mapnum = (menunum * 15) + level;
 
-		warpmap[mapnum].name = strzone(mapfile);
-		warpmap[mapnum].title = strzone(fgets(f));
-		warpmap[mapnum].author = strzone(fgets(f));
-		//dprint(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
+		// Assume someone forgot the '****' or lost count
+		if (level > WARP_MAPLIST_SIZE)
+		{
+			print(sprintf("***WARNING!\n After warp category #%s, we've hit map #%s, before a **** category separator\n", ftos(menunum), ftos(level)));
+			print("Assuming a new category... fix the file 'warp.cfg' please!\n");
+			menunum += 1;
+			level = 0;
+
+			if (menunum > WARP_CATEGORY_SIZE)
+			{
+				break;
+			}
+		}
+
+		mapnum = (menunum * WARP_MAPLIST_SIZE) + level;
+
+		if (mapnum < limit)
+		{
+			warpmap[mapnum].name = strzone(mapfile);
+			warpmap[mapnum].title = strzone(fgets(f));
+			warpmap[mapnum].author = strzone(fgets(f));
+			//warpmap[mapnum].type = strzone(fgets(f));
+			//print(sprintf("%02g (%s) (%s) (%s)\n", mapnum, (warpmap[mapnum].name), (warpmap[mapnum].title), (warpmap[mapnum].author)));
+		}
+		else print((sprintf("**ERROR: mapnum > WARP_MAPLIST_SIZE (Too many [%s] warp menus/maps)(1024 maps 32 categories maximum)",ftos(mapnum)),"\n"));//todo remove limits
 	}
 	fclose(f);
 }
 
 //
-//	N E X T  L E V E L   C O N F I G 
+//	N E X T  L E V E L   C O N F I G
 //
 // 	Reading the levels.cfg file and setting the nextmap variable to the next map in the list.
 //
@@ -548,140 +610,118 @@ void() exec_warp_cfg =
 //  clanring_levelcount	- This is used throughout to check that levels.cfg has been read...
 //  clanring_lastcount	- used to count how many maps are listed in levels.cfg so we know when to recycle.
 
+void(string mode) clanring_count_maps =
+{
+    string line = "";
+    float mapCount = 0;
+	float i = 1;
+
+    filestream f = fopen("configs/levels.cfg", FILE_READ);
+
+    if (f < 0)
+    {
+        nextmap = strzone(default_nextmap);
+        clanring_levelcount = -1;
+        print("**[ WARNING ]** 'levels.cfg' not found.\n");
+        return;
+    }
+
+    print("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
+
+	for (i = 1; i < INSTALLED_NEXTMAPS_LIMIT; i++)
+    {
+        if (levels[i] != "")
+            strunzone(levels[i]);
+        levels[i] = "";
+    }
+
+    while ((line = fgets(f)))
+	{
+        float argc = tokenize(line);
+
+        if (!argc) continue;
+        if (argv(0) == "//" || argv(0) == "#") continue;
+
+        if (argv(0) == mode)
+		{
+            levels[0] = default_nextmap;
+
+            while ((line = fgets(f)))
+			{
+				argc = tokenize(line);
+		        if (!argc) continue;
+		        if (argv(0) == "//" || argv(0) == "#") continue;
+
+                if ((argv(0) == "-ctf-") || (argv(0) == "-ca-") || (argv(0) == "-dm-") || (argv(0) == "-ra-"))
+                    break;
+
+                if (found_in_warp_list(argv(0))) //The map must be installed in the warp.cfg so that we can grab the title string.
+				{
+					mapCount++;
+                    string maparg = strpad(16, argv(0));
+                    string titlearg = strpad(21,(VoteMenu_get_map_by_name(argv(0))));
+                    titlearg = (redify(titlearg));
+                    levels[mapCount] = strzone(sprintf("%s %s", maparg, (titlearg)));
+                }
+            }
+            break; // Found the correct mode section
+        }
+    }
+    fclose(f);
+
+    clanring_lastcount = mapCount;
+ //   print(sprintf("%s maps in rotation for mode: %s\n", ftos(mapCount), mode));
+}
+
 void() clanring_nextlevel_config =
 {
-	string 	line = "", mode ="";
-	float 	i = 1, done = 0;
-	
-	nextmap = "";
-	
-	if (clanring_level < 1)
-		clanring_level = 1;
+    string line = "", mode = "";
+    float i = 1;
 
-	//Find the current mode we are in.
-	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
-		mode = "[ctf]";
-	else if (clanring_playmode & CLANRING_CA_MODE)
-		mode = "[ca]";
-	else
-		mode = "[dm]";
+    nextmap = "";
 
-	filestream f = fopen("configs/levels.cfg", FILE_READ);
-	cprint("Loading ClanRing Configuration File: \"configs/levels.cfg\"\n");
+    if (clanring_level < 1)
+        clanring_level = 1;
 
-	if (f < 0)
-	{
-		nextmap = strzone(default_nextmap);
-		clanring_levelcount	= -1;	// This is used throughout to check that levels.cfg has been read...
-									// just disable nextlevel but allow the mod to run.
-		cprint("levels.cfg not found.\n");								
-		return;
-	}
+    // Determine the current mode
+    if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+        mode = "-ctf-";
+    else if (clanring_playmode & CLANRING_CA_MODE)
+        mode = "-ca-";
+    else if (clanring_playmode & CLANRING_RA_MODE)
+        mode = "-ra-";
+    else
+        mode = "-dm-";
 
-	// Count installed maps so we know when to recycle
-	while ((line = fgets(f)))
-	{
-		float argc = tokenize(line);
-
-		if (!argc) continue;		
-		if (argv(0) == "//" || argv(0) == "#") continue;
-		
-		if (argv(0) == mode) 
-		{
-			while ((line = fgets(f)))
-			{
-				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
-				{
-					break;
-				}
-				if (found_in_warp_list(line))
-				{
-					if (mapname == line)
-						continue;
-					clanring_lastcount++;
-				}
-			}
-			done = TRUE; // We've bumped into the next section or reached the EOF.
-		}		
-		else 
-		{
-			if (done == FALSE)
-				continue;
-		}
-	}
-	fclose(f);
-
-	done = FALSE;
-
-	f = fopen("configs/levels.cfg", FILE_READ);
-
-	while ((line = fgets(f)))
-	{
-		argc = tokenize(line);
-
-		if (!argc) continue;		
-		if (argv(0) == "//" || argv(0) == "#") continue;
-
-		if (argv(0) == mode) 
-		{
-			while ((line = fgets(f)))
-			{
-				if ((line == "[ctf]")||(line == "[ca]")||(line == "[dm]"))
-				{
-					break;
-				}
-				if (found_in_warp_list(line))
-				{
-					if (mapname == line)	//If the next map will be the same map we are on, just skip to the one after it.
-					{
-						i++;
-						continue;
-					}
-
-					if (i >= clanring_level)
-					{
-						nextmap = strzone(line);//strzone is required for qss, not FTE ... (Nextmap is dm6. Host_Error: cannot find map maps/6.bsp)				
-						break;
-					}
-					i++;
-				}
-			}
-			done = TRUE;
-		}		
-		else 
-		{
-			if (done == FALSE)
-				continue;
-		}
-	}
-	fclose(f);
+	clanring_count_maps(mode);	//Set clanring_lastcount for this mode.
+    tokenize(levels[clanring_level]);
+   	nextmap = strzone(argv(0));
 
 	if (nextmap == "")
-	{
-		//strunzone(nextmap);
-		nextmap = strzone(mapname);	// Ugh, just reload the current map...
-		bprint("Nextmap not found, reloading \b", nextmap, "\b.\n");
-	}
-	else
-	{
-		cprint(sprintf("Nextmap is %s.\n", nextmap));
-		clanring_level++;
-		if (clanring_level > clanring_lastcount)
-			clanring_level = 1;
-		utils_set_cvar ("scratch1", clanring_level);	// save out the next map to load.
-	}
+    {
+        nextmap = strzone(mapname); // Reload the current map.
+        bprint("Nextmap not found, reloading ", nextmap, ".\n");
+    }
+    else
+    {
+        print(sprintf("NextMap is %s.\n", nextmap));
+		VoteMenu_Init();
+        clanring_level++;
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (cvar("noexit") != 1))
-		bprint("Exits activated\n");
+        if (clanring_level > clanring_lastcount)
+            clanring_level = 1;
+
+        utils_set_cvar("scratch1", clanring_level);
+    }
 
 	clanring_levelcount	= -1;	// This is used throughout to check that levels.cfg has been read...
-}
+};
 
 void(string cfg) exec_clanring_cfg =
 {
 	filestream f = fopen(cfg, FILE_READ);
 	string line;
-	
+
 	if (f < 0)
 	{
 		return;
@@ -691,7 +731,7 @@ void(string cfg) exec_clanring_cfg =
 	{
 		float argc = tokenize(line);
 		if (!argc)
-			continue;		
+			continue;
 		string cmd = argv(0);
 		if (cmd == "//" || cmd == "#" || cmd == "\n") continue; //Skip comments and blank lines.
 		string val = argv(1);
@@ -703,9 +743,9 @@ void(string cfg) exec_clanring_cfg =
 
 void() clanring_warp_config =
 {
-	cprint("Loading ClanRing Configuration File: \"configs/warp_main_menu.cfg\"\n");
+	print("Loading ClanRing Configuration File: \"configs/warp_main_menu.cfg\"\n");
 	exec_warp_main_menu();
-	cprint("Loading ClanRing Configuration File: \"configs/warp.cfg\"\n");
+	print("Loading ClanRing Configuration File: \"configs/warp.cfg\"\n");
 	exec_warp_cfg();
 }
 
@@ -825,6 +865,7 @@ void (string filename, float recordset) write_player_stats =
 		fclose(f);
 	}
 }
+
 void () write_capture_stats =
 {
 	write_player_stats(sprintf("%s_captimes.crx", mapname), 0);
@@ -854,30 +895,30 @@ void () write_airshot_streak_stats =
 void() clanring_ent_config =
 {
 	//Entity Files
-	cprint("Loading Entities Configuration File: entities/", mapname, ".ent\"\n");
-	cprint("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+	print("Loading Entities Configuration File: entities/", mapname, ".ent\"\n");
+//	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("entities/", mapname, ".ent")));
 };
 
 void() clanring_cam_config =
 {
 	//Camera Files
-	cprint("Loading Camera Configuration File: \"camera/", mapname, ".cam\"\n");
-	cprint("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+	print("Loading Camera Configuration File: \"camera/", mapname, ".cam\"\n");
+//	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("cameras/", mapname, ".cam")));
 };
 
 void() clanring_map_config =
 {
 	//Map specific settings
-	cprint(sprintf("Loading Map Configuration File: \"configs/%s.cfg\n", mapname));
-	cprint("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
+	print(sprintf("Loading Map Configuration File: \"configs/%s.cfg\n", mapname));
+//	print("\"It is OPTIONAL - there is nothing wrong if it can't be found.\"\n");
 	exec_clanring_cfg((strcat("configs/", mapname, ".cfg")));
 };
 
 void() clanring_main_config =
 {
-	cprint("Loading ClanRing Configuration File: \"configs/clanring.cfg\"\n");
+	print("Loading ClanRing Configuration File: \"configs/clanring.cfg\"\n");
 	exec_clanring_cfg("configs/clanring.cfg");
 	config_command("-done-", ""); //finalize settings
 	localcmd("sv_aim 1\n");	//forced, no vertical aim assist.
@@ -900,7 +941,9 @@ void() clanring_exec_configs =
 	clanring_main_config();
 	clanring_warp_config();
 	clanring_map_config();
-//	clanring_ent_config();//(FIXME)
+	clanring_nextlevel_config();
+
+	clanring_ent_config();//(FIXME)
 //	clanring_cam_config();//(FIXME)
 	if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
 	{
@@ -915,19 +958,15 @@ void() clanring_exec_configs =
 	// 	read_longrange_stats();
 	// }
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE))
+	if (clanring_playmode & CLANRING_MATCH_MODE)
 	{
-		clanring_nextlevel_config();
-	}
-	else
-	{
-		if ((clanring_playmode & CLANRING_MATCH_MODE) && (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG)))
+		if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 		{
-			cvar_set("teamplay","2");		
-			clanring_set_teamplay(2);	
-		}	
+			cvar_set("teamplay","2");
+			clanring_set_teamplay(2);
+		}
 		clanring_levelcount = -1;
-		nextmap = mapname;//just restart samelevel
+		nextmap = strzone(mapname);//just restart samelevel
 	}
 
 	//R00k: ticrate defaults for different modes :|
@@ -951,19 +990,22 @@ void() clanring_exec_configs =
 // 2 - blowout sounds
 void (float soundtype) clanring_read_matchsounds =
 {
-	string line;
+	string line, fname = "";
 	filestream f;
 	float i = 0;
 
 	if (soundtype == 1)
-		f = fopen("configs/matchsounds_rematch.cfg", FILE_READ);
+		fname = "configs/matchsounds_rematch.cfg";
 	else if (soundtype == 2)
-		f = fopen("configs/matchsounds_blowout.cfg", FILE_READ);
+		fname = "configs/matchsounds_blowout.cfg";
 	else
-		f = fopen("configs/matchsounds.cfg", FILE_READ);
+		fname = "configs/matchsounds.cfg";
+
+	f = fopen(fname, FILE_READ);
 
 	if (f < 0)
 	{
+		print(sprintf("(OPTIONAL)File not found: %s\n", fname));
 		return;
 	}
 
@@ -971,25 +1013,33 @@ void (float soundtype) clanring_read_matchsounds =
 	{
 		float argc = tokenize(line);
 		if (!argc)
-			continue;		
+			continue;
 		if (argv(0) == "//" || argv(0) == "#") continue;
 
 		if (soundtype == 1)
-			matchsound_rematch[i] = (line);
+		{
+			if (matchsound_rematch[i] != "")
+				strunzone(matchsound_rematch[i]);
+			matchsound_rematch[i] = strzone(line);
+			clanring_matchsound_rematch_count = i;
+		}
 		else if (soundtype == 2)
-			matchsound_blowout[i] = (line);
+		{
+			if (matchsound_blowout[i] != "")
+				strunzone(matchsound_blowout[i]);
+			matchsound_blowout[i] = strzone(line);
+			clanring_matchsound_blowout_count = i;
+		}
 		else
-			matchsound[i] = (line);
+		{
+			if (matchsound[i] != "")
+				strunzone(matchsound[i]);
+			matchsound[i] = strzone(line);
+			clanring_matchsound_count = i;
+		}
 		i++;
 	}
 	fclose(f);
-
-	if (soundtype == 1)
-		clanring_matchsound_rematch_count = i;
-	else if (soundtype == 2)
-		clanring_matchsound_blowout_count = i;
-	else
-		clanring_matchsound_count = i;
 };
 
 void () clanring_precache_matchsounds =

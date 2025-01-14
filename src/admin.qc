@@ -920,7 +920,7 @@ void() admin_dm3_screenshot_cleanup =
 					local entity oself;
 					oself = self;
 					self = other;
-					W_SetCurrentAmmo ();
+					W_SetCurrentAmmo();
 					self = oself;
 				}
 				other.angles = other.v_angle = other.clanring_oldangle;
@@ -1267,6 +1267,7 @@ void() admin_impulse =
 		votables_request_set_weaponstay();
 	else if (self.impulse == 219)
 		votables_select_fraglimit();
+	//else if (self.impulse == 220) voteables_set_teamplay_fraglimit();
 	else if (self.impulse == 221)
 		votables_request_set_quad();
 	else if (self.impulse == 222)

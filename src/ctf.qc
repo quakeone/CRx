@@ -1,4 +1,4 @@
-
+float clanring_map_has_runes;
 void() teamplay_show_score;
 void() StartItem;
 void() vote_impulse;
@@ -9,6 +9,7 @@ void () write_capture_stats;
 void () write_capture_stats_match;
 void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record;
 void (float t_statvalue, float t_teamcolor, string t_player) check_player_low_record2;
+void() match_bprint_score;
 
 void(entity flg) RegenFlag =
 {
@@ -24,6 +25,7 @@ void(entity flg) RegenFlag =
 	}
 	else 
 	{
+		flg.effects = flg.effects - (flg.effects & EF_NOMODELFLAGS);
 		flg.mins 	= '-16 -16 -24';
 		flg.maxs	= '16 16 32';
 	}		
@@ -56,7 +58,7 @@ void(entity flg) TeamCaptureReturnFlag =
 {
 	RegenFlag (flg);
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//  Only show newbie messages in newbie mode.
+//	if (!(clanring_playmode & CLANRING_MATCH_MODE))	//  Only show newbie messages in newbie mode.
 	{
 		local entity p;
 		p = find(world, classname, "player");
@@ -75,15 +77,18 @@ void(entity flg) TeamCaptureReturnFlag =
 				}
 				else
 				{
-					if (p.team != flg.team)
+					if (!(clanring_playmode & CLANRING_MATCH_MODE))	//  Only show newbie messages in newbie mode.
 					{
-						centerprint(p, "Enemy \bflag\b has been returned to base!");
-					}
-					else
-					{
-						if (p.team == flg.team)
+						if (p.team != flg.team)
 						{
-							centerprint (p, "Your \bflag\b has been returned to base!");	
+							centerprint(p, "Enemy \bflag\b has been returned to base!");
+						}
+						else
+						{
+							if (p.team == flg.team)
+							{
+								centerprint (p, "Your \bflag\b has been returned to base!");	
+							}
 						}
 					}
 				}
@@ -129,6 +134,9 @@ void(entity flg) TeamDropFlag =
 
 	p = flg.owner;
 	
+	if (p == world)
+		return; //already done.
+		
 	if (p.team == RED)
 	{
 		announce2(p.netname," ìïóô the ÂÌÕÅ flag!"); // blue
@@ -140,6 +148,8 @@ void(entity flg) TeamDropFlag =
 
 	p.fctime += (time - p.flag_since);
 
+//	if (clanring_playmode & CLANRING_MATCH_MODE)
+	//	p.next_team.fctime += (time - p.flag_since);
 	flg.owner      	= world;
 	flg.origin     	= p.origin - '0 0 16';	
 	flg.cnt        	= FLAG_DROPPED;
@@ -329,6 +339,10 @@ void() TeamCaptureFlagTouch =
 					client_frag(other, TEAM_CAPTURE_CAPTURE_BONUS);//score for capture
 					other.fcaptures = (other.fcaptures + 1);//fstats
 
+					// R00k: update scores for console and infokeys
+					if (clanring_playmode & CLANRING_MATCH_MODE)
+						match_bprint_score();
+
 					// Ok, let's do the player loop, hand out the bonuses
 					p = find(world, classname, "player");
 					while (p != world)
@@ -451,6 +465,7 @@ void() TeamCaptureFlagTouch =
 	self.movetype	= MOVETYPE_NOCLIP;
 	self.solid		= SOLID_NOT;
 	self.owner		= other;
+	self.effects |= EF_NOMODELFLAGS;
 
 	if ((self.team == RED))
 		forceinfokey (world, "red flag","carried");
@@ -527,7 +542,10 @@ void() TeamCaptureFlagThink =
 
 	if (clanring_playmode & CLANRING_PRACTICE_MODE)
 		return;
-		
+
+	if (clanring_state & CLANRING_MATCH_PAUSED)
+		return;		
+
 	self.nextthink = (time + sys_ticrate);
 	
 	if (self.cnt == FLAG_AT_BASE)
@@ -539,7 +557,7 @@ void() TeamCaptureFlagThink =
 	if (self.cnt == FLAG_DROPPED)
 	{
 		flag_check_size ();			
-		if (!(clanring_state & CLANRING_MATCH_PAUSED))//3.19k
+//		if (!(clanring_state & CLANRING_MATCH_PAUSED))//3.19k
 		{
 			if ((time - self.super_time) > 30)
 				TeamCaptureReturnFlag (self);
@@ -888,6 +906,33 @@ void() func_clanring_wall =
 };
 
 //--Runes Code Based from ZOID's 3WAVE CTF
+//------------------------------------------
+
+void(float flag) Do_DropRune;
+//https://github.com/quakeone/CRx/pull/85 
+void() item_rune_res =
+{
+	self.player_flag = ITEM_RUNE1_FLAG;
+	clanring_map_has_runes = TRUE;
+}
+
+void() item_rune_str =
+{
+	self.player_flag = ITEM_RUNE2_FLAG;
+	clanring_map_has_runes = TRUE;
+}
+
+void() item_rune_hst =
+{
+	self.player_flag = ITEM_RUNE3_FLAG;
+	clanring_map_has_runes = TRUE;
+}
+
+void() item_rune_rgn =
+{
+	self.player_flag = ITEM_RUNE4_FLAG;
+	clanring_map_has_runes = TRUE;	//This flag is set FALSE by default to spawn dynamic runes if the map does not have spawnpoints already defined.
+}
 
 entity () SelectRuneSpawnPoint =
 {
@@ -932,6 +977,7 @@ void() RuneTouch =
 	}
 
 	other.player_flag = (other.player_flag | self.player_flag);
+	other.stats_item_runes +=1;
 	
 	if (other.player_flag & ITEM_RUNE1_FLAG)//Rune 1 - Earth Magic(resistance)
 	{
@@ -966,7 +1012,6 @@ void() RuneTouch =
 	sound (other, CHAN_ITEM, "misc/runekey.wav", 1, ATTN_NORM);
 	remove(self);
 };
-void(float flag) Do_DropRune;
 
 void() RuneRespawn =
 {
@@ -986,9 +1031,12 @@ void(float flag) Do_DropRune =
 	item.owner = item;
 	item.origin = (self.origin - '0 0 24');	
 	item.player_flag = flag;
-	item.velocity_z = 400;
-	item.velocity_x = (-500 + (random () * 1000));
-	item.velocity_y = (-500 + (random () * 1000));
+	if (clanring_map_has_runes == FALSE)
+	{
+		item.velocity_z = 400;
+		item.velocity_x = (-500 + (random () * 1000));
+		item.velocity_y = (-500 + (random () * 1000));
+	}
 	item.flags = FL_ITEM;
 	item.solid = SOLID_TRIGGER;
 	item.movetype = MOVETYPE_TOSS;
@@ -1071,20 +1119,34 @@ void() SpawnRunes =
 	local float i;
 
 	oself = self;
-	i = (random() * 10);
-	while (i > 0)
+	if (clanring_map_has_runes == FALSE)
 	{
+		i = (random() * 10);
+		while (i > 0)
+		{
+			self = SelectRuneSpawnPoint ();
+			i = i - 1;
+		}
 		self = SelectRuneSpawnPoint ();
-		i = i - 1;
+		Do_DropRune (ITEM_RUNE1_FLAG);
+		self = SelectRuneSpawnPoint ();
+		Do_DropRune (ITEM_RUNE2_FLAG);
+		self = SelectRuneSpawnPoint ();
+		Do_DropRune (ITEM_RUNE3_FLAG);
+		self = SelectRuneSpawnPoint ();
+		Do_DropRune (ITEM_RUNE4_FLAG);
 	}
-	self = SelectRuneSpawnPoint ();
-	Do_DropRune (ITEM_RUNE1_FLAG);
-	self = SelectRuneSpawnPoint ();
-	Do_DropRune (ITEM_RUNE2_FLAG);
-	self = SelectRuneSpawnPoint ();
-	Do_DropRune (ITEM_RUNE3_FLAG);
-	self = SelectRuneSpawnPoint ();
-	Do_DropRune (ITEM_RUNE4_FLAG);
+	else
+	{
+		self = find(world,classname,"item_rune_res");
+		Do_DropRune (ITEM_RUNE1_FLAG);
+		self = find(world,classname,"item_rune_str");
+		Do_DropRune (ITEM_RUNE2_FLAG);
+		self = find(world,classname,"item_rune_hst");
+		Do_DropRune (ITEM_RUNE3_FLAG);
+		self = find(world,classname,"item_rune_rgn");
+		Do_DropRune (ITEM_RUNE4_FLAG);
+	}
 	remove(oself);
 };
 
