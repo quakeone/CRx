@@ -212,7 +212,7 @@ void () votables_change_level =
 		 	if (player.style & CLANRING_CONNECTED)
 		 	{
 				if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
-		 			stuffcmd(player, "setinfo observing off\n"); //Need a better function to reset all observer infokeys...
+		 			forceinfokey(player, "observing", "off"); //Need a better function to reset all observer infokeys...
 		 	}
 			player = find(player, classname, "player");
 		}

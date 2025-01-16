@@ -272,7 +272,7 @@ void (entity client) clear_afk_status =
     {
         updatename(client, client.netname);
         client.style = client.style - (client.style & CLANRING_AFK_CLIENT);
-        stuffcmd(self, "cmd setinfo afk no\n");// woods
+        forceinfokey(self, "afk","no");// woods
     }
     client.afk_time = time;
 }
@@ -2188,7 +2188,7 @@ void () clanring_impulse =
             if (clanring_afk_timeout > 0)
                 sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
             afk_name();
-            stuffcmd(self, "cmd setinfo afk yes\n");// woods
+            forceinfokey(self, "afk","yes");// woods
             self.style = self.style | CLANRING_AFK_CLIENT;
             self.afk_time = time;
         }
@@ -2537,7 +2537,7 @@ void () clanring_periodic_checks =
             afk_name();
             self.afk_time = time;
             self.style = (self.style | CLANRING_AFK_CLIENT);
-            stuffcmd(self, "cmd setinfo afk yes\n");	// woods
+            forceinfokey(self, "afk","yes");	// woods
             if (clanring_afk_timeout > 0)//Only print afk if kick is enabled
                 sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
         }

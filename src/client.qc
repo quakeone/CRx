@@ -2815,7 +2815,7 @@ void () client_afk_on =
     if (!(self.style & CLANRING_AFK_CLIENT))
     {
         afk_name();
-        stuffcmd(self, "cmd setinfo afk yes\n");// woods
+        forceinfokey(self, "afk", "yes");// woods
         self.style = self.style | CLANRING_AFK_CLIENT;
         self.afk_time = time;
     }
