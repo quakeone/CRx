@@ -179,6 +179,46 @@ void() StartItem =
 };
 
 /*
+============
+SendObserverItemTimer -- woods
+
+Sends item respawn timer information to observers using QSS-M or FTE clients.
+This allows observers to see visual indicators for item respawn timing.
+============
+*/
+void(entity item, string itemname, float timeleft) SendObserverItemTimer
+{
+    // Loop through all clients with player classname
+    entity player;
+    player = find(world, classname, "player");
+    while(player)
+    {
+        if ((player.style & CLANRING_OBSERVER) &&
+            ((player.client == "QSS-M") || (player.client == "FTE")))
+        {
+            // Format command string with item timer information:
+            // - timeleft: remaining time for item respawn
+            // - x/y coordinates: calculated as midpoint between item bounds
+            // - z coordinate: item's origin plus minimum z offset
+            // - radius: 32 units for item highlight circle
+            // - tint: FFFFFF (white color in hex)
+            // - itemname: name of the item
+            // - item entity number
+            string cmd = sprintf("//it %g %g %g %g 32 FFFFFF %s %d\n",
+                timeleft,
+                rint((item.absmin_x + item.absmax_x) * 0.5),
+                rint((item.absmin_y + item.absmax_y) * 0.5),
+                rint(item.origin_z + item.mins_z),
+                itemname,
+                num_for_edict(item));
+            
+            stuffcmd(player, cmd);
+        }
+        player = find(player, classname, "player");
+    }
+}
+
+/*
 =========================================================================
 
 HEALTH BOX
@@ -362,6 +402,7 @@ void() health_touch =
 			{
 				self.nextthink = time + self.healamount + 25;	// delay (5) + health + respawn wait (20)
 				self.think = SUB_regen;
+				SendObserverItemTimer(self.owner, "mega", 125); // woods
 			}
 			else if (deathmatch == 4 && mapname == "ctf8dmm4")
 			{
@@ -401,6 +442,7 @@ void() item_megahealth_rot =
 				{
 					self.owner.nextthink = time + 20;
 					self.owner.think = SUB_regen;
+					SendObserverItemTimer(self.owner, "mega", 20); // woods
 				}
 				remove(self);
 			}
@@ -415,6 +457,7 @@ void() item_megahealth_rot =
 	{
 		self.owner.nextthink = time + 20;
 		self.owner.think = SUB_regen;
+		SendObserverItemTimer(self.owner, "mega", 20); // woods
 	}
 
 	remove(self);
@@ -496,11 +539,6 @@ void() shard_touch = // this from RMQ shard_touch
 
 void() armor_touch =
 {
-	local	float	type=0, value=0, bit=0;
-	local vector v = '0 0 0'; // ELOHIM_MOD - for stats
-
-	local float		donttake = 0;	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes
-
     // ELOHIM_MOD
 	if (!(items_are_ready()))
 		return;
@@ -515,33 +553,44 @@ void() armor_touch =
 	if (other.classname != "player")
 		return;
 
+	float	type = 0, value = 0, bit = 0;
+	vector 	v = '0 0 0'; 		// ELOHIM_MOD - for stats
+	float	donttake = 0;		// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes
+	string 	iname = string_null;
+
 	if (self.classname == "item_armor1")
 	{
 		type = 0.3;
 		value = 100;
 		bit = IT_ARMOR1;
 		v = '0 0 1';
+		iname = "ga";
 	}
-	if (self.classname == "item_armor2")
+	else if (self.classname == "item_armor2")
 	{
 		type = 0.6;
 		value = 150;
 		bit = IT_ARMOR2;
 		v = '0 1 0';
+		iname = "ya";
 	}
-	if (self.classname == "item_armorInv")
+	else if (self.classname == "item_armorInv")
 	{
 		type = 0.8;
 		value = 200;
 		bit = IT_ARMOR3;
 		v = '1 0 0';
+		iname = "ra";
 	}
+
 	donttake = 0;	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes  end
+	
 	if (other.armortype*other.armorvalue >= type*value)
 		donttake = 1;
 
 	if (!donttake)
 	{
+		SendObserverItemTimer(self.owner, iname, 20); // woods
 		if (other.next_team != world)
 		{
 			other.next_team.dest = (other.next_team.dest + v);
@@ -717,9 +766,6 @@ float () W_BestWeapon;
 
 void() weapon_touch =
 {
-	local entity stemp;
-	local float  /*best,*/ leave, donttake;
-
 	if (!(items_are_ready()))
 		return;
 
@@ -731,7 +777,10 @@ void() weapon_touch =
 
 	if (other.health < 1)
 		return;
-	
+
+	entity stemp;
+	float  /*best,*/ leave, donttake;
+
 	// // if the player was using his best weapon, change up to the new one if better		
 	// stemp = self;
 	// self = other;
@@ -751,6 +800,7 @@ void() weapon_touch =
 	}
 	else
 	{
+		string itname = string_null;
 		if (self.weapon == IT_SUPER_SHOTGUN)
 		{
 			other.ammo_shells = other.ammo_shells + 5;
@@ -784,6 +834,7 @@ void() weapon_touch =
 					if (self.weapon == IT_ROCKET_LAUNCHER)
 					{
 						other.stats_item_rl += 1;
+						itname = "rl";
 					}
 					else
 					{
@@ -813,7 +864,7 @@ void() weapon_touch =
 					{
 						other.ammo_cells = other.ammo_cells + 15;
 						other.stats_item_lg += 1;
-						
+						itname = "lg";
 						if (other.next_team != world)
 						{
 							other.next_team.dest1_y = other.next_team.dest1_y + 1;
@@ -833,7 +884,8 @@ void() weapon_touch =
 //		sprint(other, "You got the ");
 //		sprint(other, self.netname);
 //		sprint(other, "\n");
-
+		if (itname != string_null)
+		SendObserverItemTimer(self, itname, 30); // woods
 // weapon touch sound
 		sound (other, CHAN_ITEM, "weapons/pkup.wav", 1, ATTN_NORM);
 //		stuffcmd(other, "bf\n");
