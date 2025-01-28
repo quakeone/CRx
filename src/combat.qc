@@ -758,7 +758,11 @@ void(entity targ, entity inflictor, entity attacker, float damage) T_Damage =
 	{
 		dir = targ.origin - (inflictor.absmin + inflictor.absmax) * 0.5;
 		dir = normalize(dir);
-		targ.velocity = targ.velocity + dir*damage*8;
+
+		if (targ.player_flag & ITEM_RUNE1_FLAG)
+			targ.velocity = targ.velocity + dir * (damage * 2) * 8; //R00k: retain the original kickback
+		else
+			targ.velocity = targ.velocity + dir * damage * 8;
 
 		if (clanring_playmode & CLANRING_AIRSHOT_MODE)
 			targ.velocity_z = (targ.velocity_z + (dir_z * old_damage * 8));
