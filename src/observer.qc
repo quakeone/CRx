@@ -179,8 +179,9 @@ void () observer_walk_start =
 	if (!(self.style & CLANRING_HEADS_UP))
 		sprint(self, "type 'headsup' for fullscreen display\n");
 */
-	stuffcmd(self, "cmd setinfo observer walk\n");// woods
-	stuffcmd(self, "cmd setinfo observing off\n");// woods
+	forceinfokey(self, "observer", "walk");// woods
+	forceinfokey(self, "*observer", "walk");// woods
+	forceinfokey(self, "observing", "off");// woods
 
 	if (mode_is_arena())
 	{
@@ -205,8 +206,9 @@ void () observer_fly_start =
 	self.view_ofs = '0 0 22';
 	self.flags = self.flags | FL_ONGROUND;
 	self.waterlevel = 0;
-	stuffcmd(self, "cmd setinfo observer fly\n");// woods
-	stuffcmd(self, "cmd setinfo observing off\n");// woods
+	forceinfokey(self, "observer", "fly");// woods
+	forceinfokey(self, "*observer", "fly");// woods
+	forceinfokey(self, "observing","off");// woods
 /*
 	stuffcmd(self, "sm0\n");		// CRMOD - smoothing off
 	stuffcmd(self, "v_centerspeed 500\n");
@@ -303,8 +305,9 @@ void () observer_camera_start =
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
-	stuffcmd(self, "cmd observing off\n");
-	stuffcmd(self, "cmd setinfo observer camera\n");
+	forceinfokey(self, "observing", "off");
+	forceinfokey(self, "*observer","camera");
+	forceinfokey(self, "observer","camera");
 };
 
 //
@@ -334,7 +337,8 @@ void () observer_chase_start =
 	stuffcmd(self, "v_centerspeed 0\n");
 	sprint(self, "chase mode - help-chase for help\n");
 
-	stuffcmd(self, "cmd setinfo observer chase\n");// woods
+	forceinfokey(self, "observer","chase");// woods
+	forceinfokey(self, "*observer","chase");// woods
 	// CRMOD - auto, tourney
 	if (self.oflags & OBSERVER_GO_AUTO)
 	{
@@ -361,9 +365,9 @@ void () observer_chase_start =
 			centerprint(self,sprintf("chasecam \[%s\]", self.movetarget.netname));
 		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
 	}
-
-	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname) );
-	stuffcmd(self, "cmd setinfo observer chasecam\n");
+	forceinfokey(self, "*observer", "chasecam");
+	forceinfokey(self, "observing", self.movetarget.netname);
+	forceinfokey(self, "observer","chasecam");
 };
 
 //
@@ -424,9 +428,9 @@ void () observer_demo_start =
     // 	sprint(self, "type 'headsup' for fullscreen display\n");
 	// sprint(self, "type 'smooth' to eliminate choppines\n");
 	
-	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname) );
-	stuffcmd(self, "cmd setinfo observer eyecam\n");
-
+	forceinfokey(self, "observing", self.movetarget.netname);
+	forceinfokey(self, "observer","eyecam");
+	forceinfokey(self, "*observer","eyecam");
 	
 	//R00k: added auto pov
 	if (self.oflags & OBSERVER_GO_AUTO)
@@ -667,8 +671,9 @@ void() observer_end =
 
 //	stuffcmd(self, "sm0\n");// CRMOD - smoothing off
 //	stuffcmd(self, "v_centerspeed 500\n");
-	stuffcmd(self, "cmd setinfo observer off\n");// woods
-	stuffcmd(self, "cmd setinfo observing off\n");// woods
+	forceinfokey(self, "observer","off");// woods
+	forceinfokey(self, "*observer","off");// woods
+	forceinfokey(self, "observing","off");// woods
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 100\n");
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
@@ -787,9 +792,7 @@ entity (entity e) observer_find_target =
 	while (targ != e && (!targ || (targ.style & CLANRING_OBSERVER) || !(targ.style & CLANRING_CONNECTED)))
 		targ = find(targ, classname, "player");
 
-    stuffcmd(self, "cmd setinfo observing \"");// woods
-    stuffcmd(self, targ.netname);
-    stuffcmd(self, "\"\n");
+    forceinfokey(self, "observing",targ.netname);// woods
 
 	return targ;
 };
@@ -872,7 +875,7 @@ void () observer_next_target =
 		centerprint (self,self.movetarget.netname);
 		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
 	}
-	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname));
+	forceinfokey(self, "observing", self.movetarget.netname);
 };
 
 //
@@ -913,7 +916,7 @@ void () observer_prev_target =
 		WriteEntity(MSG_ONE, self.movetarget);
 		observer_set_demo_position();
 	}
-	stuffcmd(self, sprintf("cmd setinfo observing %s\n", self.movetarget.netname));
+	forceinfokey(self, "observing", self.movetarget.netname);
 };
 
 //

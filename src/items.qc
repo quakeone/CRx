@@ -30,12 +30,12 @@ void() SUB_regen =
 	self.solid = SOLID_TRIGGER;	// allow it to be touched again
     self.alpha = 1;
 	sound (self, CHAN_VOICE, "items/itembk2.wav", 1, ATTN_NORM);	// play respawn sound
-	if (!(deathmatch || (self.spawnflags & ITEM_RESPAWNDM)))	
-		spawn_tfog (self.origin + self.particles_offset);	
+	if (!(deathmatch || (self.spawnflags & ITEM_RESPAWNDM)))
+		spawn_tfog (self.origin + self.particles_offset);
 	setorigin(self, self.origin);
 };
 
-float() item_customizeentityforclient = 
+float() item_customizeentityforclient =
 {
 	if (self.nextthink > time)
 	{
@@ -86,7 +86,7 @@ void() PlaceItem =
 	self.mdl = self.model;		// so it can be restored on respawn
 	self.flags = FL_ITEM;		// make extra wide
 	self.solid = SOLID_TRIGGER;
-	self.movetype = MOVETYPE_TOSS;	
+	self.movetype = MOVETYPE_TOSS;
 	self.velocity = '0 0 0';
 	self.origin_z = self.origin_z + 6;
 	oldz = self.origin_z;
@@ -101,7 +101,7 @@ void() PlaceItem =
 			return;
 		}
 	}
-	
+
 	if (!droptofloor())
 	{
 		dprint ("Bonus item fell out of level at ");
@@ -179,6 +179,46 @@ void() StartItem =
 };
 
 /*
+============
+SendObserverItemTimer -- woods
+
+Sends item respawn timer information to observers using QSS-M or FTE clients.
+This allows observers to see visual indicators for item respawn timing.
+============
+*/
+void(entity item, string itemname, float timeleft) SendObserverItemTimer
+{
+    // Loop through all clients with player classname
+    entity player;
+    player = find(world, classname, "player");
+    while(player)
+    {
+        if ((player.style & CLANRING_OBSERVER) &&
+            ((player.client == "QSS-M") || (player.client == "FTE")))
+        {
+            // Format command string with item timer information:
+            // - timeleft: remaining time for item respawn
+            // - x/y coordinates: calculated as midpoint between item bounds
+            // - z coordinate: item's origin plus minimum z offset
+            // - radius: 32 units for item highlight circle
+            // - tint: FFFFFF (white color in hex)
+            // - itemname: name of the item
+            // - item entity number
+            string cmd = sprintf("//it %g %g %g %g 32 FFFFFF %s %d\n",
+                timeleft,
+                rint((item.absmin_x + item.absmax_x) * 0.5),
+                rint((item.absmin_y + item.absmax_y) * 0.5),
+                rint(item.origin_z + item.mins_z),
+                itemname,
+                num_for_edict(item));
+
+            stuffcmd(player, cmd);
+        }
+        player = find(player, classname, "player");
+    }
+}
+
+/*
 =========================================================================
 
 HEALTH BOX
@@ -204,7 +244,7 @@ float (entity e, float amount, float ignore) T_Heal =
 
 	if ((!ignore) && (e.health >= other.max_health))
 		e.health = other.max_health;
-		
+
 	if (e.health > 250)
 		e.health = 250;
 
@@ -228,7 +268,7 @@ void() item_megahealth_rot;
 void() item_health =
 {
 	self.touch = health_touch;
-	
+
 	if (self.spawnflags & H_ROTTEN)
 	{
 		setmodel(self, "maps/b_bh10.bsp");
@@ -259,9 +299,9 @@ void() item_health =
 				self.particles_offset = '16 16 8'; // dumptruck_ds custom health models and sounds END
 		}
 	}
-	
+
 	setsize(self, '0 0 0', '32 32 56');
-	
+
 	StartItem ();
 };
 
@@ -272,7 +312,7 @@ void(entity rotowner, entity mega) MakeHealthRot =
 	rot.classname = "health_rot";
 	rot.nextthink = time + 5;
 	rot.think = item_megahealth_rot;
-	rot.owner = mega;	
+	rot.owner = mega;
 	rot.enemy = rotowner;
 	rot.enemy.rotthink = time + 5;//delay
 };
@@ -336,7 +376,7 @@ void() health_touch =
 		if (!T_Heal (other, self.healamount, 0))
 			donttake = 1;
 	}
-	
+
 	if (donttake == 0)
 	{
 		//sprint(other, "You receive ");
@@ -348,12 +388,12 @@ void() health_touch =
 		self.model = string_null;
 		self.solid = SOLID_NOT;
 		self.owner = other;
-	
+
 		//MEGAHEALTH FIX
 		if (self.healtype == H_MEGA)
 		{
 			MakeHealthRot(other,self);// create rot entity R00k: fixed
-	
+
 			other.items = other.items | IT_SUPERHEALTH;
 			other.stats_item_mega += 1;
 
@@ -362,6 +402,7 @@ void() health_touch =
 			{
 				self.nextthink = time + self.healamount + 25;	// delay (5) + health + respawn wait (20)
 				self.think = SUB_regen;
+				SendObserverItemTimer(self, "mega", 125); // woods
 			}
 			else if (deathmatch == 4 && mapname == "ctf8dmm4")
 			{
@@ -389,18 +430,19 @@ void() health_touch =
 void() item_megahealth_rot =
 {
 	other = self.enemy;
-	
+
 // ELOHIM_MOD - check for disconnected players and observers!!
 	if ((((other.health > other.max_health) && (other.style & CLANRING_CONNECTED)) && !(other.style & CLANRING_OBSERVER)))
 	{
 		if (other.player_flag & ITEM_RUNE4_FLAG)//REGEN
-		{			
-			if (other.rotthink < (time - 100))//respawn megahealth after 100 seconds, which will wait 20 more, a total of 2 minutes since mega was taken. 
+		{
+			if (other.rotthink < (time - 100))//respawn megahealth after 100 seconds, which will wait 20 more, a total of 2 minutes since mega was taken.
 			{
 				if (deathmatch != 2)
 				{
 					self.owner.nextthink = time + 20;
 					self.owner.think = SUB_regen;
+					SendObserverItemTimer(self, "mega", 20); // woods
 				}
 				remove(self);
 			}
@@ -415,6 +457,7 @@ void() item_megahealth_rot =
 	{
 		self.owner.nextthink = time + 20;
 		self.owner.think = SUB_regen;
+		SendObserverItemTimer(self, "mega", 20); // woods
 	}
 
 	remove(self);
@@ -445,7 +488,7 @@ void() shard_touch = // this from RMQ shard_touch
 	{
 		if (other.items & IT_ARMOR1)
 		{
-			if (other.armorvalue >= 125)	
+			if (other.armorvalue >= 125)
 				return;
 			other.armorvalue = clamp(c, 5, 125);
 		}
@@ -453,7 +496,7 @@ void() shard_touch = // this from RMQ shard_touch
 		{
 			if (other.items & IT_ARMOR2)
 			{
-				if (other.armorvalue >= 175)	
+				if (other.armorvalue >= 175)
 					return;
 				other.armorvalue = clamp(c, 5, 175);
 			}
@@ -461,15 +504,15 @@ void() shard_touch = // this from RMQ shard_touch
 			{
 				if (other.items & IT_ARMOR3)
 				{
-					if (other.armorvalue >= 225)	
+					if (other.armorvalue >= 225)
 						return;
 					other.armorvalue = clamp(c, 5, 225);
 				}
 				else
-				{		
-					other.armortype = 0.3;	
+				{
+					other.armortype = 0.3;
 					other.armorvalue = self.armorvalue;
-					other.items |= IT_ARMOR1; 
+					other.items |= IT_ARMOR1;
 				}
 			}
 		}
@@ -487,7 +530,7 @@ void() shard_touch = // this from RMQ shard_touch
 		sound_misc(other, CHAN_AUTO, self.snd_misc, 1, ATTN_NORM);	// armor touch sound
 	else
 		sound_misc(other, CHAN_AUTO,"items/armsh1.wav", 1, ATTN_NORM); // dumptruck_ds custom models and sounds END
-		
+
 	stuffcmd (other, "bf\n");
 
 	activator = other;
@@ -496,11 +539,6 @@ void() shard_touch = // this from RMQ shard_touch
 
 void() armor_touch =
 {
-	local	float	type=0, value=0, bit=0;
-	local vector v = '0 0 0'; // ELOHIM_MOD - for stats
-
-	local float		donttake = 0;	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes
-
     // ELOHIM_MOD
 	if (!(items_are_ready()))
 		return;
@@ -515,37 +553,48 @@ void() armor_touch =
 	if (other.classname != "player")
 		return;
 
+	float	type = 0, value = 0, bit = 0;
+	vector 	v = '0 0 0'; 		// ELOHIM_MOD - for stats
+	float	donttake = 0;		// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes
+	string 	iname = string_null;
+
 	if (self.classname == "item_armor1")
 	{
 		type = 0.3;
 		value = 100;
 		bit = IT_ARMOR1;
 		v = '0 0 1';
+		iname = "ga";
 	}
-	if (self.classname == "item_armor2")
+	else if (self.classname == "item_armor2")
 	{
 		type = 0.6;
 		value = 150;
 		bit = IT_ARMOR2;
 		v = '0 1 0';
+		iname = "ya";
 	}
-	if (self.classname == "item_armorInv")
+	else if (self.classname == "item_armorInv")
 	{
 		type = 0.8;
 		value = 200;
 		bit = IT_ARMOR3;
 		v = '1 0 0';
+		iname = "ra";
 	}
+
 	donttake = 0;	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes  end
+
 	if (other.armortype*other.armorvalue >= type*value)
 		donttake = 1;
 
 	if (!donttake)
 	{
+		SendObserverItemTimer(self, iname, 20); // woods
 		if (other.next_team != world)
 		{
 			other.next_team.dest = (other.next_team.dest + v);
-		}		
+		}
 
 		if (bit == IT_ARMOR1)
 		{
@@ -561,7 +610,7 @@ void() armor_touch =
 		{
 			other.stats_item_redarmor += 1;
 		}
-	
+
 		other.armortype 	= type;
 		other.armorvalue 	= value;
 		other.items 		= other.items - (other.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + bit;
@@ -570,7 +619,7 @@ void() armor_touch =
 
 		if (deathmatch != 2 && deathmatch != 4 && deathmatch != 5)
 			self.nextthink = time + 20;
-		
+
 		self.think= SUB_regen;
 //		sprint(other, "You got armor\n");
 // armor touch sound
@@ -705,7 +754,7 @@ void(entity ent, float new) Deathmatch_Weapon =
 
 	if (((other.weapon) < new)||(other.weapon == IT_AXE)) // If current weapon is less ranked then choose the new one.
         other.weapon = new;
-	
+
 };
 
 /*
@@ -717,9 +766,6 @@ float () W_BestWeapon;
 
 void() weapon_touch =
 {
-	local entity stemp;
-	local float  /*best,*/ leave, donttake;
-
 	if (!(items_are_ready()))
 		return;
 
@@ -731,8 +777,11 @@ void() weapon_touch =
 
 	if (other.health < 1)
 		return;
-	
-	// // if the player was using his best weapon, change up to the new one if better		
+
+	entity stemp;
+	float  /*best,*/ leave, donttake;
+
+	// // if the player was using his best weapon, change up to the new one if better
 	// stemp = self;
 	// self = other;
 	// best = W_BestWeapon(); // Best weapon with ammo
@@ -744,13 +793,14 @@ void() weapon_touch =
 		leave = 0;
 
 	donttake = 0;
-	
+
 	if (leave && (other.items & self.weapon))// weapons stay = no ammo check
 	{
 		donttake = 1;
 	}
 	else
 	{
+		string itname = string_null;
 		if (self.weapon == IT_SUPER_SHOTGUN)
 		{
 			other.ammo_shells = other.ammo_shells + 5;
@@ -780,10 +830,11 @@ void() weapon_touch =
 				if (self.weapon == IT_ROCKET_LAUNCHER || self.weapon == IT_GRENADE_LAUNCHER)
 				{
 					other.ammo_rockets = other.ammo_rockets + 5;
-					
+
 					if (self.weapon == IT_ROCKET_LAUNCHER)
 					{
 						other.stats_item_rl += 1;
+						itname = "rl";
 					}
 					else
 					{
@@ -813,7 +864,7 @@ void() weapon_touch =
 					{
 						other.ammo_cells = other.ammo_cells + 15;
 						other.stats_item_lg += 1;
-						
+						itname = "lg";
 						if (other.next_team != world)
 						{
 							other.next_team.dest1_y = other.next_team.dest1_y + 1;
@@ -833,7 +884,8 @@ void() weapon_touch =
 //		sprint(other, "You got the ");
 //		sprint(other, self.netname);
 //		sprint(other, "\n");
-
+		if (itname != string_null)
+		SendObserverItemTimer(self, itname, 30); // woods
 // weapon touch sound
 		sound (other, CHAN_ITEM, "weapons/pkup.wav", 1, ATTN_NORM);
 //		stuffcmd(other, "bf\n");
@@ -988,7 +1040,7 @@ void() ammo_touch =
 	if (other.health <= 0)
 		return;
 
-// if the player was using his best weapon, change up to the new one if better		
+// if the player was using his best weapon, change up to the new one if better
 	stemp = self;
 	self = other;
 	best = W_BestWeapon();
@@ -1057,8 +1109,8 @@ void() ammo_touch =
 				other.weapon = W_BestWeapon();
 
 		}
-		W_SetCurrentAmmo();		
-		
+		W_SetCurrentAmmo();
+
 		self = stemp;
 
 		self.model = string_null;
@@ -1514,7 +1566,7 @@ void () powerup_denied =
 			centerprint (e, "\bdenied!\n");
 			sound(other, CHAN_BODY, "ra/laugh.wav", 1, ATTN_NORM);
 		}
-        e = e.chain;		
+        e = e.chain;
     }
 };
 
@@ -1526,7 +1578,7 @@ void () powerup_pickup =
 
 	if (other.style & CLANRING_OBSERVER)
 		return;
-    
+
 	if (other.classname != "player")
 		return;
 
@@ -1536,10 +1588,10 @@ void () powerup_pickup =
 	if (self == world) return;	// R00k: just in the slight chance SUB_Remove was called when it was picked up.
 
 	// how much time remains NOW; we cannot just give them the amount of time unused, as there's another quad going to spawn at nextthink + 30...
-	float timeleft = floor(self.nextthink - time); 		// R00k: We use the .nexthink here not timeleft[i] because match_pause_item updates the entity's nextthink 
-		
+	float timeleft = floor(self.nextthink - time); 		// R00k: We use the .nexthink here not timeleft[i] because match_pause_item updates the entity's nextthink
+
 	sound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
-	other.items = other.items | self.items; 
+	other.items = other.items | self.items;
 
 	switch (self.items)
 	{
@@ -1561,7 +1613,7 @@ void () powerup_pickup =
 		}
 		case IT_INVISIBILITY:
 		{
-			other.invisible_time = 1;	
+			other.invisible_time = 1;
 			other.invisible_finished = (other.invisible_finished <= time) ? (self.nextthink) : (min((other.invisible_finished + timeleft), time + 30));
 			break;
 		}
@@ -1573,7 +1625,7 @@ void () powerup_pickup =
 		}
 		case IT_INVULNERABILITY:
 		{
-			other.invincible_time = 1;		
+			other.invincible_time = 1;
 			other.effects = other.effects | EF_DIMLIGHT | EF_RED;
 			other.invincible_finished = (other.invincible_finished <= time) ? (self.nextthink) : (min((other.invincible_finished + timeleft), time + 30));
 			break;
@@ -1613,7 +1665,7 @@ void() powerup_drop =
             drop.movetype = MOVETYPE_TOSS;
             setsize(drop, VEC_HULL_MIN, VEC_HULL_MAX);
             drop.touch = powerup_pickup;
-			//drop.alpha = (timeleft[i] - time)/16;	// R00k: fade the model based on time remaining			
+			//drop.alpha = (timeleft[i] - time)/16;	// R00k: fade the model based on time remaining
             drop.nextthink = timeleft[i];
 			drop.think = SUB_Remove;
         }
@@ -1643,16 +1695,16 @@ void() powerup_touch =
 	if (deathmatch != 2 && deathmatch != 4 && deathmatch != 5)	// R00k
 	{
 		self.mdl = self.model;
-		
+
 		if ((self.items == IT_INVULNERABILITY) || (self.items == IT_INVISIBILITY))
-			self.nextthink = time + 300;
+        	self.nextthink = time + 300;
 		else
 			self.nextthink = time + 60;
 
 		self.think = SUB_regen;
 	}
 
-// do the apropriate action	
+// do the apropriate action
 	if (self.items == IT_SUIT)
 	{
 		sound (other, CHAN_VOICE, self.noise, 1, ATTN_NORM);
@@ -1660,9 +1712,10 @@ void() powerup_touch =
 		other.items = other.items | self.items;
 		self.model = string_null;
 		self.stats_item_biosuit += 1;
-//		other.effects = other.effects | EF_GREEN;	
+//		other.effects = other.effects | EF_GREEN;
 		other.rad_time = 1;
 		other.radsuit_finished = time + 30;
+        SendObserverItemTimer(self, "suit", 60); // woods
 	}
 	else
 		quaketv_powerup_obtained();// CRMOD
@@ -1681,8 +1734,8 @@ void() powerup_touch =
 		other.invincible_time = 1;
 		other.invincible_finished = time + 30;
 		other.effects = other.effects | EF_DIMLIGHT;	// 1998-07-23 Better performance in handling of powerups by Maddes
-		other.effects = other.effects | EF_RED;	
-
+		other.effects = other.effects | EF_RED;
+        SendObserverItemTimer(self, "pent", 300); // woods
 		other.clanring_ptwep_z = other.clanring_ptwep_z + 1; //pent stats
 		if (other.next_team != world)
 		{
@@ -1698,12 +1751,12 @@ void() powerup_touch =
 		self.model = string_null;
 		other.invisible_time = 1;
 		other.invisible_finished = time + 30;
-		
+
 		// 1998-07-23 Better performance in handling of powerups by Maddes  start
 		other.frame = 0;
 		//other.modelindex = modelindex_eyes;
 		// 1998-07-23 Better performance in handling of powerups by Maddes  end
-
+        SendObserverItemTimer(self, "ring", 300); // woods
 		if (other.next_team != world)
 		{
 			other.next_team.dest2_z = other.next_team.dest2_z + 1;
@@ -1730,6 +1783,7 @@ void() powerup_touch =
 		// CRMOD - stats
 		other.clanring_qdwep_z = other.clanring_qdwep_z + 1;
 		other.quadtime = time;
+        SendObserverItemTimer(self, "quad", 60); // woods
 		if (other.next_team != world)
 		{
 			other.next_team.dest2_x = other.next_team.dest2_x + 1;
@@ -1757,10 +1811,10 @@ void() item_artifact_invulnerability =
 
 	// ELOHIM_MOD - keep track of who got it
 	self.noise3 = " got the pentagram";
-	self.noise4 = " got the \b\<Pentagram\>\n";	
-	self.count = self.cnt = 0;	
+	self.noise4 = " got the \b\<Pentagram\>\n";
+	self.count = self.cnt = 0;
 	self.owner = world;
-	self.height = 0;	
+	self.height = 0;
 	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
 };
@@ -1825,9 +1879,9 @@ void() item_artifact_super_damage =
 	// ELOHIM_MOD - keep track of who gets it
 	self.noise3 = " got the quad";
 	self.noise4 = " got the \b\<Quad\>\n";
-	self.count = self.cnt = 0;		
-	self.owner = world;				
-	self.height = 0;				
+	self.count = self.cnt = 0;
+	self.owner = world;
+	self.height = 0;
 	// END_MOD
 	self.customizeentityforclient = item_customizeentityforclient;
 	StartItem ();
@@ -1895,23 +1949,23 @@ void() BackpackTouch =
 			acount = 1;
 			sprint(other, "the ");
 			sprint(other, self.netname);
-			
+
 			if ((self.items == IT_LIGHTNING) || (self.items == IT_GRENADE_LAUNCHER) || (self.items == IT_ROCKET_LAUNCHER))
 			{
 				if ((self.enemy != other) && (other.team == self.enemy.team))	//enemy is the person who killed the owner of this backpack
 				{
-					// If the killer of this backpack is nearby and a teammate picks it up then 
+					// If the killer of this backpack is nearby and a teammate picks it up then
 					// let's assume they were holding it for them ...
-					// Find the distance and check how long the backpack was here... if less than 2 seconds 
+					// Find the distance and check how long the backpack was here... if less than 2 seconds
 					// then maybe they weren't guarding it.
 					if (self.nextthink - time < 118)
 					{
-						float d = vlen((self.origin - ((self.enemy.absmax + self.enemy.absmin) * 0.5)));  
+						float d = vlen((self.origin - ((self.enemy.absmax + self.enemy.absmin) * 0.5)));
 						if (d < 180) 								// 180 = 1.5X rocket explosion radius
 							self.enemy.stats_defense_backpack += 1;	// R00k: teammate took backpack
 					}
 				}
-		
+
 				if (self.items == IT_ROCKET_LAUNCHER)
 				{
 					quaketv_obtained_rl (other);// ELOHIM_MOD - keep track of rocket launchers
@@ -1929,7 +1983,7 @@ void() BackpackTouch =
 			}
 		}
 	}
-// if the player was using his best weapon, change up to the new one if better		
+// if the player was using his best weapon, change up to the new one if better
 	stemp = self;
 	self = other;
 	best = W_BestWeapon ();
@@ -1985,7 +2039,7 @@ void() BackpackTouch =
 	{
 		if (acount)
 			sprint(other, ", ");
-		
+
 		acount = 1;
 		s = ftos(self.ammo_cells);
 		sprint(other, s);
@@ -2042,7 +2096,7 @@ void() DropBackpack =
 
 	if (!(self.ammo_shells + self.ammo_nails + self.ammo_rockets + self.ammo_cells))
 		return;	// nothing in it
-	
+
 	item = spawn();
 	item.origin	= self.origin - '0 0 24';
     item.classname = "item_backpack";    // ELOHIM_MOD
@@ -2083,11 +2137,11 @@ void() DropBackpack =
 	item.ammo_nails 	= self.ammo_nails;
 	item.ammo_rockets 	= self.ammo_rockets;
 	item.ammo_cells 	= self.ammo_cells;
-	
+
 	item.velocity_z = 300;
 	item.velocity_x = -100 + (random () * 200);
 	item.velocity_y = -100 + (random () * 200);
-	
+
 	item.flags = FL_ITEM;
 	item.solid = SOLID_TRIGGER;
 	item.movetype = MOVETYPE_TOSS;
@@ -2102,10 +2156,10 @@ void() Team_weapon_touch =
 {
 	local float	new, best;
 	local entity	stemp;
-	
+
 	if (!(items_are_ready()))
 		return;
-	
+
 	if (pointcontents(self.origin) == CONTENT_LAVA)
 	{
 		remove(self);
@@ -2216,27 +2270,27 @@ void() TossWeapon =
 {
 	local entity item;
 
-	if (self.style & CLANRING_OBSERVER) 
+	if (self.style & CLANRING_OBSERVER)
 		return; // no observer tossing items
-	
+
 	if (clanring_playmode & CLANRING_PRACTICE_MODE)
 		return;
-	
+
 	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 		return;
 
 	if (((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED)))
 		return;
-	
+
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 		return;
-	
+
 	if (self.health < 1)
 		return;
-	
-	if ((self.weapon == IT_AXE)||(self.weapon == IT_SHOTGUN)||(self.weapon == IT_HOOK)) 
+
+	if ((self.weapon == IT_AXE)||(self.weapon == IT_SHOTGUN)||(self.weapon == IT_HOOK))
 		return;
-	
+
 	if (deathmatch == 3)//*** Exploit: dmm3 = static weapons, so jerks just spam dropping weapons until the server crashes
 	{
 		if (self.toss_time > time)
@@ -2261,7 +2315,7 @@ void() TossWeapon =
 	if( self.weapon == IT_LIGHTNING )
 	{
 		setmodel (item, "progs/g_light.mdl");
-		item.netname = "Thunderbolt";		
+		item.netname = "Thunderbolt";
 
 		if (self.ammo_cells < 15)
 		{
@@ -2281,7 +2335,7 @@ void() TossWeapon =
 			setmodel (item, "progs/g_rock2.mdl");
 			item.netname = "Rocket Launcher";
 			item.classname = "weapon";
-			
+
 			if (self.ammo_rockets < 5)
 			{
 				item.ammo_rockets = self.ammo_rockets;
@@ -2338,7 +2392,7 @@ void() TossWeapon =
 					{
 						setmodel (item, "progs/g_nail.mdl");
 						item.netname = "nailgun";
-						
+
 						if (self.ammo_nails < 30)
 						{
 							item.ammo_nails = self.ammo_nails;
@@ -2356,7 +2410,7 @@ void() TossWeapon =
 						{
 							setmodel (item, "progs/g_shot.mdl");
 							item.netname = "Double-barrelled Shotgun";
-							
+
 							if (self.ammo_shells < 5)
 
 							if (self.ammo_shells < 5)
@@ -2374,7 +2428,7 @@ void() TossWeapon =
 			}
 		}
 	}
-	
+
 	// R00k: "You There!" so my teammates will look at me when dropping items...
 	if ((time > self.toss_time)||(self.toss_time == 0))
 	{
@@ -2382,7 +2436,7 @@ void() TossWeapon =
 		self.toss_time = time + 5;
 	}
 	else self.toss_time = time + 2;//more spamming more duration
-	
+
 	if (deathmatch == 3)
 		self.toss_time = time + 21;
 
@@ -2394,7 +2448,7 @@ void() TossWeapon =
 	setsize(item, '-16 -16 0', '16 16 56');
 	item.touch = Team_weapon_touch;
 	item.think = SUB_Remove;
-	item.nextthink = time + 20;	
+	item.nextthink = time + 20;
 };
 
 void() Team_Ammo_Touch=
@@ -2425,7 +2479,7 @@ void() Team_Ammo_Touch=
 	if (other.classname != "player")
 		return;
 
-	if (other.health <= 0)	
+	if (other.health <= 0)
 		return;
 
 	donttake = 0;	// 1998-08-15 Do not take unnecessary items but fire all targets by Maddes
@@ -2493,7 +2547,7 @@ void() TossAmmo =
 	local string	cname = "";
 	local string	m = "";
 
-	if (self.style & CLANRING_OBSERVER) 
+	if (self.style & CLANRING_OBSERVER)
 	{
 		return; // no observer tossing items *CHEAT*
 	}
@@ -2502,7 +2556,7 @@ void() TossAmmo =
 	{
 		return;
 	}
-	
+
 	if (!(clanring_playmode & CLANRING_CAPTURE_THE_FLAG))
 		return;
 
@@ -2510,7 +2564,7 @@ void() TossAmmo =
 	{
 		return;
 	}
-	
+
 	if (clanring_state & CLANRING_MATCH_PAUSED)
 	{
 		return;
@@ -2544,7 +2598,7 @@ void() TossAmmo =
 			if (self.ammo_nails > 25)
 			{
 				self.ammo_nails = self.ammo_nails - 25;
-				ammo = 25;			
+				ammo = 25;
 				cname = "item_spikes";
 				m ="maps/b_nail0.bsp";
 			}
@@ -2561,7 +2615,7 @@ void() TossAmmo =
 				if (self.ammo_rockets > 5)
 				{
 					self.ammo_rockets = self.ammo_rockets - 5;
-					ammo = 5;			
+					ammo = 5;
 					cname = "item_rockets";
 					m ="maps/b_rock0.bsp";
 				}
@@ -2589,20 +2643,20 @@ void() TossAmmo =
 					}
 				}
 				else
-				{								
+				{
 					return;//no other ammo to toss
 				}
 			}
 		}
 	}
-	
+
 	// R00k: "You There!" so my teammates will look at me when dropping items...
 	if (time > self.toss_time)
 	{
 		sound(self, CHAN_VOICE, "enforcer/sight3.wav", 1, ATTN_NORM);
 		self.toss_time = time + 5;
 	}
-	
+
 	item = spawn();
 	item.owner = self;
 	makevectors(self.v_angle);
@@ -2616,7 +2670,7 @@ void() TossAmmo =
 	item.aflag = ammo;
 	item.classname = cname;
 	setmodel (item, m);
-	
+
 	setsize (item, '0 0 0', '32 32 56');
 	item.touch = Team_Ammo_Touch;
 
@@ -2743,7 +2797,7 @@ void() DropVial = //
 	StartItem ();
 };
 
-void() DropShardTouch = 
+void() DropShardTouch =
 {
 	if (CheckValidTouch() == FALSE)
 		return;
@@ -2754,7 +2808,7 @@ void() DropShardTouch =
 
 	if (other.items & IT_ARMOR1)
 	{
-		if (other.armorvalue >= 125)	
+		if (other.armorvalue >= 125)
 			return;
 		other.armorvalue = clamp(c, 5, 125);
 	}
@@ -2762,7 +2816,7 @@ void() DropShardTouch =
 	{
 		if (other.items & IT_ARMOR2)
 		{
-			if (other.armorvalue >= 175)	
+			if (other.armorvalue >= 175)
 				return;
 			other.armorvalue = clamp(c, 5, 175);
 		}
@@ -2770,15 +2824,15 @@ void() DropShardTouch =
 		{
 			if (other.items & IT_ARMOR3)
 			{
-				if (other.armorvalue >= 225)	
+				if (other.armorvalue >= 225)
 					return;
 				other.armorvalue = clamp(c, 5, 225);
 			}
 			else
-			{		
-				other.armortype = 0.3;	
+			{
+				other.armortype = 0.3;
 				other.armorvalue = self.armorvalue;
-				other.items |= IT_ARMOR1; 
+				other.items |= IT_ARMOR1;
 			}
 		}
 	}
@@ -2796,7 +2850,7 @@ void() DropShardTouch =
 void(vector o, float a) DropShard = //
 {
 	local entity item;
-	
+
 	item = spawn();
 
 	item.owner = item;

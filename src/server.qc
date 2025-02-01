@@ -272,7 +272,7 @@ void (entity client) clear_afk_status =
     {
         updatename(client, client.netname);
         client.style = client.style - (client.style & CLANRING_AFK_CLIENT);
-        stuffcmd(self, "cmd setinfo afk no\n");// woods
+        forceinfokey(self, "afk","no");// woods
     }
     client.afk_time = time;
 }
@@ -1134,6 +1134,41 @@ void () find_pqc_teamscore_teams =
     }
 };
 
+//Identify/advertise the player's client in use.
+string() server_find_myClient =
+{    
+    local string text = "";
+    string myClient;
+
+    myClient = string_null;
+
+    myClient = infokey(self,"*ver");						//FTE and QSS
+
+    if (myClient != "")
+    {
+        if (substring(myClient, 0, 5) == "QSS-M")
+            self.client = "QSS-M";
+
+        if (substring(myClient, 0, 3) == "FTE")
+            self.client = "FTE";
+        text = (sprintf(" with %s.\n", myClient));
+    }
+    else
+    {
+        myClient = infokey(self,"*client");					//ezQuake
+        if (myClient != "")
+        {
+            self.client = "ezQuake";
+            text = (sprintf(" with %s.\n", myClient));
+        }
+        else
+        {
+            text = ".\n";									//anything else
+            self.client = "Quake";
+        }
+    }
+    return text;
+ }
 //
 //  C L I E N T  C O N N E C T
 //
@@ -1166,37 +1201,7 @@ void () clanring_client_connect =
 
         self.afk_time = time + 20;
 
-        //Identify/advertise the player's client in use.
-        string myClient;
-
-        myClient = string_null;
-
-        myClient = infokey(self,"*ver");						//FTE and QSS
-
-        if (myClient != "")
-        {
-            if (substring(myClient, 0, 5) == "QSS-M")
-                self.client = "QSS-M";
-
-            if (substring(myClient, 0, 3) == "FTE")
-                self.client = "FTE";
-
-            text = (sprintf(" with %s.\n", myClient));
-        }
-        else
-        {
-            myClient = infokey(self,"*client");					//ezQuake
-            if (myClient != "")
-            {
-                text = (sprintf(" with %s.\n", myClient));
-                self.client = "ezQuake";
-            }
-            else
-            {
-                text = ".\n";										//anything else
-                self.client = "Quake";
-            }
-        }
+        text = server_find_myClient();  //This also sets self.client
         bprint (self.netname," has connected", text);
     }
     else self.afk_time = time;
@@ -1352,6 +1357,9 @@ void () clanring_put_client_in_server =
     self.style       = self.style | CLANRING_CONNECTED;//placed here before assigning to a team
 
     //utils_make_scheduled_event(clanring_bf_think, 0.1);
+
+    if (!(self.client))         // woods -- map change
+        server_find_myClient();
 
     if (mode_is_arena())
     {
@@ -2188,7 +2196,7 @@ void () clanring_impulse =
             if (clanring_afk_timeout > 0)
                 sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
             afk_name();
-            stuffcmd(self, "cmd setinfo afk yes\n");// woods
+            forceinfokey(self, "afk","yes");// woods
             self.style = self.style | CLANRING_AFK_CLIENT;
             self.afk_time = time;
         }
@@ -2537,7 +2545,7 @@ void () clanring_periodic_checks =
             afk_name();
             self.afk_time = time;
             self.style = (self.style | CLANRING_AFK_CLIENT);
-            stuffcmd(self, "cmd setinfo afk yes\n");	// woods
+            forceinfokey(self, "afk","yes");	// woods
             if (clanring_afk_timeout > 0)//Only print afk if kick is enabled
                 sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");
         }
