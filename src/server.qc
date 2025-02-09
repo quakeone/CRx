@@ -2394,6 +2394,43 @@ entity (entity e) observer_find_target;
 entity (entity e) observer_find_camera;
 void() match_notready;
 
+void () Send_TeamInfo =
+{
+    if ((self.client != "QSS-M") && (self.client != "FTE"))
+        return;
+
+    entity pteam = clanring_sentinel.next_team;
+
+    while (pteam)
+    {
+        if ((pteam.height == self.height) || (self.style & CLANRING_OBSERVER))
+        {
+            float cnt = pteam.count;
+            entity e = pteam.next_player; 
+            while (e && cnt > 0)
+            {
+                // Send team info to observer
+                // Format: entnum origin health armor items
+                stuffcmd(self, sprintf("//tinfo %d %d %d %d %d %d %d\n", 
+                num_for_edict(e) - 1,
+                e.origin_x,
+                e.origin_y, 
+                e.origin_z,
+                floor(bound(0, e.health, 999)),
+                floor(bound(0, e.armorvalue, 999)),
+                e.items | e.items2));  // Combine both item fields
+                e = e.next_player;
+                cnt--;
+            }
+            if (!(self.style & CLANRING_OBSERVER))
+                break;
+            else 
+                continue;            
+        }
+        pteam = pteam.next_team;
+    }
+};
+
 //
 //  P E R I O D I C  C H E C K S
 //
@@ -2404,6 +2441,8 @@ void () clanring_periodic_checks =
 {
     if (!(self.style & CLANRING_CONNECTED))
         return;
+
+    Send_TeamInfo();
 
     local float inactive, c;
 
