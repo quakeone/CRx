@@ -2394,40 +2394,133 @@ entity (entity e) observer_find_target;
 entity (entity e) observer_find_camera;
 void() match_notready;
 
+//
+//  S E N D   T E A M   I N F O
+//
+//  Sends team information updates to clients approximately 6 times per second.
+//  Only sends to QSS-M and FTE clients. For observers, sends info about all players.
+//  For team games, only sends info about players on the same team.
+//
+
+.float team_info_time;
+
 void () Send_TeamInfo =
 {
+    if (self.team_info_time > time)
+        return;
+    self.team_info_time = time + 0.167;  // ~6 updates/sec
+
     if ((self.client != "QSS-M") && (self.client != "FTE"))
         return;
 
-    entity pteam = clanring_sentinel.next_team;
-
-    while (pteam)
+    void(entity target) SendPlayerInfo =
     {
-        if ((pteam.height == self.height) || (self.style & CLANRING_OBSERVER))
+        if (!(target.style & CLANRING_CONNECTED))
+            return;
+            
+        local float speed = vlen(target.velocity);
+        local float newItems = target.items;
+
+        // Add sigil/rune bits using bits 23-26
+        local float i;
+        for (i = 0; i < 4; i = i + 1)
         {
-            float cnt = pteam.count;
-            entity e = pteam.next_player; 
-            while (e && cnt > 0)
-            {
-                // Send team info to observer
-                // Format: entnum origin health armor items
-                stuffcmd(self, sprintf("//tinfo %d %d %d %d %d %d %d\n", 
-                num_for_edict(e) - 1,
-                e.origin_x,
-                e.origin_y, 
-                e.origin_z,
-                floor(bound(0, e.health, 999)),
-                floor(bound(0, e.armorvalue, 999)),
-                e.items | e.items2));  // Combine both item fields
-                e = e.next_player;
-                cnt--;
-            }
-            if (!(self.style & CLANRING_OBSERVER))
-                break;
-            else 
-                continue;            
+            local float bitmask = 32 << i;  // produces 32, 64, 128, 256
+            local float sigilBit = 1 << (23 + i);
+            if (target.items2 & bitmask)
+                newItems = newItems | sigilBit;
         }
-        pteam = pteam.next_team;
+        
+        string part1 = sprintf("//tinfo %d %d %d %d ", 
+            num_for_edict(target) - 1,
+            target.origin_x,
+            target.origin_y,
+            target.origin_z);
+
+        string part2 = sprintf("%d %d %d %d\n",
+            floor(bound(0, target.health, 999)),
+            floor(bound(0, target.armorvalue, 999)),
+            newItems,
+            floor(speed));
+
+        stuffcmd(self, strcat(part1, part2));
+    };
+
+    
+    if (self.style & CLANRING_OBSERVER)
+    {
+        if (clanring_playmode & (CLANRING_CA_MODE | CLANRING_WIPEOUT_MODE | 
+            CLANRING_RA_MODE | CLANRING_DMM4_MODE | CLANRING_AIRSHOT_MODE))
+        {
+            // Arena mode observers - send info for all team players
+            entity obs_team = boss.next_team;
+            while (obs_team)
+            {
+                entity obs_player = obs_team.chain_gang;
+                while (obs_player)
+                {
+                    if (obs_player.style & CLANRING_CONNECTED)
+                    {
+                        SendPlayerInfo(obs_player);
+                    }
+                    obs_player = obs_player.chain_gang;
+                }
+                obs_team = obs_team.next_team;
+            }
+        }
+        else
+        {
+            // Standard observers - send info for all players
+            entity player = clanring_sentinel.next_player;
+            while (player)
+            {
+                if (player.style & CLANRING_CONNECTED)
+                    SendPlayerInfo(player);
+                player = player.next_player;
+            }
+        }
+        return;
+    }
+
+    if (clanring_playmode & (CLANRING_CA_MODE | CLANRING_WIPEOUT_MODE))
+    {
+        // CA/Wipeout modes - use chain_gang structure
+        entity pteam = boss.next_team;
+        while (pteam)
+        {
+            if (pteam.team2 == self.team2)  // Match team by team2 color
+            {
+                entity chain_player = pteam.chain_gang;
+                while (chain_player)
+                {
+                    if (chain_player.style & CLANRING_CONNECTED)
+                    {
+                        SendPlayerInfo(chain_player);
+                    }
+                    chain_player = chain_player.chain_gang;
+                }
+                break;
+            }
+            pteam = pteam.next_team;
+        }
+    }
+    else if (self.team && 
+             !(clanring_playmode & CLANRING_PRACTICE_MODE) && 
+             ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG) || 
+              (clanring_playmode & CLANRING_MATCH_MODE)))
+    {
+        // CTF/Match modes - use player list directly
+        entity list_player = clanring_sentinel.next_player;
+        while (list_player)
+        {
+            if ((list_player.style & CLANRING_CONNECTED) && 
+                (list_player.team == self.team) &&
+                (list_player.height == self.height))
+            {
+                SendPlayerInfo(list_player);
+            }
+            list_player = list_player.next_player;
+        }
     }
 };
 
@@ -2441,8 +2534,6 @@ void () clanring_periodic_checks =
 {
     if (!(self.style & CLANRING_CONNECTED))
         return;
-
-    Send_TeamInfo();
 
     local float inactive, c;
 
