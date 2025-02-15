@@ -1827,6 +1827,8 @@ void() PlayerPostThink =
     if (!(self.style & CLANRING_CONNECTED))
         return;
 
+    Send_TeamInfo();
+
     // ELOHIM_MOD
     //
     // - don't do post think stuff while observing
