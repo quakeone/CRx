@@ -271,6 +271,7 @@ vector 	clanring_angle;					// used for both autoss and intermission
 .float  clanring_chase_score;       // same as above, also used by cameras
 .float  clanring_did_damage;        // last time person did damage
 .float  oflags;				        // CRMOD observer flags
+.float  observer_number;            // Target player number for eyecam
 .float  clanring_cam_delay;         // keep autocam from overswitching
 .vector clanring_oldangle;          // set by angles_fixangle
 .float  delayed_impulse;		    // saves self.impulse so it doesn't get nuked by a ping

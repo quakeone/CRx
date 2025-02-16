@@ -804,7 +804,7 @@ void () clanring_set_aliases =
     stuffcmd(self, "alias help-chase impulse 146\n");
     stuffcmd(self, "alias commentary impulse 147\n");
     stuffcmd(self, "alias headsup impulse 148\n");
-    stuffcmd(self, "alias eyecam impulse 149\n");
+    stuffcmd(self, "alias eyecam cmd eyecam\n");
     stuffcmd(self, "alias tourney impulse 151\n");      // CRMOD - enables tournament mode chasecam
     stuffcmd(self, "alias camera impulse 153\n");       // CRMOD - sets camera mode
     stuffcmd(self, "alias autocam impulse 154\n");      // CRMOD - autocam

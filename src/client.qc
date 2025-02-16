@@ -2880,6 +2880,14 @@ void(string cmd) SV_ParseClientCommand =
 
     switch (arg0)
     {
+        case "eyecam":
+            if (arg1 != "")
+            {
+                self.observer_number = stof(arg1);
+            }
+            observer_demo_start();
+            return;
+        
         case "shownick":
             if ((!(self.style & CLANRING_OBSERVER)))//R00k; not observers.
             {
