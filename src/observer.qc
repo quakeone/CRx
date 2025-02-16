@@ -384,6 +384,33 @@ void () observer_chase_start =
 //
 void () observer_demo_start =
 {
+	// If a player number was provided, try to find that specific player
+	if (self.observer_number)
+	{
+		local entity target = find(world, classname, "player");
+		while (target)
+		{
+			if ((target.colormap) == self.observer_number)  // colormap is the player number
+			{
+				// Only allow targeting connected players who aren't observers
+				if ((target.style & CLANRING_CONNECTED) && !(target.style & CLANRING_OBSERVER))
+				{
+					self.movetarget = target;
+					self.observer_number = 0;  // Clear the number
+					break;
+				}
+			}
+			target = find(target, classname, "player");
+		}
+    
+		if (!self.movetarget)
+		{
+			sprint(self, "Player number not found or is an observer\n");
+			observer_fly_start();
+			return;
+		}
+	}
+	
 	if (mode_is_arena())
 	{
 		if (boss.state != CA_MATCH_PLAYING && boss.state != CA_MATCH_ROUNDSTART)
