@@ -563,7 +563,7 @@ void() votables_set_gametype_mode_map =
 		if (player.style & CLANRING_CONNECTED)
 		{
 			if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
-				stuffcmd(player, "setinfo observing off\n");
+				forceinfokey(player, "observing", "off");
 		}
 		player = find(player, classname, "player");
 	}	
