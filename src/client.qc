@@ -2885,7 +2885,16 @@ void(string cmd) SV_ParseClientCommand =
             {
                 self.observer_number = stof(arg1);
             }
-            observer_demo_start();
+            if (self.style & CLANRING_OBSERVER)
+                observer_demo_start();
+            else
+            {
+                self.oflags = self.oflags | OBSERVER_DEMO;
+                if (((clanring_playmode & CLANRING_MATCH_MODE) & (clanring_state & CLANRING_MATCH_STARTED)) || ((mode_is_arena()) && (boss.state != CA_MATCH_WAITING)))
+                    observer_confirm();
+                else
+                    observer_start();    
+            }
             return;
         
         case "shownick":

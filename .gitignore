@@ -5,3 +5,6 @@ src/progs.lno
 src/win64-fteqcc.exe
 src/csprogs.lno
 src/compile.bat
+src/compile.sh
+src/fteqcc
+src/qc_compile_output.txt
