@@ -2102,6 +2102,7 @@ void() match_unpause_player =
         
     //R00k ADDED...
     self.lefty 				= (self.lefty + clanring_match_pause_time);				// paused match reset captime
+    self.flag_since         = (self.flag_since + clanring_match_pause_time);        // flag carry time
     self.last_hurt_carrier 	= (self.last_hurt_carrier + clanring_match_pause_time);	// paused match reset last hurt flag carrier
 
     self.movetype 		= MOVETYPE_WALK;
