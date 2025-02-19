@@ -211,8 +211,13 @@ void () votables_change_level =
 		{		
 		 	if (player.style & CLANRING_CONNECTED)
 		 	{
-				if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
-		 			forceinfokey(player, "observing", "off"); //Need a better function to reset all observer infokeys...
+				if (player.style & CLANRING_OBSERVER)
+				{
+					entity oself = self;
+					self = player;
+					observer_walk_start();
+					self = oself;
+				}
 		 	}
 			player = find(player, classname, "player");
 		}
@@ -562,8 +567,13 @@ void() votables_set_gametype_mode_map =
 	{		
 		if (player.style & CLANRING_CONNECTED)
 		{
-			if ((player.style & CLANRING_OBSERVER) && (player.movetarget != world))
-				stuffcmd(player, "setinfo observing off\n");
+			if (player.style & CLANRING_OBSERVER)
+			{
+				entity oself = self;
+				self = player;
+				observer_walk_start();
+				self = oself;
+			}
 		}
 		player = find(player, classname, "player");
 	}	

@@ -159,11 +159,11 @@ void (entity player) observer_update_player_observer_key =
 		forceinfokey(player, "*observer", "off");
 		forceinfokey(player, "observer", "off");
 	}
-	
-	if (self.movetarget)
+
+	if (player.movetarget)
 	{
-		forceinfokey(player, "*observing", self.movetarget.netname);
-		forceinfokey(player, "observing", self.movetarget.netname);
+		forceinfokey(player, "*observing", player.movetarget.netname);
+		forceinfokey(player, "observing", player.movetarget.netname);
 	}
 	else
 	{
