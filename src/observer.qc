@@ -130,24 +130,46 @@ void () observer_check_teleport =
 void (entity player) observer_update_player_observer_key =
 {
 	if (player.oflags & OBSERVER_WALK)
-    	forceinfokey(player, "*observer", "walk");
+	{
+		forceinfokey(player, "*observer", "walk");
+		forceinfokey(player, "observer", "walk");
+	}
 	else if (player.oflags & OBSERVER_FLY)
+	{
 		forceinfokey(player, "*observer", "fly");
+		forceinfokey(player, "observer", "fly");
+	}
 	else if (player.oflags & OBSERVER_CHASE)
+	{
 		forceinfokey(player, "*observer", "chase");
+		forceinfokey(player, "observer", "chase");
+	}
 	else if (player.oflags & OBSERVER_DEMO)
+	{
 		forceinfokey(player, "*observer", "eyecam");
+		forceinfokey(player, "observer", "eyecam");
+	}
 	else if (player.oflags & OBSERVER_CAMERA)
+	{
 		forceinfokey(player, "*observer", "camera");
+		forceinfokey(player, "observer", "camera");
+	}
 	else
 	{
 		forceinfokey(player, "*observer", "off");
-		forceinfokey(player, "*spectator", "2");
+		forceinfokey(player, "observer", "off");
 	}
+	
 	if (self.movetarget)
+	{
 		forceinfokey(player, "*observing", self.movetarget.netname);
+		forceinfokey(player, "observing", self.movetarget.netname);
+	}
 	else
-		forceinfokey(player, "*observing", "off");	
+	{
+		forceinfokey(player, "*observing", "off");
+		forceinfokey(player, "observing", "off");
+	}
 }
 //
 //  C L E A R  F L A G S
