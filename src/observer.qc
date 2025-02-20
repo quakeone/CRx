@@ -123,12 +123,44 @@ void () observer_check_teleport =
 };
 
 //
+//  C L E A R   P L A Y E R S   I N F O K E Y S
+//
+//  Clear the observer infokeys for all connected players.
+//
+void () observer_clear_players_infokeys =
+{ 
+	entity player = find(world, classname, "player");
+	while (player)
+	{		
+		if (player.style & CLANRING_CONNECTED)
+		{
+			forceinfokey(player, "observing", "off");
+			forceinfokey(player, "*observer", "off");
+			forceinfokey(player, "observer", "off");	
+		}
+		player = find(player, classname, "player");
+	}	
+};
+
+//
 //  U P D A T E   P L A Y E R   I N F O K E Y 
 //
 //  Update the player's infokey for current observer mode.
 //
 void (entity player) observer_update_player_observer_key =
 {
+	if (!(self.style & CLANRING_OBSERVER))
+	{
+		if (player.style & CLANRING_CONNECTED)
+		{
+			forceinfokey(player, "observing", "off");
+			forceinfokey(player, "*observer", "off");
+			forceinfokey(player, "observer", "off");	
+		}
+		print("observer_update_player_observer_key: not an observer\n");
+		return;
+	}
+
 	if (player.oflags & OBSERVER_WALK)
 	{
 		forceinfokey(player, "*observer", "walk");
@@ -162,7 +194,6 @@ void (entity player) observer_update_player_observer_key =
 
 	if (player.movetarget)
 	{
-		forceinfokey(player, "*observing", player.movetarget.netname);
 		forceinfokey(player, "observing", player.movetarget.netname);
 	}
 	else
@@ -726,7 +757,7 @@ void() observer_end =
 		WriteByte(MSG_ONE, SVC_SETVIEWPORT);
 		WriteEntity (MSG_ONE, self);
 	}
-	self.style 	= self.style - (self.style & CLANRING_OBSERVER);
+	self.style 	= self.style - (self.style & CLANRING_OBSERVER);//dont clear the .oflags as we want to keep our observer settings.
 	self.dmg_tally = 0;
 	if (!mode_is_arena())
 		self.frags 	= 0;
@@ -736,9 +767,12 @@ void() observer_end =
 
 //	stuffcmd(self, "sm0\n");// CRMOD - smoothing off
 //	stuffcmd(self, "v_centerspeed 500\n");
-	forceinfokey(self, "observer","off");// woods
-	observer_update_player_observer_key(self);
-	
+
+//Force these off now...
+	forceinfokey(self, "observer" , "off"); // woods
+	forceinfokey(self, "*observer", "off");
+	forceinfokey(self, "observing", "off");
+
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 100\n");
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))

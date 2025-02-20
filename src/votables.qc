@@ -192,6 +192,8 @@ void () votables_change_level =
 
 	utils_set_cvar("timelimit", clanring_timelimit);
 
+	observer_clear_players_infokeys();
+	
 	if (request_mapname == "start0")
 	{
 		serverflags = 0;
@@ -204,23 +206,6 @@ void () votables_change_level =
 	}
 	else
 	{
-		local entity player;
-
-		player = find(world, classname, "player");
-		while (player)
-		{		
-		 	if (player.style & CLANRING_CONNECTED)
-		 	{
-				if (player.style & CLANRING_OBSERVER)
-				{
-					entity oself = self;
-					self = player;
-					observer_walk_start();
-					self = oself;
-				}
-		 	}
-			player = find(player, classname, "player");
-		}
 		changelevel (request_mapname);
 	}	
 };
@@ -562,21 +547,7 @@ void() votables_set_gametype_mode_map =
 		newmapname = request_mapname;
 	}
 
-	player = find(world, classname, "player");
-	while (player)
-	{		
-		if (player.style & CLANRING_CONNECTED)
-		{
-			if (player.style & CLANRING_OBSERVER)
-			{
-				entity oself = self;
-				self = player;
-				observer_walk_start();
-				self = oself;
-			}
-		}
-		player = find(player, classname, "player");
-	}	
+	observer_clear_players_infokeys();
 
 	if (newmapname == "")
 		newmapname = mapname;
