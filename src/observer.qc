@@ -198,7 +198,6 @@ void (entity player) observer_update_player_observer_key =
 	}
 	else
 	{
-		forceinfokey(player, "*observing", "off");
 		forceinfokey(player, "observing", "off");
 	}
 }
