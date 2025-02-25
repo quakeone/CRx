@@ -347,7 +347,7 @@ void() votables_set_gametype_mode_map =
 		return;
 
 	local string newmapname = "", request_mapname = "";
-	local entity player;
+
 	if (request_gametype >= 0)
 	{
 		if (request_gametype == 0)
