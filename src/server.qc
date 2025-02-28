@@ -1180,8 +1180,6 @@ void () clanring_client_connect =
 {
     local string text = "";
         
-    self.style |= CLANRING_CONNECTED;
-
     if (parm10 & CLANRING_NEW_CLIENT)
     {
         // This is a new client (just connected over the network)
@@ -1191,6 +1189,8 @@ void () clanring_client_connect =
         utils_make_scheduled_event(clanring_init_think, 0.5);
         // Get rid of the new client flag
         parm10	= parm10 - (parm10 & CLANRING_NEW_CLIENT);
+        
+        parm10 |= CLANRING_CONNECTED;
 
         // Set default observer flags
         parm12 = OBSERVER_FLY |  OBSERVER_COMMENTARY;

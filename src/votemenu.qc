@@ -143,8 +143,8 @@ void () VoteMenu_Print =
 	if (self.style & CLANRING_AFK_CLIENT)
 		return;
 
-	if (!(self.style & CLANRING_CONNECTED))
-		return;
+	// if (!(self.style & CLANRING_CONNECTED))
+	// 	return;
 
 	if (self.centerTime <= time)
 	{
