@@ -123,6 +123,85 @@ void () observer_check_teleport =
 };
 
 //
+//  C L E A R   P L A Y E R S   I N F O K E Y S
+//
+//  Clear the observer infokeys for all connected players.
+//
+void () observer_clear_players_infokeys =
+{ 
+	entity player = find(world, classname, "player");
+	while (player)
+	{		
+		if (player.style & CLANRING_CONNECTED)
+		{
+			forceinfokey(player, "observing", "off");
+			forceinfokey(player, "*observer", "off");
+			forceinfokey(player, "observer", "off");	
+		}
+		player = find(player, classname, "player");
+	}	
+};
+
+//
+//  U P D A T E   P L A Y E R   I N F O K E Y 
+//
+//  Update the player's infokey for current observer mode.
+//
+void (entity player) observer_update_player_observer_key =
+{
+	if (!(self.style & CLANRING_OBSERVER))
+	{
+		if (player.style & CLANRING_CONNECTED)
+		{
+			forceinfokey(player, "observing", "off");
+			forceinfokey(player, "*observer", "off");
+			forceinfokey(player, "observer", "off");	
+		}
+		print("observer_update_player_observer_key: not an observer\n");
+		return;
+	}
+
+	if (player.oflags & OBSERVER_WALK)
+	{
+		forceinfokey(player, "*observer", "walk");
+		forceinfokey(player, "observer", "walk");
+	}
+	else if (player.oflags & OBSERVER_FLY)
+	{
+		forceinfokey(player, "*observer", "fly");
+		forceinfokey(player, "observer", "fly");
+	}
+	else if (player.oflags & OBSERVER_CHASE)
+	{
+		forceinfokey(player, "*observer", "chase");
+		forceinfokey(player, "observer", "chase");
+	}
+	else if (player.oflags & OBSERVER_DEMO)
+	{
+		forceinfokey(player, "*observer", "eyecam");
+		forceinfokey(player, "observer", "eyecam");
+	}
+	else if (player.oflags & OBSERVER_CAMERA)
+	{
+		forceinfokey(player, "*observer", "camera");
+		forceinfokey(player, "observer", "camera");
+	}
+	else
+	{
+		forceinfokey(player, "*observer", "off");
+		forceinfokey(player, "observer", "off");
+	}
+
+	if (player.movetarget)
+	{
+		forceinfokey(player, "observing", player.movetarget.netname);
+	}
+	else
+	{
+		forceinfokey(player, "observing", "off");
+	}
+}
+//
 //  C L E A R  F L A G S
 //
 void () observer_clear_flags =
@@ -179,9 +258,7 @@ void () observer_walk_start =
 	if (!(self.style & CLANRING_HEADS_UP))
 		sprint(self, "type 'headsup' for fullscreen display\n");
 */
-	forceinfokey(self, "observer", "walk");// woods
-	forceinfokey(self, "*observer", "walk");// woods
-	forceinfokey(self, "observing", "off");// woods
+	observer_update_player_observer_key(self);
 
 	if (mode_is_arena())
 	{
@@ -206,9 +283,8 @@ void () observer_fly_start =
 	self.view_ofs = '0 0 22';
 	self.flags = self.flags | FL_ONGROUND;
 	self.waterlevel = 0;
-	forceinfokey(self, "observer", "fly");// woods
-	forceinfokey(self, "*observer", "fly");// woods
-	forceinfokey(self, "observing","off");// woods
+	
+	observer_update_player_observer_key(self);
 /*
 	stuffcmd(self, "sm0\n");		// CRMOD - smoothing off
 	stuffcmd(self, "v_centerspeed 500\n");
@@ -305,9 +381,7 @@ void () observer_camera_start =
 		//sprint(self, "type 'headsup' for fullscreen display\n");
 
 	//sprint(self, "type 'smooth' to eliminate choppines\n");
-	forceinfokey(self, "observing", "off");
-	forceinfokey(self, "*observer","camera");
-	forceinfokey(self, "observer","camera");
+	observer_update_player_observer_key(self);
 };
 
 //
@@ -337,8 +411,6 @@ void () observer_chase_start =
 	stuffcmd(self, "v_centerspeed 0\n");
 	sprint(self, "chase mode - help-chase for help\n");
 
-	forceinfokey(self, "observer","chase");// woods
-	forceinfokey(self, "*observer","chase");// woods
 	// CRMOD - auto, tourney
 	if (self.oflags & OBSERVER_GO_AUTO)
 	{
@@ -365,9 +437,7 @@ void () observer_chase_start =
 			centerprint(self,sprintf("chasecam \[%s\]", self.movetarget.netname));
 		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
 	}
-	forceinfokey(self, "*observer", "chasecam");
-	forceinfokey(self, "observing", self.movetarget.netname);
-	forceinfokey(self, "observer","chasecam");
+	observer_update_player_observer_key(self);	
 };
 
 //
@@ -455,10 +525,8 @@ void () observer_demo_start =
     // 	sprint(self, "type 'headsup' for fullscreen display\n");
 	// sprint(self, "type 'smooth' to eliminate choppines\n");
 	
-	forceinfokey(self, "observing", self.movetarget.netname);
-	forceinfokey(self, "observer","eyecam");
-	forceinfokey(self, "*observer","eyecam");
-	
+	observer_update_player_observer_key(self);
+
 	//R00k: added auto pov
 	if (self.oflags & OBSERVER_GO_AUTO)
 	{
@@ -688,7 +756,7 @@ void() observer_end =
 		WriteByte(MSG_ONE, SVC_SETVIEWPORT);
 		WriteEntity (MSG_ONE, self);
 	}
-	self.style 	= self.style - (self.style & CLANRING_OBSERVER);
+	self.style 	= self.style - (self.style & CLANRING_OBSERVER);//dont clear the .oflags as we want to keep our observer settings.
 	self.dmg_tally = 0;
 	if (!mode_is_arena())
 		self.frags 	= 0;
@@ -698,9 +766,12 @@ void() observer_end =
 
 //	stuffcmd(self, "sm0\n");// CRMOD - smoothing off
 //	stuffcmd(self, "v_centerspeed 500\n");
-	forceinfokey(self, "observer","off");// woods
-	forceinfokey(self, "*observer","off");// woods
-	forceinfokey(self, "observing","off");// woods
+
+//Force these off now...
+	forceinfokey(self, "observer" , "off"); // woods
+	forceinfokey(self, "*observer", "off");
+	forceinfokey(self, "observing", "off");
+
 	if (self.style & CLANRING_HEADS_UP)
 		stuffcmd(self, "viewsize 100\n");
 	if (!(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
@@ -819,8 +890,7 @@ entity (entity e) observer_find_target =
 	while (targ != e && (!targ || (targ.style & CLANRING_OBSERVER) || !(targ.style & CLANRING_CONNECTED)))
 		targ = find(targ, classname, "player");
 
-    forceinfokey(self, "observing",targ.netname);// woods
-
+	observer_update_player_observer_key(self);
 	return targ;
 };
 
@@ -902,7 +972,7 @@ void () observer_next_target =
 		centerprint (self,self.movetarget.netname);
 		self.laststattime = time + 2;//Delay the flagstatus bar for 2 seconds.
 	}
-	forceinfokey(self, "observing", self.movetarget.netname);
+	observer_update_player_observer_key(self);
 };
 
 //
@@ -943,7 +1013,7 @@ void () observer_prev_target =
 		WriteEntity(MSG_ONE, self.movetarget);
 		observer_set_demo_position();
 	}
-	forceinfokey(self, "observing", self.movetarget.netname);
+	observer_update_player_observer_key(self);
 };
 
 //

@@ -976,8 +976,6 @@ void() PutClientInServer =
     if (intermission_running)
     {
         move_to_intermission (self);
-        msg_entity = self;
-        proto_intermission (MSG_ONE);//SlotZero
     }
     else
     {
