@@ -1175,8 +1175,15 @@ float () match_all_ready =
     player = find(world, classname, "player");
     while (player)
     {
-        if (!(player.style & (CLANRING_OBSERVER | CLANRING_READY)) && (player.style & CLANRING_CONNECTED))
+        if ((player.style & CLANRING_AFK_CLIENT) && (player.next_team != world)) // if they're on a team and afk
+        {
+            bprint (sprintf("\n%s is currently AFK!\n\nMatch Start delayed...\n",player.netname));
             return FALSE;
+        }
+
+        if ((!(player.style & CLANRING_READY)) && (player.next_team != world)) // if they're on a team and not ready...
+            return FALSE;  
+
         player = find(player, classname, "player");
     }
     return TRUE;
@@ -2102,6 +2109,7 @@ void() match_unpause_player =
         
     //R00k ADDED...
     self.lefty 				= (self.lefty + clanring_match_pause_time);				// paused match reset captime
+    self.flag_since         = (self.flag_since + clanring_match_pause_time);        // flag carry time
     self.last_hurt_carrier 	= (self.last_hurt_carrier + clanring_match_pause_time);	// paused match reset last hurt flag carrier
 
     self.movetype 		= MOVETYPE_WALK;
