@@ -847,6 +847,68 @@ void () votables_request_set_weaponstay =
 	}
 };
 
+//
+//  S E T  A L T E R N A T I V E  E N T I T I E S
+//
+//  Enable/disable alternative entity sets
+//
+void() votables_set_altents =
+{
+    if (clanring_gameconfig & CLANRING_ALTERNATIVE_ENTS)
+    {
+        // Switching back to standard entities
+        clanring_gameconfig = clanring_gameconfig - (clanring_gameconfig & CLANRING_ALTERNATIVE_ENTS);
+        
+        if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+            cvar_set("external_ents_dir", "ctf");
+        else
+            cvar_set("external_ents_dir", "");
+            
+        bprint("Standard entity set enabled\n");
+    }
+    else
+    {
+        // Switching to alternative entities
+        clanring_gameconfig = clanring_gameconfig | CLANRING_ALTERNATIVE_ENTS;
+        
+        if (clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
+			cvar_set("external_ents_dir", "ctf_alt");
+        else
+			cvar_set("external_ents_dir", "dm_alt");
+            
+        bprint("Alternative entity set enabled\n");
+    }
+    
+    utils_set_cvar("gamecfg", clanring_gameconfig);
+	changelevel(mapname);
+};
+
+//
+//  R E Q U E S T  S E T  A L T E R N A T I V E  E N T I T I E S
+//
+//  Request to enable/disable alternative entity sets
+//
+void() votables_request_set_altents =
+{
+    // Do it right away if we're an administrator, otherwise vote
+    if (self.style & CLANRING_ADMINISTRATOR)
+    {
+        votables_set_altents();
+    }
+    else
+    {
+        string newstate = "";
+        
+        if (clanring_gameconfig & CLANRING_ALTERNATIVE_ENTS)
+            newstate = "\bstandard\b";
+        else
+            newstate = "\balternative\b";
+
+        if (vote_init("switch entity set to ", newstate, votables_set_altents, "altents"))
+            vote_yes();
+    }
+};
+
 void() GotoNextMap;
 void() votables_vote_exit =
 {
@@ -875,7 +937,7 @@ void() votables_request_vote_exit =
 		votables_vote_exit();
 	else
 	{
-		local string newstate;
+		string newstate = "";
 		sprint(self,"\byou have voted to exit to the next level.\n\botherwise, use WARP to specify map.\n");
 		
 		newstate = " exit to ";
@@ -893,7 +955,7 @@ void() votables_set_fraglimit =
 };
 void (float newlimit) votables_request_set_fraglimit =
 {
-	local string temp;
+	string temp = ""; 
 
 	if ((clanring_playmode & CLANRING_MATCH_MODE) && (clanring_state & CLANRING_MATCH_STARTED))
 	{

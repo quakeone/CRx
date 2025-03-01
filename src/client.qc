@@ -2873,6 +2873,10 @@ void(string cmd) SV_ParseClientCommand =
 
     switch (arg0)
     {
+        case "altents":
+            votables_request_set_altents();
+            return;
+
         case "eyecam":
             if (arg1 != "")
             {
@@ -3153,7 +3157,7 @@ void(string cmd) SV_ParseClientCommand =
                     return;
                 }
             }
-            break;
+        break;
     }
 
     if (FindNumericalInput(arg0))
