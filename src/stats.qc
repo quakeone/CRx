@@ -403,7 +403,7 @@ void () stats_show_efficiency =
             
 			// Calculate KPM (kills per minute)
 			if (player.join_time > 0)
-				fpm = player.true_kills * 60 / (time - player.join_time);
+				fpm = player.true_kills * 60 / (clanring_sentinel.matchTime - player.join_time);
 			else
 				fpm = 0;
 

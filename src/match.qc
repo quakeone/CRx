@@ -257,6 +257,7 @@ void() match_gib_player =
                 self.frags = 0;
                 self.totalquad = 0;
                 stats_reset_player ();
+                self.join_time = time;    //Woods FPM stats
             }
             else
             {
@@ -790,16 +791,6 @@ void() match_begin =
     clanring_state = clanring_state | CLANRING_MATCH_STARTED;
     announce("The match has begun!");//Moved up here for autodemo
     utils_do_players(match_gib_player);//r00k after additional spawns...
-
-    // Set join_time for all players at match start
-    local entity player;
-    player = find(world, classname, "player");
-    while (player)
-    {
-        if (!(player.style & CLANRING_OBSERVER))
-            player.join_time = time;
-        player = find(player, classname, "player");
-    }
 
     clanring_new_record_player = "";	// .netname of the person who set the current top record.(only used in stats output)
     utils_do_projectiles(SUB_Remove);

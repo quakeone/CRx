@@ -313,17 +313,6 @@ void ()VoteMenu_Print;
 
 void() IntermissionThink =
 {
-    // Set join_time for all players at match start
-    local entity player;
-    player = find(world, classname, "player");
-    while (player)
-    {
-        if (!(player.style & CLANRING_OBSERVER))
-            player.join_time = 0;
-        player = find(player, classname, "player");
-    }
-   
-    
     VoteMenu_Print();
 
     if (self.button0 || self.button2) 								//Jump or fire to wake up
