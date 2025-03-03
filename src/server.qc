@@ -383,10 +383,8 @@ void () clanring_init_world =
         forceinfokey (world, "blue flag","");
     }
 
-    if ((clanring_playmode & CLANRING_NORMAL_MODE)||(clanring_playmode & CLANRING_PRACTICE_MODE)) // FFA / PUB-CTF Games start at map load.
-    {
+    if ((clanring_state & CLANRING_MATCH_STARTED)||(!(gameover)))	//Only update if game is on-going.
         clanring_sentinel.matchTime = time;
-    }
 
     clanring_sentinel.next_player = world;
     clanring_sentinel.next_team = world;
@@ -1246,6 +1244,7 @@ void () clanring_client_connect =
     self.name_ready = string_null;
     self.wait = time + 1;
     self.hack_timeout = 0;//Timer for bot scan
+    self.join_time = time;
 
     parm10 = parm10 - (parm10 & (CLANRING_READY | CLANRING_KICK_CONFIRM | CLANRING_MOTD | CLANRING_SETTING_OPTIONS | CLANRING_SCOREBOARD | CLANRING_CONFIRM_LEAVE));
 
@@ -2860,10 +2859,8 @@ void () clanring_start_frame =
                     }
                 }
 
-                if (((!(clanring_playmode & CLANRING_MATCH_MODE))||((clanring_playmode & CLANRING_MATCH_MODE)&&(clanring_state & CLANRING_MATCH_STARTED)))) // FFA / PUB-CTF Games start at map load.
-                {
-                    clanring_sentinel.matchTime = time;
-                }
+                if ((clanring_state & CLANRING_MATCH_STARTED)||(!(gameover)))	//Only update if game is on-going.
+				    clanring_sentinel.matchTime = time;
 
                 if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
                 {
