@@ -856,7 +856,8 @@ void () clanring_set_aliases =
     stuffcmd(self, "alias dstats cmd dstats\n");
     stuffcmd(self, "alias wtstats cmd wtstats\n");
     stuffcmd(self, "alias itstats cmd itstats\n");
-
+    stuffcmd(self, "alias altents cmd altents\n");
+    
     self.style = self.style | CLANRING_FOUND_BINDINGS;
 
     // remove the temporary entity
