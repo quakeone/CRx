@@ -932,7 +932,7 @@ void () clanring_init_think =
     if (utils_illegal_name (self.netname))
         stuffcmd(self, "name \bnew\bplayer\n");
 
-    self.oldname = self.netname;
+    self.oldname = strzone(self.netname);
 
     self = temp;
     remove(self);
@@ -1276,6 +1276,7 @@ void () clanring_client_disconnect =
     self.effects 				= 0;
     self.killed 				= 0;
     self.clanring_chase_score 	= CLANRING_NEGINF;// CRMOD make sure they don't have some high rating that can't be beat by the other players
+    strunzone(self.oldname);
     self.oldname 				= string_null;
     self.statstate				= 0;
     
@@ -2575,7 +2576,8 @@ void () clanring_periodic_checks =
         {
             if (self.movetarget.netname != self.movetarget.oldname)
             {
-                self.movetarget.oldname = self.movetarget.netname;
+                strunzone(self.movetarget.oldname);
+                self.movetarget.oldname = strzone(self.movetarget.netname);
                 observer_update_player_observer_key(self);
             }
         }
