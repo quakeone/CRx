@@ -1174,9 +1174,8 @@ float () match_all_ready =
 
     player = find(world, classname, "player");
     while (player)
-    {
-        if (player.style & CLANRING_OBSERVER)
-            continue;
+    {        
+        if (!(player.style & CLANRING_OBSERVER))
         if (player.next_team != world) // if they're on a team and afk
         {
             if (player.style & CLANRING_AFK_CLIENT) 
