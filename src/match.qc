@@ -1175,15 +1175,19 @@ float () match_all_ready =
     player = find(world, classname, "player");
     while (player)
     {
-        if ((player.style & CLANRING_AFK_CLIENT) && (player.next_team != world)) // if they're on a team and afk
+        if (player.style & CLANRING_OBSERVER)
+            continue;
+        if (player.next_team != world) // if they're on a team and afk
         {
-            bprint (sprintf("\n%s is currently AFK!\n\nMatch Start delayed...\n",player.netname));
-            return FALSE;
+            if (player.style & CLANRING_AFK_CLIENT) 
+            {
+                bprint (sprintf("\n%s is currently AFK!\n\nMatch Start delayed...\n",player.netname));
+                return FALSE;
+            }
+
+            if (!(player.style & CLANRING_READY))
+                return FALSE;
         }
-
-        if ((!(player.style & CLANRING_READY)) && (player.next_team != world)) // if they're on a team and not ready...
-            return FALSE;  
-
         player = find(player, classname, "player");
     }
     return TRUE;

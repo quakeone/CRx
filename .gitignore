@@ -8,3 +8,6 @@ src/compile.bat
 src/compile.sh
 src/fteqcc
 src/qc_compile_output.txt
+src/release/csprogs.dat
+src/release/progs.dat
+src/fteqcc64
