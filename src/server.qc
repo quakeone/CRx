@@ -932,7 +932,7 @@ void () clanring_init_think =
     if (utils_illegal_name (self.netname))
         stuffcmd(self, "name \bnew\bplayer\n");
 
-    //self.oldname = self.netname;
+    self.oldname = strzone(self.netname);
 
     self = temp;
     remove(self);
@@ -1276,6 +1276,7 @@ void () clanring_client_disconnect =
     self.effects 				= 0;
     self.killed 				= 0;
     self.clanring_chase_score 	= CLANRING_NEGINF;// CRMOD make sure they don't have some high rating that can't be beat by the other players
+    strunzone(self.oldname);
     self.oldname 				= string_null;
     self.statstate				= 0;
     
@@ -2392,9 +2393,11 @@ float () clanring_client_ready =
     return FALSE;
 };
 
+//intermediate prototypes
 entity (entity e) observer_find_target;
 entity (entity e) observer_find_camera;
 void() match_notready;
+void (entity player) observer_update_player_observer_key;
 
 //
 //  S E N D   T E A M   I N F O
@@ -2567,6 +2570,17 @@ void () clanring_periodic_checks =
     {
         observer_find_teleport();
         observer_check_size();
+
+        //Update player's name for eyecam
+        if (self.movetarget)
+        {
+            if (self.movetarget.netname != self.movetarget.oldname)
+            {
+                strunzone(self.movetarget.oldname);
+                self.movetarget.oldname = strzone(self.movetarget.netname);
+                observer_update_player_observer_key(self);
+            }
+        }
 
         if (self.oflags & OBSERVER_QUAKETV) //Sputnik: reset between map loads.
         {
