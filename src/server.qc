@@ -932,7 +932,7 @@ void () clanring_init_think =
     if (utils_illegal_name (self.netname))
         stuffcmd(self, "name \bnew\bplayer\n");
 
-    //self.oldname = self.netname;
+    self.oldname = self.netname;
 
     self = temp;
     remove(self);
@@ -2392,9 +2392,11 @@ float () clanring_client_ready =
     return FALSE;
 };
 
+//intermediate prototypes
 entity (entity e) observer_find_target;
 entity (entity e) observer_find_camera;
 void() match_notready;
+void (entity player) observer_update_player_observer_key;
 
 //
 //  S E N D   T E A M   I N F O
@@ -2567,6 +2569,16 @@ void () clanring_periodic_checks =
     {
         observer_find_teleport();
         observer_check_size();
+
+        //Update player's name for eyecam
+        if (self.movetarget)
+        {
+            if (self.movetarget.netname != self.movetarget.oldname)
+            {
+                self.movetarget.oldname = self.movetarget.netname;
+                observer_update_player_observer_key(self);
+            }
+        }
 
         if (self.oflags & OBSERVER_QUAKETV) //Sputnik: reset between map loads.
         {
