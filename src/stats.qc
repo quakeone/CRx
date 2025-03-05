@@ -16,7 +16,7 @@ void(float frac, float tot) stats_print_percent3;
 //
 void() stats_reset_player =
 {
-	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = '0 0 0';
+	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = self.clanring_badstats2 = '0 0 0';
 	self.clanring_qdkill = self.clanring_qdwep = self.clanring_ptkill = self.clanring_ptwep = '0 0 0';
 	self.stats_gl_frac = 0;
 	self.stats_gl_tot = 0;
