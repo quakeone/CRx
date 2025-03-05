@@ -2624,6 +2624,8 @@ void(entity targ, entity attacker) ClientObituary =
                                     {
                                         if (rnum == IT_AXE)
                                         {
+                                            targ.clanring_badstats2_y += 1;
+
                                             rnum=(random()*3);
                                             if (rnum<2)  deathstring = " was chopped into little pieces by ";
                                             if (rnum==2) deathstring = " was hacked up by ";
@@ -2758,6 +2760,7 @@ void(entity targ, entity attacker) ClientObituary =
             if (targ.deathtype == "falling")
             {
                 announce2(targ.netname, " burries himself in the ground");
+                targ.clanring_badstats2_z += 1;
                 return;
             }
             if ((targ.deathtype == "nail") || (targ.deathtype == "supernail"))
@@ -2803,6 +2806,8 @@ void(entity targ, entity attacker) ClientObituary =
                 {
                     if (rnum == CONTENT_LAVA)
                     {
+                        targ.clanring_badstats2_x += 1;
+                        
                         if (targ.health < -15)
                         {
                             announce2(targ.netname, " burst into flames");

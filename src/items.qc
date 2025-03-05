@@ -1932,7 +1932,7 @@ void() BackpackTouch =
 					}
 				}
 
-				if (self.items == IT_ROCKET_LAUNCHER)
+				if ((self.items == IT_LIGHTNING) || (self.items == IT_ROCKET_LAUNCHER))
 				{
 					quaketv_obtained_rl (other);// ELOHIM_MOD - keep track of rocket launchers
 					if (other.team != self.owner.team)
@@ -2060,6 +2060,7 @@ float() backpack_customizeentityforclient =
 void() DropBackpack =
 {
 	local entity item;
+	local string msg;
 
 	if (!(self.ammo_shells + self.ammo_nails + self.ammo_rockets + self.ammo_cells))
 		return;	// nothing in it
@@ -2070,6 +2071,28 @@ void() DropBackpack =
 	item.owner = self;	// ELOHIM_MOD
 	item.items = self.weapon;
 	item.enemy = self.enemy;	// for backpack stats
+
+    if ((deathmatch == 1 && ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_NORMAL_MODE) || (clanring_playmode & CLANRING_NORMAL_MODE))) && 
+        (item.items == IT_ROCKET_LAUNCHER || item.items == IT_LIGHTNING))
+    {
+        msg = self.netname;
+        msg = strcat(msg, " dropped a ");
+        
+        if (item.items == IT_ROCKET_LAUNCHER)
+            msg = strcat(msg, "\bRL\b");
+        else if (item.items == IT_LIGHTNING) 
+            msg = strcat(msg, "\bLG\b");
+            
+        // Find all observers and notify them
+        local entity client;
+        client = find(world, classname, "player");
+        while(client)
+        {
+            if (client.style & CLANRING_OBSERVER)
+                sprint(client, msg, "\n");
+            client = find(client, classname, "player");
+        }
+    }
 
 	if (deathmatch == 1)
 		item.customizeentityforclient = backpack_customizeentityforclient;

@@ -564,18 +564,12 @@ void() console_show_badstats =
 	 float tot_enemy;
 	 float tot_done;
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE) || !teamplay)
-	{
-		cprint("badstats valid in match mode only\n");
-		return;
-	}
-
 	cprint("\"------------\"\n");
 	cprint("\" Bad Stats \"\n");
 	cprint("\"------------\"\n");
 
-	cprint("\" paks | self | team |      name\"\n");
-	cprint("\"------+------+------+----------------\"\n");
+    cprint("\" paks | self | team | lava | axed | fall |      name\"\n");
+    cprint("\"------+------+------+------+------+------+----------------\"\n");
 	player = clanring_sentinel.next_player;
 	while (player)
 	{
@@ -588,6 +582,12 @@ void() console_show_badstats =
 		localcmd(" | ");
 		console_print_percent4(player.clanring_badstats_z, tot_done);
 		localcmd(" | ");
+        utils_cprint_int3(player.clanring_badstats2_x);  // lava deaths
+        localcmd(" | ");
+        utils_cprint_int3(player.clanring_badstats2_y);  // axe deaths
+        localcmd(" | ");
+        utils_cprint_int3(player.clanring_badstats2_z);  // fall deaths
+        localcmd(" | ");
 		localcmd2(player.netname, "\"\n");
 		player = player.next_player;
 	}
