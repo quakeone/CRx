@@ -2072,8 +2072,7 @@ void() DropBackpack =
 	item.items = self.weapon;
 	item.enemy = self.enemy;	// for backpack stats
 
-    if ((deathmatch == 1 && ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_NORMAL_MODE) || (clanring_playmode & CLANRING_NORMAL_MODE))) && 
-        (item.items == IT_ROCKET_LAUNCHER || item.items == IT_LIGHTNING))
+    if ((deathmatch == 1 && ((clanring_playmode & CLANRING_MATCH_MODE) || (clanring_playmode & CLANRING_NORMAL_MODE))) && (item.items == IT_ROCKET_LAUNCHER || item.items == IT_LIGHTNING))
     {
         msg = self.netname;
         msg = strcat(msg, " dropped a ");
