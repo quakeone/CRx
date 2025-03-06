@@ -491,7 +491,10 @@ float	clanring_afk_timeout;
 .float stats_item_yellowarmor;		//
 .float stats_item_greenarmor;		//
 .float stats_item_backpacks;		//
-.float stats_item_runes;			//
+.float stats_item_rune_resist;		// Rune 1 - Earth Magic	(resistance)
+.float stats_item_rune_strength;	// Rune 2 - Black Magic	(strength)
+.float stats_item_rune_haste;		// Rune 3 - Hell Magic	(haste)
+.float stats_item_rune_regen;		// Rune 4 - Elder Magic (regeneration)
 .float stats_avenge_teammate;		//
 .float stats_defense_teammate;      //
 .float stats_defense_dropped_flag;  //

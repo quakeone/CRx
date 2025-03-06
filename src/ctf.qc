@@ -948,6 +948,40 @@ entity () SelectRuneSpawnPoint =
 	return (runespawn);
 };
 
+void()Runes_Flash_Think =
+{
+	float r = 0;
+	if (self.owner.player_flag & ITEM_RUNE1_FLAG)
+		r = IT2_SIGIL1;
+	else if (self.owner.player_flag & ITEM_RUNE2_FLAG)
+		r = IT2_SIGIL2;
+	else if (self.owner.player_flag & ITEM_RUNE3_FLAG)
+		r = IT2_SIGIL3;
+	else if (self.owner.player_flag & ITEM_RUNE4_FLAG)
+		r = IT2_SIGIL4;
+
+	if (self.count < 5)
+	{		
+		self.owner.items2 ^= r;
+		self.count += 1;
+		self.nextthink = time + 0.2;
+	}
+	else
+	{
+		self.owner.items2 |= r;
+		remove(self);
+	}
+};
+
+void (entity e) Rune_Flash_Start =
+{
+	entity otemp;
+	otemp = self;
+	self = e;
+	utils_make_scheduled_event(Runes_Flash_Think, 0.1);
+	self = otemp;
+}
+
 void() RuneTouch =
 {
 	if ((clanring_playmode & CLANRING_MATCH_MODE) && !(clanring_state & CLANRING_MATCH_STARTED))
@@ -977,34 +1011,45 @@ void() RuneTouch =
 	}
 
 	other.player_flag = (other.player_flag | self.player_flag);
-	other.stats_item_runes +=1;
-	
+
 	if (other.player_flag & ITEM_RUNE1_FLAG)//Rune 1 - Earth Magic(resistance)
 	{
 		other.items2 = (other.items2 | IT2_SIGIL1);
+		Rune_Flash_Start(other);
 		sprint(other,"you got the rune of Åבעפט Íבחיד!    \b[resistance]\n");
+		if (other != self.owner) //Don't count if they drop and pick it back up.
+			other.stats_item_rune_resist +=1;
 	}
 	else
 	{
 		if (other.player_flag & ITEM_RUNE2_FLAG)//Rune 2 - Black Magic(strength)
 		{
 			other.items2 = (other.items2 | IT2_SIGIL2);			
+			Rune_Flash_Start(other);
 			sprint(other,"you got the rune of Âלבדכ Íבחיד!    \b[strength]\n");			
+			if (other != self.owner)
+				other.stats_item_rune_strength +=1;
 		}
 		else
 		{
 			if (other.player_flag & ITEM_RUNE3_FLAG)
 			{
 				other.items2 = (other.items2 | IT2_SIGIL3);
+				Rune_Flash_Start(other);
 				sprint(other,"you got the rune of Èולל Íבחיד!    \b[haste]\n");//Rune 3 - Hell Magic(haste)				
+				if (other != self.owner)
+					other.stats_item_rune_haste +=1;
 			}
 			else
 			{
 				if (other.player_flag & ITEM_RUNE4_FLAG)//Rune 4 - Elder Magic(regeneration)
 				{
-					other.items2 = (other.items2 | IT2_SIGIL4);					
+					other.items2 = (other.items2 | IT2_SIGIL4);
+					Rune_Flash_Start(other);
 					sprint(other,"you got the rune of Åלהוע Íבחיד!    \b[regeneration]\n");					
 					other.max_health = 150;
+					if (other != self.owner)					
+						other.stats_item_rune_regen +=1;
 				}
 			}
 		}
