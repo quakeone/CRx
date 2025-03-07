@@ -16,7 +16,7 @@ void(float frac, float tot) stats_print_percent3;
 //
 void() stats_reset_player =
 {
-	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = '0 0 0';
+	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = self.clanring_badstats2 = '0 0 0';
 	self.clanring_qdkill = self.clanring_qdwep = self.clanring_ptkill = self.clanring_ptwep = '0 0 0';
 	self.stats_gl_frac = 0;
 	self.stats_gl_tot = 0;
@@ -82,20 +82,12 @@ void() stats_show_badstats =
 	local entity player;
 	local float tot_enemy, tot_done;
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE) || !teamplay)
-	{
-		sprint(self, "badstats valid in match mode only\n");
-		return;
-	}/*
 	sprint(self, "\n");
 	sprint(self, "\bbad stuff\n");
 	sprint(self, "\n");
-	sprint(self, "paks - number of RL paks given away\n");
-	sprint(self, "self - percent damage done to self\n");
-	sprint(self, "team - percent damage done to team\n");
-	sprint(self, "\n");*/
-	sprint(self, " paks ü self ü team ü      name\n");
-	sprint(self, "­­­­­­«­­­­­­«­­­­­­«­­­­­­­­­­­­­­­­\n");
+
+	sprint(self, " paks ü self ü team ü lava ü axe  ü fall ü      name\n");
+	sprint(self, "­­­­­­«­­­­­­«­­­­­­«­­­­­­«­­­­­­«­­­­­­«­­­­­­­­­­­­­­­­\n");
 	player = clanring_sentinel.next_player;
 	while (player)
 	{
@@ -109,6 +101,12 @@ void() stats_show_badstats =
 			stats_print_percent3(player.clanring_badstats_y, tot_done);
 			sprint(self, "‘ü \x90");
 			stats_print_percent3(player.clanring_badstats_z, tot_done);
+			sprint(self, "‘ü \x90");
+			utils_print_int3(player.clanring_badstats2_x);
+			sprint(self, "‘ü \x90");
+			utils_print_int3(player.clanring_badstats2_y);
+			sprint(self, "‘ü \x90");
+			utils_print_int3(player.clanring_badstats2_z);
 			sprint(self, "‘ü ");
 		}
 		else
@@ -119,6 +117,12 @@ void() stats_show_badstats =
 			stats_print_percent3(player.clanring_badstats_y, tot_done);
 			sprint(self, " ü  ");
 			stats_print_percent3(player.clanring_badstats_z, tot_done);
+			sprint(self, " ü  ");
+			utils_print_int3(player.clanring_badstats2_x);
+			sprint(self, " ü  ");
+			utils_print_int3(player.clanring_badstats2_y);
+			sprint(self, " ü  ");
+			utils_print_int3(player.clanring_badstats2_z);
 			sprint(self, " ü ");
 		}
 		sprint2(self, player.netname, "\n");
@@ -379,43 +383,59 @@ void () stats_show_efficiency =
 {
     local entity player;
     local float tot_fired, tot_done;
+    local float fpm;
 
-	sprint(self, "\n");
-	sprint(self, "bulünlsüroxülg ütotalü     name\n");
-	sprint(self, "­­­«­­­«­­­«­­­«­­­­­«­­­­­­­­­­­­­­­\n");
-	player = find(world,classname, "player");
-	while (player)
-	{
-		if (((mode_is_arena()) && (player.next_team != world)) ||
-			(!(mode_is_arena()) && !(player.style & CLANRING_OBSERVER)))
-		{
-			stats_print_percent3(player.dest2_x, player.dest1_x);
-			sprint(self, "ü");
-			stats_print_percent3(player.dest2_y, player.dest1_y);
-			sprint(self, "ü");
-			stats_print_percent3(player.dest_y, player.dest_x);
-			sprint(self, "ü");
-			stats_print_percent3(player.dest2_z, player.dest1_z);
-			sprint(self, "ü");
-			tot_fired = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x;
-			tot_done = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
+    sprint(self, "\n");
+    sprint(self, "bulünlsüroxülg ütotalüfpm ü     name\n");
+    sprint(self, "­­­«­­­«­­­«­­­«­­­­­«­­­­«­­­­­­­­­­­­­­­\n");
+    player = find(world,classname, "player");
+    while (player)
+    {
+        if (((mode_is_arena()) && (player.next_team != world)) ||
+            (!(mode_is_arena()) && !(player.style & CLANRING_OBSERVER)))
+        {
+            stats_print_percent3(player.dest2_x, player.dest1_x);
+            sprint(self, "ü");
+            stats_print_percent3(player.dest2_y, player.dest1_y);
+            sprint(self, "ü");
+            stats_print_percent3(player.dest_y, player.dest_x);
+            sprint(self, "ü");
+            stats_print_percent3(player.dest2_z, player.dest1_z);
+            sprint(self, "ü");
+            tot_fired = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x;
+            tot_done = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
+            
+			// Calculate KPM (kills per minute)
+			if (player.join_time > 0)
+				fpm = player.true_kills * 60 / (time - player.join_time);
+			else
+				fpm = 0;
+
 			if (player == self)
 			{
 				sprint(self, " ");
 				stats_print_percent3(tot_done, tot_fired);
 				sprint(self, " ü");
+				if (fpm < 10)
+					sprint(self, " ");
+				sprint(self, sprintf("%.1f", fpm));
+				sprint(self, "ü");
 			}
 			else
 			{
 				sprint(self, " ");
 				stats_print_percent3(tot_done, tot_fired);
 				sprint(self, " ü");
+				if (fpm < 10)
+					sprint(self, " ");
+				sprint(self, sprintf("%.1f", fpm));
+				sprint(self, "ü");
 			}
-			sprint2(self, player.netname, "\n");
-		}
-		player = find(player,classname, "player");
-	}
-	sprint(self, "\n");
+            sprint2(self, player.netname, "\n");
+        }
+        player = find(player,classname, "player");
+    }
+    sprint(self, "\n");
 };
 
 //
@@ -1046,11 +1066,7 @@ void() stats_autodump =
 			//sprint(self, "\n");
 		}
 
-		if ((clanring_playmode & CLANRING_MATCH_MODE) && (teamplay == 2))
-		{
-			stats_show_badstats();
-			//sprint(self, "\n");
-		}
+		stats_show_badstats();
 
 		if (teamplay)
 		{

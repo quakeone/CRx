@@ -313,6 +313,17 @@ void ()VoteMenu_Print;
 
 void() IntermissionThink =
 {
+    // Set join_time for all players at match start
+    local entity player;
+    player = find(world, classname, "player");
+    while (player)
+    {
+        if (!(player.style & CLANRING_OBSERVER))
+            player.join_time = 0;
+        player = find(player, classname, "player");
+    }
+   
+    
     VoteMenu_Print();
 
     if (self.button0 || self.button2) 								//Jump or fire to wake up
@@ -2608,6 +2619,8 @@ void(entity targ, entity attacker) ClientObituary =
                                     {
                                         if (rnum == IT_AXE)
                                         {
+                                            targ.clanring_badstats2_y += 1;
+
                                             rnum=(random()*3);
                                             if (rnum<2)  deathstring = " was chopped into little pieces by ";
                                             if (rnum==2) deathstring = " was hacked up by ";
@@ -2742,6 +2755,7 @@ void(entity targ, entity attacker) ClientObituary =
             if (targ.deathtype == "falling")
             {
                 announce2(targ.netname, " burries himself in the ground");
+                targ.clanring_badstats2_z += 1;
                 return;
             }
             if ((targ.deathtype == "nail") || (targ.deathtype == "supernail"))
@@ -2787,6 +2801,8 @@ void(entity targ, entity attacker) ClientObituary =
                 {
                     if (rnum == CONTENT_LAVA)
                     {
+                        targ.clanring_badstats2_x += 1;
+                        
                         if (targ.health < -15)
                         {
                             announce2(targ.netname, " burst into flames");
