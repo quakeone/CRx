@@ -1181,6 +1181,7 @@ float () match_all_ready =
             if (player.style & CLANRING_AFK_CLIENT) 
             {
                 bprint (sprintf("\n%s is currently AFK!\n\nMatch Start delayed...\n",player.netname));
+                player.style = player.style - (player.style & CLANRING_READY);
                 return FALSE;
             }
 
