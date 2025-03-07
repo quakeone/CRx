@@ -345,6 +345,9 @@ void () server_set_infokey_modes =
     forceinfokey(world, "mode", zmode);
     forceinfokey(world, "playmode", pmode);
 };
+
+.float matchTime;
+
 /**/
 void () W_Precache;
 //
@@ -379,6 +382,9 @@ void () clanring_init_world =
         forceinfokey (world, "red flag","");
         forceinfokey (world, "blue flag","");
     }
+
+    if ((clanring_state & CLANRING_MATCH_STARTED)||(!(gameover)))	//Only update if game is on-going.
+        clanring_sentinel.matchTime = time;
 
     clanring_sentinel.next_player = world;
     clanring_sentinel.next_team = world;
@@ -1239,6 +1245,7 @@ void () clanring_client_connect =
     self.name_ready = string_null;
     self.wait = time + 1;
     self.hack_timeout = 0;//Timer for bot scan
+    self.join_time = time;
 
     parm10 = parm10 - (parm10 & (CLANRING_READY | CLANRING_KICK_CONFIRM | CLANRING_MOTD | CLANRING_SETTING_OPTIONS | CLANRING_SCOREBOARD | CLANRING_CONFIRM_LEAVE));
 
@@ -2801,8 +2808,8 @@ void () clanring_start_frame =
                     }
                 }
             }
-
-            if (time >= clanring_nextcheck)
+            
+            if (time >= clanring_nextcheck)                 // CLANRING_NEXTCHECK-- every 5 seconds...
             {
                 local entity player;
                 // update variables
@@ -2852,17 +2859,28 @@ void () clanring_start_frame =
                 }
                 clanring_nextcheck = time + 5;
             }
-
-            if (time >= clanring_nextcheck2)
+            
+            if (time >= clanring_nextcheck2)                // CLANRING_NEXTCHECK2 every second...
             {
-                auto_check_current_camera();	//R00k: moved up here. (6/4/2024)
-                auto_schedule_cameras();
-                utils_make_scheduled_event(auto_chase, 0.3);
-                utils_make_scheduled_event(auto_camera, 0.6);
+                for (entity e = world; (e = find(e, classname, "player")) != world;)    // Check if there is even an observer
+                {
+                    if (e.style & CLANRING_OBSERVER)
+                    {
+                        auto_check_current_camera();
+                        auto_schedule_cameras();
+                        utils_make_scheduled_event(auto_chase, 0.3);
+                        utils_make_scheduled_event(auto_camera, 0.6);
+                        break;
+                    }
+                }
+
+                if ((clanring_state & CLANRING_MATCH_STARTED)||(!(gameover)))	//Only update if game is on-going.
+				    clanring_sentinel.matchTime = time;
 
                 if (timelimit && !(clanring_playmode & CLANRING_MATCH_MODE) && (mode_is_arena() == FALSE))
                 {
                     float tl = rint(timelimit - time);
+
                     switch (tl)
                     {
                         case 300:
