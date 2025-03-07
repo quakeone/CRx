@@ -1353,8 +1353,8 @@ void () send_pause_match_timer =
     if (clanring_match_timer != world && (clanring_state & CLANRING_MATCH_PAUSED))
     {
         pqc_match_time(clanring_match_timer.lip, clanring_match_timer.count);
-        bprint("test");
     }
+    remove(self);
 };
 
 void () teamplay_force_player_ready;
