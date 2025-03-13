@@ -16,7 +16,7 @@ void(float frac, float tot) stats_print_percent3;
 //
 void() stats_reset_player =
 {
-	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = '0 0 0';
+	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = self.clanring_badstats2 = '0 0 0';
 	self.clanring_qdkill = self.clanring_qdwep = self.clanring_ptkill = self.clanring_ptwep = '0 0 0';
 	self.stats_gl_frac = 0;
 	self.stats_gl_tot = 0;
@@ -82,20 +82,12 @@ void() stats_show_badstats =
 	local entity player;
 	local float tot_enemy, tot_done;
 
-	if (!(clanring_playmode & CLANRING_MATCH_MODE) || !teamplay)
-	{
-		sprint(self, "badstats valid in match mode only\n");
-		return;
-	}/*
 	sprint(self, "\n");
 	sprint(self, "\bbad stuff\n");
 	sprint(self, "\n");
-	sprint(self, "paks - number of RL paks given away\n");
-	sprint(self, "self - percent damage done to self\n");
-	sprint(self, "team - percent damage done to team\n");
-	sprint(self, "\n");*/
-	sprint(self, " paks №аself № team №      name\n");
-	sprint(self, "ннннннлннннннлннннннлнннннннннннннннн\n");
+
+	sprint(self, " paks № self № team № lava № axe  № fall №      name\n");
+	sprint(self, "ннннннлннннннлннннннлннннннлннннннлннннннлнннннннннннннннн\n");
 	player = clanring_sentinel.next_player;
 	while (player)
 	{
@@ -109,6 +101,12 @@ void() stats_show_badstats =
 			stats_print_percent3(player.clanring_badstats_y, tot_done);
 			sprint(self, "С№ \x90");
 			stats_print_percent3(player.clanring_badstats_z, tot_done);
+			sprint(self, "С№ \x90");
+			utils_print_int3(player.clanring_badstats2_x);
+			sprint(self, "С№ \x90");
+			utils_print_int3(player.clanring_badstats2_y);
+			sprint(self, "С№ \x90");
+			utils_print_int3(player.clanring_badstats2_z);
 			sprint(self, "С№ ");
 		}
 		else
@@ -119,6 +117,12 @@ void() stats_show_badstats =
 			stats_print_percent3(player.clanring_badstats_y, tot_done);
 			sprint(self, " №  ");
 			stats_print_percent3(player.clanring_badstats_z, tot_done);
+			sprint(self, " №  ");
+			utils_print_int3(player.clanring_badstats2_x);
+			sprint(self, " №  ");
+			utils_print_int3(player.clanring_badstats2_y);
+			sprint(self, " №  ");
+			utils_print_int3(player.clanring_badstats2_z);
 			sprint(self, " № ");
 		}
 		sprint2(self, player.netname, "\n");
@@ -1046,11 +1050,7 @@ void() stats_autodump =
 			//sprint(self, "\n");
 		}
 
-		if ((clanring_playmode & CLANRING_MATCH_MODE) && (teamplay == 2))
-		{
-			stats_show_badstats();
-			//sprint(self, "\n");
-		}
+		stats_show_badstats();
 
 		if (teamplay)
 		{

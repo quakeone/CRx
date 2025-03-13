@@ -261,6 +261,7 @@ vector 	clanring_angle;					// used for both autoss and intermission
 .vector clanring_ptwep;             // vector to keep track of pent weapon stats	// CRMOD - stats
 .vector clanring_ptkill;            // vector to keep track of pent kill stats		// CRMOD - stats
 .vector clanring_badstats;          // keep track of RL paks and damage done to team
+.vector clanring_badstats2;         // keep track of lava, axe, falling deaths
 .vector clanring_backpacks;			// track rl|lg|gl lost/taken backpacks
 .vector deathorigin;
 //.float killed_who[16];				// players you killed; the number of times killed_who[playerno].netname
