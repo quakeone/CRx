@@ -601,14 +601,14 @@ void() console_show_efficiency =
 {
 	 entity player;
 	 float tot_fired, tot_done;
+	float fpm;
 	
 	cprint("\"------------------\"\n");
 	cprint("\" Efficiency Stats \"\n");
 	cprint("\"------------------\"\n");
 
-
-	cprint("\" bullets | nails | rockets | lightning | total |      name\"\n");
-	cprint("---------+-------+---------+-----------+-------+-----------------\n");
+	cprint("\" bullets | nails | rockets | lightning | total | fpm |      name\"\n");
+	cprint("---------+-------+---------+-----------+-------+-----+-----------------\n");
 	player = clanring_sentinel.next_player;
 	while (player)
 	{
@@ -624,6 +624,17 @@ void() console_show_efficiency =
 		tot_fired = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x;
 		tot_done = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
 		console_print_percent4(tot_done, tot_fired);
+		
+		// Calculate fpm (frags per minute)
+		if (player.join_time > 0)
+			fpm = player.true_kills * 60 / (clanring_sentinel.matchTime - player.join_time);
+		else
+			fpm = 0;
+			
+		localcmd(" | ");
+		if (fpm < 10)
+			localcmd(" ");
+		localcmd(sprintf("%.1f", fpm));
 		localcmd3(" | ", player.netname, "\"\n");
 		player = player.next_player;
 	}

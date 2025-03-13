@@ -257,6 +257,7 @@ void() match_gib_player =
                 self.frags = 0;
                 self.totalquad = 0;
                 stats_reset_player ();
+                self.join_time = time;    //Woods FPM stats
             }
             else
             {
@@ -572,6 +573,7 @@ void() match_end =
     match_bprint_score();//R00k adding here again, this will be closest to their cursor so it will be the first thing they want to read.
     utils_do_match_spawns(spawns_restore_model);
     utils_do_items(SUB_regen);// respawn all items (R00k:9/1/2024)
+
 };
 
 //

@@ -756,10 +756,17 @@ void() observer_end =
 		WriteByte(MSG_ONE, SVC_SETVIEWPORT);
 		WriteEntity (MSG_ONE, self);
 	}
+
 	self.style 	= self.style - (self.style & CLANRING_OBSERVER);//dont clear the .oflags as we want to keep our observer settings.
 	self.dmg_tally = 0;
+
 	if (!mode_is_arena())
 		self.frags 	= 0;
+
+	if ((clanring_playmode & CLANRING_NORMAL_MODE) || (clanring_playmode & CLANRING_PRACTICE_MODE))
+	{
+		self.join_time = time;  // Normal/Practice/CTF modes use actual join time
+	}
 
 	self.killed = 0;
 	observer_check_demo_end();

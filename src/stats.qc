@@ -383,43 +383,59 @@ void () stats_show_efficiency =
 {
     local entity player;
     local float tot_fired, tot_done;
+    local float fpm;
 
-	sprint(self, "\n");
-	sprint(self, "bulünlsüroxülg ütotalü     name\n");
-	sprint(self, "­­­«­­­«­­­«­­­«­­­­­«­­­­­­­­­­­­­­­\n");
-	player = find(world,classname, "player");
-	while (player)
-	{
-		if (((mode_is_arena()) && (player.next_team != world)) ||
-			(!(mode_is_arena()) && !(player.style & CLANRING_OBSERVER)))
-		{
-			stats_print_percent3(player.dest2_x, player.dest1_x);
-			sprint(self, "ü");
-			stats_print_percent3(player.dest2_y, player.dest1_y);
-			sprint(self, "ü");
-			stats_print_percent3(player.dest_y, player.dest_x);
-			sprint(self, "ü");
-			stats_print_percent3(player.dest2_z, player.dest1_z);
-			sprint(self, "ü");
-			tot_fired = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x;
-			tot_done = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
+    sprint(self, "\n");
+    sprint(self, "bulünlsüroxülg ütotalüfpm ü     name\n");
+    sprint(self, "­­­«­­­«­­­«­­­«­­­­­«­­­­«­­­­­­­­­­­­­­­\n");
+    player = find(world,classname, "player");
+    while (player)
+    {
+        if (((mode_is_arena()) && (player.next_team != world)) ||
+            (!(mode_is_arena()) && !(player.style & CLANRING_OBSERVER)))
+        {
+            stats_print_percent3(player.dest2_x, player.dest1_x);
+            sprint(self, "ü");
+            stats_print_percent3(player.dest2_y, player.dest1_y);
+            sprint(self, "ü");
+            stats_print_percent3(player.dest_y, player.dest_x);
+            sprint(self, "ü");
+            stats_print_percent3(player.dest2_z, player.dest1_z);
+            sprint(self, "ü");
+            tot_fired = player.dest1_x + player.dest1_y + player.dest1_z + player.dest_x;
+            tot_done = player.dest2_x + player.dest2_y + player.dest2_z + player.dest_y;
+            
+			// Calculate KPM (kills per minute)
+			if (player.join_time > 0)
+				fpm = player.true_kills * 60 / (clanring_sentinel.matchTime - player.join_time);
+			else
+				fpm = 0;
+
 			if (player == self)
 			{
 				sprint(self, " ");
 				stats_print_percent3(tot_done, tot_fired);
 				sprint(self, " ü");
+				if (fpm < 10)
+					sprint(self, " ");
+				sprint(self, sprintf("%.1f", fpm));
+				sprint(self, "ü");
 			}
 			else
 			{
 				sprint(self, " ");
 				stats_print_percent3(tot_done, tot_fired);
 				sprint(self, " ü");
+				if (fpm < 10)
+					sprint(self, " ");
+				sprint(self, sprintf("%.1f", fpm));
+				sprint(self, "ü");
 			}
-			sprint2(self, player.netname, "\n");
-		}
-		player = find(player,classname, "player");
-	}
-	sprint(self, "\n");
+            sprint2(self, player.netname, "\n");
+        }
+        player = find(player,classname, "player");
+    }
+    sprint(self, "\n");
 };
 
 //
