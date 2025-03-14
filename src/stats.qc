@@ -18,6 +18,10 @@ void() stats_reset_player =
 {
 	self.mangle = self.dest = self.dest2 = self.dest1 = self.clanring_badstats = self.clanring_badstats2 = '0 0 0';
 	self.clanring_qdkill = self.clanring_qdwep = self.clanring_ptkill = self.clanring_ptwep = '0 0 0';
+	self.stats_item_rune_resist = 0;
+	self.stats_item_rune_strength = 0;
+	self.stats_item_rune_haste = 0;
+	self.stats_item_rune_regen = 0;
 	self.stats_gl_frac = 0;
 	self.stats_gl_tot = 0;
 	self.dmg_taken = 0;
@@ -55,7 +59,6 @@ void() stats_reset_player =
 	self.stats_item_yellowarmor = 0;
 	self.stats_item_greenarmor = 0;
 	self.stats_item_backpacks = 0;
-	self.stats_item_runes = 0;
 	self.stats_defense_teammate = 0;
 	self.stats_defense_backpack = 0;
 	self.stats_defense_dropped_flag = 0;
@@ -898,7 +901,11 @@ void( entity p ) stats_show_player_items_taken_stats =
     sprint(self, sprintf("%3g\b|\b",p.stats_item_yellowarmor));
     sprint(self, sprintf("%3g\b|\b",p.stats_item_redarmor));
     sprint(self, sprintf("%4g\b|\b",p.stats_item_backpacks));
-//    sprint(self, sprintf("%3g\b|\b",p.stats_item_runes));
+	sprint(self, sprintf("%3g\b|\b",p.stats_item_rune_resist));
+	sprint(self, sprintf("%3g\b|\b",p.stats_item_rune_strength));
+	sprint(self, sprintf("%3g\b|\b",p.stats_item_rune_haste));
+	sprint(self, sprintf("%3g\b|\b",p.stats_item_rune_regen));
+
     sprint(self, " ",p.netname,"\n");
 };
 
@@ -948,8 +955,8 @@ void() stats_show_items_taken_stats =
     sprint(self, "\bitems taken stats\n");
     sprint(self, "\n");
     
-    sprint(self, "hlth\b|\bmega\b|\bsuit\b|\b GA\b|\b YA\b|\b RA\b|\bbkpk\b|\b name\n");
-    sprint(self, "\b----+----+----+---+---+---+----+---------------\n");
+    sprint(self, "hlth\b|\bmega\b|\bsuit\b|\b GA\b|\b YA\b|\b RA\b|\bbkpk\b|\bres\b|\bstr\b|\bhst\b|\breg\b|\b name\n");
+    sprint(self, "\b----+----+----+---+---+---+----+---+---+---+---+---------------\n");
 	
 	if (clanring_playmode & CLANRING_MATCH_MODE)
 		e = clanring_sentinel.next_player;
