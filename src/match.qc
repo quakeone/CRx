@@ -257,7 +257,6 @@ void() match_gib_player =
                 self.frags = 0;
                 self.totalquad = 0;
                 stats_reset_player ();
-                self.join_time = time;    //Woods FPM stats
             }
             else
             {
@@ -573,7 +572,6 @@ void() match_end =
     match_bprint_score();//R00k adding here again, this will be closest to their cursor so it will be the first thing they want to read.
     utils_do_match_spawns(spawns_restore_model);
     utils_do_items(SUB_regen);// respawn all items (R00k:9/1/2024)
-
 };
 
 //
@@ -587,8 +585,6 @@ void() match_timer_think2 =
 {
     local string temp;
 
-    if (!(clanring_state & CLANRING_MATCH_PAUSED))
-        pqc_match_time(self.lip, self.count);
 
     self.count -= 1;
 
@@ -815,7 +811,7 @@ void() match_begin =
     self.count = 0;
 
     match_updatestat_matchstarttime();//R00k: send the match time to QW players.
-    pqc_match_time(clanring_timelimit, +1);//show the match timelimit (this is displayed right at the end of clanring_show_rules_prematch, when the timer shows 00:01)
+    pqc_match_time(clanring_timelimit, 0);//show the match timelimit (this is displayed right at the end of clanring_show_rules_prematch, when the timer shows 00:01)
     match_show_timelimit();//This updates the server's TIMELIMIT cvar with match information that is used on the CCREQ_RULE_INFO for the web server browser.
 
     // reset rocket launcher count
@@ -885,10 +881,7 @@ void() match_timer_think1 =
 {
     //local string temp;
 
-    if (self.count <= 6)
-        pqc_match_time (0, self.count);
-    else
-        pqc_match_time(clanring_timelimit, +1);//show the match timelimit for the first 5 seconds during countdown
+   pqc_match_time (0, self.count-1);
 
     self.count -= 1;
     if (self.count < 0)
