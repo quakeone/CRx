@@ -397,8 +397,6 @@ void () clanring_init_world =
     score_init_world();
     match_init_world();
     //quaketag_init_world();
-    if (isFTEserver)
-        autocvar(nqfriction, "1");	//Set this to 1 if using FTE as a server with sv_nqplayerphysics 0 to simulate NQ bunnyhopping but allowing QW clients to use prediction.
 
     temp = 0;
 

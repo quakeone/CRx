@@ -58,7 +58,7 @@ float OBSERVER_QUAKETV 			= 2048;		    // Sputnik: added this for streaming via 
 .float qsmack_trylevel;
 float qsmack_statusokay;
 */
-
+float   clanring_playmode;          // current play mode (non volatile flags)
 // server mode - stored in cvar 'samelevel' and preserved across levels
 float CLANRING_NORMAL_MODE    		= 1;            //R00k:changed
 float CLANRING_MATCH_MODE    		= 2;
@@ -112,35 +112,40 @@ float CLANRING_SPEEDBALL_MODE     = 16384;    //
 float CLANRING_INSTAGIB_MODE      = 32768;    //
 float CLANRING_SERVER_INITIALIZED = 0;
 */
+
 /*
 	G A M E C O N F I G
 	clanring_gameconfig - preserved across levels in cvar 'gamecfg'
 	eg. (clanring_gameconfig & CLANRING_NO_HOOK)
 */
-// TODO: enumflags
+float	clanring_gameconfig;		// playmode sub-settings (non volatile flags)
+enumflags
+{
+	CLANRING_DISABLE_VOTE,
+	CLANRING_ALTERNATIVE_ENTS,
+	CLANRING_POWERUP_DROP,
+	CLANRING_SPAWNFRAG_PROTECTION,
+	CLANRING_SEQUENTIAL_SPAWNS,
+	CLANRING_DROP_DEATH_SHARDS,
+	CLANRING_ENABLE_MATCHSOUNDS,
+	CLANRING_ENABLE_PREDICTION,
+	// CLANRING_AUTO_PAUSE, 
+	// CLANRING_CA_CC_VOTE, 
+	// CLANRING_EXTENDED_OBITS, 
+	// CLANRING_FRESH_SPAWNS, 
+	// CLANRING_MODE_VOTE, 
+	// CLANRING_NO_HOOK, 
+	// CLANRING_NO_PENT, 
+	// CLANRING_NO_QUAD, 
+	// CLANRING_NO_RING, 
+	// CLANRING_NO_SPOOGE, 
+	// CLANRING_RUNES, 
+	// CLANRING_RUNETOSS, 
+	// CLANRING_BREAKAWAY_HOOK, 
+	// CLANRING_QW_ROCKET_DAMAGE, 
+	// CLANRING_VOTE_MAJORITY_PASS,
+};
 
-// float CLANRING_AUTO_PAUSE    		= 1;
-// float CLANRING_CA_CC_VOTE			= 2;
-float CLANRING_DISABLE_VOTE				= 4;
-// float CLANRING_EXTENDED_OBITS    	= 8;
-float CLANRING_ALTERNATIVE_ENTS    		= 16;
-// float CLANRING_FRESH_SPAWNS         	= 32;
-// float CLANRING_MODE_VOTE    			= 64;
-// float CLANRING_NO_HOOK			    = 128;
-// float CLANRING_NO_PENT    			= 256;
-// float CLANRING_NO_QUAD    			= 512;
-// float CLANRING_NO_RING    			= 1024;
-// float CLANRING_NO_SPOOGE    			= 2048;
-float CLANRING_POWERUP_DROP				= 4096;
-// float CLANRING_RUNES			    	= 8192;
-// float CLANRING_RUNETOSS    		    = 16384;
-float CLANRING_SPAWNFRAG_PROTECTION 	= 32768;
-float CLANRING_SEQUENTIAL_SPAWNS		= 65536;
-// float CLANRING_BREAKAWAY_HOOK		= 0;
-// float CLANRING_QW_ROCKET_DAMAGE		= 0;		//set rocket damage to 110 eliminate the ' + random () * 20 '
-float CLANRING_DROP_DEATH_SHARDS		= 1048576;
-// float CLANRING_VOTE_MAJORITY_PASS	= 0;
-float CLANRING_ENABLE_MATCHSOUNDS = 2097152;
 // clanring_state - not preserved across level changes
 float CLANRING_TIMER_STARTED  		= 1;
 float CLANRING_MATCH_STARTED    	= 2;
@@ -179,8 +184,8 @@ float CLANRING_MANUAL_SPAWN = 1;
 // global variables
 //float   clanring_player_ids;        // used for assigning unique player ID's
 float   clanring_devparam;          // used for development
-float   clanring_playmode;          // current play mode (non volatile flags)
-float	clanring_gameconfig;		// playmode sub-settings (non volatile flags)
+//float   clanring_playmode;          // current play mode (non volatile flags)
+//float	clanring_gameconfig;		// playmode sub-settings (non volatile flags)
 float   clanring_state;             // server state (volatile flags)
 float   clanring_timelimit;         // timelimit for matches (default 20 minutes)
 float   default_timelimit;          // reset timelimit between matches in case of overtime or interrupted match abort

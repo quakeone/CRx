@@ -316,7 +316,7 @@ void() IntermissionThink =
     VoteMenu_Print();
 
     if (self.button0 || self.button2) 								//Jump or fire to wake up
-        self.style -= (self.style & CLANRING_AFK_CLIENT);
+        self.style &= ~CLANRING_AFK_CLIENT;
 
     if ((self.impulse > 0) && (self.impulse < 6))
     {
@@ -1448,6 +1448,14 @@ void() PlayerPreThink =
         return;		// intermission or finale
     }
 
+    if (clanring_gameconfig & CLANRING_ENABLE_PREDICTION)
+        if (cvar("sv_nqplayerphysics") == 0)
+        {
+            self.angles[0] = - (input_angles[0] / 3.0);  // pitch
+            self.angles[1] =    input_angles[1];         // yaw
+            self.angles[2] =    input_angles[2];         // roll
+        }
+
     if (self.height != self.team - 1)
         match_verify_team ();
 
@@ -1961,25 +1969,6 @@ void() PlayerPostThink =
     if (!(self.flags & FL_ONGROUND))
     {
         self.jump_flag = self.velocity_z;
-
-        //Normalize bunnyhopping at all ticrates/client protocols (ie sv_nqplayerphysics 0)
-        if ((cvar("sv_nqplayerphysics") == 0) && (cvar("nqfriction")))//this works differently than 'pm_bunnyspeedcap' as it reduces the velocity over hops.
-        {
-            if ((!(self.flags & FL_BHOP))&&(time - self.jump_time < 0.2))
-            {
-                self.flags |= FL_BHOP;
-
-                if ((vlen(self.velocity)) >= 320) //sv_maxspeed
-                {
-                    self.velocity[0] -= self.velocity[0] * 0.06;
-                    self.velocity[1] -= self.velocity[1] * 0.08;//Strafing will increase the speed by modifying wishdir, so make this stronger...
-                }
-            }
-            else
-            {
-                self.jump_time = 0;
-            }
-        }
     }
     else
     {
@@ -2873,6 +2862,27 @@ void(string cmd) SV_ParseClientCommand =
 
     switch (arg0)
     {
+        case "sv_predict":
+            if (self.style & CLANRING_ADMINISTRATOR) //Admin testing for now...
+            {
+                if (clanring_gameconfig & CLANRING_ENABLE_PREDICTION)
+                {
+                    clanring_gameconfig &= ~CLANRING_ENABLE_PREDICTION;                
+                    utils_set_cvar("sv_nqplayerphysics", TRUE);
+                    sprint(self, "Prediction disabled.\n");
+                }
+                else
+                {
+                    clanring_gameconfig |= CLANRING_ENABLE_PREDICTION;
+                    utils_set_cvar("sv_nqplayerphysics", FALSE);                    
+                    sprint(self, "Prediction enabled.\n  Use \bcl_nopred 1\b to disable.\n");
+                    utils_set_cvar("sv_bunnyhopqw", FALSE);
+                    sprint(self, "NQ Bunnies enabled.\n");
+                }
+                utils_set_cvar("gamecfg", clanring_gameconfig);
+            }
+            return;
+
         case "altents":
             votables_request_set_altents();
             return;
