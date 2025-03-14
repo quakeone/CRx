@@ -1355,6 +1355,15 @@ void () clanring_observer_start_think =
     remove(self);
 };
 
+void () send_pause_match_timer =
+{
+    if (clanring_match_timer != world && (clanring_state & CLANRING_MATCH_PAUSED))
+    {
+        pqc_match_time(clanring_match_timer.lip, clanring_match_timer.count);
+    }
+    remove(self);
+};
+
 void () teamplay_force_player_ready;
 //
 //  P U T  C L I E N T  I N  S E R V E R
@@ -1368,6 +1377,8 @@ void () clanring_put_client_in_server =
     self.style       = self.style | CLANRING_CONNECTED;//placed here before assigning to a team
 
     //utils_make_scheduled_event(clanring_bf_think, 0.1);
+
+    utils_make_scheduled_event(send_pause_match_timer, 0.5);
 
     if (!(self.client))         // woods -- map change
         server_find_myClient();
