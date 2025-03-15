@@ -561,6 +561,12 @@ void () observer_start =
 	//local float go_auto;
 	local string tmp="";
 
+    if ((clanring_playmode & (CLANRING_NORMAL_MODE | CLANRING_PRACTICE_MODE)) &&
+        ((self.style & (CLANRING_RED_TEAM | CLANRING_BLUE_TEAM)) || self.frags != -99))
+    {
+        bprint(sprintf("%s became an \bobserver\b.\n", self.netname));
+    }
+
 	self.style = self.style | CLANRING_OBSERVER;
 
   	// Notify the match module that this player has become an observer
