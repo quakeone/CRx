@@ -1892,13 +1892,13 @@ void() powerup_touch =
 	if (other.health <= 0)
 		return;
 
-    // --- 1v1 normal DM / HH FFA auto-ghost: block Quad pickup and centerprint (once per client per map) ---
+    // Block disabled 1v1 Quad pickup. Only the visible FFA ghost needs a hint.
     if (self.items == IT_QUAD)
     {
         if (g1v1_in_effect && g1v1_quad_ghosted)
         {
             // Only show the message once per client per map to avoid spam
-            if (!other.quadDisabledMsgShown)
+            if (!(clanring_playmode & CLANRING_MATCH_MODE) && !other.quadDisabledMsgShown)
             {
                 other.quadDisabledMsgShown = 1;
                 centerprint(other, "quad disabled for 1 on 1");

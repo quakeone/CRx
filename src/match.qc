@@ -1845,6 +1845,7 @@ void() match_begin =
     if (clanring_request != world)	//Remove any active requests
         Request_Poll_Cleanup();
 
+    AutoGhostQuad_Refresh(); // settle the final roster before locking the 1v1 rule
     clanring_state = clanring_state | CLANRING_MATCH_STARTED;
 
     // Clear leave-me-alone flags for all players
@@ -3020,6 +3021,8 @@ void() match_ready =
 
     }
     
+    AutoGhostQuad_Refresh(); // apply the 1v1 default before the countdown resets items
+
     // check to see if we need to start the timer
     match_try_start_countdown();
 
@@ -3152,6 +3155,8 @@ void(entity player) match_remove_player =
     if ((clanring_playmode & CLANRING_CAPTURE_THE_FLAG)
         && !(clanring_state & CLANRING_MATCH_STARTED))
         match_refresh_spawn_markers();
+
+    AutoGhostQuad_Refresh();
 
     if (!(clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)))
         match_update_score_info();

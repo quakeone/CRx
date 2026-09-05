@@ -148,9 +148,9 @@ float CLANRING_DELAYED_AUTOSS    	= 2097152;
 float CLANRING_TAKING_AUTOSS    	= 4194304;
 float CLANRING_NULL_FLAG		    = 8388608;//R00k: added, used to make the flags untouchable during match start countdown, ie "Match begins in T minus"...
 
-// --- Auto-ghost Quad (1v1 in normal DM / HH FFA) state ---
+// --- Automatic 1v1 Quad state (normal DM / HH FFA and DM/CTF matches) ---
 float g1v1_in_effect;       // 1 while the special 1v1 window is active
-float g1v1_quad_ghosted;    // 1 if quad is ghosted (blocked) during 1v1
+float g1v1_quad_ghosted;    // 1 if quad is disabled during 1v1 (ghosted in FFA, hidden in matches)
 float g1v1_saved_no_quad;   // remembers (clanring_playmode & CLANRING_NO_QUAD) when entering 1v1
 float g1v1_next_check_time; // next time to recheck counts in StartFrame
 

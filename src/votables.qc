@@ -2225,8 +2225,7 @@ void () votables_disable_item =
 //
 void () votables_set_quad =
 {
-    // Special behavior while auto-ghost is active in normal DM / HH FFA (1v1):
-    // - Toggle "ghost/unghost" without physically removing the item
+    // Override the automatic 1v1 default. FFA ghosts disabled Quad; matches hide it.
     if (g1v1_in_effect)
     {
         if (clanring_playmode & CLANRING_NO_QUAD)
@@ -2240,11 +2239,11 @@ void () votables_set_quad =
         }
         else
         {
-            // turn it OFF within 1v1 (ghost, keep entity)
+            // turn it OFF within 1v1 (ghost in FFA, hide in matches)
             clanring_playmode = clanring_playmode | CLANRING_NO_QUAD;
             g1v1_quad_ghosted = TRUE;
             bprint("Quad disabled for 1 on 1\n");
-            G1v1_UpdateQuadAlpha(TRUE);  // -> red/full alpha when cr_ffa_item_alpha is enabled
+            G1v1_UpdateQuadAlpha(TRUE);  // hide in matches, otherwise use the FFA ghost
         }
         utils_set_cvar("samelevel", clanring_playmode);
         return;

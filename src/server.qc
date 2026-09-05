@@ -302,7 +302,7 @@ void () lockdown_release_if_server_empty;
 //void () Teamplay_Select_Team;
 
 // ------------------------------------------------------------------
-// Auto-ghost Quad (1v1) helpers
+// Automatic 1v1 Quad defaults (ghost in FFA, hidden in DM/CTF matches)
 // ------------------------------------------------------------------
 float() CountActivePlayersDM =
 {
@@ -338,12 +338,53 @@ float() InDMNormalMode =
     return TRUE;
 };
 
+float() InMatchQuadMode =
+{
+    if (!(clanring_playmode & CLANRING_MATCH_MODE))
+        return FALSE;
+    if (clanring_playmode & (CLANRING_PRACTICE_MODE | CLANRING_HH_MODE
+                           | CLANRING_WIPEOUT_MODE | CLANRING_DMM4_MODE
+                           | CLANRING_AIRSHOT_MODE | CLANRING_CA_MODE
+                           | CLANRING_RA_MODE))
+        return FALSE;
+    return TRUE;
+};
+
+float() G1v1_MatchIsDuel =
+{
+    local entity pteam;
+    local float teams;
+
+    // Use the committed roster; spectators and unready warmup players do not count.
+    if (!teamplay)
+        return (clanring_numteams == 2);
+
+    teams = 0;
+    pteam = clanring_sentinel.next_team;
+    while (pteam)
+    {
+        if (pteam.count > 1)
+            return FALSE;
+        if (pteam.count == 1)
+            teams = teams + 1;
+        pteam = pteam.next_team;
+    }
+    return (teams == 2);
+};
+
 // ------------------------------------------------------------------
-// Make every Quad in the world match the desired opacity
+// Ghost disabled Quad in FFA, or remove its model and trigger in matches
 // ------------------------------------------------------------------
 void(float ghost) G1v1_UpdateQuadAlpha =
 {
     local entity e;
+
+    if (ghost && InMatchQuadMode())
+    {
+        utils_do_item(votables_disable_item, "item_artifact_super_damage");
+        return;
+    }
+
     e = find(world, classname, "item_artifact_super_damage");
     while (e)
     {
@@ -356,8 +397,8 @@ void() AutoGhostQuad_Refresh =
 {
     local float active, want_ghost, quad_spawners;
 
-    // Only relevant in normal DM and HH FFA
-    if (!InDMNormalMode())
+    // Normal DM / HH FFA, plus DM and CTF match mode.
+    if (!InDMNormalMode() && !InMatchQuadMode())
     {
         // ensure we're not stuck in a ghosting state if mode changed
         if (g1v1_in_effect)
@@ -380,8 +421,20 @@ void() AutoGhostQuad_Refresh =
         return;
     }
 
-    active = CountActivePlayersDM();
-    want_ghost = (active == 2); // exactly two active players => 1v1
+    if (InMatchQuadMode())
+    {
+        // Keep the match's rule and setquad override through deaths, spectating,
+        // pauses and reconnects. Only the prematch roster sets the default.
+        if (clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER))
+            want_ghost = g1v1_in_effect;
+        else
+            want_ghost = G1v1_MatchIsDuel();
+    }
+    else
+    {
+        active = CountActivePlayersDM();
+        want_ghost = (active == 2);
+    }
 
     if (want_ghost)
     {
@@ -397,7 +450,7 @@ void() AutoGhostQuad_Refresh =
                 clanring_playmode = clanring_playmode | CLANRING_NO_QUAD; // default OFF in 1v1
                 utils_set_cvar("samelevel", clanring_playmode);
             }
-            g1v1_quad_ghosted = TRUE; // and enforce ghosting behavior
+            g1v1_quad_ghosted = TRUE; // ghost in FFA, hide in matches
             G1v1_UpdateQuadAlpha(TRUE);
         }
         else
