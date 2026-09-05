@@ -3976,9 +3976,21 @@ void () client_typing_off =
 {
     if (self.style & CLANRING_TYPING_CLIENT)
     {
-        if (self.name_before_typing)
+        self.style &= ~CLANRING_TYPING_CLIENT;
+        if (clanring_playmode & CLANRING_MATCH_MODE)
         {
-            // Restore the previous displayed name/status immediately
+            // Ready status may have changed while chatting (notready, idle
+            // timeout, observer, or match start/reset). Never restore the
+            // cached pre-chat label over the current match state.
+            clear_name();
+            if ((self.style & CLANRING_READY)
+                && !(self.style & CLANRING_OBSERVER)
+                && !(clanring_state & (CLANRING_MATCH_STARTED | CLANRING_MATCH_OVER)))
+                ready_name();
+        }
+        else if (self.name_before_typing)
+        {
+            // Preserve mode-specific overlays such as arena waiting/dead.
             updatename(self, self.name_before_typing);
             // Keep name_ready in sync and ensure we own the memory
             if (self.had_ready_before_typing)
@@ -3991,15 +4003,15 @@ void () client_typing_off =
                 if (self.name_ready) strunzone(self.name_ready);
                 self.name_ready = string_null; // we were showing raw netname
             }
-            strunzone(self.name_before_typing);
-            self.name_before_typing = string_null;
-            self.had_ready_before_typing = 0;
         }
         else
         {
-        clear_name();
+            clear_name();
         }
-        self.style &= ~CLANRING_TYPING_CLIENT;
+        if (self.name_before_typing)
+            strunzone(self.name_before_typing);
+        self.name_before_typing = string_null;
+        self.had_ready_before_typing = 0;
         forceinfokey(self, "chat", "0"); // Set to active
     }
 };
