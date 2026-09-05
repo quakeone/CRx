@@ -589,9 +589,8 @@ float 	PQC_PING_TIMES	=	7;
 
 float	clanring_afk_check;
 float	clanring_afk_timeout;
-float   CLANRING_AFK_RESYNC_GRACE = 30; // seconds to preserve carried AFK state while client chat infokeys resync
 .float 	afk_time;
-.float  afk_sync_grace_until; // preserve carried AFK state until client chat infokeys resync after map/mode changes
+.float  afk_chat_confirmed; // client has reported AFK on this level; only then can chat=0 end it
 .float  observer_attack_released; // observer attack-mode toggle fires once per press, not repeatedly while held
 .float 	vote;    //client flag that holds their vote
 .float  map_vote_slot; // dedicated intermission ballot (1..5); do not reuse warp_map

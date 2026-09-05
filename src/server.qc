@@ -448,8 +448,9 @@ void() AutoGhostQuad_Refresh =
 
 void (entity client) clear_afk_status =
 {
-    client.afk_time = time; // Reset AFK time regardless of current status
-    client.afk_sync_grace_until = 0;
+    // Call only for player activity, never for a forced spawn or mode change.
+    client.afk_time = time;
+    client.afk_chat_confirmed = FALSE;
 
     if (client.style & CLANRING_AFK_CLIENT && (client.style & CLANRING_CONNECTED))
     {
@@ -463,34 +464,6 @@ void (entity client) clear_afk_status =
         
         self = oldself;
     }
-}
-
-// Restore AFK status after level change
-void () restore_afk_status =
-{
-    local entity player = self.owner;
-    local string chat_status;
-    
-    if (player == world || !player.netname)
-    {
-        remove(self);
-        return;
-    }
-
-    local entity oldself = self;
-    self = player;
-
-    // Restore AFK status
-    self.style = self.style | CLANRING_AFK_CLIENT;
-    self.afk_sync_grace_until = time + CLANRING_AFK_RESYNC_GRACE;
-    afk_name();
-    forceinfokey(self, "afk", "yes");
-    chat_status = infokey(self, "chat");
-    if (chat_status != "2" && chat_status != "3")
-        forceinfokey(self, "chat", "2");
-    
-    self = oldself;
-    remove(self); // Clean up the scheduled event entity
 }
 
 //woods
@@ -1705,8 +1678,6 @@ void () clanring_client_connect =
 
         utils_make_scheduled_event(find_pqc_teamscore_teams, 1.25);//R00k
 
-        self.afk_time = time + 20;
-
         text = server_find_myClient();  //This also sets self.client
 
         // Only QSS-M chat status is trusted; clear everyone else on connect.
@@ -1718,26 +1689,20 @@ void () clanring_client_connect =
     }
     else 
     {
-        self.afk_time = time;
-
         // Re-detect on level change in case *ver/*client arrived late on initial connect.
         if (!(self.client) || self.client == "Quake")
             server_find_myClient();
 
-        // Only QSS-M chat status is trusted for AFK restore.
+        // DecodeLevelParms restores AFK and elapsed time from spawn parms.
+        // Check client status normally after spawning, without a delayed
+        // restore that could mark a player AFK after they already returned.
         client_name = strtolower(self.client);
-        if (client_name == "qss-m")
-        {
-            // Level change: restore AFK only for reliable chat states.
-            local string chat_status = infokey(self, "chat");
-            if ((chat_status == "2" || chat_status == "3") && !(self.style & CLANRING_AFK_CLIENT))
-                utils_make_scheduled_event(restore_afk_status, 1.0);
-        }
-        else
-        {
+        if (client_name != "qss-m")
             forceinfokey(self, "chat", "");
-        }
     }
+
+    // A missing/default chat key during level signon is not player activity.
+    self.afk_chat_confirmed = FALSE;
 
     // Cache f_status preference once on connect/level-change.
     status_refresh_f_status_pref();
@@ -3483,6 +3448,8 @@ void () clanring_periodic_checks =
 
     if (self.style & CLANRING_AFK_CLIENT)
     {
+        // Keep elapsed time visible in every mode, including RA and observers.
+        afk_name();
         if (clanring_afk_timeout > 0)	// Set 'kickafk' in clanring.cfg to 0 to disable kicking...
         {
             if (inactive >= clanring_afk_timeout)
@@ -3537,9 +3504,9 @@ void () clanring_periodic_checks =
         }
         if ((inactive >= clanring_afk_check) && (!(self.style & CLANRING_ADMINISTRATOR)))
         {
-            afk_name();
-            self.afk_time = time;
             self.style = (self.style | CLANRING_AFK_CLIENT);
+            self.afk_chat_confirmed = FALSE;
+            afk_name();
             forceinfokey(self, "afk","yes");	// woods
             if (clanring_afk_timeout > 0)//Only print afk if kick is enabled
                 sprint(self, "Press FIRE or JUMP to disable '\bafk\b' status.\n");

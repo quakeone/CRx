@@ -732,6 +732,16 @@ void (entity who) wait_name =
 {
 	local string text;
 	local string temp;
+	local entity oldself;
+
+	if (who.style & CLANRING_AFK_CLIENT)
+	{
+		oldself = self;
+		self = who;
+		afk_name();
+		self = oldself;
+		return;
+	}
 
 	text = " \bwaiting\b";
 	temp = strpad(16, who.netname);
@@ -744,6 +754,12 @@ void (entity who) wait_name =
 void () ready_name =
 {		
 	local string text;
+
+	if (self.style & CLANRING_AFK_CLIENT)
+	{
+		afk_name();
+		return;
+	}
 	
 	if (self.style & CLANRING_CONNECTED)
 	{		
@@ -762,28 +778,23 @@ void () afk_name =
 	local float t, m;
 
 	t = (time - self.afk_time);
-	m = (floor( t / 60 ));
+	m = max(0, floor(t / 60));
 	tm = ftos(m);
 
+	// Show elapsed time even when another status (ready/dead) also applies.
+	text = "\bAFK\b";
 	if ((self.style & CLANRING_READY) && (!(clanring_state & CLANRING_MATCH_STARTED)) && (!(clanring_state & CLANRING_MATCH_OVER)))
-	{
 		text = "\bReady AFK\b";
-	}
+	else if (self.health < 1)
+		text = "\bdead\b \bAFK\b";
+
+	if (m < 1)
+		text = strcat(text, " brb");
 	else
 	{
-		if (self.health < 1)
-			text = "\bdead\b \bAFK\b";		
-		else
-		{
-			if (t < clanring_afk_check)	//If someone manually typed 'afk' then indicate now.
-				text = "\bAFK\b brb";
-			else
-			{
-				if (((clanring_afk_timeout/60) - m) < 2)	//Display time as RED if less than two minutes left before being kicked...
-					tm = redify(tm);
-				text = sprintf("\bAFK\b %sm",tm);
-			}
-		}
+		if (clanring_afk_timeout > 0 && ((clanring_afk_timeout / 60) - m) < 2)
+			tm = redify(tm);
+		text = sprintf("%s %sm", text, tm);
 	}
 	updatenameoverload(text);
 	updatename(self,self.name_ready);

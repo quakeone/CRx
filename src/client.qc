@@ -160,6 +160,8 @@ void() SetNewParms =
     parm11 = 0;
     parm12 = OBSERVER_FLY;// CRMOD observer flags
     parm13 = 0;
+    parm14 = -20; // Fresh connection only: initial inactivity grace.
+    parm15 = 0;
 };
 
 //
@@ -250,9 +252,7 @@ void() DecodeLevelParms =
     self.oflags 				= parm12;  // CRMOD observer flags
     self.clanring_hack_count 	= parm13;
     self.afk_time 				= (time - parm14);
-    self.afk_sync_grace_until  = 0;
-    if (self.style & CLANRING_AFK_CLIENT)
-        self.afk_sync_grace_until = time + CLANRING_AFK_RESYNC_GRACE;
+    forceinfokey(self, "afk", (self.style & CLANRING_AFK_CLIENT) ? "yes" : "no");
     self.statstate 				= parm15;
     self.ctf_practice_flag_msg_count = parm16;
     self.ctf_practice_flag_last_touch = -1;
@@ -2901,7 +2901,10 @@ void() PlayerPostThink =
 	        if (((self.impulse >= 19) || ((clanring_playmode & CLANRING_HH_MODE) && (self.impulse == 9)))
 	            && ((self.impulse != 22) || (clanring_playmode & CLANRING_HH_MODE)))
 	        {
-	            if (self.impulse != 39) //Remove afk status when the client issues an impulse command, *except* 39, which is our (automated) lag-out checker.
+	            // Preserve AFK for automatic lag/detection/binding replies and
+	            // score screenshots. The AFK toggle handles its own existing state.
+	            if (self.impulse != 39 && self.impulse != 57 && self.impulse != 60
+	                && self.impulse != 62 && self.impulse != 128 && self.impulse != 180)
 	                clear_afk_status(self);
 
             if (self.impulse <= 250)
@@ -3922,11 +3925,13 @@ void () client_afk_on =
         if (self.style & CLANRING_TYPING_CLIENT)
             self.style &= ~CLANRING_TYPING_CLIENT;
         
-        afk_name();
-        forceinfokey(self, "afk", "yes");// woods
-        forceinfokey(self, "chat", "2");  // New chat status key - 2 means AFK
         self.style |= CLANRING_AFK_CLIENT;
         self.afk_time = time;
+        self.afk_chat_confirmed = FALSE;
+        afk_name();
+        forceinfokey(self, "afk", "yes");
+        // Leave chat owned by the client, so a default chat=0 cannot undo
+        // manual/idle AFK and server writes cannot count as confirmation.
     }
 };
 
@@ -4015,18 +4020,16 @@ void () check_client_status =
 
     if (chat_status == "2" || chat_status == "3") // AFK (3 = AFK + chatting)
     {
-        self.afk_sync_grace_until = 0;
-
         if (!(self.style & CLANRING_AFK_CLIENT))
             client_afk_on();
+
+        self.afk_chat_confirmed = TRUE;
 
         if (self.style & CLANRING_TYPING_CLIENT)
             self.style &= ~CLANRING_TYPING_CLIENT;
     }
     else if (chat_status == "1") // Typing
     {
-        self.afk_sync_grace_until = 0;
-
         if (self.style & CLANRING_AFK_CLIENT)
             client_afk_off();
 
@@ -4035,9 +4038,9 @@ void () check_client_status =
     }
     else if (chat_status == "0") // Active
     {
-        self.afk_sync_grace_until = 0;
-
-        if (self.style & CLANRING_AFK_CLIENT)
+        // Only an observed AFK -> active transition proves the client returned.
+        // Level signon and server/manual AFK can both have a default chat=0.
+        if ((self.style & CLANRING_AFK_CLIENT) && self.afk_chat_confirmed)
             client_afk_off();
 
         if (self.style & CLANRING_TYPING_CLIENT)
@@ -4045,14 +4048,7 @@ void () check_client_status =
     }
     else if (chat_status == "")
     {
-        // QSS-M may briefly resend an empty chat status during level changes.
-        // Preserve AFK carry-over until that userinfo finishes resyncing.
-        if ((self.style & CLANRING_AFK_CLIENT) && (self.afk_sync_grace_until > time))
-            return;
-
-        if (self.style & CLANRING_AFK_CLIENT)
-            client_afk_off();
-
+        // Missing userinfo is never evidence that the player returned.
         if (self.style & CLANRING_TYPING_CLIENT)
             client_typing_off();
     }

@@ -1005,7 +1005,7 @@ void() observer_end =
 	self.movetarget = world;
 	if (!mode_is_arena())
 		stats_reset_player();
-	clear_afk_status(self);		//R00k: added (12/7/2022)
+	// Also called for automatic arena/round spawns; preserve inactivity here.
 	SetNewParms2();
 	PutClientInServer();
 };

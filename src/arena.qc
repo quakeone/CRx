@@ -146,7 +146,6 @@ void () arena_client_disconnect =
 	//self.myip			= string_null;
 	self.trueip			= string_null;
 	self.takedamage 	= DAMAGE_NO;
-	self.afk_time		= time;
 	self.cc_queue 		= 0;//R00k
 	self.cc_queue_vote	= 0;//R00k
 	self.ca_player_flag	= PF_WAITING;//v1.97

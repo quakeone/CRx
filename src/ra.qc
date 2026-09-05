@@ -1057,7 +1057,7 @@ void () ra_spawn_players =
 					//if player hasn't been through observer_start yet (1v1) just respawn
 					tmp = self;
 					self = player;
-					clear_afk_status(self);
+					// Round-driven respawns do not mean the player returned.
 					respawn();
 					// Ensure team color is set (fallback to assigned RA colors if missing)
 					if (self.team2 == 0)
