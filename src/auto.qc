@@ -215,13 +215,13 @@ void() auto_compute_score =
 //
 //  A U T O  D E A T H  H O L D
 //
-//  How long we stay on a player after they die, so the kill is actually seen.
-//  KTX waits 2 seconds (or until respawn); CRMod's classic hold is 1.
+//  How long we stay on a player after they die.  KTX switches on the next
+//  server frame; CRMod's classic hold is 1 second.
 //
 float() auto_death_hold =
 {
 	if (clanring_autotrack_mode == CLANRING_AUTOTRACK_KTX)
-		return 2;
+		return 0;
 
 	return 1;
 };
@@ -480,7 +480,7 @@ void() auto_check_powerup_spawn =
 	if (clanring_autotrack_mode != CLANRING_AUTOTRACK_KTX)
 		return;
 
-	// auto_chase_think can run every frame while an event waits out a death hold,
+	// Events can call auto_chase_think more often than the normal autocam pass,
 	// and this walks the edict list twice.  A quarter second is far finer than the
 	// two second predict window needs.
 	if (time < clanring_autotrack_predict_next)
@@ -672,18 +672,12 @@ void() auto_chase_think =
 	event = clanring_autotrack_event;
 	ktx = (clanring_autotrack_mode == CLANRING_AUTOTRACK_KTX);
 
-	// KTX generates the powerup prediction from the powerup's own think, so it is
-	// completely independent of what the pov is doing.  Ours has to be polled, and
-	// it has to happen before the death hold below returns: a 2 second hold sitting
-	// over the 2 second predict window would otherwise swallow the prediction
-	// entirely.  Arming an event during the hold is fine - it fires when the hold
-	// expires, and auto_check_powerup_spawn is one shot per respawn.
+	// Poll powerup predictions independently of any camera hold below.
+	// auto_check_powerup_spawn is one shot per respawn.
 	auto_check_powerup_spawn();
 
-	// Hold on a dying pov long enough to see the kill.  This is not negotiable,
-	// events included - it is the whole point of the delay.  A pending event is
-	// deliberately left armed so it fires the instant the hold expires, the way
-	// KTX keeps retrying its switch rather than dropping it.
+	// Respect the target's camera hold, leaving pending events armed until it
+	// expires.  KTX deaths set this to the time of death, so they switch immediately.
 	if (clanring_current_chase_target && (time < clanring_current_chase_target.clanring_cam_delay))
 		return;
 
