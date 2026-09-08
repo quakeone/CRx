@@ -212,7 +212,7 @@ void (entity player) observer_update_player_observer_key =
 //
 void () observer_clear_flags =
 {
-	self.oflags = self.oflags - self.oflags & (OBSERVER_WALK | OBSERVER_FLY | OBSERVER_CHASE | OBSERVER_DEMO | OBSERVER_CAMERA | OBSERVER_AUTO);
+	self.oflags = self.oflags - (self.oflags & (OBSERVER_WALK | OBSERVER_FLY | OBSERVER_CHASE | OBSERVER_DEMO | OBSERVER_CAMERA | OBSERVER_AUTO));
 	self.clanring_othertarget = world;	// CRMOD
 };
 
@@ -385,8 +385,7 @@ void () observer_freeze_in_place =
 	// them all would run observer_fly_move every frame and hand back the noclip we
 	// are trying to take away.  CAMERA is the one whose movetype is NONE by design,
 	// and with no movetarget the per frame position code has nothing to do.
-	// Parenthesised the way the mask needs - observer_clear_flags gets this wrong
-	// and zeroes the lot, which would take the commentary flag with it.
+	// Keep automatic tracking and commentary while the view is frozen.
 	self.oflags = self.oflags - (self.oflags & (OBSERVER_WALK | OBSERVER_FLY | OBSERVER_CHASE | OBSERVER_DEMO));
 	self.oflags = self.oflags | OBSERVER_CAMERA;
 
@@ -1579,9 +1578,8 @@ void () observer_set_chase_position =
 				if (autotarget != world && self.movetarget != autotarget)
 				{
 					self.movetarget = autotarget;
-					observer_chase_start();//R00k: reset in case we were in autopov
+					// Stay in chase mode: restarting it would clear OBSERVER_AUTO.
 					self.delay = 0;
-					return;
 				}
 			}
 		}
