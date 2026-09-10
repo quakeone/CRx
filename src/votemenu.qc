@@ -35,8 +35,9 @@ string(string maparg) VoteMenu_FormatMapChoice =
     if (title == "" || title == "error" || title == "Error")
         return maparg;
 
+    // Keep the complete map token: this string also supplies the changelevel name.
     return sprintf("%s %s",
-        strpad(16, substring(maparg, 0, 16)),
+        strpad(16, maparg),
         redify(strpad(21, substring(title, 0, 21))));
 };
 

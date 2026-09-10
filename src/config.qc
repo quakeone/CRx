@@ -843,6 +843,186 @@ void() exec_warp_cfg =
 	fclose(f);
 }
 
+// Seasonal additions/replacements are applied to the freshly loaded FFA list.
+// The base levels.cfg is never changed, so it returns after the season ends.
+
+float() holidays_ffa_mode =
+{
+    return (clanring_playmode & CLANRING_NORMAL_MODE)
+        && !(clanring_playmode & (CLANRING_MATCH_MODE | CLANRING_PRACTICE_MODE
+            | CLANRING_CAPTURE_THE_FLAG | CLANRING_CA_MODE | CLANRING_RA_MODE
+            | CLANRING_HH_MODE | CLANRING_WIPEOUT_MODE | CLANRING_DMM4_MODE
+            | CLANRING_AIRSHOT_MODE))
+        && cvar("teamplay") <= 0;
+};
+
+// MM-DD -> MMDD; zero means malformed. February 29 is valid for leap years.
+float(string value) holidays_date =
+{
+    float month, day, maxday, c;
+
+    if (strlen(value) != 5 || substring(value, 2, 1) != "-")
+        return 0;
+    for (float i = 0; i < 5; i++)
+    {
+        if (i == 2) continue;
+        c = str2chr(value, i);
+        if (c < 48 || c > 57) return 0;
+    }
+    month = stof(substring(value, 0, 2));
+    day = stof(substring(value, 3, 2));
+    if (month < 1 || month > 12) return 0;
+    maxday = 31;
+    if (month == 4 || month == 6 || month == 9 || month == 11) maxday = 30;
+    if (month == 2) maxday = 29;
+    if (day < 1 || day > maxday) return 0;
+    return month * 100 + day;
+};
+
+float(float today, float first, float last) holidays_in_range =
+{
+    if (!today || !first || !last) return FALSE;
+    if (first <= last) return today >= first && today <= last;
+    return today >= first || today <= last; // e.g. December 15 through January 5
+};
+
+string(string name) holidays_map_name =
+{
+    name = strtolower(name);
+    if (strlen(name) > 4 && substring(name, strlen(name) - 4, 4) == ".bsp")
+        name = substring(name, 0, strlen(name) - 4);
+    return name;
+};
+
+float(string name) holidays_find_map =
+{
+    if (name == "") return 0;
+    for (float i = 1; i <= clanring_lastcount; i++)
+    {
+        tokenize(levels[i]);
+        if (!strcasecmp(argv(0), name)) return i;
+    }
+    return 0;
+};
+
+void(float index) holidays_remove_map =
+{
+    strunzone(levels[index]);
+    for (float i = index; i < clanring_lastcount; i++)
+        levels[i] = levels[i + 1];
+    levels[clanring_lastcount] = "";
+    clanring_lastcount--;
+};
+
+// Empty regular means add. A replacement whose regular map is absent also
+// adds the holiday map. Validate first so a missing BSP never removes a map.
+void(string regular, string seasonal) holidays_apply_map =
+{
+    float slot, i;
+
+    if (!found_in_warp_list(seasonal))
+    {
+        print("[Holiday rotation] Skipping ", seasonal, ": not listed in warp.cfg\n");
+        return;
+    }
+    // Full paths also identify loose files on FTE; do not mark a pak for download.
+    if (!whichpack(strcat("maps/", seasonal, ".bsp"), WP_FULLPACKAGEPATH))
+    {
+        print("[Holiday rotation] Skipping ", seasonal, ": BSP not installed\n");
+        return;
+    }
+
+    slot = holidays_find_map(regular);
+    if (!slot) slot = holidays_find_map(seasonal);
+    if (!slot)
+    {
+        if (clanring_lastcount >= INSTALLED_NEXTMAPS_LIMIT - 1)
+        {
+            print("[Holiday rotation] Skipping ", seasonal, ": rotation is full\n");
+            return;
+        }
+        clanring_lastcount++;
+        slot = clanring_lastcount;
+    }
+    if (levels[slot] != "") strunzone(levels[slot]);
+    levels[slot] = strzone(VoteMenu_FormatMapChoice(seasonal));
+
+    // Keep the replacement in the regular map's position and remove every
+    // other copy of either version, including an already-listed holiday map.
+    i = 1;
+    while (i <= clanring_lastcount)
+    {
+        tokenize(levels[i]);
+        if (i != slot && (!strcasecmp(argv(0), seasonal)
+            || (regular != "" && !strcasecmp(argv(0), regular))))
+        {
+            holidays_remove_map(i);
+            if (i < slot) slot--;
+        }
+        else i++;
+    }
+};
+
+void(string mode) holidays_apply_rotation =
+{
+    filestream f;
+    string line, command, regular, seasonal;
+    float today, active, first, last, argc, linenum;
+
+    if (mode != "-dm-" || !holidays_ffa_mode() || !cvar("cr_ffa_holidays"))
+        return;
+    f = fopen("configs/holidays.cfg", FILE_READ);
+    if (f < 0) return; // Optional config; older installations stay unchanged.
+
+    today = holidays_date(strftime(TRUE, "%m-%d"));
+    active = FALSE;
+    linenum = 0;
+    while ((line = fgets(f)))
+    {
+        linenum++;
+        argc = tokenize(line);
+        if (!argc) continue;
+        command = argv(0);
+        if (substring(command, 0, 2) == "//" || substring(command, 0, 1) == "#")
+            continue;
+        // Accept inline comments, but reject missing/extra arguments.
+        for (float i = 1; i < argc; i++)
+        {
+            if (substring(argv(i), 0, 2) == "//" || substring(argv(i), 0, 1) == "#")
+            {
+                argc = i;
+                break;
+            }
+        }
+        if (command == "holiday")
+        {
+            active = FALSE;
+            first = holidays_date(argv(2));
+            last = holidays_date(argv(3));
+            if (argc == 4 && first && last)
+            {
+                active = holidays_in_range(today, first, last);
+                if (active) print("[Holiday rotation] Active: ", argv(1), "\n");
+                continue;
+            }
+        }
+        else if ((command == "add" && argc == 2) || (command == "replace" && argc == 3))
+        {
+            if (!active) continue;
+            // Map lookups tokenize levels[], so own both arguments first.
+            regular = "";
+            if (command == "replace") regular = strzone(holidays_map_name(argv(1)));
+            seasonal = strzone(holidays_map_name(argv(argc - 1)));
+            holidays_apply_map(regular, seasonal);
+            if (regular != "") strunzone(regular);
+            strunzone(seasonal);
+            continue;
+        }
+        print(sprintf("[Holiday rotation] Invalid holidays.cfg line %g\n", linenum));
+    }
+    fclose(f);
+};
+
 //
 //	N E X T  L E V E L   C O N F I G
 //
@@ -899,11 +1079,13 @@ float(string mode) clanring_count_maps =
 
                 if (found_in_warp_list(argv(0))) //The map must be installed in the warp.cfg so that we can grab the title string.
 				{
-					mapCount++;
-                    string maparg = strpad(16, substring(argv(0), 0, 16));
-                    string titlearg = strpad(21, substring(VoteMenu_get_map_by_name(argv(0)), 0, 21));
-                    titlearg = (redify(titlearg));
-                    levels[mapCount] = strzone(sprintf("%s %s", maparg, (titlearg)));
+                    if (mapCount >= INSTALLED_NEXTMAPS_LIMIT - 1)
+                    {
+                        print("[Rotation] Map limit reached; remaining maps skipped\n");
+                        break;
+                    }
+                    mapCount++;
+                    levels[mapCount] = strzone(VoteMenu_FormatMapChoice(argv(0)));
                 }
             }
             break; // Found the correct mode section
@@ -912,6 +1094,7 @@ float(string mode) clanring_count_maps =
     fclose(f);
 
     clanring_lastcount = mapCount;
+    holidays_apply_rotation(mode);
  //   print(sprintf("%s maps in rotation for mode: %s\n", ftos(mapCount), mode));
 
     return TRUE;
@@ -1495,6 +1678,7 @@ void() clanring_main_config =
 	registercvar("cr_lockdown_labels", "");
 		registercvar("cr_lockdown_auto_release_on_match_start", "0");
 		registercvar("cr_dm_randomize_start", "1");
+		registercvar("cr_ffa_holidays", "1");
 			registercvar("cr_ra_randomize_start", "1");
 			registercvar("cr_hh_randomize_start", "0");
 			registercvar("cr_ffa_start_delay", "3");
